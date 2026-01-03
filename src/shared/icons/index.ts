@@ -1,0 +1,31 @@
+import {
+    HomeIcon,
+    AcademicCapIcon,
+    BuildingLibraryIcon,
+    BookOpenIcon,
+    ClipboardDocumentListIcon,
+    UsersIcon,
+    UserIcon,
+    BriefcaseIcon,
+    ShieldCheckIcon,
+    UserGroupIcon,
+    KeyIcon,
+    Cog6ToothIcon,
+    ArrowRightOnRectangleIcon,
+} from '@heroicons/vue/24/outline'
+
+export const iconMap: Record<string, any> = {
+    HomeIcon,
+    AcademicCapIcon,
+    BuildingLibraryIcon,
+    BookOpenIcon,
+    ClipboardDocumentListIcon,
+    UsersIcon,
+    UserIcon,
+    BriefcaseIcon,
+    ShieldCheckIcon,
+    UserGroupIcon,
+    KeyIcon,
+    Cog6ToothIcon,
+    ArrowRightOnRectangleIcon,
+}
