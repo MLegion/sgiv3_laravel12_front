@@ -1,1 +1,5 @@
-@import "../../node_modules/tailwindcss/dist/lib.d.mts";
+/* Debería ser solo esto */
+@import "tailwindcss";
+/*
+@import "../../../node_modules/tailwindcss/dist/lib.d.mts";
+*/
