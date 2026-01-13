@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/modules/auth/store'
+import { useAuthStore } from '@/modules/auth/auth.store.ts'
 
 export async function authGuard(to: any) {
     const auth = useAuthStore()

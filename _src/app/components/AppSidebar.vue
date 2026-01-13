@@ -46,14 +46,18 @@
 
 <script setup lang="ts">
   import { computed } from 'vue'
-  import { useAuthStore } from '@/modules/auth/store'
+  import { useMenuStore } from '@/modules/user/menu.store'
   import { useLayoutStore } from '@/app/stores/layout.store'
   import SidebarItem from './SidebarItem.vue'
 
-  const auth = useAuthStore()
+  const menu = useMenuStore()
   const layout = useLayoutStore()
 
-  const menus = auth.menus
+  if(!menu.menus.length) {
+    menu.loadMenus()
+  }
 
+  const menus = menu.menus.values()
+console.log(menus)
   const isExpanded = computed(() => layout.isSidebarExpanded)
 </script>

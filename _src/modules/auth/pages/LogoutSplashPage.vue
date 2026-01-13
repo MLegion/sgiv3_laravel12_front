@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-slate-900 text-white">
-    <div class="text-center space-y-4">
-      <div class="text-2xl font-semibold">
+  <div class="min-h-screen flex items-center justify-center" :style="backgroundStyle">
+    <div class="text-center space-y-4 bg-white p-8 rounded-lg shadow-lg">
+      <div class="text-slate-400 text-2xl font-semibold">
         Cerrando sesión
       </div>
 
@@ -15,8 +15,12 @@
 </template>
 
 <script setup lang="ts">
+const backgroundStyle = {
+    backgroundImage: "url('/img/background.png')",
+}
+
 import { onMounted } from 'vue'
-import { useAuthStore } from '@/modules/auth/store'
+import { useAuthStore } from '@/modules/auth/auth.store.ts'
 import router from '@/app/router'
 
 const auth = useAuthStore()

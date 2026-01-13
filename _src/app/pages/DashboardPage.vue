@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useAuthStore } from '@/modules/auth/store'
+import { useAuthStore } from '@/modules/auth/auth.store.ts'
 
 import DefaultDashboard from './dashboards/DefaultDashboard.vue'
 import AcademicDashboard from './dashboards/AcademicDashboard.vue'

@@ -6,3 +6,7 @@ export const API_CONFIG = {
 export function apiUrl(path: string): string {
     return `/api/${API_CONFIG.VERSION}${path}`
 }
+
+export function setUrl(path: string): string {
+    return `${path}`
+}
