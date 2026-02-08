@@ -46,10 +46,14 @@
                             Usuario
                         </label>
                         <input
+                            v-model="email"
                             type="text"
                             placeholder="Usuario"
                             class="form-control"
                         />
+                        <span v-if="errors.user" class="text-sm text-red-600">
+                          {{ errors.user }}
+                        </span>
                     </div>
 
                     <!-- Contraseña -->
@@ -58,16 +62,28 @@
                             Contraseña
                         </label>
                         <input
+                            v-model="password"
                             type="password"
                             placeholder="Contraseña"
                             class="form-control"
                         />
+                        <span v-if="errors.password" class="text-sm text-red-600">
+                          {{ errors.password }}
+                        </span>
                     </div>
-
+                    <div
+                        v-if="errors.general"
+                        class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-3"
+                    >
+                        {{ errors.general }}
+                    </div>
                     <!-- Options -->
                     <div class="flex items-center justify-between text-sm pt-1">
                         <label class="flex items-center gap-2 text-gray-600">
-                            <input type="checkbox" />
+                            <input
+                                type="checkbox"
+                                v-model="rememberMe"
+                            />
                             Recordarme
                         </label>
 
@@ -92,12 +108,71 @@
 </template>
 
 <script setup lang="ts">
-const backgroundStyle = {
-    backgroundImage: "url('/img/background.png')",
+import { ref, onMounted } from 'vue'
+import { useAuthStore } from '@/modules/auth/stores/auth.store'
+import { useCollegeStore } from '@/modules/auth/stores/college.store'
+
+/* ---------- state ---------- */
+const authStore = useAuthStore()
+const collegeStore = useCollegeStore()
+
+const collegeId = ref<number | null>(null)
+const email = ref('')
+const password = ref('')
+
+const rememberMe = ref(false)
+
+const errors = ref<{
+    college?: string
+    user?: string
+    password?: string
+    general?: string
+}>({})
+
+onMounted(() => {
+    collegeStore.hydrate()
+
+    collegeStore.loadColleges()
+
+    if (collegeStore.selectedCollege) {
+        collegeId.value = collegeStore.selectedCollege.id
+    }
+})
+
+function clearError(field: keyof typeof errors.value) {
+    delete errors.value[field]
 }
 
-function submit() {
-    // login logic
+async function submit() {
+    errors.value = {}
+
+    if (!email.value) {
+        errors.value.user = 'El usuario es obligatorio'
+    }
+
+    if (!password.value) {
+        errors.value.password = 'La contraseña es obligatoria'
+    }
+
+    if (Object.keys(errors.value).length > 0) {
+        return
+    }
+
+    try {
+        await authStore.login({
+            email: email.value,
+            password: password.value,
+            collegeId: null,
+            rememberMe: rememberMe.value,
+        })
+    } catch (error) {
+        console.log(error)
+        errors.value.general = 'Usuario o contraseña incorrectos'
+    }
+}
+
+const backgroundStyle = {
+    backgroundImage: "url('/img/background.png')",
 }
 </script>
 

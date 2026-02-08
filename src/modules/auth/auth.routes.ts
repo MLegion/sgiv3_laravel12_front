@@ -5,7 +5,7 @@ export default [
         meta: { title: 'Ingresar' }
     },
     {
-        path: 'superadmin/login',
+        path: 'admin/login',
         component: () => import('@/modules/auth/pages/SuperadminLoginPage.vue'),
         meta: { title: 'Ingresar admin' }
     },

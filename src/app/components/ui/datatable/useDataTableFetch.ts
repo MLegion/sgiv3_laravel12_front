@@ -2,8 +2,8 @@ import { ref } from 'vue'
 import type {
     DataTablePagination,
     DataTableChangeEvent,
-} from '@/app/components/datatable/types'
-import { api } from '@/shared/services/api'
+} from '@/app/components/ui/datatable/types.ts'
+import { api } from '@/shared/services/api.ts'
 
 interface UseDataTableFetchOptions {
     endpoint: string

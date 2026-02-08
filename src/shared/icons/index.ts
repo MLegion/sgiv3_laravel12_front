@@ -12,7 +12,43 @@ import {
     KeyIcon,
     Cog6ToothIcon,
     ArrowRightOnRectangleIcon,
+    ShareIcon,
+    BookmarkSquareIcon,
+    WindowIcon,
+    SquaresPlusIcon,
+    UserCircleIcon,
+    BookmarkSlashIcon,
+    BeakerIcon,
+    LinkIcon,
+    ArrowsUpDownIcon,
+    TrashIcon
 } from '@heroicons/vue/24/outline'
+
+export {
+    HomeIcon,
+    AcademicCapIcon,
+    BuildingLibraryIcon,
+    BookOpenIcon,
+    ClipboardDocumentListIcon,
+    UsersIcon,
+    UserIcon,
+    BriefcaseIcon,
+    ShieldCheckIcon,
+    UserGroupIcon,
+    KeyIcon,
+    Cog6ToothIcon,
+    ArrowRightOnRectangleIcon,
+    ShareIcon,
+    BookmarkSquareIcon,
+    WindowIcon,
+    SquaresPlusIcon,
+    UserCircleIcon,
+    BookmarkSlashIcon,
+    BeakerIcon,
+    LinkIcon,
+    ArrowsUpDownIcon,
+    TrashIcon
+}
 
 export const iconMap: Record<string, any> = {
     HomeIcon,
@@ -28,4 +64,14 @@ export const iconMap: Record<string, any> = {
     KeyIcon,
     Cog6ToothIcon,
     ArrowRightOnRectangleIcon,
+    ShareIcon,
+    BookmarkSquareIcon,
+    WindowIcon,
+    SquaresPlusIcon,
+    UserCircleIcon,
+    BookmarkSlashIcon,
+    BeakerIcon,
+    LinkIcon,
+    ArrowsUpDownIcon,
+    TrashIcon
 }

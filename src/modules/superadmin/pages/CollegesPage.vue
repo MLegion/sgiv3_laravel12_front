@@ -2,7 +2,7 @@
     <div class="space-y-4">
         <div class="flex items-center justify-between">
             <h1 class="text-xl font-semibold text-slate-800">
-                Empleados
+                INSTITUCIONES EDUCATIVAS
             </h1>
 
             <button
@@ -10,7 +10,7 @@
                 class="flex items-center gap-2 px-4 py-2 text-sm
                rounded-lg bg-blue-600 text-white
                hover:bg-blue-700 transition"
-                @click="createEmployee"
+                @click="createCollege"
             >
                 <!-- Heroicon Plus -->
                 <svg
@@ -28,7 +28,7 @@
                     />
                 </svg>
 
-                Registrar empleado
+                REGISTRAR INSTITUTO EDUCATIVA CON ADMINISTRADOR
             </button>
         </div>
 
@@ -42,15 +42,6 @@
             @change="handleChange"
             @export="handleExport"
         >
-            <!-- Nombre completo -->
-            <template #cell-name="{ row }">
-                <span class="font-medium text-slate-800">
-                    {{ row.names }}
-                    {{ row.firstSurname }}
-                    {{ row.secondSurname ?? '' }}
-                </span>
-            </template>
-
             <!-- ID centrado -->
             <template #cell-id="{ value }">
                 <div class="font-medium text-center">
@@ -58,28 +49,32 @@
                 </div>
             </template>
 
+            <!-- Nombre -->
+            <template #cell-name="{ row }">
+                <span class="font-medium text-slate-800">
+                    {{ row.name }}
+                </span>
+            </template>
+
+            <!-- Nombre Corto -->
+            <template #cell-shortName="{ row }">
+                <span class="font-medium text-slate-800">
+                    {{ row.shortName }}
+                </span>
+            </template>
+
+
+
             <!-- Opciones -->
             <template #cell-opciones="{ row }">
                 <div class="flex items-center justify-center gap-2">
-                    <button
-                        type="button"
-                        class="border p-1.5 rounded-md text-slate-500
-                               hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer"
-                        title="Ver historial laboral"
-                        @click="goToHistory(row)">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z" />
-                        </svg>
-
-                    </button>
-
                     <!-- Ver -->
                     <button
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500
                                hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer"
-                        title="Ver empleado"
-                        @click="viewEmployee(row)"
+                        title="Ver institución educativa"
+                        @click="viewCollege(row)"
                     >
                         <!-- Heroicon Eye -->
                         <svg
@@ -108,8 +103,8 @@
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500
                                hover:text-amber-600 hover:bg-amber-50 transition cursor-pointer"
-                        title="Editar empleado"
-                        @click="editEmployee(row)"
+                        title="Editar institución educativa"
+                        @click="editCollege(row)"
                     >
                         <!-- Heroicon Pencil -->
                         <svg
@@ -133,8 +128,8 @@
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500
                                hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
-                        title="Eliminar empleado"
-                        @click="deleteEmployee(row)"
+                        title="Eliminar institución educativa"
+                        @click="deleteCollege(row)"
                     >
                         <!-- Heroicon Trash -->
                         <svg
@@ -176,50 +171,39 @@ const router = useRouter()
 /**
  * Modelo mínimo de Empleado para la tabla
  */
-interface Employee {
+interface College {
     id: number
-    names: string
-    firstSurname: string
-    secondSurname?: string | null
-    email: string
-    currentJobPosition?: {
-        name: string
-    }
+    name: string
+    shortName: string
+    status: boolean
 }
 
 /**
  * Navegación
  */
-function createEmployee() {
+function createCollege() {
     router.push({
-        name: 'shr.humanresources.employees.create'
+        name: 'superadmin.colleges.create-with-admin'
     })
 }
 
-function goToHistory(row: Employee) {
+function viewCollege(row: College) {
     router.push({
-        name: 'shr.humanresources.employees.history',
+        name: 'superadmin.colleges.show',
         params: { id: row.id },
     })
 }
 
-function viewEmployee(row: Employee) {
+function editCollege(row: College) {
     router.push({
-        name: 'shr.humanresources.employees.show',
+        name: 'superadmin.colleges.edit',
         params: { id: row.id },
     })
 }
 
-function editEmployee(row: Employee) {
+function deleteCollege(row: College) {
     router.push({
-        name: 'shr.humanresources.employees.edit',
-        params: { id: row.id },
-    })
-}
-
-function deleteEmployee(row: Employee) {
-    router.push({
-        name: 'shr.humanresources.employees.delete',
+        name: 'superadmin.colleges.delete',
         params: { id: row.id },
     })
 }
@@ -236,22 +220,15 @@ const columns: DataTableColumn<Employee>[] = [
     },
     {
         key: 'name',
-        label: 'NOMBRE COMPLETO',
+        label: 'NOMBRE',
         sortable: true,
-        formatter: (_, row) =>
-            `${row.names} ${row.firstSurname} ${row.secondSurname ?? ''}`.trim(),
+        field: 'name',
     },
     {
-        key: 'email',
-        label: 'CORREO',
-        field: 'email',
+        key: 'shortName',
+        label: 'NOMBRE CORTO',
         sortable: true,
-    },
-    {
-        key: 'position',
-        label: 'PUESTO',
-        formatter: (_, row) =>
-            row.currentJobPosition?.name ?? '—',
+        field: 'shortName',
     },
     {
         key: 'opciones',
@@ -269,7 +246,7 @@ const {
     fetchData,
     handleChange,
 } = useDataTableFetch<Employee>({
-    endpoint: API.SHR_API.employee.list,
+    endpoint: API.SUPERADMIN_API.colleges.list,
     initialPerPage: 15,
     mapResponse: data => ({
         items: data.items,
@@ -287,7 +264,7 @@ fetchData()
 /**
  * Exportación
  */
-function handleExport(event: DataTableExportEvent<Employee>) {
+function handleExport(event: DataTableExportEvent<College>) {
     console.log('Exportar:', event.type)
     console.table(event.rows)
 }

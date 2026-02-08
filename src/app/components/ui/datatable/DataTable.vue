@@ -5,42 +5,42 @@ import type {
     DataTableEmits,
     DataTableColumn,
     DataTableExportType,
-} from './types'
+} from './types.ts'
 
+/* -------------------------------------------------------------------------- */
+/* PROPS & EMITS */
+/* -------------------------------------------------------------------------- */
 const props = defineProps<DataTableProps<T>>()
 const emit = defineEmits<DataTableEmits<T>>()
 
-/**
- * Columnas visibles
- */
+/* -------------------------------------------------------------------------- */
+/* COLUMNAS */
+/* -------------------------------------------------------------------------- */
 const visibleColumns = computed<DataTableColumn<T>[]>(() => {
     return props.columns
 })
 
-/**
- * Opciones de registros por página
- */
+/* -------------------------------------------------------------------------- */
+/* PER PAGE */
+/* -------------------------------------------------------------------------- */
 const perPageOptions = computed(() => {
     return props.perPageOptions ?? [10, 15, 25, 50]
 })
 
-/**
- * Estado visual de ordenamiento
- */
+/* -------------------------------------------------------------------------- */
+/* SORT */
+/* -------------------------------------------------------------------------- */
 const sortBy = ref<string | null>(null)
 const sortDirection = ref<'asc' | 'desc' | null>(null)
 
-/**
- * Search global (input único)
- */
+/* -------------------------------------------------------------------------- */
+/* SEARCH */
+/* -------------------------------------------------------------------------- */
 const search = ref('')
-
 let searchTimeout: number | undefined
 
 watch(search, value => {
-    if (searchTimeout) {
-        clearTimeout(searchTimeout)
-    }
+    if (searchTimeout) clearTimeout(searchTimeout)
 
     searchTimeout = window.setTimeout(() => {
         emit('change', {
@@ -53,9 +53,9 @@ watch(search, value => {
     }, 400)
 })
 
-/**
- * PerPage controlado (source of truth: parent)
- */
+/* -------------------------------------------------------------------------- */
+/* PER PAGE CONTROL */
+/* -------------------------------------------------------------------------- */
 const currentPerPage = computed({
     get: () => props.pagination?.perPage ?? perPageOptions.value[0],
     set: (value: number) => {
@@ -69,14 +69,16 @@ const currentPerPage = computed({
     },
 })
 
-
+/* -------------------------------------------------------------------------- */
+/* PLACEHOLDER */
+/* -------------------------------------------------------------------------- */
 const searchPlaceholder = computed(() => {
     return props.searchPlaceholder ?? 'Buscar…'
 })
 
-/**
- * Toggle de ordenamiento por columna
- */
+/* -------------------------------------------------------------------------- */
+/* SORT TOGGLE */
+/* -------------------------------------------------------------------------- */
 function toggleSort(column: DataTableColumn<T>) {
     if (!column.sortable) return
 
@@ -99,9 +101,9 @@ function toggleSort(column: DataTableColumn<T>) {
     })
 }
 
-/**
- * Exportación solicitada
- */
+/* -------------------------------------------------------------------------- */
+/* EXPORT */
+/* -------------------------------------------------------------------------- */
 function handleExport(type: DataTableExportType) {
     emit('export', {
         type,
@@ -110,45 +112,41 @@ function handleExport(type: DataTableExportType) {
     })
 }
 
-/**
- * Handler del dropdown de exportación
- * (siempre vuelve a "Exportar")
- */
 function onExportSelect(event: Event) {
     const select = event.target as HTMLSelectElement
     const type = select.value as DataTableExportType
-
     if (!type) return
-
     handleExport(type)
     select.selectedIndex = 0
 }
+
+/* -------------------------------------------------------------------------- */
+/* SKELETON */
+/* -------------------------------------------------------------------------- */
+const skeletonRows = computed(() => {
+    return props.pagination?.perPage ?? 10
+})
 </script>
 
 <template>
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <!-- Toolbar -->
-        <div
-            class="flex items-center justify-between px-4 py-3 border-b border-slate-200"
-        >
-            <!-- Toolbar izquierda -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200">
             <div class="flex items-center gap-2">
                 <input
                     v-model="search"
                     type="text"
                     :placeholder="searchPlaceholder"
-                    class="border rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    class="border rounded-lg px-3 py-1.5 text-xs
+                           focus:outline-none focus:ring-1 focus:ring-blue-400"
                     :disabled="loading"
                 />
-
                 <slot name="toolbar-left" />
             </div>
 
-            <!-- Toolbar derecha -->
             <div class="flex items-center gap-2">
                 <slot name="toolbar-right" />
 
-                <!-- Export dropdown -->
                 <div v-if="exportable?.length">
                     <select
                         class="border rounded-lg px-3 py-1.5 text-xs bg-white
@@ -156,15 +154,8 @@ function onExportSelect(event: Event) {
                         @change="onExportSelect"
                         :disabled="loading"
                     >
-                        <option value="">
-                            Exportar
-                        </option>
-
-                        <option
-                            v-for="type in exportable"
-                            :key="type"
-                            :value="type"
-                        >
+                        <option value="">Exportar</option>
+                        <option v-for="type in exportable" :key="type" :value="type">
                             {{ type.toUpperCase() }}
                         </option>
                     </select>
@@ -173,39 +164,22 @@ function onExportSelect(event: Event) {
         </div>
 
         <!-- Tabla -->
-        <div class="overflow-x-auto relative">
-            <!-- Loading overlay -->
-            <div
-                v-if="loading"
-                class="absolute inset-0 bg-white/70 flex items-center
-                       justify-center z-10 pointer-events-none"
-            >
-                <span class="text-sm text-slate-500">
-                    Cargando…
-                </span>
-            </div>
-
+        <div class="overflow-x-auto">
             <table class="min-w-full border-collapse">
                 <thead class="bg-slate-50 border-b border-slate-200">
                 <tr>
                     <th
                         v-for="col in visibleColumns"
                         :key="col.key"
-                        class="px-4 py-2 text-xs font-semibold
-                                   text-slate-600 whitespace-nowrap select-none"
-                        :class="{
-                                'cursor-pointer hover:text-slate-900': col.sortable,
-                            }"
+                        class="px-4 py-2 text-xs font-semibold text-slate-600
+                                   whitespace-nowrap select-none"
+                        :class="{ 'cursor-pointer hover:text-slate-900': col.sortable }"
                         :style="{ width: col.width }"
                         @click="toggleSort(col)"
                     >
                         <div class="flex items-center gap-1">
                             <span>{{ col.label }}</span>
-
-                            <span
-                                v-if="col.sortable"
-                                class="text-slate-400"
-                            >
+                            <span v-if="col.sortable" class="text-slate-400">
                                     <span v-if="sortBy !== col.key">⇅</span>
                                     <span v-else-if="sortDirection === 'asc'">↑</span>
                                     <span v-else-if="sortDirection === 'desc'">↓</span>
@@ -216,8 +190,31 @@ function onExportSelect(event: Event) {
                 </thead>
 
                 <tbody>
-                <!-- Empty -->
-                <tr v-if="!loading && !rows.length">
+                <!-- SKELETON -->
+                <tr
+                    v-if="loading"
+                    v-for="i in skeletonRows"
+                    :key="'skeleton-' + i"
+                    class="border-b border-slate-100"
+                >
+                    <td
+                        v-for="col in visibleColumns"
+                        :key="col.key"
+                        class="px-4 py-3"
+                    >
+                        <div
+                            class="h-4 rounded-full bg-slate-200 animate-pulse"
+                            :class="{
+                                    'mx-auto w-1/2': col.align === 'center',
+                                    'ml-auto w-1/3': col.align === 'right',
+                                    'w-3/4': !col.align
+                                }"
+                        />
+                    </td>
+                </tr>
+
+                <!-- EMPTY -->
+                <tr v-else-if="!rows.length">
                     <td
                         :colspan="visibleColumns.length"
                         class="px-4 py-6 text-center text-sm text-slate-500"
@@ -226,12 +223,12 @@ function onExportSelect(event: Event) {
                     </td>
                 </tr>
 
-                <!-- Rows -->
+                <!-- ROWS -->
                 <tr
+                    v-else
                     v-for="(row, rowIndex) in rows"
                     :key="rowIndex"
-                    class="border-b border-slate-100
-                               hover:bg-slate-50 transition"
+                    class="border-b border-slate-100 hover:bg-slate-50 transition"
                 >
                     <td
                         v-for="col in visibleColumns"
@@ -247,16 +244,14 @@ function onExportSelect(event: Event) {
                             :row="row"
                             :value="(row as any)[col.field as string]"
                         >
-                                <span>
-                                    {{
-                                        col.formatter
-                                            ? col.formatter(
-                                                (row as any)[col.field as string],
-                                                row
-                                            )
-                                            : (row as any)[col.field as string]
-                                    }}
-                                </span>
+                            {{
+                                col.formatter
+                                    ? col.formatter(
+                                        (row as any)[col.field as string],
+                                        row
+                                    )
+                                    : (row as any)[col.field as string]
+                            }}
                         </slot>
                     </td>
                 </tr>
@@ -264,14 +259,13 @@ function onExportSelect(event: Event) {
             </table>
         </div>
 
-        <!-- Footer / Pagination -->
+        <!-- Footer -->
         <div
             v-if="pagination"
             class="flex flex-col sm:flex-row sm:items-center
                    sm:justify-between gap-3 px-4 py-3
                    border-t border-slate-200 text-xs text-slate-600"
         >
-            <!-- Info -->
             <div>
                 Página {{ pagination.page }} de
                 {{ Math.ceil(pagination.total / pagination.perPage) }}
@@ -279,7 +273,6 @@ function onExportSelect(event: Event) {
             </div>
 
             <div class="flex items-center gap-3">
-                <!-- Per page selector -->
                 <div class="flex items-center gap-1">
                     <span>Mostrar</span>
                     <select
@@ -287,19 +280,14 @@ function onExportSelect(event: Event) {
                         class="border rounded px-2 py-1 text-xs"
                         :disabled="loading"
                     >
-                        <option
-                            v-for="opt in perPageOptions"
-                            :key="opt"
-                            :value="opt"
-                        >
+                        <option v-for="opt in perPageOptions" :key="opt" :value="opt">
                             {{ opt }}
                         </option>
                     </select>
                 </div>
 
-                <!-- Pagination buttons -->
                 <button
-                    class="px-2 py-1 border rounded hover:bg-slate-100"
+                    class="px-2 py-1 border rounded hover:bg-slate-100 cursor-pointer"
                     :disabled="loading || pagination.page <= 1"
                     @click="
                         emit('change', {
@@ -315,7 +303,7 @@ function onExportSelect(event: Event) {
                 </button>
 
                 <button
-                    class="px-2 py-1 border rounded hover:bg-slate-100"
+                    class="px-2 py-1 border rounded hover:bg-slate-100 cursor-pointer"
                     :disabled="
                         loading ||
                         pagination.page >=
