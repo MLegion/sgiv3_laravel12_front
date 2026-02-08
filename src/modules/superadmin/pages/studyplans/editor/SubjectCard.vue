@@ -9,16 +9,16 @@
         @click="isPotentialReq ? $emit('select-as-req', item) : null"
     >
         <!-- Indicador de Requisito Asignado -->
-        <div v-if="item.prerequisite_1_id && !isLinking" class="absolute top-0 left-0 bg-blue-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-br-lg z-20 uppercase">
+        <div v-if="item.prerequisite_1_id && !isLinking" class="absolute top-0 left-0 bg-blue-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded-br-lg z-20 uppercase">
             Con Requisito
         </div>
 
         <!-- Cuerpo: Nombre y Clave -->
         <div class="flex-grow flex flex-col justify-center items-center px-3 text-center py-2">
-            <h4 class="text-[12px] font-black text-slate-800 leading-tight uppercase tracking-tight mb-2 italic line-clamp-2">
+            <h4 class="text-[10px] font-black text-slate-800 leading-tight uppercase tracking-tight mb-2 italic line-clamp-2">
                 {{ item.subject?.shortName || item.subject?.name }}
             </h4>
-            <div class="text-[18px] font-medium text-slate-900 tracking-[0.15em] font-sans">
+            <div class="text-[16px] font-medium text-slate-900 tracking-[0.15em] font-sans">
                 {{ item.subject?.officialCode }}
             </div>
         </div>
@@ -27,15 +27,15 @@
         <div class="mt-auto border-t-2 border-slate-300">
             <div class="grid grid-cols-3 bg-white text-slate-800 font-bold border-b border-slate-100">
                 <div class="py-1 flex flex-col items-center border-r-2 border-slate-300">
-                    <span class="text-[8px] text-slate-400 font-black uppercase">hp</span>
+                    <span class="text-[7px] text-slate-400 font-black uppercase">hp</span>
                     <span class="text-xs leading-none">{{ item.subject?.hp || 0 }}</span>
                 </div>
                 <div class="py-1 flex flex-col items-center border-r-2 border-slate-300">
-                    <span class="text-[8px] text-slate-400 font-black uppercase">ht</span>
+                    <span class="text-[7px] text-slate-400 font-black uppercase">ht</span>
                     <span class="text-xs leading-none">{{ item.subject?.ht || 0 }}</span>
                 </div>
                 <div class="py-1 flex flex-col items-center">
-                    <span class="text-[8px] text-slate-400 font-black uppercase">cr</span>
+                    <span class="text-[7px] text-slate-400 font-black uppercase">cr</span>
                     <span class="text-xs leading-none">{{ item.subject?.credits || 0 }}</span>
                 </div>
             </div>
@@ -73,7 +73,7 @@
             </div>
 
             <!-- Feedback visual en modo selección de requisitos -->
-            <div v-if="isPotentialReq" class="bg-green-500 text-white text-[10px] py-1 text-center font-bold animate-pulse uppercase">
+            <div v-if="isPotentialReq" class="bg-green-500 text-white text-[9px] py-1 text-center font-bold animate-pulse uppercase">
                 Click para asignar
             </div>
         </div>

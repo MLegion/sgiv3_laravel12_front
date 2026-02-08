@@ -148,6 +148,14 @@ export default [
         }
     },
     {
+        path: 'superadmin/study-plans/validate/:id',
+        name: 'superadmin.studyplans.approve',
+        component: () => import('@/modules/superadmin/pages/studyplans/StudyPlanValidate.vue'),
+        meta: {
+            title: 'Válidar - Carrera Profesional'
+        }
+    },
+    {
         path: 'superadmin/study-plans/show/:id',
         name: 'superadmin.studyplans.show',
         component: () => import('@/modules/superadmin/pages/studyplans/StudyPlanShow.vue'),

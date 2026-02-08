@@ -42,7 +42,6 @@ export function useDataTableFetch<T>(
 
     async function fetchData() {
         loading.value = true
-
         try {
             const response = await api.get(options.endpoint, {
                 params: {

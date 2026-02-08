@@ -101,6 +101,7 @@ interface Props {
     label?: string
     placeholder?: string
     itemLabel: string
+    itemSearchs: array
     itemValue: string
     required?: boolean
     disabled?: boolean
@@ -109,6 +110,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
     placeholder: 'Buscar...',
+    itemSearchs: [],
     required: false,
     disabled: false,
     uppercase: false,
@@ -180,13 +182,23 @@ async function fetchList(reset = false) {
     }
 
     try {
+        const params = {}
+        if(props.itemSearchs.length===0){
+            params[props.itemLabel] = search.value
+        }
+        else{
+            props.itemSearchs.forEach((field: string) => {
+                params[field] = search.value
+            })
+        }
+
         const { data } = await api.get(props.endpoint, {
             params: {
                 page: page.value,
                 per_page: isRecommendationMode.value ? 5 : 10,
                 search: isRecommendationMode.value
                     ? {}
-                    : { [props.itemLabel]: search.value },
+                    : params,
                 ...props.params
             },
         })

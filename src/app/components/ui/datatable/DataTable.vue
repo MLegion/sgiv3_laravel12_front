@@ -6,6 +6,7 @@ import type {
     DataTableColumn,
     DataTableExportType,
 } from './types.ts'
+import TableSkeletonRow from './TableSkeletonRow.vue'
 
 /* -------------------------------------------------------------------------- */
 /* PROPS & EMITS */
@@ -14,310 +15,185 @@ const props = defineProps<DataTableProps<T>>()
 const emit = defineEmits<DataTableEmits<T>>()
 
 /* -------------------------------------------------------------------------- */
-/* COLUMNAS */
+/* STATE */
 /* -------------------------------------------------------------------------- */
-const visibleColumns = computed<DataTableColumn<T>[]>(() => {
-    return props.columns
-})
-
-/* -------------------------------------------------------------------------- */
-/* PER PAGE */
-/* -------------------------------------------------------------------------- */
-const perPageOptions = computed(() => {
-    return props.perPageOptions ?? [10, 15, 25, 50]
-})
-
-/* -------------------------------------------------------------------------- */
-/* SORT */
-/* -------------------------------------------------------------------------- */
-const sortBy = ref<string | null>(null)
-const sortDirection = ref<'asc' | 'desc' | null>(null)
-
-/* -------------------------------------------------------------------------- */
-/* SEARCH */
-/* -------------------------------------------------------------------------- */
+const sortBy = ref<string | undefined>(props.sortBy)
+const sortDirection = ref<'asc' | 'desc' | undefined>(props.sortDirection)
 const search = ref('')
-let searchTimeout: number | undefined
-
-watch(search, value => {
-    if (searchTimeout) clearTimeout(searchTimeout)
-
-    searchTimeout = window.setTimeout(() => {
-        emit('change', {
-            page: 1,
-            perPage: props.pagination?.perPage ?? perPageOptions.value[0],
-            sortBy: sortBy.value ?? undefined,
-            sortDirection: sortDirection.value ?? undefined,
-            search: value || undefined,
-        })
-    }, 400)
-})
+let searchTimeout: any = null
 
 /* -------------------------------------------------------------------------- */
-/* PER PAGE CONTROL */
+/* COMPUTED */
 /* -------------------------------------------------------------------------- */
-const currentPerPage = computed({
-    get: () => props.pagination?.perPage ?? perPageOptions.value[0],
-    set: (value: number) => {
-        emit('change', {
-            page: 1,
-            perPage: value,
-            sortBy: sortBy.value ?? undefined,
-            sortDirection: sortDirection.value ?? undefined,
-            search: search.value || undefined,
-        })
-    },
-})
+const visibleColumns = computed(() => props.columns)
+const optionsPerPage = computed(() => props.perPageOptions ?? [10, 25, 50, 100])
 
 /* -------------------------------------------------------------------------- */
-/* PLACEHOLDER */
+/* HELPERS */
 /* -------------------------------------------------------------------------- */
-const searchPlaceholder = computed(() => {
-    return props.searchPlaceholder ?? 'Buscar…'
-})
+const getCellValue = (row: any, col: DataTableColumn<T>) => {
+    const field = (col.field as string) || col.key
+    if (!field) return ''
+    if (field.includes('.')) {
+        return field.split('.').reduce((acc, part) => acc && acc[part], row)
+    }
+    return row[field]
+}
 
-/* -------------------------------------------------------------------------- */
-/* SORT TOGGLE */
-/* -------------------------------------------------------------------------- */
-function toggleSort(column: DataTableColumn<T>) {
-    if (!column.sortable) return
-
-    if (sortBy.value !== column.key) {
+const handleSort = (column: DataTableColumn<T>) => {
+    if (!column.sortable || props.loading) return
+    if (sortBy.value === column.key) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : undefined
+        if (!sortDirection.value) sortBy.value = undefined
+    } else {
         sortBy.value = column.key
         sortDirection.value = 'asc'
-    } else if (sortDirection.value === 'asc') {
-        sortDirection.value = 'desc'
-    } else {
-        sortBy.value = null
-        sortDirection.value = null
     }
+    triggerChange()
+}
 
+const triggerChange = () => {
     emit('change', {
-        page: 1,
-        perPage: props.pagination?.perPage ?? perPageOptions.value[0],
-        sortBy: sortBy.value ?? undefined,
-        sortDirection: sortDirection.value ?? undefined,
-        search: search.value || undefined,
+        page: props.pagination?.page ?? 1,
+        perPage: props.pagination?.perPage ?? 10,
+        sortBy: sortBy.value,
+        sortDirection: sortDirection.value,
+        search: search.value ? { all: search.value } : undefined
     })
 }
 
-/* -------------------------------------------------------------------------- */
-/* EXPORT */
-/* -------------------------------------------------------------------------- */
-function handleExport(type: DataTableExportType) {
-    emit('export', {
-        type,
-        rows: props.rows,
-        columns: props.columns.filter(c => c.exportable !== false),
-    })
-}
-
-function onExportSelect(event: Event) {
-    const select = event.target as HTMLSelectElement
-    const type = select.value as DataTableExportType
-    if (!type) return
-    handleExport(type)
-    select.selectedIndex = 0
-}
-
-/* -------------------------------------------------------------------------- */
-/* SKELETON */
-/* -------------------------------------------------------------------------- */
-const skeletonRows = computed(() => {
-    return props.pagination?.perPage ?? 10
+watch(search, (val) => {
+    if (searchTimeout) clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => triggerChange(), 500)
 })
+
+const onExport = (type: DataTableExportType) => {
+    emit('export', { type, rows: props.rows, columns: props.columns })
+}
 </script>
 
 <template>
-    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <!-- Toolbar -->
-        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200">
-            <div class="flex items-center gap-2">
+    <div class="w-full flex flex-col bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+
+        <!-- Toolbar: Búsqueda y Exportación -->
+        <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
+            <div class="relative w-full sm:max-w-sm">
+                <span class="absolute inset-y-0 left-3 flex items-center text-slate-400">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                </span>
                 <input
                     v-model="search"
                     type="text"
-                    :placeholder="searchPlaceholder"
-                    class="border rounded-lg px-3 py-1.5 text-xs
-                           focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    :disabled="loading"
+                    :placeholder="searchPlaceholder || 'Buscar registros...'"
+                    class="w-full pl-10 pr-4 py-2.5 sm:py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
                 />
-                <slot name="toolbar-left" />
             </div>
 
-            <div class="flex items-center gap-2">
-                <slot name="toolbar-right" />
-
-                <div v-if="exportable?.length">
-                    <select
-                        class="border rounded-lg px-3 py-1.5 text-xs bg-white
-                               hover:bg-slate-50 transition cursor-pointer"
-                        @change="onExportSelect"
-                        :disabled="loading"
-                    >
-                        <option value="">Exportar</option>
-                        <option v-for="type in exportable" :key="type" :value="type">
-                            {{ type.toUpperCase() }}
-                        </option>
-                    </select>
-                </div>
+            <div v-if="exportable?.length" class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+                <button
+                    v-for="type in exportable" :key="type"
+                    @click="onExport(type)"
+                    class="whitespace-nowrap px-3 py-1.5 border border-slate-200 rounded-md text-[11px] font-bold uppercase text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2"
+                >
+                    <svg class="w-3 h-3 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    {{ type }}
+                </button>
             </div>
         </div>
 
-        <!-- Tabla -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full border-collapse">
-                <thead class="bg-slate-50 border-b border-slate-200">
-                <tr>
+        <!-- Tabla con Scrollbar Mejorado -->
+        <div class="overflow-x-auto w-full custom-scrollbar">
+            <table class="min-w-full border-collapse text-left text-sm">
+                <thead>
+                <tr class="bg-slate-50/50 border-b border-slate-200">
                     <th
-                        v-for="col in visibleColumns"
-                        :key="col.key"
-                        class="px-4 py-2 text-xs font-semibold text-slate-600
-                                   whitespace-nowrap select-none"
-                        :class="{ 'cursor-pointer hover:text-slate-900': col.sortable }"
+                        v-for="col in visibleColumns" :key="col.key"
+                        @click="handleSort(col)"
+                        class="px-4 py-3 font-semibold text-slate-500 uppercase text-[10px] tracking-wider whitespace-nowrap"
+                        :class="[col.sortable ? 'cursor-pointer hover:text-blue-600 select-none' : '', `text-${col.align || 'left'}`]"
                         :style="{ width: col.width }"
-                        @click="toggleSort(col)"
                     >
-                        <div class="flex items-center gap-1">
+                        <div class="flex items-center gap-2" :class="{'justify-end': col.align === 'right', 'justify-center': col.align === 'center'}">
                             <span>{{ col.label }}</span>
-                            <span v-if="col.sortable" class="text-slate-400">
-                                    <span v-if="sortBy !== col.key">⇅</span>
-                                    <span v-else-if="sortDirection === 'asc'">↑</span>
-                                    <span v-else-if="sortDirection === 'desc'">↓</span>
-                                </span>
+                            <div v-if="col.sortable" class="flex flex-col text-[8px] leading-[4px]">
+                                <span :class="sortBy === col.key && sortDirection === 'asc' ? 'text-blue-600 opacity-100' : 'opacity-30'">▲</span>
+                                <span :class="sortBy === col.key && sortDirection === 'desc' ? 'text-blue-600 opacity-100' : 'opacity-30'">▼</span>
+                            </div>
                         </div>
                     </th>
                 </tr>
                 </thead>
 
-                <tbody>
-                <!-- SKELETON -->
-                <tr
-                    v-if="loading"
-                    v-for="i in skeletonRows"
-                    :key="'skeleton-' + i"
-                    class="border-b border-slate-100"
-                >
-                    <td
-                        v-for="col in visibleColumns"
-                        :key="col.key"
-                        class="px-4 py-3"
-                    >
-                        <div
-                            class="h-4 rounded-full bg-slate-200 animate-pulse"
-                            :class="{
-                                    'mx-auto w-1/2': col.align === 'center',
-                                    'ml-auto w-1/3': col.align === 'right',
-                                    'w-3/4': !col.align
-                                }"
-                        />
-                    </td>
-                </tr>
+                <tbody class="divide-y divide-slate-100">
+                <template v-if="loading">
+                    <TableSkeletonRow v-for="i in 5" :key="i" :columns="visibleColumns.length" />
+                </template>
 
-                <!-- EMPTY -->
-                <tr v-else-if="!rows.length">
-                    <td
-                        :colspan="visibleColumns.length"
-                        class="px-4 py-6 text-center text-sm text-slate-500"
-                    >
-                        {{ emptyText || 'No hay registros' }}
-                    </td>
-                </tr>
-
-                <!-- ROWS -->
-                <tr
-                    v-else
-                    v-for="(row, rowIndex) in rows"
-                    :key="rowIndex"
-                    class="border-b border-slate-100 hover:bg-slate-50 transition"
-                >
-                    <td
-                        v-for="col in visibleColumns"
-                        :key="col.key"
-                        class="px-4 py-2 text-sm text-slate-700"
-                        :class="{
-                                'text-center': col.align === 'center',
-                                'text-right': col.align === 'right',
-                            }"
-                    >
-                        <slot
-                            :name="`cell-${col.key}`"
-                            :row="row"
-                            :value="(row as any)[col.field as string]"
+                <template v-else-if="rows.length > 0">
+                    <tr v-for="(row, rowIndex) in rows" :key="rowIndex" class="hover:bg-blue-50/30 transition-colors">
+                        <td
+                            v-for="col in visibleColumns" :key="col.key"
+                            class="px-4 py-3 text-slate-600 whitespace-nowrap"
+                            :class="[`text-${col.align || 'left'}`]"
                         >
-                            {{
-                                col.formatter
-                                    ? col.formatter(
-                                        (row as any)[col.field as string],
-                                        row
-                                    )
-                                    : (row as any)[col.field as string]
-                            }}
-                        </slot>
+                            <!-- SLOT IDENTIFIER: cell-key -->
+                            <slot
+                                :name="'cell-' + col.key"
+                                v-bind="{ row, value: getCellValue(row, col), index: rowIndex }"
+                            >
+                                <template v-if="col.formatter">
+                                    {{ col.formatter(getCellValue(row, col), row) }}
+                                </template>
+                                <template v-else>
+                                    {{ getCellValue(row, col) }}
+                                </template>
+                            </slot>
+                        </td>
+                    </tr>
+                </template>
+
+                <tr v-else>
+                    <td :colspan="visibleColumns.length" class="py-16 text-center">
+                        <div class="flex flex-col items-center text-slate-400">
+                            <p class="text-sm italic">{{ emptyText || 'No se encontraron datos' }}</p>
+                        </div>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- Footer -->
-        <div
-            v-if="pagination"
-            class="flex flex-col sm:flex-row sm:items-center
-                   sm:justify-between gap-3 px-4 py-3
-                   border-t border-slate-200 text-xs text-slate-600"
-        >
-            <div>
-                Página {{ pagination.page }} de
-                {{ Math.ceil(pagination.total / pagination.perPage) }}
-                ({{ pagination.total }} registros)
-            </div>
-
-            <div class="flex items-center gap-3">
-                <div class="flex items-center gap-1">
-                    <span>Mostrar</span>
+        <!-- Paginación -->
+        <div v-if="pagination" class="p-4 border-t border-slate-100 bg-slate-50/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center justify-between w-full sm:w-auto gap-3 text-xs text-slate-500 font-medium">
+                <div class="flex items-center gap-2">
+                    <span class="hidden xs:inline">Mostrar</span>
                     <select
-                        v-model="currentPerPage"
-                        class="border rounded px-2 py-1 text-xs"
-                        :disabled="loading"
+                        :value="pagination.perPage"
+                        @change="(e) => emit('change', { ...pagination!, perPage: Number((e.target as HTMLSelectElement).value), page: 1 })"
+                        class="bg-white border border-slate-200 rounded px-2 py-1.5 outline-none"
                     >
-                        <option v-for="opt in perPageOptions" :key="opt" :value="opt">
-                            {{ opt }}
-                        </option>
+                        <option v-for="n in optionsPerPage" :key="n" :value="n">{{ n }}</option>
                     </select>
                 </div>
+                <span>{{ (pagination.page - 1) * pagination.perPage + 1 }} - {{ Math.min(pagination.page * pagination.perPage, pagination.total) }} de {{ pagination.total }}</span>
+            </div>
 
+            <div class="flex items-center gap-1 w-full sm:w-auto">
                 <button
-                    class="px-2 py-1 border rounded hover:bg-slate-100 cursor-pointer"
-                    :disabled="loading || pagination.page <= 1"
-                    @click="
-                        emit('change', {
-                            page: pagination.page - 1,
-                            perPage: pagination.perPage,
-                            sortBy: sortBy ?? undefined,
-                            sortDirection: sortDirection ?? undefined,
-                            search: search || undefined,
-                        })
-                    "
+                    @click="emit('change', { ...pagination!, page: pagination.page - 1 })"
+                    :disabled="pagination.page <= 1 || loading"
+                    class="flex-1 sm:flex-none px-4 py-2 rounded-md border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 transition-all text-xs font-bold"
                 >
                     Anterior
                 </button>
-
+                <div class="px-4 py-2 text-xs font-bold text-blue-600 bg-blue-50 rounded-md border border-blue-100 min-w-[40px] text-center">
+                    {{ pagination.page }}
+                </div>
                 <button
-                    class="px-2 py-1 border rounded hover:bg-slate-100 cursor-pointer"
-                    :disabled="
-                        loading ||
-                        pagination.page >=
-                        Math.ceil(pagination.total / pagination.perPage)
-                    "
-                    @click="
-                        emit('change', {
-                            page: pagination.page + 1,
-                            perPage: pagination.perPage,
-                            sortBy: sortBy ?? undefined,
-                            sortDirection: sortDirection ?? undefined,
-                            search: search || undefined,
-                        })
-                    "
+                    @click="emit('change', { ...pagination!, page: pagination.page + 1 })"
+                    :disabled="pagination.page >= Math.ceil(pagination.total / pagination.perPage) || loading"
+                    class="flex-1 sm:flex-none px-4 py-2 rounded-md border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-30 transition-all text-xs font-bold"
                 >
                     Siguiente
                 </button>
@@ -325,3 +201,31 @@ const skeletonRows = computed(() => {
         </div>
     </div>
 </template>
+
+<style scoped>
+/* Estilos para que la barra de scroll sea más amigable en dispositivos táctiles */
+.custom-scrollbar::-webkit-scrollbar {
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9; /* slate-100 */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1; /* slate-300 */
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8; /* slate-400 */
+}
+
+/* En móviles, forzamos que la barra sea un poco más visible */
+@media (max-width: 768px) {
+    .custom-scrollbar {
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px; /* Espacio para que el scroll no tape el contenido */
+    }
+}
+</style>

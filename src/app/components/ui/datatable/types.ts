@@ -89,7 +89,7 @@ export interface DataTableChangeEvent {
     perPage: number
     sortBy?: string
     sortDirection?: 'asc' | 'desc'
-    search?: Record<string, string>
+    search?: string | Record<string, string>
 }
 
 /**

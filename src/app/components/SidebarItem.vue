@@ -1,150 +1,173 @@
 <template>
-    <div>
-        <!-- Item principal -->
+    <div class="w-full px-2 mb-1">
+        <!-- Item principal con comportamiento táctil mejorado -->
         <component
             :is="item.route && !item.children ? 'router-link' : 'div'"
             :to="item.route"
-            class="flex items-center gap-3 px-3 py-2 rounded cursor-pointer transition-all group select-none"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-300 group select-none relative overflow-hidden active:scale-[0.96]"
             :class="[
-                isActive ? 'text-white bg-blue-600 shadow-lg' : 'hover:bg-blue-200 hover:text-blue-900',
-                collapsed ? 'justify-center' : ''
+                isActive
+                    ? 'text-white bg-indigo-600 shadow-md shadow-indigo-100'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-indigo-600',
+                collapsed ? 'justify-center px-0 w-10 h-10 mx-auto py-0' : ''
             ]"
             @click="handleClick"
-            :title="collapsed ? item.label : undefined"
+            v-bind="collapsed ? { title: item.label } : {}"
         >
-            <!-- Icono -->
-            <component
-                v-if="Icon"
-                :is="Icon"
-                class="w-5 h-5 shrink-0 transition-colors"
-                :class="isActive ? 'text-white' : 'group-hover:text-blue-800'"
-            />
+            <!-- Indicador lateral activo (Píldora vertical) -->
+            <div
+                v-if="isActive"
+                class="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white rounded-r-full transition-all duration-300"
+                :class="collapsed ? 'opacity-0' : 'opacity-100'"
+            ></div>
 
-            <!-- Label -->
-            <span
-                v-if="!collapsed"
-                class="flex-1 text-sm font-medium truncate"
-            >
-                {{ item.label }}
-            </span>
+            <!-- Contenedor de Icono con escala dinámica -->
+            <div class="flex items-center justify-center w-6 h-6 shrink-0 transition-transform duration-300" :class="collapsed ? 'scale-110' : ''">
+                <component
+                    v-if="Icon"
+                    :is="Icon"
+                    class="w-5 h-5 transition-colors duration-200"
+                    :class="isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-600'"
+                />
+            </div>
 
-            <!-- Indicador de Submenú (Flecha) -->
-            <span
+            <!-- Etiqueta de texto con desvanecimiento -->
+            <transition name="fade-text">
+                <span
+                    v-if="!collapsed"
+                    class="flex-1 text-[14px] font-semibold truncate tracking-tight whitespace-nowrap"
+                >
+                    {{ item.label }}
+                </span>
+            </transition>
+
+            <!-- Icono de Submenú (Chevron) solo visible si no está colapsado -->
+            <div
                 v-if="!collapsed && item.children"
-                class="text-[10px] transition-transform duration-200"
+                class="transition-transform duration-300 ease-in-out"
                 :class="[
-                    isActive ? 'text-white' : 'text-slate-500',
-                    { 'rotate-90': open }
+                    isActive ? 'text-white' : 'text-slate-300',
+                    open ? 'rotate-180' : ''
                 ]"
             >
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                    <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
                 </svg>
-            </span>
+            </div>
         </component>
 
-        <!-- Submenú Recursivo -->
-        <div
-            v-if="open && item.children && !collapsed"
-            class="ml-4 mt-1 border-l border-slate-700 pl-2 space-y-1 transition-all"
-        >
-            <SidebarItem
-                v-for="child in item.children"
-                :key="child.label"
-                :item="child"
-                :collapsed="collapsed"
-            />
-        </div>
+        <!-- Submenú con indentación y guía visual (Desactivado en colapso) -->
+        <transition name="expand">
+            <div
+                v-if="!collapsed && item.children && open"
+                class="mt-1 ml-4 space-y-1 border-l-2 border-slate-100 pl-2 overflow-hidden"
+            >
+                <SidebarItem
+                    v-for="child in item.children"
+                    :key="child.path"
+                    :item="child"
+                    :collapsed="false"
+                />
+            </div>
+        </transition>
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import type { MenuItem } from '@/shared/types/menu'
-import { iconMap } from '@/shared/icons'
+import { useMenuStore } from '@/app/stores/menu.store'
+import * as HeroIcons from '@heroicons/vue/24/outline'
 
 const props = defineProps<{
-    item: MenuItem
-    collapsed?: boolean
+    item: any
+    collapsed: boolean
 }>()
 
 const route = useRoute()
+const menuStore = useMenuStore()
 const open = ref(false)
 
-/**
- * Determina si el ítem actual está activo basándose en la ruta.
- * También se marca como activo si uno de sus hijos está activo.
- */
-const isActive = computed(() => {
-    if (props.item.route && route.path === props.item.route) return true
-    if (props.item.children) {
-        return props.item.children.some(child => route.path === child.route)
-    }
-    return false
-})
-
-/**
- * Resuelve el icono desde el mapa de iconos
- */
+const iconMap: any = HeroIcons
 const Icon = computed(() =>
     props.item.icon ? iconMap[props.item.icon] : null
 )
 
-/**
- * Mantiene el submenú abierto si la ruta actual coincide con un hijo.
- * Esto evita que el menú se colapse al navegar.
- */
-const syncExpansion = () => {
-    if (props.item.children && !props.collapsed) {
-        const hasActiveChild = props.item.children.some(child => {
-            // Verifica si el hijo es la ruta actual
+const isActive = computed(() => {
+    if (props.item.route) return route.path === props.item.route
+    if (props.item.children) {
+        return props.item.children.some((child: any) => {
             if (route.path === child.route) return true
-            // Si el hijo tiene sus propios hijos, verificar recursivamente
             if (child.children) {
-                return child.children.some(subChild => route.path === subChild.route)
+                return child.children.some((subChild: any) => route.path === subChild.route)
             }
             return false
         })
-
-        if (hasActiveChild) {
-            open.value = true
-        }
     }
-}
+    return false
+})
 
-// Sincronizar al montar el componente y cada vez que cambie la ruta
-onMounted(syncExpansion)
-watch(() => route.path, syncExpansion)
-
-/**
- * Maneja el clic en el ítem
- */
 function handleClick() {
     if (props.item.children && !props.collapsed) {
         open.value = !open.value
     }
+
+    // Cierre automático del menú móvil al navegar
+    if (props.item.route && (!props.item.children || props.item.children.length === 0)) {
+        if (typeof menuStore.handleNavigate === 'function') {
+            menuStore.handleNavigate()
+        }
+    }
 }
 
-/**
- * Cerrar submenús si se colapsa el sidebar globalmente
- */
+const syncExpansion = () => {
+    if (props.item.children && !props.collapsed) {
+        const hasActiveChild = props.item.children.some((child: any) => {
+            if (route.path === child.route) return true
+            if (child.children) {
+                return child.children.some((subChild: any) => route.path === subChild.route)
+            }
+            return false
+        })
+        if (hasActiveChild) open.value = true
+    }
+}
+
+onMounted(syncExpansion)
+watch(() => route.path, syncExpansion)
+
+// Si el sidebar se colapsa, cerramos los submenús abiertos por limpieza
 watch(
     () => props.collapsed,
     (isCollapsed) => {
-        if (isCollapsed) {
-            open.value = false
-        } else {
-            syncExpansion()
-        }
+        if (isCollapsed) open.value = false
+        else syncExpansion()
     }
 )
 </script>
 
 <style scoped>
-/* Eliminar estilos por defecto de los enlaces */
-a {
-    text-decoration: none;
-    color: inherit;
+/* Eliminar el molesto recuadro azul en móviles */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Transición para el texto del menú */
+.fade-text-enter-active, .fade-text-leave-active {
+    transition: opacity 0.2s ease;
+}
+.fade-text-enter-from, .fade-text-leave-to {
+    opacity: 0;
+}
+
+/* Animación de expansión de submenú */
+.expand-enter-active, .expand-leave-active {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 500px;
+}
+.expand-enter-from, .expand-leave-to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-5px);
 }
 </style>

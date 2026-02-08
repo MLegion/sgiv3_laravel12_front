@@ -75,15 +75,15 @@
         </div>
 
         <!-- Grid Principal (Desktop) -->
-        <div class="hidden lg:block bg-slate-50 p-8 rounded-2xl border border-slate-200 overflow-x-auto shadow-inner relative">
+        <div class="hidden lg:block bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xl overflow-x-auto relative min-h-[700px]">
             <!-- Overlay de Modo Vinculación -->
-            <div v-if="isLinkingMode" class="absolute inset-0 bg-blue-500/5 pointer-events-none border-4 border-blue-400 rounded-2xl z-40 animate-pulse"></div>
+            <div v-if="isLinkingMode" class="absolute inset-0 bg-blue-600/[0.02] pointer-events-none border-4 border-blue-400/30 rounded-[2rem] z-40 animate-pulse"></div>
 
             <div
                 class="grid gap-4 mx-auto"
                 :style="{
-                    gridTemplateColumns: `repeat(${studyPlan.periods || 1}, 200px)`,
-                    gridTemplateRows: 'auto repeat(8, 160px)',
+                    gridTemplateColumns: `repeat(${studyPlan.periods || 1}, 150px)`,
+                    gridTemplateRows: 'auto repeat(8, 150px)',
                     width: 'max-content'
                 }"
             >
@@ -96,7 +96,7 @@
                 <template v-for="row in 8" :key="'row-'+row">
                     <template v-for="col in studyPlan.periods" :key="'cell-'+col+'-'+row">
 
-                        <div class="w-[200px] h-[160px]">
+                        <div class="w-[150px] h-[160px]">
                             <SubjectCard
                                 v-if="getItemAt(col, row)"
                                 :item="getItemAt(col, row)"
@@ -175,6 +175,7 @@
                         :endpoint="API.SUPERADMIN_API.subjects.list"
                         :endpoint-by-id="API.SUPERADMIN_API.subjects.byId"
                         :params="{ exclude: { study_plan_id: route.params.id } }"
+                        :item-searchs='["name", "official_code"]'
                         item-label="name"
                         item-value="id"
                         placeholder="Buscar materia..."

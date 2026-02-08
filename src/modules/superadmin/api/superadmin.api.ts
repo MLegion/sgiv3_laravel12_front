@@ -43,6 +43,8 @@ export default {
             create: apiUrl('/superadmin/study-plans'),
             update: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}`),
             delete: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}`),
+            approve: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/approve`),
+            rejecte: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/rejecte`),
         },
         curruculum: {
             list: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/curriculum`),

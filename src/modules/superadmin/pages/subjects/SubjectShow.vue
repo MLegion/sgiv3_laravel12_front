@@ -1,21 +1,22 @@
 <template>
     <div class="max-w-5xl space-y-6 relative">
+        <!-- Header -->
         <div class="flex items-center justify-between">
-            <h1 class="text-xl font-semibold text-slate-800 uppercase">
+            <h1 class="text-xl font-semibold text-slate-800 tracking-tight uppercase">
                 DETALLES - MATERIA
             </h1>
 
-            <div class="flex gap-2">
+            <div class="flex items-center gap-2">
                 <button
-                    class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100 uppercase"
+                    class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100 transition-colors uppercase"
                     @click="goBack"
                 >
                     REGRESAR
                 </button>
 
                 <button
-                    v-if="subject"
-                    class="px-3 py-2 text-sm rounded-lg bg-amber-600 text-white hover:bg-amber-700 uppercase font-medium"
+                    v-if="subject && !loading"
+                    class="px-3 py-2 text-sm rounded-lg bg-amber-600 text-white hover:bg-amber-700 font-medium transition-colors uppercase"
                     @click="goToEdit"
                 >
                     EDITAR
@@ -23,107 +24,124 @@
             </div>
         </div>
 
+        <!-- Card Principal -->
         <div class="bg-white border rounded-xl shadow-sm relative overflow-hidden">
-            <div
-                v-if="loading"
-                class="absolute inset-0 bg-white/80 z-20 flex flex-col items-center justify-center p-12"
-            >
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
-                <span class="text-sm text-slate-500 font-medium">CARGANDO INFORMACIÓN…</span>
-            </div>
 
-            <div v-if="subject" class="p-6 space-y-8">
+            <div v-if="subject || loading" class="p-6 space-y-8">
+                <!-- Sección de Título y Estado -->
                 <section class="pb-6 border-b">
                     <div class="flex flex-col md:flex-row justify-between items-start gap-4">
-                        <div class="space-y-1">
-                            <h2 class="text-2xl font-bold text-slate-900 leading-tight">
-                                {{ subject.name }}
+                        <div class="space-y-2 flex-1">
+                            <div v-if="loading" class="h-8 w-64 bg-slate-100 animate-pulse rounded-md"></div>
+                            <h2 v-else class="text-2xl font-bold text-slate-900 leading-tight">
+                                {{ subject?.name }}
                             </h2>
-                            <div class="flex flex-wrap gap-x-4 gap-y-1 text-slate-500 font-mono text-sm uppercase">
-                                <span><b class="text-slate-400">CLAVE:</b> {{ subject.officialCode }}</span>
-                                <span v-if="subject.shortName"><b class="text-slate-400">CORTO:</b> {{ subject.shortName }}</span>
+
+                            <div class="flex flex-wrap gap-x-4 gap-y-1 text-slate-500 font-mono text-xs uppercase">
+                                <div v-if="loading" class="h-4 w-32 bg-slate-50 animate-pulse rounded"></div>
+                                <template v-else>
+                                    <span><b class="text-slate-400">CLAVE:</b> {{ subject?.officialCode }}</span>
+                                    <span v-if="subject?.shortName">
+                                        <b class="text-slate-400">CORTO:</b> {{ subject?.shortName }}
+                                    </span>
+                                </template>
                             </div>
                         </div>
+
+                        <div v-if="loading" class="h-6 w-20 bg-slate-100 animate-pulse rounded-full"></div>
                         <span
-                            class="px-3 py-1 text-xs font-bold rounded-full border"
-                            :class="subject.isActive
-                                ? 'bg-green-50 text-green-700 border-green-200'
+                            v-else
+                            class="px-3 py-1 text-[10px] font-black rounded-full border tracking-widest"
+                            :class="subject?.isActive
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                 : 'bg-red-50 text-red-700 border-red-200'"
                         >
-                            {{ subject.isActive ? 'ACTIVO' : 'INACTIVO' }}
+                            {{ subject?.isActive ? 'ACTIVO' : 'INACTIVO' }}
                         </span>
                     </div>
                 </section>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                    <section class="space-y-4">
-                        <h3 class="text-xs font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
-                            <span class="w-1 h-4 bg-blue-600 rounded-full"></span>
+                <!-- Cuadrícula de Información -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+
+                    <!-- Columna 1: Carga Académica -->
+                    <div class="space-y-6">
+                        <h3 class="text-[11px] font-bold text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
                             Carga Académica
                         </h3>
-                        <div class="grid grid-cols-3 gap-4">
-                            <InfoItem label="HT">{{ subject.ht }}</InfoItem>
-                            <InfoItem label="HP">{{ subject.hp }}</InfoItem>
-                            <InfoItem label="CRÉDITOS" class="font-bold text-slate-900">
-                                {{ subject.credits }}
-                            </InfoItem>
+                        <div class="grid grid-cols-3 gap-6">
+                            <InfoItem label="HT" :value="subject?.ht" :loading="loading" />
+                            <InfoItem label="HP" :value="subject?.hp" :loading="loading" />
+                            <InfoItem label="CRÉDITOS" :value="subject?.credits" :loading="loading" class="font-bold text-slate-900" />
                         </div>
-                    </section>
+                    </div>
 
-                    <section class="space-y-4">
-                        <h3 class="text-xs font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
-                            <span class="w-1 h-4 bg-blue-600 rounded-full"></span>
-                            Estado de Aprobación
+                    <!-- Columna 2: Estatus de Validación -->
+                    <div class="space-y-6">
+                        <h3 class="text-[11px] font-bold text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                            Validación
                         </h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <InfoItem label="ESTATUS">
-                                <ApprovalStatusBadge :status="subject.approvalStatus" />
+                        <div class="grid grid-cols-2 gap-6">
+                            <InfoItem label="ESTATUS" :loading="loading">
+                                <ApprovalStatusBadge v-if="subject" :status="subject.approvalStatus" />
                             </InfoItem>
-                            <InfoItem label="FECHA DE APROBACIÓN">
-                                {{ formatDate(subject.approvedAt) }}
-                            </InfoItem>
+                            <InfoItem label="FECHA APROBACIÓN" :value="formatDate(subject?.approvedAt)" :loading="loading" />
                         </div>
-                    </section>
+                    </div>
                 </div>
 
-                <section class="pt-6 border-t bg-slate-50 -mx-6 -mb-6 p-6 mt-4">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
+                <!-- Footer / Auditoría -->
+                <section class="pt-6 border-t bg-slate-50/50 -mx-6 -mb-6 p-6 mt-4">
+                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">
                         Registro de Auditoría
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] text-slate-400 font-bold uppercase">Creado por</span>
-                            <div class="flex items-center gap-2 mt-1">
-                                <div class="w-7 h-7 bg-slate-200 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-600">
-                                    {{ subject.creator?.name?.charAt(0) || 'S' }}
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="text-xs font-semibold text-slate-700">{{ subject.creator?.name || 'Sistema' }}</span>
-                                    <span class="text-[10px] text-slate-500">{{ subject.creator?.email?.value || '' }}</span>
-                                </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Creador -->
+                        <div class="flex items-center gap-3">
+                            <div v-if="loading" class="w-9 h-9 bg-slate-200 animate-pulse rounded-full"></div>
+                            <div v-else class="w-9 h-9 bg-white border shadow-sm rounded-full flex items-center justify-center text-xs font-bold text-slate-600">
+                                {{ subject?.creator?.name?.charAt(0) || 'S' }}
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase leading-none">Creado por</p>
+                                <div v-if="loading" class="h-3 w-32 bg-slate-200 animate-pulse rounded"></div>
+                                <p v-else class="text-sm font-semibold text-slate-700 leading-none">
+                                    {{ subject?.creator?.name || 'Sistema' }}
+                                </p>
                             </div>
                         </div>
 
-                        <div v-if="subject.approver" class="flex flex-col">
-                            <span class="text-[10px] text-slate-400 font-bold uppercase">Aprobado por</span>
-                            <div class="flex items-center gap-2 mt-1">
-                                <div class="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center text-[10px] font-bold text-blue-600">
-                                    {{ subject.approver?.name?.charAt(0) || 'A' }}
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="text-xs font-semibold text-slate-700">{{ subject.approver?.name }}</span>
-                                    <span class="text-[10px] text-slate-500">{{ formatDate(subject.approvedAt) }}</span>
-                                </div>
+                        <!-- Aprobador -->
+                        <div v-if="subject?.approver || loading" class="flex items-center gap-3">
+                            <div v-if="loading" class="w-9 h-9 bg-slate-200 animate-pulse rounded-full"></div>
+                            <div v-else class="w-9 h-9 bg-blue-50 border border-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600">
+                                {{ subject?.approver?.name?.charAt(0) || 'A' }}
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase leading-none">Aprobado por</p>
+                                <div v-if="loading" class="h-3 w-32 bg-slate-200 animate-pulse rounded"></div>
+                                <p v-else class="text-sm font-semibold text-slate-700 leading-none">
+                                    {{ subject?.approver?.name || 'Pendiente' }}
+                                </p>
                             </div>
                         </div>
                     </div>
                 </section>
             </div>
 
-            <div v-else-if="!loading" class="p-12 text-center space-y-4">
-                <div class="text-slate-300 text-5xl">:(</div>
-                <p class="text-slate-500">No pudimos encontrar la información de esta asignatura.</p>
-                <button @click="fetchData" class="text-blue-600 text-sm font-bold underline">Reintentar</button>
+            <!-- Empty State / Error -->
+            <div v-else-if="!loading" class="p-20 text-center flex flex-col items-center justify-center">
+                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                    <span class="text-2xl text-slate-300">:(</span>
+                </div>
+                <h3 class="text-slate-900 font-semibold">No se encontró la asignatura</h3>
+                <p class="text-slate-500 text-sm mt-1">El registro solicitado no existe o no tienes permisos.</p>
+                <button @click="fetchData" class="mt-6 text-blue-600 text-sm font-bold hover:underline">
+                    Intentar de nuevo
+                </button>
             </div>
         </div>
     </div>
@@ -145,20 +163,20 @@ const router = useRouter()
 const loading = ref(true)
 const subject = ref<SubjectType | null>(null)
 
-/**
- * Formateador de fechas para manejar los strings de SQL o los objetos del BE
- */
 function formatDate(dateValue: any) {
-    if (!dateValue) return '—'
-    // Si la fecha viene como un objeto de Carbon (típico en tu BE)
+    if (!dateValue) return null
+
+    let date: Date
     if (typeof dateValue === 'object' && dateValue.date) {
-        return new Date(dateValue.date).toLocaleDateString('es-MX', {
-            year: 'numeric', month: 'long', day: 'numeric'
-        })
+        date = new Date(dateValue.date)
+    } else {
+        date = new Date(dateValue)
     }
-    // Si es un string directo
-    return new Date(dateValue).toLocaleDateString('es-MX', {
-        year: 'numeric', month: 'long', day: 'numeric'
+
+    if (isNaN(date.getTime())) return null
+
+    return date.toLocaleDateString('es-MX', {
+        year: 'numeric', month: 'short', day: 'numeric'
     })
 }
 
@@ -168,20 +186,17 @@ async function fetchData() {
         const { data } = await api.get(
             API.SUPERADMIN_API.subjects.byId(route.params.id)
         )
-
         subject.value = data
-
     } catch (error) {
         console.error("Error al obtener la materia:", error)
     } finally {
-        loading.value = false
+        // Un pequeño delay para evitar parpadeos si la API es muy rápida
+        setTimeout(() => { loading.value = false }, 400)
     }
 }
 
 function goBack() {
-    router.push({
-        name: 'superadmin.subjects'
-    })
+    router.push({ name: 'superadmin.subjects' })
 }
 
 function goToEdit() {

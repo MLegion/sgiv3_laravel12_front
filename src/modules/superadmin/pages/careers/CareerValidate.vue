@@ -2,13 +2,13 @@
     <div class="max-w-5xl space-y-6 relative">
         <!-- Header -->
         <div class="flex items-center justify-between">
-            <h1 class="text-xl font-semibold text-slate-800">
+            <h1 class="text-xl font-semibold text-slate-800 tracking-tight">
                 VALIDAR - CARRERA PROFESIONAL
             </h1>
 
-            <div class="flex gap-2">
+            <div class="flex items-center gap-2">
                 <button
-                    class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100"
+                    class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100 transition-colors"
                     @click="goBack"
                 >
                     VOLVER
@@ -16,8 +16,8 @@
 
                 <button
                     v-if="canEdit"
-                    class="px-3 py-2 text-sm rounded-lg
-                           bg-amber-600 text-white hover:bg-amber-700"
+                    class="px-3 py-2 text-sm rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors disabled:opacity-50"
+                    :disabled="loading"
                     @click="goToEdit"
                 >
                     EDITAR
@@ -25,79 +25,93 @@
             </div>
         </div>
 
-        <!-- Card -->
-        <div class="bg-white border rounded-xl shadow-sm p-6 space-y-6 relative">
-            <!-- Loading overlay -->
+        <!-- Card Principal -->
+        <div class="bg-white border rounded-xl shadow-sm overflow-hidden relative">
+
+            <!-- Barra de Estado Superior -->
             <div
-                v-if="loading"
-                class="absolute inset-0 bg-white/70 z-10 flex items-center justify-center"
+                class="px-6 py-3 flex items-center justify-between border-b"
+                :class="statusBarClass"
             >
-                <span class="text-sm text-slate-500">
-                    Cargando información…
-                </span>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold uppercase tracking-wider">Estado de Validación:</span>
+                    <span class="text-xs font-black uppercase">{{ statusLabel }}</span>
+                </div>
+
+                <div v-if="!canValidate" class="text-[10px] font-bold uppercase opacity-70">
+                    Registro Finalizado
+                </div>
             </div>
 
-            <!-- Información básica -->
-            <section class="space-y-2">
-                <h2 class="text-lg font-semibold text-slate-800">
-                    {{ career.name }}
-                </h2>
+            <div class="p-6 space-y-8">
+                <!-- Información Principal -->
+                <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                            DETALLES DE LA SOLICITUD
+                        </h3>
 
-                <p class="text-sm text-slate-500">
-                    <strong>Nombre corto:</strong> {{ career.shortName }}
-                </p>
+                        <div class="space-y-4">
+                            <InfoItem label="NOMBRE DE LA CARRERA" :value="career.name" :loading="loading" />
+                            <InfoItem label="NOMBRE CORTO" :value="career.shortName" :loading="loading" />
+                            <InfoItem label="CLAVE OFICIAL" :value="career.officialCode" :loading="loading" />
+                        </div>
+                    </div>
 
-                <p class="text-sm text-slate-500">
-                    <strong>Clave oficial:</strong> {{ career.officialCode }}
-                </p>
+                    <div class="space-y-6">
+                        <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                            ORIGEN Y AUTORÍA
+                        </h3>
 
-                <p class="text-sm text-slate-500">
-                    <strong>Instituto:</strong> {{ career.college?.name ?? '—' }}
-                </p>
+                        <div class="space-y-4">
+                            <InfoItem label="INSTITUTO / FACULTAD" :value="career.college?.name" :loading="loading" />
+                            <InfoItem label="CREADO POR" :value="career.createdByUser?.name" :loading="loading" />
+                            <InfoItem label="FECHA DE REGISTRO" :value="formatSimpleDate(career.createdAt)" :loading="loading" />
+                        </div>
+                    </div>
+                </section>
 
-                <p class="text-sm text-slate-500">
-                    <strong>Creada por:</strong> {{ career.createdByUser?.name ?? '—' }}
-                </p>
-            </section>
-
-            <!-- Estado -->
-            <section>
-                <span
-                    class="inline-flex px-3 py-1 text-sm rounded-full"
-                    :class="statusBadgeClass"
+                <!-- Panel de Acciones -->
+                <section
+                    v-if="canValidate"
+                    class="mt-8 p-6 bg-slate-50 rounded-xl border border-dashed border-slate-200"
                 >
-                    {{ statusLabel }}
-                </span>
-            </section>
+                    <div class="flex flex-col items-center text-center space-y-4  uppercase">
+                        <div class="space-y-1">
+                            <h4 class="text-sm font-semibold text-slate-800">¿Deseas validar esta carrera profesional?</h4>
+                            <p class="text-xs text-slate-500 max-w-sm">
+                                Una vez aprobada, la carrera estará disponible para su uso en el sistema. Si se rechaza, el usuario creador deberá corregir las observaciones.
+                            </p>
+                        </div>
 
-            <!-- Acciones -->
-            <section
-                v-if="canValidate"
-                class="flex gap-3 pt-4 border-t"
-            >
-                <button
-                    class="px-4 py-2 rounded-lg
-                           bg-green-600 text-white
-                           hover:bg-green-700 transition"
-                    @click="approve"
-                >
-                    APROBAR
-                </button>
+                        <div class="flex items-center gap-3">
+                            <button
+                                class="px-6 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 shadow-sm shadow-emerald-200 transition-all active:scale-95 disabled:opacity-50"
+                                :disabled="loading"
+                                @click="approve"
+                            >
+                                APROBAR CARRERA
+                            </button>
 
-                <button
-                    class="px-4 py-2 rounded-lg
-                           bg-red-600 text-white
-                           hover:bg-red-700 transition"
-                    @click="reject"
-                >
-                    RECHAZAR
-                </button>
-            </section>
+                            <button
+                                class="px-6 py-2.5 rounded-lg bg-red-50 text-red-600 border border-red-100 text-sm font-semibold hover:bg-red-100 transition-all active:scale-95 disabled:opacity-50"
+                                :disabled="loading"
+                                @click="reject"
+                            >
+                                RECHAZAR
+                            </button>
+                        </div>
+                    </div>
+                </section>
 
-            <!-- Mensaje estado final -->
-            <section v-else class="text-sm text-slate-500 italic">
-                ESTA CARRERA YA FUE <strong>{{ statusLabel.toUpperCase() }}</strong> Y NO PUEDE MODIFICARSE.
-            </section>
+                <!-- Mensaje de estado finalizado -->
+                <section v-else class="mt-8 p-4 bg-slate-50 rounded-lg border border-slate-100 text-center uppercase">
+                    <p class="text-xs text-slate-400 italic">
+                        Esta carrera ya se encuentra en estado <span class="font-bold text-slate-600">{{ statusLabel }}</span>.
+                        No se requieren más acciones de validación.
+                    </p>
+                </section>
+            </div>
         </div>
     </div>
 </template>
@@ -105,10 +119,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import InfoItem from '@/app/components/ui/InfoItem.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { CareerType } from '@/modules/superadmin/types/career.type'
-import { ApprovalStatusEnum } from '@/shared/enums/approval-status.enum.ts'
+import { ApprovalStatusEnum } from '@/shared/enums/approval-status.enum'
 
 const route = useRoute()
 const router = useRouter()
@@ -116,9 +131,6 @@ const router = useRouter()
 const loading = ref(true)
 const career = ref<CareerType>({} as CareerType)
 
-/* -------------------------------------------------------------------------- */
-/* FETCH */
-/* -------------------------------------------------------------------------- */
 async function fetchData() {
     loading.value = true
     try {
@@ -127,7 +139,7 @@ async function fetchData() {
         )
         career.value = data
     } finally {
-        loading.value = false
+        setTimeout(() => { loading.value = false }, 300)
     }
 }
 
@@ -145,36 +157,38 @@ const canEdit = computed(() =>
 
 const statusLabel = computed(() => {
     switch (career.value.approvalStatus) {
-        case ApprovalStatusEnum.APPROVED:
-            return 'APROBADA'
-        case ApprovalStatusEnum.REJECTED:
-            return 'RECHAZADA'
-        case ApprovalStatusEnum.PENDING:
-            return 'PENDIENTE'
-        default:
-            return 'BORRADOR'
+        case ApprovalStatusEnum.APPROVED: return 'Aprobada'
+        case ApprovalStatusEnum.REJECTED: return 'Rechazada'
+        case ApprovalStatusEnum.PENDING: return 'Pendiente de Revisión'
+        default: return 'Borrador'
     }
 })
 
-const statusBadgeClass = computed(() => {
+const statusBarClass = computed(() => {
     switch (career.value.approvalStatus) {
         case ApprovalStatusEnum.APPROVED:
-            return 'bg-green-100 text-green-700'
+            return 'bg-emerald-50 border-emerald-100 text-emerald-700'
         case ApprovalStatusEnum.REJECTED:
-            return 'bg-red-100 text-red-700'
+            return 'bg-red-50 border-red-100 text-red-700'
         case ApprovalStatusEnum.PENDING:
-            return 'bg-yellow-100 text-yellow-700'
+            return 'bg-amber-50 border-amber-100 text-amber-700'
         default:
-            return 'bg-slate-100 text-slate-700'
+            return 'bg-slate-50 border-slate-200 text-slate-600'
     }
 })
+
+function formatSimpleDate(dateString?: string | null) {
+    if (!dateString) return null
+    return new Intl.DateTimeFormat('es-ES', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    }).format(new Date(dateString))
+}
 
 /* -------------------------------------------------------------------------- */
 /* ACTIONS */
 /* -------------------------------------------------------------------------- */
-function goBack() {
-    router.back()
-}
+function goBack() { router.back() }
 
 function goToEdit() {
     router.push({
@@ -184,13 +198,30 @@ function goToEdit() {
 }
 
 async function approve() {
-    await api.post(API.SUPERADMIN_API.careers.approve(career.value.id))
-    await fetchData()
+    loading.value = true
+    try {
+        await api.post(API.SUPERADMIN_API.careers.approve(career.value.id))
+        await fetchData()
+        router.push({
+            name: 'superadmin.careers',
+        })
+    } catch (e) {
+        loading.value = false
+    }
 }
 
 async function reject() {
-    await api.post(API.SUPERADMIN_API.careers.reject(career.value.id))
-    await fetchData()
+    console.log("Rechazando carrera con ID:", career.value.id)
+    loading.value = true
+    try {
+        await api.post(API.SUPERADMIN_API.careers.rejecte(career.value.id))
+        await fetchData()
+        router.push({
+            name: 'superadmin.careers',
+        })
+    } catch (e) {
+        loading.value = false
+    }
 }
 
 onMounted(fetchData)
