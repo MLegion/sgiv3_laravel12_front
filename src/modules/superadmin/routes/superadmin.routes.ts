@@ -152,7 +152,7 @@ export default [
         name: 'superadmin.studyplans.approve',
         component: () => import('@/modules/superadmin/pages/studyplans/StudyPlanValidate.vue'),
         meta: {
-            title: 'Válidar - Carrera Profesional'
+            title: 'Válidar - Plan de Estudios'
         }
     },
     {
@@ -244,6 +244,124 @@ export default [
         component: () => import('@/modules/superadmin/pages/subjects/SubjectDelete.vue'),
         meta: {
             title: 'Eliminar - Materia',
+        },
+    },
+    //###################################################################################
+    //# SPECIALTIES                                                                     #
+    //###################################################################################
+    {
+        path: 'superadmin/specialties',
+        name: 'superadmin.specialties',
+        component: () => import('@/modules/superadmin/pages/SpecialtiesPage.vue'),
+        meta: {
+            title: 'Especialidades'
+        }
+    },
+    {
+        path: 'superadmin/specialties/validate/:id',
+        name: 'superadmin.specialties.approve',
+        component: () => import('@/modules/superadmin/pages/specialties/SpecialtyValidate.vue'),
+        meta: {
+            title: 'Válidar - Especialidad'
+        }
+    },
+    {
+        path: 'superadmin/specialties/show/:id',
+        name: 'superadmin.specialties.show',
+        component: () => import('@/modules/superadmin/pages/specialties/SpecialtyShow.vue'),
+        meta: {
+            title: 'Información - Especialidad'
+        }
+    },
+    {
+        path: 'superadmin/specialties/create',
+        name: 'superadmin.specialties.create',
+        component: () => import('@/modules/superadmin/pages/specialties/SpecialtyCreate.vue'),
+        meta: {
+            title: 'Registrar - Especialidad'
+        }
+    },
+    {
+        path: 'superadmin/specialties/edit/:id',
+        name: 'superadmin.specialties.edit',
+        component: () => import('@/modules/superadmin/pages/specialties/SpecialtyEdit.vue'),
+        meta: {
+            title: 'Actualizar - Especialidad'
+        }
+    },
+    {
+        path: 'superadmin/specialties/delete/:id',
+        name: 'superadmin.specialties.delete',
+        component: () => import('@/modules/superadmin/pages/specialties/SpecialtyDelete.vue'),
+        meta: {
+            title: 'Eliminar - Especialidad',
+        },
+    },
+    {
+        path: 'superadmin/specialties/editor/:id',
+        name: 'superadmin.specialties.editor',
+        component: () => import('@/modules/superadmin/pages/specialties/SpecialtyEditor.vue'),
+        meta: {
+            title: 'Editor de Reticulas - Especialidad',
+        },
+    },
+    //###################################################################################
+    //# OPTIOMAL GROUPS                                                                 #
+    //###################################################################################
+    {
+        path: 'superadmin/optional-groups',
+        name: 'superadmin.optionalgroups',
+        component: () => import('@/modules/superadmin/pages/SpecialtiesPage.vue'),
+        meta: {
+            title: 'Especialidades'
+        }
+    },
+    {
+        path: 'superadmin/optional-groups/validate/:id',
+        name: 'superadmin.optionalgroups.approve',
+        component: () => import('@/modules/superadmin/pages/optionalgroups/OptionalGroupValidate.vue'),
+        meta: {
+            title: 'Válidar - Paquete de Materias Opcionales'
+        }
+    },
+    {
+        path: 'superadmin/optional-groups/show/:id',
+        name: 'superadmin.optionalgroups.show',
+        component: () => import('@/modules/superadmin/pages/optionalgroups/OptionalGroupShow.vue'),
+        meta: {
+            title: 'Información - Paquete de Materias Opcionales'
+        }
+    },
+    {
+        path: 'superadmin/optional-groups/create',
+        name: 'superadmin.optionalgroups.create',
+        component: () => import('@/modules/superadmin/pages/optionalgroups/OptionalGroupCreate.vue'),
+        meta: {
+            title: 'Registrar - Paquete de Materias Opcionales'
+        }
+    },
+    {
+        path: 'superadmin/optional-groups/edit/:id',
+        name: 'superadmin.optionalgroups.edit',
+        component: () => import('@/modules/superadmin/pages/optionalgroups/OptionalGroupEdit.vue'),
+        meta: {
+            title: 'Actualizar - Paquete de Materias Opcionales'
+        }
+    },
+    {
+        path: 'superadmin/optional-groups/delete/:id',
+        name: 'superadmin.optionalgroups.delete',
+        component: () => import('@/modules/superadmin/pages/optionalgroups/OptionalGroupDelete.vue'),
+        meta: {
+            title: 'Eliminar - Paquete de Materias Opcionales',
+        },
+    },
+    {
+        path: 'superadmin/optional-groups/editor/:id',
+        name: 'superadmin.optionalgroups.editor',
+        component: () => import('@/modules/superadmin/pages/optionalgroups/OptionalGroupEditor.vue'),
+        meta: {
+            title: 'Editor de Reticulas - Paquete de Materias Opcionales',
         },
     },
 ]

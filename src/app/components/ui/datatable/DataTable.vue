@@ -53,12 +53,36 @@ const handleSort = (column: DataTableColumn<T>) => {
 }
 
 const triggerChange = () => {
+    // 1. Inicializamos como undefined para no enviar un objeto vacío si no hay búsqueda
+    let searchJson: Record<string, string> | undefined = undefined
+    const searchValue = search.value.trim()
+
+    if (searchValue) {
+        searchJson = {}
+        props.columns.forEach(col => {
+            // 3. Verificamos si la columna tiene la propiedad 'searchable'
+            // Usamos cast 'any' para evitar errores si la interfaz base no incluye la propiedad
+            if ((col as any).searchable) {
+                searchJson![col.key] = searchValue
+            }
+        })
+
+        // Si después de recorrer no se encontró ninguna columna searchable, limpiamos
+        if (Object.keys(searchJson).length === 0) {
+            searchJson = undefined
+        }
+    }
+    else {
+        searchJson = undefined
+    }
+
+
     emit('change', {
         page: props.pagination?.page ?? 1,
         perPage: props.pagination?.perPage ?? 10,
         sortBy: sortBy.value,
         sortDirection: sortDirection.value,
-        search: search.value ? { all: search.value } : undefined
+        search: searchJson as any
     })
 }
 

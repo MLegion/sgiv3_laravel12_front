@@ -38,7 +38,7 @@ export function useDataTableFetch<T>(
     const sortBy = ref<string | undefined>(undefined)
     const sortDirection = ref<'asc' | 'desc' | undefined>(undefined)
 
-    const search = ref<Record<string, string> | undefined>(undefined)
+    const searchParams = ref<Record<string, string> | undefined>(undefined)
 
     async function fetchData() {
         loading.value = true
@@ -49,7 +49,7 @@ export function useDataTableFetch<T>(
                     per_page: pagination.value.perPage,
                     order_by: sortBy.value,
                     order_dir: sortDirection.value,
-                    search: search.value,
+                    search: searchParams.value,
                 },
             })
 
@@ -72,18 +72,8 @@ export function useDataTableFetch<T>(
 
         sortBy.value = event.sortBy
         sortDirection.value = event.sortDirection
-
-        if (
-            typeof event.search === 'string' &&
-            options.searchableFields?.length
-        ) {
-            const value = event.search.trim()
-
-            search.value = value
-                ? Object.fromEntries(
-                    options.searchableFields.map(field => [field, value])
-                )
-                : undefined
+        if (event.search && typeof event.search === 'object') {
+            searchParams.value = event.search
         }
 
         fetchData()

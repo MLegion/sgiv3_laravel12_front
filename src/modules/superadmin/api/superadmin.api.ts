@@ -59,6 +59,8 @@ export default {
             create: apiUrl('/superadmin/specialties'),
             update: (id: string | number) => apiUrl(`/superadmin/specialties/${id}`),
             delete: (id: string | number) => apiUrl(`/superadmin/specialties/${id}`),
+            linked: (id: string | number, subjectId: string | number) => apiUrl(`/superadmin/specialties/${id}/linked/${subjectId}`),
+            unlinked: (id: string | number, subjectId: string | number) => apiUrl(`/superadmin/specialties/${id}/unlinked/${subjectId}`),
         },
     },
 } satisfies ApiModule

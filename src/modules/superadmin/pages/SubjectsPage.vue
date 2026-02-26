@@ -107,9 +107,9 @@ const router = useRouter()
 /* -------------------------------------------------------------------------- */
 const columns: DataTableColumn<SubjectType>[] = [
     { key: 'id', label: '#', field: 'id', sortable: true },
-    { key: 'name', label: 'NOMBRE', field: 'name', sortable: true },
-    { key: 'shortName', label: 'NOMBRE CORTO', field: 'shortName' },
-    { key: 'officialCode', label: 'CLAVE OFICIAL', field: 'officialCode' },
+    { key: 'name', label: 'NOMBRE', field: 'name', sortable: true, searchable: true },
+    { key: 'shortName', label: 'NOMBRE CORTO', field: 'shortName', searchable: true  },
+    { key: 'officialCode', label: 'CLAVE OFICIAL', field: 'officialCode', searchable: true },
     { key: 'ht', label: 'HT', field: 'ht' },
     { key: 'hp', label: 'HP', field: 'hp' },
     { key: 'credits', label: 'CRÉDITOS', field: 'credits' },

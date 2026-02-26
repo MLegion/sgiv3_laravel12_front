@@ -28,7 +28,7 @@
             </div>
         </div>
 
-        <!-- Lista de Sugerencias con Posicionamiento Fijo (Anti-recorte de Modales) -->
+        <!-- Lista de Sugerencias con Posicionamiento Fijo -->
         <div
             v-if="open && !disabled && (items.length > 0 || !loading)"
             class="fixed z-[9999] bg-white border border-slate-200 shadow-2xl rounded-xl overflow-hidden transition-all duration-200 flex flex-col"
@@ -52,8 +52,8 @@
                         <span class="font-bold text-slate-700 group-hover:text-blue-700 uppercase">
                             {{ item[itemLabel] }}
                         </span>
-                        <span v-if="item.officialCode" class="text-[10px] font-mono text-slate-400">
-                            {{ item.officialCode }}
+                        <span v-if="item.official_code || item.officialCode" class="text-[10px] font-mono text-slate-400">
+                            {{ item.official_code || item.officialCode }}
                         </span>
                     </div>
                 </div>
@@ -101,7 +101,7 @@ interface Props {
     label?: string
     placeholder?: string
     itemLabel: string
-    itemSearchs: array
+    itemSearchs?: string[] // Ahora es opcional
     itemValue: string
     required?: boolean
     disabled?: boolean
@@ -110,7 +110,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
     placeholder: 'Buscar...',
-    itemSearchs: [],
+    itemSearchs: () => [], // Por defecto array vacío
     required: false,
     disabled: false,
     uppercase: false,
@@ -156,15 +156,14 @@ const canLoadMore = computed(() => page.value < lastPage.value)
 /* -------------------------------------------------------------------------- */
 const updateDropdownPosition = () => {
     if (containerRef.value) {
-        const rect = containerRef.value.getBoundingClientRect()
-        // Buscamos el input dentro del contenedor para mayor precisión
         const inputEl = containerRef.value.querySelector('input')
-        const inputRect = inputEl ? inputEl.getBoundingClientRect() : rect
-
-        dropdownStyle.value = {
-            top: `${inputRect.bottom + 4}px`,
-            left: `${inputRect.left}px`,
-            width: `${inputRect.width}px`
+        if (inputEl) {
+            const rect = inputEl.getBoundingClientRect()
+            dropdownStyle.value = {
+                top: `${rect.bottom + 4}px`,
+                left: `${rect.left}px`,
+                width: `${rect.width}px`
+            }
         }
     }
 }
@@ -182,28 +181,31 @@ async function fetchList(reset = false) {
     }
 
     try {
-        const params = {}
-        if(props.itemSearchs.length===0){
-            params[props.itemLabel] = search.value
-        }
-        else{
-            props.itemSearchs.forEach((field: string) => {
-                params[field] = search.value
-            })
+        const searchParams: Record<string, string> = {}
+        const searchValue = search.value.trim()
+
+        // LÓGICA DE BÚSQUEDA AUTOMÁTICA
+        if (searchValue !== '') {
+            if (props.itemSearchs && props.itemSearchs.length > 0) {
+                // Si se pasaron campos específicos, usarlos todos
+                props.itemSearchs.forEach((field) => {
+                    searchParams[field] = searchValue
+                })
+            } else {
+                // Si no se pasaron campos, usar por defecto el itemLabel
+                searchParams[props.itemLabel] = searchValue
+            }
         }
 
         const { data } = await api.get(props.endpoint, {
             params: {
                 page: page.value,
                 per_page: isRecommendationMode.value ? 5 : 10,
-                search: isRecommendationMode.value
-                    ? {}
-                    : params,
+                search: isRecommendationMode.value ? {} : searchParams,
                 ...props.params
             },
         })
 
-        // Adaptación según estructura de respuesta
         const newItems = data.items || data.data || data
         const totalPages = data.lastPage || data.last_page || 1
 
@@ -225,6 +227,7 @@ async function autoResolve(id: number | string | null) {
         return
     }
 
+    // Evitar re-petición si ya es el item seleccionado
     if (selectedItem.value && String(selectedItem.value[props.itemValue]) === String(id)) {
         return
     }
@@ -233,8 +236,9 @@ async function autoResolve(id: number | string | null) {
         loading.value = true
         try {
             const { data } = await api.get(props.endpointById(id))
-            selectedItem.value = data
-            search.value = data[props.itemLabel]
+            const result = data.data || data
+            selectedItem.value = result
+            search.value = result[props.itemLabel]
         } catch (error) {
             console.error("Error auto-resolving ID:", error)
             selectedItem.value = null
@@ -257,6 +261,8 @@ function onFocus() {
     if (props.disabled) return
     open.value = true
     updateDropdownPosition()
+
+    // Si no hay items, cargamos recomendaciones iniciales
     if (items.value.length === 0) fetchList(true)
 
     window.addEventListener('scroll', updateDropdownPosition, true)
@@ -291,8 +297,10 @@ watch(() => props.modelValue, (newVal) => {
 }, { immediate: true })
 
 watch(search, (newVal) => {
+    // Si el cambio de búsqueda fue por una selección manual, no disparamos la búsqueda API
     if (selectedItem.value && newVal === selectedItem.value[props.itemLabel]) return
 
+    // Limpiar selección si se borra el texto
     if (newVal === '') {
         selectedItem.value = null
         emit('update:modelValue', null)
@@ -323,5 +331,4 @@ onBeforeUnmount(() => {
     window.removeEventListener('scroll', updateDropdownPosition, true)
     window.removeEventListener('resize', updateDropdownPosition)
 })
-
 </script>
