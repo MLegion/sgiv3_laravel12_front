@@ -311,7 +311,7 @@ export default [
     {
         path: 'superadmin/optional-groups',
         name: 'superadmin.optionalgroups',
-        component: () => import('@/modules/superadmin/pages/SpecialtiesPage.vue'),
+        component: () => import('@/modules/superadmin/pages/OptionalGroupsPage.vue'),
         meta: {
             title: 'Especialidades'
         }

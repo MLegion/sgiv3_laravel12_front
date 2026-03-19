@@ -46,7 +46,7 @@ export default {
             approve: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/approve`),
             rejecte: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/rejecte`),
         },
-        curruculum: {
+        curriculum: {
             list: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/curriculum`),
             byId: (studyPlanId: string | number, curriculumId: string | number) => apiUrl(`/superadmin/study-plans/${studyPlanId}/curriculum/${curriculumId}`),
             create: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/curriculum`),
@@ -61,6 +61,19 @@ export default {
             delete: (id: string | number) => apiUrl(`/superadmin/specialties/${id}`),
             linked: (id: string | number, subjectId: string | number) => apiUrl(`/superadmin/specialties/${id}/linked/${subjectId}`),
             unlinked: (id: string | number, subjectId: string | number) => apiUrl(`/superadmin/specialties/${id}/unlinked/${subjectId}`),
+            listSubjescts: (id: string | number) => apiUrl(`/superadmin/specialties/${id}/subjects`),
+            listNotInSubjects: (id: string | number) => apiUrl(`/superadmin/specialties/${id}/not-in/subjects`),
+        },
+        optionalGroups: {
+            list: apiUrl('/superadmin/optional-groups'),
+            byId: (id: string | number) => apiUrl(`/superadmin/optional-groups/${id}`),
+            create: apiUrl('/superadmin/optional-groups'),
+            update: (id: string | number) => apiUrl(`/superadmin/optional-groups/${id}`),
+            delete: (id: string | number) => apiUrl(`/superadmin/optional-groups/${id}`),
+            linked: (id: string | number, subjectId: string | number) => apiUrl(`/superadmin/optional-groups/${id}/linked/${subjectId}`),
+            unlinked: (id: string | number, subjectId: string | number) => apiUrl(`/superadmin/optional-groups/${id}/unlinked/${subjectId}`),
+            listSubjescts: (id: string | number) => apiUrl(`/superadmin/optional-groups/${id}/subjects`),
+            listNotInSubjects: (id: string | number) => apiUrl(`/superadmin/optional-groups/${id}/not-in/subjects`),
         },
     },
 } satisfies ApiModule

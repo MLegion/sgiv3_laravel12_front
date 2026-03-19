@@ -205,10 +205,11 @@
                     </button>
                 </div>
                 <div class="p-6">
+                    <!-- Usando listNotInSubjects para filtrar las que ya están enlazadas -->
                     <FormRemoteSelect
                         label="Seleccionar Asignatura"
                         v-model="selectedSubjectId"
-                        :endpoint="API.SUPERADMIN_API.subjects.list"
+                        :endpoint="API.SUPERADMIN_API.specialties.listNotInSubjects(specialtyId)"
                         :endpoint-by-id="API.SUPERADMIN_API.subjects.byId"
                         item-label="name"
                         item-value="id"
@@ -293,7 +294,7 @@ import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 
 const route = useRoute()
 const router = useRouter()
-const specialtyId = ref(route.params.id)
+const specialtyId = ref(route.params.id as string)
 
 const loading = ref(true)
 const loadingSubjects = ref(true)
@@ -325,7 +326,7 @@ const statusOptions = [{ label: 'ACTIVO', value: true }, { label: 'INACTIVO', va
 async function fetchData() {
     loading.value = true
     try {
-        const response = await api.get(API.SUPERADMIN_API.specialties.byId(specialtyId.value as string))
+        const response = await api.get(API.SUPERADMIN_API.specialties.byId(specialtyId.value))
         const data = response.data?.data || response.data
 
         Object.assign(form, {
@@ -347,12 +348,13 @@ async function fetchData() {
     }
 }
 
+/**
+ * Carga las materias usando el nuevo endpoint listSubjescts
+ */
 async function fetchSubjects() {
     loadingSubjects.value = true
     try {
-        const response = await api.get(API.SUPERADMIN_API.subjects.list, {
-            params: { specialty_id: specialtyId.value }
-        })
+        const response = await api.get(API.SUPERADMIN_API.specialties.listSubjescts(specialtyId.value))
 
         if (response.data && response.data.items) {
             subjects.value = response.data.items
@@ -381,7 +383,7 @@ async function linkSubject() {
     modalLinkError.value = ''
 
     try {
-        await api.post(API.SUPERADMIN_API.specialties.linked(specialtyId.value as string, selectedSubjectId.value))
+        await api.post(API.SUPERADMIN_API.specialties.linked(specialtyId.value, selectedSubjectId.value))
         showAddModal.value = false
         await fetchSubjects()
     } catch (error: any) {
@@ -416,7 +418,7 @@ async function confirmUnlink() {
     modalUnlinkError.value = ''
 
     try {
-        await api.post(API.SUPERADMIN_API.specialties.unlinked(specialtyId.value as string, subjectToUnlink.value.id))
+        await api.post(API.SUPERADMIN_API.specialties.unlinked(specialtyId.value, subjectToUnlink.value.id))
         showUnlinkModal.value = false
         subjectToUnlink.value = null
         await fetchSubjects()
@@ -448,7 +450,7 @@ async function submit() {
     submitting.value = true
     errorMessage.value = ''
     try {
-        await api.put(API.SUPERADMIN_API.specialties.update(specialtyId.value as string), {
+        await api.put(API.SUPERADMIN_API.specialties.update(specialtyId.value), {
             ...form,
             short_name: form.shortName,
             official_code: form.officialCode,

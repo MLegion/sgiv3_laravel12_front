@@ -2,7 +2,7 @@
     <div
         :title="item.subject?.name"
         :class="[
-            'group relative bg-white border-2 transition-all flex flex-col overflow-hidden h-full min-h-[160px]',
+            'group relative bg-white border-2 transition-all flex flex-col overflow-hidden h-full min-h-[160px] rounded-xl',
             isActiveLink ? 'border-blue-500 ring-2 ring-blue-100 z-10 scale-105 shadow-lg' : 'border-slate-300 shadow-sm hover:shadow-md',
             isPotentialReq ? 'border-dashed border-green-400 cursor-pointer hover:bg-green-50' : ''
         ]"
@@ -40,21 +40,27 @@
                 </div>
             </div>
 
-            <!-- Acciones: Borrador, Hipervínculo y Flechas -->
-            <div v-if="!isLinking" class="flex justify-center items-center gap-2 p-1.5 bg-slate-50">
-                <!-- Borrador (Eliminar) -->
+            <!-- Acciones Inferiores (Quitar, Enlazar, Mover) -->
+            <div
+                v-if="!isLinking && (canRemove || canLink || canMove)"
+                class="flex justify-center items-center gap-1.5 p-1.5 bg-slate-50"
+            >
+                <!-- 1. Acción Quitar (Borrador) -->
                 <button
-                    @click.stop="$emit('remove', item.id)"
+                    v-if="canRemove"
+                    @click.stop="$emit('remove', item)"
                     class="p-1.5 border border-slate-300 rounded bg-white text-slate-500 hover:text-red-600 hover:border-red-200 transition-colors"
                     title="Quitar de la currícula"
                 >
                     <TrashIcon class="w-4 h-4" />
                 </button>
 
-                <div class="w-[1px] h-4 bg-slate-200"></div>
+                <!-- Separador visual si hay más de una acción -->
+                <div v-if="canRemove && (canLink || canMove)" class="w-[1px] h-4 bg-slate-200 mx-0.5"></div>
 
-                <!-- Hipervínculo (Requisitos) -->
+                <!-- 2. Acción Enlazar (Hipervínculo) -->
                 <button
+                    v-if="canLink"
                     @click.stop="$emit('link', item)"
                     class="p-1.5 border border-slate-300 rounded bg-white text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-colors"
                     title="Gestionar requisitos"
@@ -62,8 +68,9 @@
                     <LinkIcon class="w-4 h-4" />
                 </button>
 
-                <!-- Flechas (Mover) -->
+                <!-- 3. Acción Mover (Flechas) -->
                 <button
+                    v-if="canMove"
                     @click.stop="$emit('move', item)"
                     class="p-1.5 border border-slate-300 rounded bg-white text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
                     title="Actualizar periodo/nivel"
@@ -87,12 +94,27 @@ import {
     ArrowsUpDownIcon
 } from '@/shared/icons'
 
-defineProps<{
-    item: any,
-    isLinking?: boolean,
-    isActiveLink?: boolean,
+// Definición de Props
+interface Props {
+    item: any
+    isLinking?: boolean
+    isActiveLink?: boolean
     isPotentialReq?: boolean
-}>()
+    // Controles de visibilidad de acciones
+    canRemove?: boolean // Quitar (Borrador)
+    canLink?: boolean   // Enlazar (Link)
+    canMove?: boolean   // Mover (Flechas)
+}
+
+// Valores por defecto: todas las acciones activas para mantener compatibilidad
+withDefaults(defineProps<Props>(), {
+    isLinking: false,
+    isActiveLink: false,
+    isPotentialReq: false,
+    canRemove: true,
+    canLink: true,
+    canMove: true
+})
 
 defineEmits(['remove', 'link', 'move', 'select-as-req'])
 </script>

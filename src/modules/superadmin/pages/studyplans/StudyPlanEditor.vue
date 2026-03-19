@@ -322,7 +322,7 @@ const getNextAvailableLevel = (period: number) => {
 
 const fetchCurriculum = async () => {
     try {
-        const { data } = await api.get(API.SUPERADMIN_API.curruculum.list(route.params.id))
+        const { data } = await api.get(API.SUPERADMIN_API.curriculum.list(route.params.id))
         studyPlan.value = data
         curriculum.value = data.curriculums || []
     } catch (e) { console.error(e) }
@@ -335,7 +335,7 @@ const handleLinkStart = (item: any) => {
 
 const handleSelectAsRequirement = async (requirementItem: any) => {
     try {
-        await api.put(API.SUPERADMIN_API.curruculum.update(route.params.id, selectedForLink.value.id), {
+        await api.put(API.SUPERADMIN_API.curriculum.update(route.params.id, selectedForLink.value.id), {
             prerequisite_1_id: requirementItem.id
         })
         isLinkingMode.value = false
@@ -358,7 +358,7 @@ const handleMoveConfirm = async () => {
     if (!itemToMove.value) return
     submitting.value = true
     try {
-        await api.put(API.SUPERADMIN_API.curruculum.put(route.params.id, itemToMove.value.id), {
+        await api.put(API.SUPERADMIN_API.curriculum.put(route.params.id, itemToMove.value.id), {
             subject_id: itemToMove.value.subjectId,
             period: moveForm.period,
             level: moveForm.level
@@ -382,7 +382,7 @@ const handleRemoveConfirm = async () => {
     if (!itemToDelete.value) return
     submitting.value = true
     try {
-        await api.delete(API.SUPERADMIN_API.curruculum.delete(route.params.id, itemToDelete.value))
+        await api.delete(API.SUPERADMIN_API.curriculum.delete(route.params.id, itemToDelete.value))
         showDeleteModal.value = false
         itemToDelete.value = null
         fetchCurriculum()
@@ -403,7 +403,7 @@ const openAddModal = (period: number, row: number) => {
 const handleAddSubject = async () => {
     submitting.value = true
     try {
-        await api.post(API.SUPERADMIN_API.curruculum.create(route.params.id), {
+        await api.post(API.SUPERADMIN_API.curriculum.create(route.params.id), {
             subject_id: newSubjectForm.subjectId,
             period: targetCell.period,
             level: targetCell.row
