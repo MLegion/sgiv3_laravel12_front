@@ -218,7 +218,7 @@ async function approve() {
 async function reject() {
     loading.value = true
     try {
-        await api.post(API.SUPERADMIN_API.careers.rejecte(career.value.id))
+        await api.post(API.SUPERADMIN_API.careers.reject(career.value.id))
         await fetchData()
         router.push({
             name: 'superadmin.subjects',

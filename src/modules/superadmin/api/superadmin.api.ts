@@ -26,7 +26,7 @@ export default {
             update: (id: string | number) => apiUrl(`/superadmin/careers/${id}`),
             delete: (id: string | number) => apiUrl(`/superadmin/careers/${id}`),
             approve: (id: string | number) => apiUrl(`/superadmin/careers/${id}/approve`),
-            rejecte: (id: string | number) => apiUrl(`/superadmin/careers/${id}/rejecte`),
+            reject: (id: string | number) => apiUrl(`/superadmin/careers/${id}/reject`),
         },
         subjects: {
             list: apiUrl('/superadmin/subjects'),
@@ -35,7 +35,7 @@ export default {
             update: (id: string | number) => apiUrl(`/superadmin/subjects/${id}`),
             delete: (id: string | number) => apiUrl(`/superadmin/subjects/${id}`),
             approve: (id: string | number) => apiUrl(`/superadmin/subjects/${id}/approve`),
-            rejecte: (id: string | number) => apiUrl(`/superadmin/subjects/${id}/rejecte`),
+            reject: (id: string | number) => apiUrl(`/superadmin/subjects/${id}/reject`),
         },
         studyPlans: {
             list: apiUrl('/superadmin/study-plans'),
@@ -44,7 +44,7 @@ export default {
             update: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}`),
             delete: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}`),
             approve: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/approve`),
-            rejecte: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/rejecte`),
+            reject: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/reject`),
         },
         curriculum: {
             list: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/curriculum`),

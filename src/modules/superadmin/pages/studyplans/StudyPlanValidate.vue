@@ -144,7 +144,7 @@ async function handleAction(action: 'approve' | 'reject') {
         // Usamos las rutas específicas según tu configuración de API
         const url = action === 'approve'
             ? API.SUPERADMIN_API.studyPlans.approve(route.params.id as string)
-            : API.SUPERADMIN_API.studyPlans.rejecte(route.params.id as string) // Usando 'rejecte' con 'e' final
+            : API.SUPERADMIN_API.studyPlans.reject(route.params.id as string) // Usando 'reject' con 'e' final
 
         await api.post(url, { comment: comment.value })
 

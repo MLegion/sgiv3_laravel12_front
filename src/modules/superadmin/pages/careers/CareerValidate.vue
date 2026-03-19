@@ -214,7 +214,7 @@ async function reject() {
     console.log("Rechazando carrera con ID:", career.value.id)
     loading.value = true
     try {
-        await api.post(API.SUPERADMIN_API.careers.rejecte(career.value.id))
+        await api.post(API.SUPERADMIN_API.careers.reject(career.value.id))
         await fetchData()
         router.push({
             name: 'superadmin.careers',
