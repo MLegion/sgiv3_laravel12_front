@@ -1,0 +1,70 @@
+<template>
+    <div class="max-w-2xl space-y-6">
+        <div class="flex items-center justify-between">
+            <h1 class="text-xl font-semibold text-slate-800 uppercase">Registrar Oferta Académica</h1>
+            <button class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="router.back()">REGRESAR</button>
+        </div>
+
+        <div class="bg-white border rounded-xl shadow-sm p-6 space-y-6 relative">
+            <div v-if="submitting" class="absolute inset-0 bg-white/70 z-10 flex flex-col items-center justify-center rounded-xl">
+                <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+                <span class="text-sm text-slate-500 font-bold uppercase">GUARDANDO...</span>
+            </div>
+
+            <form class="space-y-6" @submit.prevent="submit">
+                <FormRemoteSelect
+                    label="MODALIDAD (CAMPUS + TIPO)"
+                    v-model="form.modalityId"
+                    :endpoint="API.SCHOOL_SERVICES_API.modalities.list"
+                    :endpoint-by-id="API.SCHOOL_SERVICES_API.modalities.byId"
+                    item-label="name"
+                    item-value="id"
+                    required
+                />
+
+                <FormRemoteSelect
+                    label="CARRERA"
+                    v-model="form.careerId"
+                    :endpoint="API.SUPERADMIN_API?.careers?.list ?? ''"
+                    :endpoint-by-id="API.SUPERADMIN_API?.careers?.byId ?? ''"
+                    item-label="name"
+                    item-value="id"
+                    required
+                />
+
+                <div class="flex justify-end gap-2 pt-4 border-t">
+                    <button type="button" class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="router.back()">CANCELAR</button>
+                    <button type="submit" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700" :disabled="submitting">GUARDAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { api } from '@/shared/services/api'
+import { API } from '@/shared/api'
+import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+
+const router = useRouter()
+const submitting = ref(false)
+
+const form = reactive({
+    modalityId: null as number | null,
+    careerId:   null as number | null,
+})
+
+async function submit() {
+    submitting.value = true
+    try {
+        await api.post(API.SCHOOL_SERVICES_API.academicOffers.create, {
+            modality_id: form.modalityId,
+            career_id:   form.careerId,
+            status:      0,
+        })
+        router.push({ name: 'school-services.academic-offers' })
+    } finally { submitting.value = false }
+}
+</script>
