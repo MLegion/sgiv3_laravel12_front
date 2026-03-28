@@ -63,6 +63,15 @@
                         required
                         @validation-error="setError('status', $event)"
                     />
+
+                    <FormInput
+                        label="Límite de personal"
+                        type="number"
+                        v-model="form.maxHolders"
+                        placeholder="Sin límite"
+                        :min="1"
+                        hint="Deja vacío para no establecer límite"
+                    />
                 </div>
             </section>
 
@@ -110,6 +119,7 @@ const form = reactive({
     name: '',
     description: '',
     status: true,
+    maxHolders: null as number | null,
 })
 
 /* -------------------------------------------------------------------------- */

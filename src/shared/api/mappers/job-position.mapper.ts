@@ -8,6 +8,7 @@ export function mapJobPositionCreatePayload(
         name: form.name,
         description: form.description || null,
         status: form.status,
+        max_holders: form.maxHolders ? Number(form.maxHolders) : null,
     }
 }
 
@@ -21,5 +22,6 @@ export function mapJobPositionUpdatePayload(
         name: form.name,
         description: form.description || null,
         status: form.status,
+        max_holders: form.maxHolders ? Number(form.maxHolders) : null,
     }
 }

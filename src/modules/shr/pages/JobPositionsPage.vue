@@ -160,6 +160,7 @@ interface JobPosition {
     name: string
     description?: string
     status: boolean
+    max_holders: number | null
 }
 
 /* -------------------------------------------------------------------------- */
@@ -188,6 +189,12 @@ const columns: DataTableColumn<JobPosition>[] = [
         key: 'role',
         label: 'ROL',
         formatter: (_, row) => row.role_name || 'N/A',
+    },
+    {
+        key: 'max_holders',
+        label: 'LÍMITE',
+        align: 'center',
+        formatter: (_, row) => row.max_holders ? `${row.max_holders}` : '∞',
     },
     {
         key: 'status',

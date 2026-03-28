@@ -74,6 +74,11 @@
                             label="Estado"
                             :value="jobPosition.status ? 'ACTIVO' : 'INACTIVO'"
                         />
+
+                        <InfoItem
+                            label="Límite de personal"
+                            :value="jobPosition.max_holders ? `${jobPosition.max_holders} persona(s)` : 'Sin límite'"
+                        />
                     </div>
                 </section>
 
@@ -107,6 +112,7 @@ interface JobPositionShow {
     name: string
     description?: string
     status: boolean
+    max_holders: number | null
 }
 
 /* -------------------------------------------------------------------------- */
