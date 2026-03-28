@@ -364,4 +364,38 @@ export default [
             title: 'Editor de Reticulas - Paquete de Materias Opcionales',
         },
     },
+
+    //###################################################################################
+    //# ACADEMIC PERIODS                                                                 #
+    //###################################################################################
+    {
+        path: 'superadmin/academic-periods',
+        name: 'superadmin.academic-periods',
+        component: () => import('@/modules/superadmin/pages/AcademicPeriodsPage.vue'),
+        meta: { title: 'Periodos Académicos' },
+    },
+    {
+        path: 'superadmin/academic-periods/create',
+        name: 'superadmin.academic-periods.create',
+        component: () => import('@/modules/superadmin/pages/academic-period/AcademicPeriodCreate.vue'),
+        meta: { title: 'Registrar - Periodo Académico' },
+    },
+    {
+        path: 'superadmin/academic-periods/:id',
+        name: 'superadmin.academic-periods.show',
+        component: () => import('@/modules/superadmin/pages/academic-period/AcademicPeriodShow.vue'),
+        meta: { title: 'Detalle - Periodo Académico' },
+    },
+    {
+        path: 'superadmin/academic-periods/:id/edit',
+        name: 'superadmin.academic-periods.edit',
+        component: () => import('@/modules/superadmin/pages/academic-period/AcademicPeriodEdit.vue'),
+        meta: { title: 'Editar - Periodo Académico' },
+    },
+    {
+        path: 'superadmin/academic-periods/:id/delete',
+        name: 'superadmin.academic-periods.delete',
+        component: () => import('@/modules/superadmin/pages/academic-period/AcademicPeriodDelete.vue'),
+        meta: { title: 'Eliminar - Periodo Académico' },
+    },
 ]

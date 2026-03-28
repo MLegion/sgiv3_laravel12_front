@@ -64,6 +64,13 @@ export default {
             listSubjescts: (id: string | number) => apiUrl(`/superadmin/specialties/${id}/subjects`),
             listNotInSubjects: (id: string | number) => apiUrl(`/superadmin/specialties/${id}/not-in/subjects`),
         },
+        academicPeriods: {
+            list: apiUrl('/superadmin/academic-periods'),
+            byId: (id: string | number) => apiUrl(`/superadmin/academic-periods/${id}`),
+            create: apiUrl('/superadmin/academic-periods'),
+            update: (id: string | number) => apiUrl(`/superadmin/academic-periods/${id}`),
+            delete: (id: string | number) => apiUrl(`/superadmin/academic-periods/${id}`),
+        },
         optionalGroups: {
             list: apiUrl('/superadmin/optional-groups'),
             byId: (id: string | number) => apiUrl(`/superadmin/optional-groups/${id}`),
