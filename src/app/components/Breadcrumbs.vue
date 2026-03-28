@@ -65,23 +65,29 @@ const route = useRoute()
 const menuStore = useMenuStore()
 
 /**
- * Busca recursivamente un item del menú por su code (route.name)
- * y devuelve la ruta completa (padres → hijo)
+ * Busca recursivamente un item del menú por su route (URL path).
+ * Devuelve { trail, exact } donde exact indica si fue match exacto
+ * (página de lista) o de prefijo (sub-página: show/edit/delete).
  */
 function findMenuTrail(
     items: any[],
-    targetCode: string,
+    currentPath: string,
     parents: any[] = []
-): any[] | null {
+): { trail: any[]; exact: boolean } | null {
     for (const item of items) {
         const trail = [...parents, item]
 
-        if (item.code === targetCode) {
-            return trail
+        if (item.route) {
+            if (item.route === currentPath) {
+                return { trail, exact: true }
+            }
+            if (currentPath.startsWith(item.route + '/')) {
+                return { trail, exact: false }
+            }
         }
 
         if (item.children?.length) {
-            const found = findMenuTrail(item.children, targetCode, trail)
+            const found = findMenuTrail(item.children, currentPath, trail)
             if (found) return found
         }
     }
@@ -89,27 +95,28 @@ function findMenuTrail(
 }
 
 const breadcrumbs = computed<Crumb[]>(() => {
-    if (!route.name || !menuStore.menus.length) return []
+    if (!route.path || !menuStore.menus.length) return []
 
-    const trail = findMenuTrail(
-        menuStore.menus,
-        route.name as string
-    )
+    const result = findMenuTrail(menuStore.menus, route.path)
 
-    // Fallback: vista que no está en el menú
-    if (!trail) {
-        return route.meta?.title
-            ? [{ title: route.meta.title as string }]
-            : []
+    // Sin match: mostrar solo el título de la ruta actual
+    if (!result) {
+        return route.meta?.title ? [{ title: route.meta.title as string }] : []
     }
 
-    return trail.map((item, index) => ({
+    const { trail, exact } = result
+
+    const crumbs: Crumb[] = trail.map((item, index) => ({
         title: item.label,
-        path:
-            index < trail.length - 1 && item.route
-                ? item.route
-                : undefined
+        path: index < trail.length - 1 && item.route ? item.route : undefined,
     }))
+
+    // Sub-página (show/edit/delete): agregar el título actual al final
+    if (!exact && route.meta?.title) {
+        crumbs.push({ title: route.meta.title as string })
+    }
+
+    return crumbs
 })
 </script>
 

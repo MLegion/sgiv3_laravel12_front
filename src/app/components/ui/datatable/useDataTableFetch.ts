@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import type {
     DataTablePagination,
     DataTableChangeEvent,
@@ -14,6 +14,9 @@ interface UseDataTableFetchOptions {
      * Se transforman en search[field]=value
      */
     searchableFields?: string[]
+
+    /** Filtros adicionales que se fusionan con los del DataTable en search[] */
+    extraSearch?: Ref<Record<string, any>>
 
     mapResponse?: (response: any) => {
         items: any[]
@@ -49,7 +52,7 @@ export function useDataTableFetch<T>(
                     per_page: pagination.value.perPage,
                     order_by: sortBy.value,
                     order_dir: sortDirection.value,
-                    search: searchParams.value,
+                    search: { ...(searchParams.value ?? {}), ...(options.extraSearch?.value ?? {}) },
                 },
             })
 

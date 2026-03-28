@@ -98,6 +98,7 @@ interface Props {
     endpoint: string
     endpointById?: (id: number | string) => string
     params?: Record<string, any>
+    searchFilters?: Record<string, any>
     label?: string
     placeholder?: string
     itemLabel: string
@@ -114,7 +115,8 @@ const props = withDefaults(defineProps<Props>(), {
     required: false,
     disabled: false,
     uppercase: false,
-    params: () => ({})
+    params: () => ({}),
+    searchFilters: () => ({})
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -201,7 +203,7 @@ async function fetchList(reset = false) {
             params: {
                 page: page.value,
                 per_page: isRecommendationMode.value ? 5 : 10,
-                search: isRecommendationMode.value ? {} : searchParams,
+                search: { ...(isRecommendationMode.value ? {} : searchParams), ...props.searchFilters },
                 ...props.params
             },
         })
