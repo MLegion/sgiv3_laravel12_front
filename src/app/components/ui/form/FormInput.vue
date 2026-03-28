@@ -70,9 +70,10 @@ function validate() {
     emit('validation-error', internalError.value)
 }
 
-const inputClass = computed(() =>
+const inputClass = computed(() => [
     computedError.value
         ? 'border-red-500 focus:ring-red-500'
-        : 'border-slate-300 focus:ring-blue-500'
-)
+        : 'border-slate-300 focus:ring-blue-500',
+    props.uppercase ? 'uppercase' : '',
+])
 </script>
