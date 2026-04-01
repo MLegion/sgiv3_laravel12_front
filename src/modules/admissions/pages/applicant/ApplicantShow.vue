@@ -19,17 +19,11 @@
             <section class="flex items-start gap-6">
                 <!-- Foto -->
                 <div class="shrink-0">
-                    <div class="w-24 h-24 rounded-xl overflow-hidden bg-slate-100 border flex items-center justify-center">
-                        <img
-                            v-if="applicant.photoPath"
-                            :src="API.ADMISSIONS_API.applicants.photo(route.params.id as string)"
-                            class="w-full h-full object-cover"
-                            alt="Foto del aspirante"
-                        />
-                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                        </svg>
-                    </div>
+                    <ApplicantAvatar
+                        :applicant-id="applicant.id ?? null"
+                        :name="`${applicant.names ?? ''} ${applicant.firstSurname ?? ''}`"
+                        size="lg"
+                    />
                 </div>
 
                 <!-- Nombre y estado -->
@@ -42,8 +36,11 @@
                         <h2 class="text-lg font-semibold text-slate-800 uppercase">
                             {{ applicant.names }} {{ applicant.firstSurname }} {{ applicant.secondSurname }}
                         </h2>
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-3 flex-wrap">
                             <span class="text-xs font-mono text-slate-400">ID: #{{ applicant.id }}</span>
+                            <span v-if="applicant.college" class="text-xs text-slate-500 font-medium">
+                                {{ applicant.college.name }}
+                            </span>
                             <span
                                 class="px-2 py-0.5 rounded-full text-[10px] font-bold"
                                 :class="STATUS_CLASSES[applicant.status] ?? 'bg-slate-100 text-slate-500'"
@@ -72,9 +69,12 @@
             <section>
                 <h3 class="text-[11px] font-bold text-slate-400 mb-4 uppercase tracking-widest">INSCRIPCIÓN</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <InfoItem label="OFERTA ACADÉMICA"  :value="applicant.academicOffer?.career?.name ?? '—'" :loading="loading" />
-                    <InfoItem label="PERIODO"           :value="applicant.academicPeriod?.name ?? '—'"        :loading="loading" />
-                    <InfoItem label="ESCUELA DE ORIGEN" :value="applicant.originSchool"                       :loading="loading" />
+                    <InfoItem label="INSTITUCIÓN"        :value="applicant.college?.name ?? '—'"              :loading="loading" />
+                    <InfoItem label="PERIODO"            :value="applicant.academicPeriod?.name ?? '—'"       :loading="loading" />
+                    <InfoItem label="1ª OPCIÓN"          :value="applicant.offerOption1?.career?.name ?? '—'" :loading="loading" />
+                    <InfoItem label="2ª OPCIÓN"          :value="applicant.offerOption2?.career?.name ?? '—'" :loading="loading" />
+                    <InfoItem label="3ª OPCIÓN"          :value="applicant.offerOption3?.career?.name ?? '—'" :loading="loading" />
+                    <InfoItem label="ESCUELA DE ORIGEN"  :value="applicant.originSchool?.name ?? '—'"         :loading="loading" />
                     <InfoItem label="PUNTAJE DE INGRESO" :value="applicant.entranceScore"                     :loading="loading" />
                 </div>
             </section>
@@ -104,7 +104,7 @@
                                 {{ DOC_STATUS_OPTIONS.find(o => o.value === doc.status)?.label ?? doc.status }}
                             </span>
                             <a
-                                :href="API.ADMISSIONS_API.applicants.downloadDocument(route.params.id as string, doc.id)"
+                                :href="API.ADMISSIONS_API.applicantDocuments.download(route.params.id as string, doc.id)"
                                 target="_blank"
                                 class="p-1.5 rounded border text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition"
                                 title="Ver archivo"
@@ -117,6 +117,49 @@
                     </li>
                 </ul>
             </section>
+
+            <!-- Usuario vinculado -->
+            <section class="pt-4 border-t">
+                <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">CUENTA DE ACCESO</h3>
+                <div v-if="applicant.userId" class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 text-sm">
+                        <span class="w-2 h-2 rounded-full bg-green-500 shrink-0"></span>
+                        <div>
+                            <p class="text-slate-700 font-medium">{{ applicant.email }}</p>
+                            <p class="text-xs text-slate-400">Usuario #{{ applicant.userId }} · El aspirante inicia sesión con este email</p>
+                        </div>
+                    </div>
+                    <button
+                        class="px-3 py-1.5 text-xs rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 disabled:opacity-50"
+                        :disabled="resetting"
+                        @click="resetPassword"
+                    >
+                        {{ resetting ? 'RESTABLECIENDO...' : 'RESTABLECER CONTRASEÑA' }}
+                    </button>
+                </div>
+                <div v-else class="text-sm text-slate-400 italic">Sin cuenta de usuario vinculada.</div>
+            </section>
+
+            <!-- Modal credenciales tras reset -->
+            <Teleport to="body">
+                <div v-if="resetCredentials" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm space-y-4">
+                        <h2 class="text-base font-semibold text-slate-800">CONTRASEÑA RESTABLECIDA</h2>
+                        <p class="text-sm text-slate-500">Comparte estas credenciales con el aspirante:</p>
+                        <div class="bg-slate-50 border rounded-lg p-4 space-y-2 text-sm font-mono">
+                            <p><span class="text-slate-400 font-sans">Usuario:</span> {{ resetCredentials.email }}</p>
+                            <p><span class="text-slate-400 font-sans">Contraseña:</span> {{ resetCredentials.password }}</p>
+                        </div>
+                        <p class="text-xs text-slate-400">El aspirante deberá cambiar su contraseña al iniciar sesión.</p>
+                        <button
+                            class="w-full px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                            @click="resetCredentials = null"
+                        >
+                            CERRAR
+                        </button>
+                    </div>
+                </div>
+            </Teleport>
 
             <!-- Metadatos -->
             <section class="pt-4 border-t">
@@ -136,6 +179,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import InfoItem from '@/app/components/ui/InfoItem.vue'
 import Skeleton from '@/app/components/ui/Skeleton.vue'
+import ApplicantAvatar from '@/app/components/ui/ApplicantAvatar.vue'
 import type { Applicant } from '@/modules/admissions/types/applicant.type'
 import { STATUS_OPTIONS, STATUS_CLASSES } from '@/modules/admissions/types/applicant.type'
 import type { ApplicantDocument } from '@/modules/admissions/types/applicant-document.type'
@@ -147,6 +191,8 @@ const loading = ref(true)
 const loadingDocs = ref(true)
 const applicant = ref<Applicant>({} as Applicant)
 const documents = ref<ApplicantDocument[]>([])
+const resetting = ref(false)
+const resetCredentials = ref<{ email: string; password: string } | null>(null)
 
 async function fetchData() {
     loading.value = true
@@ -161,7 +207,7 @@ async function fetchData() {
 async function fetchDocuments() {
     loadingDocs.value = true
     try {
-        const { data } = await api.get(API.ADMISSIONS_API.applicants.documents(route.params.id as string))
+        const { data } = await api.get(API.ADMISSIONS_API.applicantDocuments.list(route.params.id as string))
         documents.value = data.data ?? data
     } finally {
         loadingDocs.value = false
@@ -173,6 +219,18 @@ function formatDate(value?: string | null) {
     try {
         return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(value))
     } catch { return value }
+}
+
+async function resetPassword() {
+    resetting.value = true
+    try {
+        const { data } = await api.post(API.ADMISSIONS_API.applicants.resetPassword(route.params.id as string))
+        resetCredentials.value = { email: data.email, password: data.password }
+    } catch (e: any) {
+        alert(e?.response?.data?.message ?? 'Error al restablecer la contraseña.')
+    } finally {
+        resetting.value = false
+    }
 }
 
 function formatSize(kb?: number | null) {

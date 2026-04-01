@@ -121,7 +121,7 @@ async function submit() {
             size_kb:          form.value.size_kb !== '' ? form.value.size_kb : null,
             status:           'pending',
         }
-        await api.post(API.ADMISSIONS_API.applicants.documents(applicantId), payload)
+        await api.post(API.ADMISSIONS_API.applicantDocuments.create(applicantId), payload)
         router.push({ name: 'admissions.applicant-documents', params: { applicantId } })
     } catch (e: any) {
         error.value = e?.response?.data?.message ?? 'Error al guardar.'

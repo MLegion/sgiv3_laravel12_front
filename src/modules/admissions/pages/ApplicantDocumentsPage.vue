@@ -139,7 +139,7 @@ async function fetchApplicant() {
 async function fetchDocuments() {
     loading.value = true
     try {
-        const { data } = await api.get(API.ADMISSIONS_API.applicants.documents(applicantId))
+        const { data } = await api.get(API.ADMISSIONS_API.applicantDocuments.list(applicantId))
         documents.value = Array.isArray(data) ? data : (data.data ?? [])
     } finally {
         setTimeout(() => { loading.value = false }, 300)

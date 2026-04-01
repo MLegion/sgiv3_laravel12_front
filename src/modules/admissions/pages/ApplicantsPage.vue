@@ -11,25 +11,7 @@
             </button>
         </div>
 
-        <!-- Filtro por periodo -->
-        <div class="flex items-center gap-3">
-            <label class="text-sm font-medium text-slate-600 whitespace-nowrap">Periodo de ingreso:</label>
-            <select
-                v-model="selectedPeriodId"
-                class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                @change="fetchData()"
-            >
-                <option value="">Todos los periodos</option>
-                <option
-                    v-for="cap in periods"
-                    :key="cap.academicPeriodId"
-                    :value="cap.academicPeriodId"
-                >
-                    {{ cap.academicPeriod?.name ?? `Periodo #${cap.academicPeriodId}` }}
-                    <template v-if="cap.academicPeriod?.shortName"> ({{ cap.academicPeriod.shortName }})</template>
-                </option>
-            </select>
-        </div>
+        <AdmissionPeriodSelector @change="fetchData()" />
 
         <DataTable
             :columns="columns"
@@ -69,6 +51,17 @@
 
             <template #cell-opciones="{ row }">
                 <div class="flex items-center justify-center gap-2">
+                    <!-- Revisar documentos -->
+                    <button
+                        type="button"
+                        class="border p-1.5 rounded-md text-slate-500 hover:text-purple-600 hover:bg-purple-50 transition"
+                        title="Revisar documentos"
+                        @click="openReview(row)"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
                     <button
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition"
@@ -103,29 +96,36 @@
                 </div>
             </template>
         </DataTable>
+
+        <DocumentReviewDrawer
+            :open="reviewDrawerOpen"
+            :applicant-id="reviewApplicantId"
+            :applicant-name="reviewApplicantName"
+            @close="reviewDrawerOpen = false"
+            @reviewed="fetchData()"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
-import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { Applicant } from '@/modules/admissions/types/applicant.type'
 import { STATUS_OPTIONS, STATUS_CLASSES } from '@/modules/admissions/types/applicant.type'
-import type { CollegeAcademicPeriod } from '@/modules/school-services/types/college-academic-period.type'
+import AdmissionPeriodSelector from '@/modules/admissions/components/AdmissionPeriodSelector.vue'
+import DocumentReviewDrawer from '@/modules/admissions/components/DocumentReviewDrawer.vue'
+import { useAdmissionPeriodStore } from '@/modules/admissions/stores/admission-period.store'
 
 const router = useRouter()
-
-const periods = ref<CollegeAcademicPeriod[]>([])
-const selectedPeriodId = ref<number | ''>('')
+const periodStore = useAdmissionPeriodStore()
 
 const periodFilter = computed(() =>
-    selectedPeriodId.value !== '' ? { academic_period_id: selectedPeriodId.value } : {}
+    periodStore.selectedPeriodId !== null ? { academic_period_id: periodStore.selectedPeriodId } : {}
 )
 
 const columns: DataTableColumn<Applicant>[] = [
@@ -145,19 +145,16 @@ const { rows, loading, pagination, handleChange, fetchData } =
         extraSearch: periodFilter,
     })
 
-async function fetchPeriods() {
-    try {
-        const { data } = await api.get(API.SCHOOL_SERVICES_API.collegeAcademicPeriods.list, {
-            params: { per_page: 100 },
-        })
-        periods.value = data.items ?? []
-    } catch {
-        periods.value = []
-    }
+// Review drawer
+const reviewDrawerOpen    = ref(false)
+const reviewApplicantId   = ref<number | null>(null)
+const reviewApplicantName = ref<string | null>(null)
+
+function openReview(row: Applicant) {
+    reviewApplicantId.value   = row.id
+    reviewApplicantName.value = `${row.names} ${row.firstSurname}`
+    reviewDrawerOpen.value    = true
 }
 
-onMounted(async () => {
-    await fetchPeriods()
-    fetchData()
-})
+onMounted(() => fetchData())
 </script>

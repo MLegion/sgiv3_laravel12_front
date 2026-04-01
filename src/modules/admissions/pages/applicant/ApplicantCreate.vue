@@ -1,4 +1,5 @@
 <template>
+<div>
     <div class="max-w-2xl space-y-6">
         <div class="flex items-center justify-between">
             <h1 class="text-xl font-semibold text-slate-800">REGISTRAR ASPIRANTE</h1>
@@ -6,6 +7,8 @@
         </div>
 
         <div class="bg-white border rounded-xl shadow-sm p-6 space-y-5">
+
+            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">DATOS PERSONALES</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <FormInput label="NOMBRE(S)" v-model="form.names" uppercase />
                 <FormInput label="PRIMER APELLIDO" v-model="form.first_surname" uppercase />
@@ -15,44 +18,31 @@
                 <FormInput label="CURP" v-model="form.curp" uppercase :maxlength="18" />
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <!-- Oferta Académica -->
-                <div class="space-y-1">
-                    <label class="text-xs font-medium text-slate-600">OFERTA ACADÉMICA</label>
-                    <select
-                        v-model="form.academic_offer_id"
-                        class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="">Seleccionar</option>
-                        <option v-for="opt in offerOptions" :key="opt.value" :value="opt.value">
-                            {{ opt.label }}
-                        </option>
-                    </select>
-                </div>
-
-                <!-- Periodo Académico -->
-                <div class="space-y-1">
-                    <label class="text-xs font-medium text-slate-600">PERIODO ACADÉMICO</label>
-                    <select
-                        v-model="form.academic_period_id"
-                        class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="">Seleccionar</option>
-                        <option v-for="opt in periodOptions" :key="opt.value" :value="opt.value">
-                            {{ opt.label }}
-                        </option>
-                    </select>
-                </div>
+            <div class="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 text-xs text-blue-700 space-y-1">
+                <p class="font-semibold">ACCESO AL PORTAL DEL ASPIRANTE</p>
+                <p>Se creará automáticamente una cuenta con las siguientes credenciales:</p>
+                <ul class="list-disc list-inside space-y-0.5 pl-1">
+                    <li><span class="font-medium">Usuario:</span> el email ingresado</li>
+                    <li><span class="font-medium">Contraseña:</span> la CURP (si se ingresó) o una clave aleatoria</li>
+                </ul>
+                <p class="text-blue-500">Las credenciales se mostrarán al guardar para que puedas compartirlas con el aspirante.</p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <FormSelect label="ESTADO" v-model="form.status" :options="statusOptions" />
-                <FormInput label="FOLIO DE SOLICITUD" v-model="form.application_folio" uppercase />
-                <FormInput label="ESCUELA DE ORIGEN" v-model="form.origin_school" uppercase />
-                <FormInput label="PUNTAJE DE INGRESO" v-model="form.entrance_score" type="number" step="0.01" />
+            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest pt-2">PERÍODO DE ADMISIÓN</h3>
+
+            <div
+                class="w-full px-3 py-2 text-sm rounded-lg border"
+                :class="activePeriodId
+                    ? 'border-slate-200 bg-slate-50 text-slate-700'
+                    : 'border-red-200 bg-red-50 text-red-500'"
+            >
+                {{ activePeriodLabel ?? '⚠ Selecciona un periodo en el selector de la sección Aspirantes' }}
             </div>
 
-            <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+            <!-- Errores de validación -->
+            <div v-if="errors.length" class="rounded-lg bg-red-50 border border-red-200 p-3 space-y-1">
+                <p v-for="msg in errors" :key="msg" class="text-sm text-red-600">{{ msg }}</p>
+            </div>
 
             <div class="flex justify-end gap-2 pt-4 border-t">
                 <button class="px-4 py-2 text-sm border rounded-lg" @click="router.back()">CANCELAR</button>
@@ -66,25 +56,61 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal de credenciales del nuevo usuario -->
+    <Teleport to="body">
+        <div v-if="credentials" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm space-y-4">
+                <h2 class="text-base font-semibold text-slate-800">USUARIO CREADO</h2>
+                <p class="text-sm text-slate-500">
+                    Se creó una cuenta para el aspirante. Comparte estas credenciales:
+                </p>
+                <div class="bg-slate-50 border rounded-lg p-4 space-y-2 text-sm font-mono">
+                    <p><span class="text-slate-400 font-sans">Email:</span> {{ credentials.email }}</p>
+                    <p><span class="text-slate-400 font-sans">Contraseña:</span> {{ credentials.password }}</p>
+                </div>
+                <p class="text-xs text-slate-400">
+                    El aspirante deberá cambiar su contraseña al iniciar sesión por primera vez.
+                </p>
+                <button
+                    class="w-full px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                    @click="goToDetail"
+                >
+                    CONTINUAR
+                </button>
+            </div>
+        </div>
+    </Teleport>
+</div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
-import FormSelect from '@/app/components/ui/form/FormSelect.vue'
-import { STATUS_OPTIONS } from '@/modules/admissions/types/applicant.type'
+import { useAdmissionPeriodStore } from '@/modules/admissions/stores/admission-period.store'
 
 const router = useRouter()
 const submitting = ref(false)
-const error = ref<string | null>(null)
+const errors     = ref<string[]>([])
+const periodStore = useAdmissionPeriodStore()
 
-const offerOptions = ref<{ value: number; label: string }[]>([])
-const periodOptions = ref<{ value: number; label: string }[]>([])
+// Periodo: prioridad al selector, si no hay fallback a la config del colegio
+const configPeriodId    = ref<number | null>(null)
+const configPeriodLabel = ref<string | null>(null)
 
-const statusOptions = STATUS_OPTIONS.map(o => ({ value: o.value, label: o.label }))
+const activePeriodId = computed(() =>
+    periodStore.selectedPeriodId ?? configPeriodId.value
+)
+const activePeriodLabel = computed(() =>
+    periodStore.selectedPeriod?.academicPeriod?.name ?? configPeriodLabel.value
+)
+
+// Credenciales a mostrar tras la creación
+const credentials = ref<{ email: string; password: string } | null>(null)
+const createdApplicantId = ref<number | null>(null)
 
 const form = ref({
     names: '',
@@ -93,57 +119,57 @@ const form = ref({
     email: '',
     phone: '',
     curp: '',
-    academic_offer_id: '' as number | '',
-    academic_period_id: '' as number | '',
-    status: 1 as number,
-    application_folio: '',
-    origin_school: '',
-    entrance_score: '' as string | '',
 })
 
-async function loadOptions() {
-    const [offersRes, periodsRes] = await Promise.all([
-        api.get(API.SCHOOL_SERVICES_API.academicOffers.list),
-        api.get(API.SUPERADMIN_API.academicPeriods.list),
-    ])
-    const offersData = offersRes.data?.data ?? offersRes.data
-    offerOptions.value = (Array.isArray(offersData) ? offersData : []).map((o: any) => ({
-        value: o.id,
-        label: o.career?.name ?? `Oferta #${o.id}`,
-    }))
-    const periodsData = periodsRes.data?.data ?? periodsRes.data
-    periodOptions.value = (Array.isArray(periodsData) ? periodsData : []).map((p: any) => ({
-        value: p.id,
-        label: p.name ?? `Periodo #${p.id}`,
-    }))
+async function loadConfig() {
+    const { data } = await api.get(API.ADMISSIONS_API.config.get)
+    configPeriodId.value    = data?.academicPeriodId ?? null
+    configPeriodLabel.value = data?.academicPeriod?.name ?? null
 }
 
 async function submit() {
-    error.value = null
+    errors.value = []
+
+    if (!activePeriodId.value) {
+        errors.value = ['Debes seleccionar un periodo de admisión antes de registrar un aspirante.']
+        return
+    }
+
     submitting.value = true
     try {
         const payload = {
-            academic_offer_id:  form.value.academic_offer_id || null,
-            academic_period_id: form.value.academic_period_id || null,
+            academic_period_id: activePeriodId.value || null,
             names:              form.value.names,
             first_surname:      form.value.first_surname,
             second_surname:     form.value.second_surname || null,
             email:              form.value.email,
             phone:              form.value.phone || null,
             curp:               form.value.curp || null,
-            status:             form.value.status,
-            application_folio:  form.value.application_folio || null,
-            origin_school:      form.value.origin_school || null,
-            entrance_score:     form.value.entrance_score !== '' ? form.value.entrance_score : null,
         }
         const { data } = await api.post(API.ADMISSIONS_API.applicants.create, payload)
-        router.push({ name: 'admissions.applicants.show', params: { id: data.id } })
+        createdApplicantId.value = data.id
+
+        // Mostrar credenciales solo si se creó un usuario nuevo
+        if (data.userCreated && data.tempPassword) {
+            credentials.value = { email: data.userEmail ?? form.value.email, password: data.tempPassword }
+        } else {
+            router.push({ name: 'admissions.applicants.show', params: { id: data.id } })
+        }
     } catch (e: any) {
-        error.value = e?.response?.data?.message ?? 'Error al guardar.'
+        const data = e?.response?.data
+        if (data?.errors) {
+            errors.value = Object.values(data.errors).flat() as string[]
+        } else {
+            errors.value = [data?.message ?? 'Error al guardar el aspirante.']
+        }
     } finally {
         submitting.value = false
     }
 }
 
-onMounted(loadOptions)
+function goToDetail() {
+    router.push({ name: 'admissions.applicants.show', params: { id: createdApplicantId.value } })
+}
+
+onMounted(loadConfig)
 </script>

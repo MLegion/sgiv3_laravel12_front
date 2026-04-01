@@ -147,7 +147,7 @@ async function fetchOffers() {
 async function fetchDocuments(offerId: number) {
     loadingDocs.value.add(offerId)
     try {
-        const { data } = await api.get(API.SCHOOL_SERVICES_API.academicOffers.requiredDocuments(offerId))
+        const { data } = await api.get(API.ADMISSIONS_API.offerRequiredDocuments.list(offerId))
         documentsMap[offerId] = data.data ?? data
     } finally {
         loadingDocs.value.delete(offerId)

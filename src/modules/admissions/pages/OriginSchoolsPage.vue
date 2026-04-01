@@ -93,8 +93,10 @@ const columns: DataTableColumn<OriginSchoolType>[] = [
     { key: 'opciones',  label: 'OPCIONES' },
 ]
 
-const { rows, loading, pagination, handleChange } =
+const { rows, loading, pagination, handleChange, fetchData } =
     useDataTableFetch<OriginSchoolType>({
         endpoint: API.ADMISSIONS_API.originSchools.list,
     })
+
+fetchData()
 </script>
