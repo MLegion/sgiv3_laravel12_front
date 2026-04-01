@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -81,6 +81,29 @@ const form = reactive({
     status: 'draft',
     previousPeriodId: null as number | null,
 })
+
+const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+
+function autoName(start: string, end: string): string {
+    const s = new Date(start + 'T12:00:00')
+    const e = new Date(end   + 'T12:00:00')
+    const ms = MONTHS_ES[s.getMonth()]
+    const me = MONTHS_ES[e.getMonth()]
+    const ys = s.getFullYear()
+    const ye = e.getFullYear()
+    return ys === ye
+        ? `${ms} - ${me} ${ys}`
+        : `${ms} ${ys} - ${me} ${ye}`
+}
+
+watch(
+    () => [form.suggestedStartDate, form.suggestedEndDate] as const,
+    ([start, end]) => {
+        if (!form.name && start && end) {
+            form.name = autoName(start, end).toUpperCase()
+        }
+    }
+)
 
 async function loadPeriods() {
     const { data } = await api.get(API.SUPERADMIN_API.academicPeriods.list)

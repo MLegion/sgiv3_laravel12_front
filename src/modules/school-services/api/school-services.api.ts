@@ -43,11 +43,16 @@ export default {
             unlinkStudyPlan:        (id: string | number, spId: string | number) => apiUrl(`/school-services/academic-offers/${id}/study-plans/${spId}`),
         },
         collegeAcademicPeriods: {
-            list:   apiUrl('/school-services/college-academic-periods'),
-            byId:   (id: string | number) => apiUrl(`/school-services/college-academic-periods/${id}`),
-            create: apiUrl('/school-services/college-academic-periods'),
-            update: (id: string | number) => apiUrl(`/school-services/college-academic-periods/${id}`),
-            delete: (id: string | number) => apiUrl(`/school-services/college-academic-periods/${id}`),
+            list:            apiUrl('/school-services/college-academic-periods'),
+            available:       apiUrl('/school-services/college-academic-periods/available'),
+            availableById:   (id: string | number) => apiUrl(`/school-services/college-academic-periods/available/${id}`),
+            byId:            (id: string | number) => apiUrl(`/school-services/college-academic-periods/${id}`),
+            // Resuelve un CollegeAcademicPeriod por su academicPeriodId (para RemoteSelect endpointById)
+            resolveByPeriodId: (academicPeriodId: string | number) =>
+                apiUrl(`/school-services/college-academic-periods?per_page=1&search[academic_period_id]=${academicPeriodId}`),
+            create:          apiUrl('/school-services/college-academic-periods'),
+            update:          (id: string | number) => apiUrl(`/school-services/college-academic-periods/${id}`),
+            delete:          (id: string | number) => apiUrl(`/school-services/college-academic-periods/${id}`),
         },
     },
 } satisfies ApiModule
