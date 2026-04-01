@@ -238,9 +238,19 @@ async function autoResolve(id: number | string | null) {
         loading.value = true
         try {
             const { data } = await api.get(props.endpointById(id))
-            const result = data.data || data
-            selectedItem.value = result
-            search.value = result[props.itemLabel]
+            // Soporta tanto respuesta de item único como lista paginada
+            let result: any = null
+            if (data?.items && Array.isArray(data.items) && data.items.length > 0) {
+                result = data.items[0]
+            } else if (data?.data !== undefined) {
+                result = Array.isArray(data.data) ? data.data[0] : data.data
+            } else {
+                result = data
+            }
+            if (result && result[props.itemValue] !== undefined) {
+                selectedItem.value = result
+                search.value = result[props.itemLabel]
+            }
         } catch (error) {
             console.error("Error auto-resolving ID:", error)
             selectedItem.value = null
