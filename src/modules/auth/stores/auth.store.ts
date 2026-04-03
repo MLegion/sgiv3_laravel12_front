@@ -69,6 +69,21 @@ export const useAuthStore = defineStore('auth', {
         },
 
         /**
+         * Establece sesión directamente desde token (post-registro sin verificación)
+         */
+        loginWithToken(token: string, user: AuthUser) {
+            this.token = token
+            this.user  = user
+            this.mustChangePassword = false
+
+            localStorage.setItem('token', token)
+            localStorage.setItem('user', JSON.stringify(user))
+            localStorage.setItem('must_change_password', 'false')
+
+            router.replace('/auth/splash')
+        },
+
+        /**
          * Limpia TODO el estado de sesión
          */
         clearSession() {

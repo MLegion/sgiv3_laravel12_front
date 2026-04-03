@@ -126,6 +126,13 @@
                         INGRESAR
                     </button>
 
+                    <p class="text-center text-sm text-slate-500 pt-1">
+                        ¿Eres aspirante?
+                        <router-link to="/inscripciones" class="text-indigo-600 hover:underline">
+                            Portal de inscripciones
+                        </router-link>
+                    </p>
+
                 </form>
             </div>
         </div>

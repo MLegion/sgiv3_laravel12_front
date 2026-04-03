@@ -82,5 +82,42 @@ export default {
             listSubjescts: (id: string | number) => apiUrl(`/superadmin/optional-groups/${id}/subjects`),
             listNotInSubjects: (id: string | number) => apiUrl(`/superadmin/optional-groups/${id}/not-in/subjects`),
         },
+        admCatalogs: {
+            scholarships: {
+                paginate: apiUrl('/superadmin/adm-catalogs/scholarships'),
+                byId:     (id: string | number) => apiUrl(`/superadmin/adm-catalogs/scholarships/${id}`),
+                create:   apiUrl('/superadmin/adm-catalogs/scholarships'),
+                update:   (id: string | number) => apiUrl(`/superadmin/adm-catalogs/scholarships/${id}`),
+                delete:   (id: string | number) => apiUrl(`/superadmin/adm-catalogs/scholarships/${id}`),
+            },
+            academicAreas: {
+                paginate: apiUrl('/superadmin/adm-catalogs/academic-areas'),
+                byId:     (id: string | number) => apiUrl(`/superadmin/adm-catalogs/academic-areas/${id}`),
+                create:   apiUrl('/superadmin/adm-catalogs/academic-areas'),
+                update:   (id: string | number) => apiUrl(`/superadmin/adm-catalogs/academic-areas/${id}`),
+                delete:   (id: string | number) => apiUrl(`/superadmin/adm-catalogs/academic-areas/${id}`),
+            },
+            disabilities: {
+                paginate: apiUrl('/superadmin/adm-catalogs/disabilities'),
+                byId:     (id: string | number) => apiUrl(`/superadmin/adm-catalogs/disabilities/${id}`),
+                create:   apiUrl('/superadmin/adm-catalogs/disabilities'),
+                update:   (id: string | number) => apiUrl(`/superadmin/adm-catalogs/disabilities/${id}`),
+                delete:   (id: string | number) => apiUrl(`/superadmin/adm-catalogs/disabilities/${id}`),
+            },
+            indigenousGroups: {
+                paginate: apiUrl('/superadmin/adm-catalogs/indigenous-groups'),
+                byId:     (id: string | number) => apiUrl(`/superadmin/adm-catalogs/indigenous-groups/${id}`),
+                create:   apiUrl('/superadmin/adm-catalogs/indigenous-groups'),
+                update:   (id: string | number) => apiUrl(`/superadmin/adm-catalogs/indigenous-groups/${id}`),
+                delete:   (id: string | number) => apiUrl(`/superadmin/adm-catalogs/indigenous-groups/${id}`),
+            },
+            indigenousLanguages: {
+                paginate: apiUrl('/superadmin/adm-catalogs/indigenous-languages'),
+                byId:     (id: string | number) => apiUrl(`/superadmin/adm-catalogs/indigenous-languages/${id}`),
+                create:   apiUrl('/superadmin/adm-catalogs/indigenous-languages'),
+                update:   (id: string | number) => apiUrl(`/superadmin/adm-catalogs/indigenous-languages/${id}`),
+                delete:   (id: string | number) => apiUrl(`/superadmin/adm-catalogs/indigenous-languages/${id}`),
+            },
+        },
     },
 } satisfies ApiModule

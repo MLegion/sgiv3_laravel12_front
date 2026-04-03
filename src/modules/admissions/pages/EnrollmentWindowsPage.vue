@@ -11,12 +11,35 @@
             </button>
         </div>
 
+        <!-- Filtro por periodo -->
+        <div class="max-w-xs">
+            <FormRemoteSelect
+                v-model="filterPeriodId"
+                :endpoint="API.SCHOOL_SERVICES_API.collegeAcademicPeriods.list"
+                :endpoint-by-id="API.SCHOOL_SERVICES_API.collegeAcademicPeriods.resolveByPeriodId"
+                :params="{ order_by: 'actual_start_date', order_dir: 'desc' }"
+                item-label="name"
+                item-value="academicPeriodId"
+                placeholder="Selecciona un período para ver los cortes..."
+                @update:model-value="onPeriodFilter"
+            />
+        </div>
+
+        <!-- Placeholder: sin periodo seleccionado -->
+        <div v-if="!filterPeriodId" class="py-16 flex flex-col items-center gap-3 text-center text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5" />
+            </svg>
+            <p class="text-sm">Selecciona un período académico para ver sus cortes de inscripción.</p>
+        </div>
+
         <DataTable
+            v-else
             :columns="columns"
             :rows="rows"
             :loading="loading"
             :pagination="pagination"
-            @change="handleChange"
+            @change="onTableChange"
         >
             <template #cell-name="{ row }">
                 <div class="flex items-center gap-2">
@@ -80,43 +103,41 @@
                         </h2>
 
                         <div class="space-y-3">
+                            <!-- Periodo académico -->
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre</label>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Período Académico</label>
+                                <FormRemoteSelect
+                                    v-model="form.academic_period_id"
+                                    :endpoint="API.SCHOOL_SERVICES_API.collegeAcademicPeriods.list"
+                                    :endpoint-by-id="API.SCHOOL_SERVICES_API.collegeAcademicPeriods.resolveByPeriodId"
+                                    :params="{ order_by: 'actual_start_date', order_dir: 'desc' }"
+                                    item-label="name"
+                                    item-value="academicPeriodId"
+                                    placeholder="Seleccionar período académico..."
+                                />
+                            </div>
+
+                            <!-- Nombre -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre del corte</label>
                                 <input
                                     v-model="form.name"
                                     type="text"
                                     maxlength="120"
-                                    placeholder="Ej. 1er Corte, 2do Corte..."
-                                    class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    placeholder="Ej. 1ER CORTE, 2DO CORTE..."
+                                    class="field-upper"
                                 />
                             </div>
 
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Periodo Académico (opcional)</label>
-                                <input
-                                    v-model="form.academic_period_id"
-                                    type="number"
-                                    placeholder="ID del periodo (opcional)"
-                                    class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                />
-                            </div>
-
+                            <!-- Fechas -->
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Inicio</label>
-                                    <input
-                                        v-model="form.starts_at"
-                                        type="datetime-local"
-                                        class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                    />
+                                    <input v-model="form.starts_at" type="date" class="field" />
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cierre</label>
-                                    <input
-                                        v-model="form.ends_at"
-                                        type="datetime-local"
-                                        class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                    />
+                                    <input v-model="form.ends_at" type="date" class="field" />
                                 </div>
                             </div>
 
@@ -124,12 +145,7 @@
                         </div>
 
                         <div class="flex justify-end gap-2 pt-2">
-                            <button
-                                class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition"
-                                @click="closeModal"
-                            >
-                                CANCELAR
-                            </button>
+                            <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="closeModal">CANCELAR</button>
                             <button
                                 class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition"
                                 :disabled="submitting"
@@ -154,12 +170,7 @@
                             ¿Eliminar el corte <span class="font-semibold">{{ deleteTarget.name }}</span>? Esta acción no se puede deshacer.
                         </p>
                         <div class="flex justify-end gap-2">
-                            <button
-                                class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition"
-                                @click="deleteTarget = null"
-                            >
-                                CANCELAR
-                            </button>
+                            <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="deleteTarget = null">CANCELAR</button>
                             <button
                                 class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition"
                                 :disabled="deleting"
@@ -179,6 +190,7 @@
 import { onMounted, ref } from 'vue'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { api } from '@/shared/services/api'
@@ -187,32 +199,44 @@ import type { EnrollmentWindow } from '@/modules/admissions/types/enrollment-win
 
 const columns: DataTableColumn<EnrollmentWindow>[] = [
     { key: 'id',       label: '#',       field: 'id',   sortable: true },
-    { key: 'name',     label: 'NOMBRE',  field: 'name', sortable: true },
+    { key: 'name',     label: 'NOMBRE',  field: 'name', sortable: true, searchable: true },
     { key: 'period',   label: 'PERIODO' },
     { key: 'startsAt', label: 'INICIO',  field: 'startsAt', sortable: true },
     { key: 'endsAt',   label: 'CIERRE',  field: 'endsAt',   sortable: true },
     { key: 'opciones', label: 'OPCIONES' },
 ]
 
+const filterPeriodId  = ref<number | null>(null)
+const periodSearch    = ref<Record<string, any>>({})
+
 const { rows, loading, pagination, handleChange, fetchData } =
     useDataTableFetch<EnrollmentWindow>({
-        endpoint: API.ADMISSIONS_API.enrollmentWindows.list,
+        endpoint:    API.ADMISSIONS_API.enrollmentWindows.list,
+        extraSearch: periodSearch,
     })
+
+function onPeriodFilter(val: number | null) {
+    periodSearch.value = val ? { academic_period_id: val } : {}
+    if (val) fetchData()
+}
+
+function onTableChange(event: any) {
+    if (!filterPeriodId.value) return
+    handleChange(event)
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(dt: string): string {
     if (!dt) return '—'
-    return new Date(dt).toLocaleString('es-MX', {
+    return new Date(dt).toLocaleDateString('es-MX', {
         day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit',
     })
 }
 
-function toDatetimeLocal(dt: string): string {
+function toDateInput(dt: string): string {
     if (!dt) return ''
-    // Convert "2026-03-30 10:00:00" → "2026-03-30T10:00"
-    return dt.replace(' ', 'T').slice(0, 16)
+    return dt.slice(0, 10)
 }
 
 // ── Modal Crear / Editar ──────────────────────────────────────────────────────
@@ -226,23 +250,23 @@ const form = ref({
     name:               '',
     starts_at:          '',
     ends_at:            '',
-    academic_period_id: '' as string | number,
+    academic_period_id: null as number | null,
 })
 
 function openCreate() {
-    editing.value     = null
-    form.value        = { name: '', starts_at: '', ends_at: '', academic_period_id: '' }
-    formError.value   = null
-    modalOpen.value   = true
+    editing.value   = null
+    form.value      = { name: '', starts_at: '', ends_at: '', academic_period_id: filterPeriodId.value }
+    formError.value = null
+    modalOpen.value = true
 }
 
 function openEdit(row: EnrollmentWindow) {
     editing.value = row
     form.value = {
         name:               row.name,
-        starts_at:          toDatetimeLocal(row.startsAt),
-        ends_at:            toDatetimeLocal(row.endsAt),
-        academic_period_id: row.academicPeriodId ?? '',
+        starts_at:          toDateInput(row.startsAt),
+        ends_at:            toDateInput(row.endsAt),
+        academic_period_id: row.academicPeriodId ?? null,
     }
     formError.value = null
     modalOpen.value = true
@@ -258,18 +282,18 @@ async function submitForm() {
     if (!form.value.name.trim()) { formError.value = 'El nombre es requerido.'; return }
     if (!form.value.starts_at)   { formError.value = 'La fecha de inicio es requerida.'; return }
     if (!form.value.ends_at)     { formError.value = 'La fecha de cierre es requerida.'; return }
-    if (form.value.starts_at >= form.value.ends_at) {
-        formError.value = 'El cierre debe ser posterior al inicio.'
+    if (form.value.starts_at > form.value.ends_at) {
+        formError.value = 'El cierre debe ser posterior o igual al inicio.'
         return
     }
 
     submitting.value = true
     try {
         const payload = {
-            name:               form.value.name,
-            starts_at:          form.value.starts_at,
-            ends_at:            form.value.ends_at,
-            academic_period_id: form.value.academic_period_id !== '' ? Number(form.value.academic_period_id) : null,
+            name:               form.value.name.toUpperCase(),
+            starts_at:          form.value.starts_at + ' 00:00:00',
+            ends_at:            form.value.ends_at   + ' 23:59:59',
+            academic_period_id: form.value.academic_period_id || null,
         }
 
         if (editing.value) {
@@ -310,5 +334,25 @@ async function doDelete() {
     }
 }
 
-onMounted(() => fetchData())
+onMounted(() => { /* espera selección de periodo */ })
 </script>
+
+<style scoped>
+.field {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    outline: none;
+    transition: box-shadow 0.15s;
+}
+.field:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px #e0e7ff;
+}
+.field-upper {
+    composes: field;
+    text-transform: uppercase;
+}
+</style>

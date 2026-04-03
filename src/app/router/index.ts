@@ -20,6 +20,19 @@ const router = createRouter({
             children: authRoutes,
         },
 
+        // 🎓 PORTAL DE ASPIRANTES
+        {
+            path: '/inscripciones',
+            component: () => import('@/app/layouts/SplashLayout.vue'),
+            children: [
+                {
+                    path: '',
+                    component: () => import('@/modules/admissions/pages/InscripcionesPage.vue'),
+                    meta: { title: 'Portal de Aspirantes' },
+                },
+            ],
+        },
+
         // 🔐 APP: El corazón del sistema bajo AppLayout
         {
             path: '/',

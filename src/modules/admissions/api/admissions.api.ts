@@ -45,6 +45,8 @@ export default {
         config: {
             get:    apiUrl('/admissions/config'),
             update: apiUrl('/admissions/config'),
+            list:   apiUrl('/admissions/config/list'),
+            byId:   (id: string | number) => apiUrl(`/admissions/config/${id}`),
         },
         applicantStatuses: {
             list:   apiUrl('/admissions/applicant-statuses'),
@@ -122,6 +124,10 @@ export default {
             create: (applicantId: string | number) => apiUrl(`/admissions/applicants/${applicantId}/contacts`),
             update: (applicantId: string | number, id: string | number) => apiUrl(`/admissions/applicants/${applicantId}/contacts/${id}`),
             delete: (applicantId: string | number, id: string | number) => apiUrl(`/admissions/applicants/${applicantId}/contacts/${id}`),
+        },
+        registration: {
+            register:     apiUrl('/admissions/register'),
+            activeWindow: (collegeId: string | number) => apiUrl(`/admissions/active-window?college_id=${collegeId}`),
         },
     },
 } satisfies ApiModule

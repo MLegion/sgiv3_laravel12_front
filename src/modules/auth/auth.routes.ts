@@ -19,4 +19,13 @@ export default [
         component: () => import('@/modules/auth/pages/LogoutSplashPage.vue'),
         meta: { title: 'Salir' }
     },
+    {
+        path: 'register',
+        redirect: '/inscripciones',
+    },
+    {
+        path: 'verify-email',
+        component: () => import('@/modules/auth/pages/VerifyEmailPage.vue'),
+        meta: { title: 'Verificar correo' }
+    },
 ]

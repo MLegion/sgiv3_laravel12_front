@@ -398,4 +398,37 @@ export default [
         component: () => import('@/modules/superadmin/pages/academic-period/AcademicPeriodDelete.vue'),
         meta: { title: 'Eliminar - Periodo Académico' },
     },
+    //###################################################################################
+    //# ADM CATALOGS (GLOBAL)                                                           #
+    //###################################################################################
+    {
+        path: 'superadmin/adm-catalogs/scholarships',
+        name: 'superadmin.adm-catalogs.scholarships',
+        component: () => import('@/modules/superadmin/pages/adm-catalogs/GlobalScholarshipsPage.vue'),
+        meta: { title: 'Becas (Global)' },
+    },
+    {
+        path: 'superadmin/adm-catalogs/academic-areas',
+        name: 'superadmin.adm-catalogs.academic-areas',
+        component: () => import('@/modules/superadmin/pages/adm-catalogs/GlobalAcademicAreasPage.vue'),
+        meta: { title: 'Áreas Académicas (Global)' },
+    },
+    {
+        path: 'superadmin/adm-catalogs/disabilities',
+        name: 'superadmin.adm-catalogs.disabilities',
+        component: () => import('@/modules/superadmin/pages/adm-catalogs/GlobalDisabilitiesPage.vue'),
+        meta: { title: 'Discapacidades (Global)' },
+    },
+    {
+        path: 'superadmin/adm-catalogs/indigenous-groups',
+        name: 'superadmin.adm-catalogs.indigenous-groups',
+        component: () => import('@/modules/superadmin/pages/adm-catalogs/GlobalIndigenousGroupsPage.vue'),
+        meta: { title: 'Grupos Indígenas (Global)' },
+    },
+    {
+        path: 'superadmin/adm-catalogs/indigenous-languages',
+        name: 'superadmin.adm-catalogs.indigenous-languages',
+        component: () => import('@/modules/superadmin/pages/adm-catalogs/GlobalIndigenousLanguagesPage.vue'),
+        meta: { title: 'Lenguas Indígenas (Global)' },
+    },
 ]
