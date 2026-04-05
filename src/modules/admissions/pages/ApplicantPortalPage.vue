@@ -1,107 +1,111 @@
 <template>
-    <div class="max-w-2xl space-y-6">
+    <div class="max-w-2xl space-y-4">
+
+        <!-- Encabezado -->
         <div class="flex items-center justify-between">
             <h1 class="text-xl font-semibold text-slate-800">MI EXPEDIENTE</h1>
+            <div class="flex items-center gap-2">
+                <span v-if="hasDraft && !editing" class="text-xs text-amber-600 font-medium">
+                    Tienes cambios sin guardar
+                </span>
+                <button
+                    v-if="applicant && !editing"
+                    class="px-4 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-100 font-medium"
+                    @click="startEditing"
+                >
+                    EDITAR
+                </button>
+                <template v-if="editing">
+                    <button
+                        class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50"
+                        @click="cancelEditing"
+                    >
+                        CANCELAR
+                    </button>
+                    <button
+                        class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+                        :disabled="submitting"
+                        @click="save"
+                    >
+                        {{ submitting ? 'GUARDANDO...' : 'GUARDAR' }}
+                    </button>
+                </template>
+            </div>
         </div>
 
         <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
 
         <template v-else-if="applicant">
-            <!-- Datos personales -->
-            <div class="bg-white border rounded-xl shadow-sm p-6 space-y-3">
-                <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">DATOS PERSONALES</h3>
-                <div class="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                        <p class="text-xs text-slate-400">NOMBRE</p>
-                        <p class="font-medium text-slate-700">{{ applicant.names }} {{ applicant.firstSurname }} {{ applicant.secondSurname }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-400">EMAIL</p>
-                        <p class="font-medium text-slate-700">{{ applicant.email }}</p>
-                    </div>
-                    <div v-if="applicant.curp">
-                        <p class="text-xs text-slate-400">CURP</p>
-                        <p class="font-medium text-slate-700">{{ applicant.curp }}</p>
-                    </div>
-                    <div v-if="applicant.phone">
-                        <p class="text-xs text-slate-400">TELÉFONO</p>
-                        <p class="font-medium text-slate-700">{{ applicant.phone }}</p>
-                    </div>
-                    <div v-if="applicant.college">
-                        <p class="text-xs text-slate-400">INSTITUCIÓN</p>
-                        <p class="font-medium text-slate-700">{{ applicant.college.name }}</p>
-                    </div>
-                    <div v-if="applicant.academicPeriod">
-                        <p class="text-xs text-slate-400">PERÍODO DE ADMISIÓN</p>
-                        <p class="font-medium text-slate-700">{{ applicant.academicPeriod.name }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-400">ESTADO</p>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="statusClass(applicant.status)">
-                            {{ statusLabel(applicant.status) }}
-                        </span>
-                    </div>
-                </div>
-            </div>
+            <p v-if="saveError" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">{{ saveError }}</p>
 
-            <!-- Documentos -->
-            <div class="bg-white border rounded-xl shadow-sm p-6 space-y-4">
-                <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">MIS DOCUMENTOS</h3>
-
-                <div v-if="loadingDocs" class="text-xs text-slate-400">Cargando documentos...</div>
-
-                <div v-else-if="docSlots.length === 0" class="text-xs text-slate-400 italic">
-                    No hay documentos requeridos configurados.
-                </div>
-
-                <ul v-else class="space-y-2">
-                    <li
-                        v-for="slot in docSlots"
-                        :key="slot.documentTypeId"
-                        class="flex items-center justify-between rounded-lg border px-4 py-3 text-sm"
-                        :class="slot.uploaded ? 'bg-slate-50' : 'bg-white'"
+            <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
+                <!-- Tabs -->
+                <div class="flex border-b overflow-x-auto">
+                    <button
+                        v-for="tab in TABS"
+                        :key="tab.key"
+                        class="px-4 py-3 text-xs font-bold uppercase tracking-widest border-b-2 -mb-px transition-colors whitespace-nowrap"
+                        :class="activeTab === tab.key
+                            ? 'border-blue-600 text-blue-600'
+                            : 'border-transparent text-slate-400 hover:text-slate-600'"
+                        @click="activeTab = tab.key"
                     >
-                        <div class="space-y-0.5">
-                            <div class="flex items-center gap-2">
-                                <p class="font-medium text-slate-700">{{ slot.name }}</p>
-                                <span v-if="slot.isRequired" class="text-[10px] font-bold text-red-500">OBLIGATORIO</span>
-                            </div>
-                            <p v-if="slot.doc" class="text-xs text-slate-400">
-                                {{ slot.doc.originalName }} · {{ formatSize(slot.doc.sizeKb) }}
-                            </p>
-                            <p v-else class="text-xs text-slate-400 italic">Sin subir</p>
-                        </div>
+                        {{ tab.label }}
+                    </button>
+                </div>
 
-                        <div class="flex items-center gap-2">
-                            <span
-                                v-if="slot.doc"
-                                class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                                :class="DOC_STATUS_CLASSES[slot.doc.status]"
-                            >
-                                {{ DOC_STATUS_OPTIONS.find(o => o.value === slot.doc!.status)?.label }}
-                            </span>
+                <!-- Contenido de tabs -->
+                <div v-show="activeTab === 'personal'">
+                    <PortalPersonalTab
+                        :form="form"
+                        :editing="editing"
+                        :has-photo="hasPhoto"
+                        @photo-updated="hasPhoto = true"
+                    />
+                </div>
 
-                            <label
-                                v-if="!slot.doc || slot.doc.status !== 'approved'"
-                                class="flex items-center gap-1 px-2 py-1.5 text-xs border rounded-lg cursor-pointer hover:bg-slate-100"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                                </svg>
-                                {{ slot.doc ? 'REEMPLAZAR' : 'SUBIR' }}
-                                <input
-                                    type="file"
-                                    class="hidden"
-                                    :accept="slot.acceptsFormats ? slot.acceptsFormats.map((f: string) => `.${f.replace(/^\./, '')}`).join(',') : ''"
-                                    @change="(e) => uploadDocument(e, slot.documentTypeId)"
-                                />
-                            </label>
-                        </div>
-                    </li>
-                </ul>
+                <div v-show="activeTab === 'ext_personal'">
+                    <PortalExtPersonalTab :form="form" :editing="editing" />
+                </div>
 
-                <p v-if="docError" class="text-xs text-red-600">{{ docError }}</p>
-                <p v-if="docSuccess" class="text-xs text-green-600">{{ docSuccess }}</p>
+                <div v-show="activeTab === 'contactos'">
+                    <PortalContactosTab :editing="editing" />
+                </div>
+
+                <div v-show="activeTab === 'preventivos'">
+                    <PortalPreventivosTab
+                        :form="form"
+                        :editing="editing"
+                        :disabilities="disabilities"
+                    />
+                </div>
+
+                <div v-show="activeTab === 'otros'">
+                    <PortalOtrosTab
+                        :form="form"
+                        :editing="editing"
+                        :indigenous-groups="indigenousGroups"
+                        :indigenous-languages="indigenousLanguages"
+                        :academic-areas="academicAreas"
+                    />
+                </div>
+
+                <div v-show="activeTab === 'inscripcion'">
+                    <PortalInscripcionTab
+                        :form="form"
+                        :editing="editing"
+                        :active-period-label="activePeriodLabel"
+                        :application-folio="applicant.applicationFolio ?? null"
+                        :entrance-score="applicant.entranceScore ?? null"
+                        :applicant-status="applicant.status"
+                        :all-offers="allOffers"
+                        :campus-options="campusOptions"
+                    />
+                </div>
+
+                <div v-show="activeTab === 'documentos'">
+                    <PortalDocumentosTab />
+                </div>
             </div>
         </template>
 
@@ -112,44 +116,146 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { ApplicantDocument } from '@/modules/admissions/types/applicant-document.type'
-import { DOC_STATUS_OPTIONS, DOC_STATUS_CLASSES } from '@/modules/admissions/types/applicant-document.type'
 
-const loading    = ref(true)
-const loadingDocs = ref(true)
-const applicant  = ref<any>(null)
-const docSlots   = ref<DocSlot[]>([])
-const docError   = ref<string | null>(null)
-const docSuccess = ref<string | null>(null)
+import PortalPersonalTab    from './portal/PortalPersonalTab.vue'
+import PortalExtPersonalTab from './portal/PortalExtPersonalTab.vue'
+import PortalContactosTab   from './portal/PortalContactosTab.vue'
+import PortalPreventivosTab from './portal/PortalPreventivosTab.vue'
+import PortalOtrosTab       from './portal/PortalOtrosTab.vue'
+import PortalInscripcionTab from './portal/PortalInscripcionTab.vue'
+import PortalDocumentosTab  from './portal/PortalDocumentosTab.vue'
 
-interface DocSlot {
-    documentTypeId: number
-    name: string
-    isRequired: boolean
-    acceptsFormats: string[] | null
-    uploaded: boolean
-    doc: ApplicantDocument | null
+const TABS = [
+    { key: 'personal',     label: 'Datos Personales' },
+    { key: 'ext_personal', label: 'Datos Ext.' },
+    { key: 'contactos',    label: 'Contactos' },
+    { key: 'preventivos',  label: 'Preventivos' },
+    { key: 'otros',        label: 'Otros' },
+    { key: 'inscripcion',  label: 'Inscripción' },
+    { key: 'documentos',   label: 'Documentos' },
+]
+
+const loading   = ref(true)
+const applicant = ref<any>(null)
+const hasPhoto  = ref(false)
+const activeTab = ref('personal')
+const editing   = ref(false)
+const submitting = ref(false)
+const saveError  = ref<string | null>(null)
+const hasDraft   = ref(false)
+
+// Catálogos
+const disabilities      = ref<{ id: number; name: string }[]>([])
+const indigenousGroups  = ref<{ id: number; name: string }[]>([])
+const indigenousLanguages = ref<{ id: number; name: string }[]>([])
+const academicAreas     = ref<{ id: number; name: string }[]>([])
+const activePeriodLabel = ref<string | null>(null)
+
+interface RawOffer { id: number; campusId: number; label: string }
+const allOffers    = ref<RawOffer[]>([])
+const campusOptions = ref<{ value: number; label: string }[]>([])
+
+// Form — reactive object pasado por referencia a los tabs
+const form = reactive({
+    names: '', first_surname: '', second_surname: '', email: '',
+    phone: '', curp: '',
+    rfc: '', birth_date: '', birth_state_id: null as number | null,
+    birth_municipality_id: null as number | null, marital_status: '',
+    company: '', graduation_year: '' as string | '',
+    academic_average: '' as string | '', academic_area_id: null as number | null,
+    nss: '', medical_clinic: '', blood_type: '', allergies: '',
+    psychological_treatment: '', disability_id: null as number | null,
+    indigenous_group_id: null as number | null, indigenous_language_id: null as number | null,
+    offer_option_1_id: '' as number | '', offer_option_2_id: '' as number | '',
+    offer_option_3_id: '' as number | '', origin_school_id: null as number | null,
+})
+
+const DRAFT_KEY = () => applicant.value ? `portal_draft_${applicant.value.id}` : null
+
+// Guarda borrador en localStorage mientras se edita
+watch(form, () => {
+    const key = DRAFT_KEY()
+    if (editing.value && key) {
+        localStorage.setItem(key, JSON.stringify({ ...form }))
+        hasDraft.value = true
+    }
+}, { deep: true })
+
+function populateForm(data: any) {
+    form.names                 = data.names ?? ''
+    form.first_surname         = data.firstSurname ?? ''
+    form.second_surname        = data.secondSurname ?? ''
+    form.email                 = data.email ?? ''
+    form.phone                 = data.phone ?? ''
+    form.curp                  = data.curp ?? ''
+    form.rfc                   = data.rfc ?? ''
+    form.birth_date            = data.birthDate ?? ''
+    form.birth_state_id        = data.birthStateId ?? null
+    form.birth_municipality_id = data.birthMunicipalityId ?? null
+    form.marital_status        = data.maritalStatus ?? ''
+    form.company               = data.company ?? ''
+    form.graduation_year       = data.graduationYear ? String(data.graduationYear) : ''
+    form.academic_average      = data.academicAverage ?? ''
+    form.academic_area_id      = data.academicAreaId ?? null
+    form.nss                   = data.nss ?? ''
+    form.medical_clinic        = data.medicalClinic ?? ''
+    form.blood_type            = data.bloodType ?? ''
+    form.allergies             = data.allergies ?? ''
+    form.psychological_treatment = data.psychologicalTreatment ?? ''
+    form.disability_id         = data.disabilityId ?? null
+    form.indigenous_group_id   = data.indigenousGroupId ?? null
+    form.indigenous_language_id = data.indigenousLanguageId ?? null
+    form.offer_option_1_id     = data.offerOption1Id ?? ''
+    form.offer_option_2_id     = data.offerOption2Id ?? ''
+    form.offer_option_3_id     = data.offerOption3Id ?? ''
+    form.origin_school_id      = data.originSchoolId ?? null
 }
 
-const STATUS_MAP: Record<number, { label: string; cls: string }> = {
-    1: { label: 'PROSPECTO',  cls: 'bg-slate-100 text-slate-600' },
-    2: { label: 'ASPIRANTE',  cls: 'bg-blue-100 text-blue-700' },
-    3: { label: 'ADMITIDO',   cls: 'bg-green-100 text-green-700' },
-    4: { label: 'INSCRITO',   cls: 'bg-emerald-100 text-emerald-700' },
-    0: { label: 'CANCELADO',  cls: 'bg-red-100 text-red-700' },
-}
+async function loadCatalogs() {
+    const [offersRes, disabRes, groupsRes, langsRes, areasRes] = await Promise.all([
+        api.get(API.ADMISSIONS_API.portal.catalogs.academicOffers),
+        api.get(API.ADMISSIONS_API.portal.catalogs.disabilities),
+        api.get(API.ADMISSIONS_API.portal.catalogs.indigenousGroups),
+        api.get(API.ADMISSIONS_API.portal.catalogs.indigenousLanguages),
+        api.get(API.ADMISSIONS_API.portal.catalogs.academicAreas),
+    ])
 
-function statusLabel(s: number) { return STATUS_MAP[s]?.label ?? `${s}` }
-function statusClass(s: number) { return STATUS_MAP[s]?.cls ?? '' }
+    const offers: any[] = Array.isArray(offersRes.data) ? offersRes.data : []
+    allOffers.value = offers.map((o: any) => ({
+        id:       o.id,
+        campusId: o.campusId,
+        label:    o.label,
+    }))
+    const campusMap = new Map<number, string>()
+    offers.forEach((o: any) => { if (o.campusId && o.campus) campusMap.set(o.campusId, o.campus) })
+    campusOptions.value = Array.from(campusMap.entries()).map(([id, name]) => ({ value: id, label: name }))
+
+    disabilities.value        = Array.isArray(disabRes.data) ? disabRes.data : []
+    indigenousGroups.value    = Array.isArray(groupsRes.data) ? groupsRes.data : []
+    indigenousLanguages.value = Array.isArray(langsRes.data) ? langsRes.data : []
+    academicAreas.value       = Array.isArray(areasRes.data) ? areasRes.data : []
+}
 
 async function fetchMe() {
     loading.value = true
     try {
+        await loadCatalogs()
         const { data } = await api.get(API.ADMISSIONS_API.portal.me)
         applicant.value = data
+        hasPhoto.value  = !!data.photoPath
+        activePeriodLabel.value = data.academicPeriod?.name ?? null
+        populateForm(data)
+
+        // Restaurar borrador si existe
+        const key   = `portal_draft_${data.id}`
+        const draft = localStorage.getItem(key)
+        if (draft) {
+            Object.assign(form, JSON.parse(draft))
+            hasDraft.value = true
+        }
     } catch {
         applicant.value = null
     } finally {
@@ -157,65 +263,69 @@ async function fetchMe() {
     }
 }
 
-async function fetchDocuments() {
-    loadingDocs.value = true
-    try {
-        const { data } = await api.get(API.ADMISSIONS_API.portal.documents)
-        const required: any[] = data.required ?? []
-        const uploaded: ApplicantDocument[] = data.uploaded ?? []
-
-        docSlots.value = required.map(r => ({
-            documentTypeId: r.documentTypeId,
-            name:           r.name,
-            isRequired:     r.isRequired,
-            acceptsFormats: r.acceptsFormats ?? null,
-            uploaded:       r.uploaded,
-            doc:            uploaded.find(d => d.documentTypeId === r.documentTypeId) ?? null,
-        }))
-
-        // Documentos subidos que no estén en los requeridos
-        uploaded.forEach(d => {
-            if (!docSlots.value.some(s => s.documentTypeId === d.documentTypeId)) {
-                docSlots.value.push({
-                    documentTypeId: d.documentTypeId,
-                    name:           d.documentType?.name ?? `Tipo #${d.documentTypeId}`,
-                    isRequired:     false,
-                    acceptsFormats: null,
-                    uploaded:       true,
-                    doc:            d,
-                })
-            }
-        })
-    } finally {
-        loadingDocs.value = false
-    }
+function startEditing() {
+    saveError.value = null
+    editing.value   = true
 }
 
-async function uploadDocument(event: Event, documentTypeId: number) {
-    const file = (event.target as HTMLInputElement).files?.[0]
-    if (!file) return
-    docError.value = null
-    docSuccess.value = null
+function cancelEditing() {
+    editing.value = false
+    saveError.value = null
+    // Restaurar datos del servidor
+    if (applicant.value) populateForm(applicant.value)
+    // Limpiar borrador
+    const key = DRAFT_KEY()
+    if (key) localStorage.removeItem(key)
+    hasDraft.value = false
+}
+
+async function save() {
+    saveError.value = null
+    submitting.value = true
     try {
-        const fd = new FormData()
-        fd.append('file', file)
-        fd.append('document_type_id', String(documentTypeId))
-        await api.post(API.ADMISSIONS_API.portal.upload, fd)
-        await fetchDocuments()
-        docSuccess.value = 'Documento subido correctamente.'
+        const payload = {
+            names:                   form.names,
+            first_surname:           form.first_surname,
+            second_surname:          form.second_surname || null,
+            email:                   form.email,
+            phone:                   form.phone || null,
+            curp:                    form.curp || null,
+            rfc:                     form.rfc || null,
+            birth_date:              form.birth_date || null,
+            birth_state_id:          form.birth_state_id || null,
+            birth_municipality_id:   form.birth_municipality_id || null,
+            marital_status:          form.marital_status || null,
+            company:                 form.company || null,
+            graduation_year:         form.graduation_year !== '' ? Number(form.graduation_year) : null,
+            academic_average:        form.academic_average !== '' ? form.academic_average : null,
+            academic_area_id:        form.academic_area_id || null,
+            nss:                     form.nss || null,
+            medical_clinic:          form.medical_clinic || null,
+            blood_type:              form.blood_type || null,
+            allergies:               form.allergies || null,
+            psychological_treatment: form.psychological_treatment || null,
+            disability_id:           form.disability_id || null,
+            indigenous_group_id:     form.indigenous_group_id || null,
+            indigenous_language_id:  form.indigenous_language_id || null,
+            offer_option_1_id:       form.offer_option_1_id || null,
+            offer_option_2_id:       form.offer_option_2_id || null,
+            offer_option_3_id:       form.offer_option_3_id || null,
+            origin_school_id:        form.origin_school_id || null,
+        }
+        const { data } = await api.put(API.ADMISSIONS_API.portal.update, payload)
+        applicant.value = data
+        hasPhoto.value  = !!data.photoPath
+        editing.value   = false
+        // Limpiar borrador
+        const key = DRAFT_KEY()
+        if (key) localStorage.removeItem(key)
+        hasDraft.value = false
     } catch (e: any) {
-        docError.value = e?.response?.data?.message ?? 'Error al subir el documento.'
+        saveError.value = e?.response?.data?.message ?? 'Error al guardar.'
+    } finally {
+        submitting.value = false
     }
 }
 
-function formatSize(kb?: number | null) {
-    if (!kb) return ''
-    return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`
-}
-
-onMounted(async () => {
-    await fetchMe()
-    if (applicant.value) fetchDocuments()
-    else loadingDocs.value = false
-})
+onMounted(fetchMe)
 </script>

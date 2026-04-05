@@ -11,6 +11,7 @@ export const useAuthStore = defineStore('auth', {
         dashboard: 'default' as DashboardType,
         mustChangePassword: false,
         hydrated: false,
+        emailVerified: null as boolean | null, // null = no consultado aún
     }),
 
     getters: {

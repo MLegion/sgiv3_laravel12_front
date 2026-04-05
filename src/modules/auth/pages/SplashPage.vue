@@ -39,6 +39,8 @@ const backgroundStyle = {
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/modules/auth/stores/auth.store.ts'
 import { useMenuStore } from '@/app/stores/menu.store'
+import { api } from '@/shared/services/api'
+import { API } from '@/shared/api'
 import router from '@/app/router'
 
 const auth = useAuthStore()
@@ -49,7 +51,8 @@ const hasError = ref(false)
 const title = ref('Entrando al sistema')
 const message = ref('Por favor espere…')
 
-const REDIRECT_KEY = 'post_splash_redirect'
+const REDIRECT_KEY     = 'post_splash_redirect'
+const VERIFY_EMAIL_PATH = '/admissions/portal/verify-email'
 
 onMounted(async () => {
     if (!auth.token) {
@@ -66,28 +69,40 @@ onMounted(async () => {
         await menu.loadMenu()
     } catch (error) {
         console.error('Error cargando menú:', error)
-        // ⚠️ Estado visual de advertencia
         hasError.value = true
         title.value = 'Advertencia'
         message.value = 'No fue posible cargar la información del sistema.'
         sessionStorage.removeItem(REDIRECT_KEY)
         auth.clearSession()
         menu.clearMenu()
-        // ⏳ Dar tiempo a leer el mensaje
         await new Promise(resolve => setTimeout(resolve, 4000))
-
-        // 🔁 Redirigir a login
         router.replace('/auth/login')
+        return
     }
 
+    // 3️⃣ Si el usuario es ASPIRANTE, verificar estado del correo antes de entrar
+    const isApplicant = menu.menus.some(m => m.code === 'adm.portal')
+    if (isApplicant && auth.emailVerified === null) {
+        try {
+            const { data } = await api.get(API.ADMISSIONS_API.portal.emailStatus)
+            // Solo bloquear si el periodo REQUIERE verificación Y el email no está verificado
+            auth.emailVerified = data.emailVerified || !data.requiresVerification
+        } catch {
+            auth.emailVerified = true // Si falla, dejamos pasar; el middleware BE bloqueará
+        }
+    }
 
-    // 3️⃣ UX pause
+    // 4️⃣ UX pause
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    // 4️⃣ Entrar a la app
+    // 5️⃣ Entrar a la app (o a verificación si el correo no está verificado)
+    if (auth.emailVerified === false) {
+        sessionStorage.removeItem(REDIRECT_KEY)
+        return router.replace(VERIFY_EMAIL_PATH)
+    }
+
     const redirect = sessionStorage.getItem(REDIRECT_KEY) || '/'
     sessionStorage.removeItem(REDIRECT_KEY)
-
     router.replace(redirect)
 })
 </script>

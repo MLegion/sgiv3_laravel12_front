@@ -33,6 +33,14 @@ const router = createRouter({
             ],
         },
 
+        // ✉️ VERIFICACIÓN DE EMAIL — sin AppLayout
+        {
+            path: '/admissions/portal/verify-email',
+            name: 'admissions.portal.verify-email',
+            component: () => import('@/modules/admissions/pages/portal/PortalVerifyEmailPage.vue'),
+            meta: { title: 'Verificar Correo', requiresAuth: true },
+        },
+
         // 🔐 APP: El corazón del sistema bajo AppLayout
         {
             path: '/',

@@ -54,5 +54,23 @@ export default {
             update:          (id: string | number) => apiUrl(`/school-services/college-academic-periods/${id}`),
             delete:          (id: string | number) => apiUrl(`/school-services/college-academic-periods/${id}`),
         },
+        admittedApplicants: {
+            list:   apiUrl('/school-services/admitted-applicants'),
+        },
+        students: {
+            list:   apiUrl('/school-services/students'),
+            byId:   (id: string | number) => apiUrl(`/school-services/students/${id}`),
+            enroll: (applicantId: string | number) => apiUrl(`/school-services/applicants/${applicantId}/enroll`),
+            contacts: {
+                list:   (studentId: string | number) => apiUrl(`/school-services/students/${studentId}/contacts`),
+                byId:   (studentId: string | number, id: string | number) => apiUrl(`/school-services/students/${studentId}/contacts/${id}`),
+                create: (studentId: string | number) => apiUrl(`/school-services/students/${studentId}/contacts`),
+                update: (studentId: string | number, id: string | number) => apiUrl(`/school-services/students/${studentId}/contacts/${id}`),
+                delete: (studentId: string | number, id: string | number) => apiUrl(`/school-services/students/${studentId}/contacts/${id}`),
+            },
+        },
+        studentStatuses: {
+            list: apiUrl('/school-services/student-statuses'),
+        },
     },
 } satisfies ApiModule

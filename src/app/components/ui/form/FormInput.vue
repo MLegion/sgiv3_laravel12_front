@@ -35,6 +35,7 @@ const props = defineProps<{
     required?: boolean
     disabled?: boolean
     uppercase?: boolean
+    highlight?: boolean
     error?: string | null
 }>()
 
@@ -73,7 +74,9 @@ function validate() {
 const inputClass = computed(() => [
     computedError.value
         ? 'border-red-500 focus:ring-red-500'
-        : 'border-slate-300 focus:ring-blue-500',
+        : props.highlight
+            ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-400'
+            : 'border-slate-300 focus:ring-blue-500',
     props.uppercase ? 'uppercase' : '',
 ])
 </script>

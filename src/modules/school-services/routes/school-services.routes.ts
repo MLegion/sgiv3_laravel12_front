@@ -1,4 +1,26 @@
 export default [
+    // Students
+    {
+        path: 'school-services/students',
+        name: 'school-services.students',
+        component: () => import('@/modules/school-services/pages/StudentsPage.vue'),
+        meta: { title: 'Estudiantes' },
+    },
+    {
+        path: 'school-services/students/:id',
+        name: 'school-services.students.show',
+        component: () => import('@/modules/school-services/pages/StudentShowPage.vue'),
+        meta: { title: 'Detalle - Estudiante' },
+    },
+
+    // Admitted Applicants (inscripción)
+    {
+        path: 'school-services/admitted-applicants',
+        name: 'school-services.admitted-applicants',
+        component: () => import('@/modules/school-services/pages/AdmittedApplicantsPage.vue'),
+        meta: { title: 'Aspirantes Admitidos' },
+    },
+
     // Modalities
     {
         path: 'school-services/modalities',

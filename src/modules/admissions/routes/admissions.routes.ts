@@ -1,10 +1,21 @@
 export default [
-    // Portal del Aspirante
+    // Portal del Aspirante — secciones independientes (rol APPLICANT)
+    { path: 'admissions/portal/personal',     name: 'admissions.portal.personal',     component: () => import('@/modules/admissions/pages/portal/PortalPersonalPage.vue'),     meta: { title: 'Información General' } },
+    { path: 'admissions/portal/ext-personal', name: 'admissions.portal.ext-personal', component: () => import('@/modules/admissions/pages/portal/PortalExtPersonalPage.vue'), meta: { title: 'Datos Personales' } },
+    { path: 'admissions/portal/estudios',     name: 'admissions.portal.estudios',     component: () => import('@/modules/admissions/pages/portal/PortalEstudiosPage.vue'),     meta: { title: 'Último Nivel de Estudio' } },
+    { path: 'admissions/portal/contactos',    name: 'admissions.portal.contactos',    component: () => import('@/modules/admissions/pages/portal/PortalContactosPage.vue'),    meta: { title: 'Contactos' } },
+    { path: 'admissions/portal/preventivos',  name: 'admissions.portal.preventivos',  component: () => import('@/modules/admissions/pages/portal/PortalPreventivosPage.vue'),  meta: { title: 'Preventivos' } },
+    { path: 'admissions/portal/otros',         name: 'admissions.portal.otros',        component: () => import('@/modules/admissions/pages/portal/PortalOtrosPage.vue'),        meta: { title: 'Otros Datos' } },
+    { path: 'admissions/portal/inscripcion',  name: 'admissions.portal.inscripcion',  component: () => import('@/modules/admissions/pages/portal/PortalInscripcionPage.vue'),  meta: { title: 'Preficha' } },
+    { path: 'admissions/portal/documentos',   name: 'admissions.portal.documentos',   component: () => import('@/modules/admissions/pages/portal/PortalDocumentosPage.vue'),   meta: { title: 'Carga de Documentos' } },
+    { path: 'admissions/portal/ficha',        name: 'admissions.portal.ficha',        component: () => import('@/modules/admissions/pages/portal/PortalFichaPage.vue'),        meta: { title: 'Ficha' } },
+    { path: 'admissions/portal/examen',       name: 'admissions.portal.examen',       component: () => import('@/modules/admissions/pages/portal/PortalExamenPage.vue'),       meta: { title: 'Examen de Admisión Online' } },
+    { path: 'admissions/portal/password',     name: 'admissions.portal.password',     component: () => import('@/modules/admissions/pages/portal/PortalPasswordPage.vue'),     meta: { title: 'Cambiar Contraseña' } },
+    // Ruta base del portal → redirige a personal
     {
         path: 'admissions/portal',
         name: 'admissions.portal',
-        component: () => import('@/modules/admissions/pages/ApplicantPortalPage.vue'),
-        meta: { title: 'Mi Expediente' },
+        redirect: { name: 'admissions.portal.personal' },
     },
 
     // Admission Config
@@ -157,6 +168,22 @@ export default [
         name: 'admissions.enrollment-windows',
         component: () => import('@/modules/admissions/pages/EnrollmentWindowsPage.vue'),
         meta: { title: 'Cortes de Inscripción' },
+    },
+
+    // Applicant Scores
+    {
+        path: 'admissions/applicants/scores',
+        name: 'admissions.applicants.scores',
+        component: () => import('@/modules/admissions/pages/ApplicantScoresPage.vue'),
+        meta: { title: 'Cargar Resultados de Examen' },
+    },
+
+    // Applicant Ranking / Admisión masiva
+    {
+        path: 'admissions/applicants/ranking',
+        name: 'admissions.applicants.ranking',
+        component: () => import('@/modules/admissions/pages/ApplicantRankingPage.vue'),
+        meta: { title: 'Cuadro de Resultados' },
     },
 
     // Applicants
