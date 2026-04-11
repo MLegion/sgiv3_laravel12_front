@@ -68,9 +68,36 @@ export default {
                 update: (studentId: string | number, id: string | number) => apiUrl(`/school-services/students/${studentId}/contacts/${id}`),
                 delete: (studentId: string | number, id: string | number) => apiUrl(`/school-services/students/${studentId}/contacts/${id}`),
             },
+            affiliations: {
+                list:               (studentId: string | number) => apiUrl(`/school-services/students/${studentId}/affiliations`),
+                create:             (studentId: string | number) => apiUrl(`/school-services/students/${studentId}/affiliations`),
+                delete:             (studentId: string | number, id: string | number) => apiUrl(`/school-services/students/${studentId}/affiliations/${id}`),
+                availableStudyPlans:(studentId: string | number) => apiUrl(`/school-services/students/${studentId}/affiliations/available-study-plans`),
+            },
         },
         studentStatuses: {
             list: apiUrl('/school-services/student-statuses'),
+        },
+        approvalTypes: {
+            list:   apiUrl('/school-services/approval-types'),
+            active: apiUrl('/school-services/approval-types/active'),
+            byId:   (id: string | number) => apiUrl(`/school-services/approval-types/${id}`),
+            create: apiUrl('/school-services/approval-types'),
+            update: (id: string | number) => apiUrl(`/school-services/approval-types/${id}`),
+            delete: (id: string | number) => apiUrl(`/school-services/approval-types/${id}`),
+        },
+        studentGrades: {
+            list:     (studentId: string | number) => apiUrl(`/school-services/students/${studentId}/grades`),
+            byId:     (studentId: string | number, id: string | number) => apiUrl(`/school-services/students/${studentId}/grades/${id}`),
+            create:   (studentId: string | number) => apiUrl(`/school-services/students/${studentId}/grades`),
+            update:   (studentId: string | number, id: string | number) => apiUrl(`/school-services/students/${studentId}/grades/${id}`),
+            delete:   (studentId: string | number, id: string | number) => apiUrl(`/school-services/students/${studentId}/grades/${id}`),
+            audits:   (studentId: string | number, id: string | number) => apiUrl(`/school-services/students/${studentId}/grades/${id}/audits`),
+            subjects: (studentId: string | number) => apiUrl(`/school-services/students/${studentId}/subjects`),
+        },
+        gradeImport: {
+            json: apiUrl('/school-services/grades/import'),
+            csv:  apiUrl('/school-services/grades/import/csv'),
         },
     },
 } satisfies ApiModule

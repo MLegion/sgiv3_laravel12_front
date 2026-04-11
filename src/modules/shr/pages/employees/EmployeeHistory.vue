@@ -108,6 +108,35 @@
                     :error="assignError"
                 />
 
+                <!-- Selector de carreras (solo para career_manager) -->
+                <div v-if="needsCareerContext" class="mt-4 space-y-2">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase">
+                        Carreras asignadas
+                    </label>
+                    <p class="text-xs text-slate-400">
+                        Selecciona las carreras que este jefe de carrera podrá gestionar.
+                    </p>
+                    <div v-if="loadingCareers" class="text-xs text-slate-400">Cargando carreras...</div>
+                    <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3">
+                        <label
+                            v-for="c in careers" :key="c.id"
+                            class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-50 cursor-pointer"
+                        >
+                            <input
+                                type="checkbox"
+                                :value="c.id"
+                                v-model="selectedCareerIds"
+                                class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span class="text-sm text-slate-700">{{ c.name }}</span>
+                        </label>
+                        <p v-if="careers.length === 0" class="text-xs text-slate-400 col-span-2">Sin carreras disponibles</p>
+                    </div>
+                    <p v-if="selectedCareerIds.length > 0" class="text-xs text-blue-600 font-semibold">
+                        {{ selectedCareerIds.length }} carrera(s) seleccionada(s)
+                    </p>
+                </div>
+
                 <div class="flex justify-end">
                     <button
                         class="px-4 py-2 text-sm rounded-lg
@@ -125,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -155,6 +184,9 @@ const employee = ref<EmployeeShowType>({} as EmployeeShowType)
 const history = ref<any[]>([])
 const jobPositions = ref<any[]>([])
 const selectedJobPosition = ref<any | null>(null)
+const selectedCareerIds = ref<number[]>([])
+const careers = ref<any[]>([])
+const loadingCareers = ref(false)
 
 const showAllHistory = ref(false)
 
@@ -165,10 +197,17 @@ const currentJobPositionId = computed(() =>
     history.value.find(h => h.isCurrent)?.jobPosition.id ?? null
 )
 
-const canAssign = computed(() =>
-    selectedJobPosition.value &&
-    selectedJobPosition.value.id !== currentJobPositionId.value
+const needsCareerContext = computed(() =>
+    selectedJobPosition.value?.roleName === 'career_manager'
+    || selectedJobPosition.value?.role_name === 'career_manager'
 )
+
+const canAssign = computed(() => {
+    if (!selectedJobPosition.value) return false
+    if (selectedJobPosition.value.id === currentJobPositionId.value) return false
+    if (needsCareerContext.value && selectedCareerIds.value.length === 0) return false
+    return true
+})
 
 const visibleHistory = computed(() =>
     showAllHistory.value
@@ -197,6 +236,31 @@ async function fetchData() {
 }
 
 /* -------------------------------------------------------------------------- */
+/* CAREER CONTEXT */
+/* -------------------------------------------------------------------------- */
+watch(selectedJobPosition, () => {
+    selectedCareerIds.value = []
+    if (needsCareerContext.value) {
+        fetchCareers()
+    }
+})
+
+async function fetchCareers() {
+    loadingCareers.value = true
+    try {
+        const { data } = await api.get(API.SUPERADMIN_API.careers.list, { params: { per_page: 200 } })
+        careers.value = (data?.items ?? data?.data ?? []).map((c: any) => ({
+            id: c.id,
+            name: c.name ?? c.shortName ?? `Carrera #${c.id}`,
+        }))
+    } catch {
+        careers.value = []
+    } finally {
+        loadingCareers.value = false
+    }
+}
+
+/* -------------------------------------------------------------------------- */
 /* ASSIGN */
 /* -------------------------------------------------------------------------- */
 async function assignNewPosition() {
@@ -209,9 +273,15 @@ async function assignNewPosition() {
     assigning.value = true
 
     try {
-        await api.post(API.SHR_API.employee.assingJob(route.params.id), {
+        const payload: Record<string, any> = {
             job_id: selectedJobPosition.value.id,
-        })
+        }
+
+        if (needsCareerContext.value && selectedCareerIds.value.length > 0) {
+            payload.contexts = { career: selectedCareerIds.value }
+        }
+
+        await api.post(API.SHR_API.employee.assingJob(route.params.id), payload)
 
         await fetchData()
         selectedJobPosition.value = null

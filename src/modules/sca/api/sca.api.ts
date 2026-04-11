@@ -1,0 +1,88 @@
+import { apiUrl } from '@/shared/api/config'
+import type { ApiModule } from '@/shared/api/types'
+
+export default {
+    name: 'SCA_API',
+    api: {
+        teachers: {
+            list:   apiUrl('/sca/teachers'),
+            byId:   (id: string | number) => apiUrl(`/sca/teachers/${id}`),
+            create: apiUrl('/sca/teachers'),
+            update: (id: string | number) => apiUrl(`/sca/teachers/${id}`),
+            delete: (id: string | number) => apiUrl(`/sca/teachers/${id}`),
+        },
+        teacherAcademicOffers: {
+            assigned:  (aoId: string | number) => apiUrl(`/sca/teacher-academic-offers/assigned/${aoId}`),
+            available: (aoId: string | number) => apiUrl(`/sca/teacher-academic-offers/available/${aoId}`),
+            attach:    apiUrl('/sca/teacher-academic-offers'),
+            detach:    apiUrl('/sca/teacher-academic-offers/detach'),
+        },
+        placeAcademicOffers: {
+            assigned:  (aoId: string | number) => apiUrl(`/sca/place-academic-offers/assigned/${aoId}`),
+            available: (aoId: string | number) => apiUrl(`/sca/place-academic-offers/available/${aoId}`),
+            attach:    apiUrl('/sca/place-academic-offers'),
+            detach:    apiUrl('/sca/place-academic-offers/detach'),
+        },
+        schoolCalendars: {
+            list:       apiUrl('/sca/school-calendars'),
+            byId:       (id: string | number) => apiUrl(`/sca/school-calendars/${id}`),
+            create:     apiUrl('/sca/school-calendars'),
+            update:     (id: string | number) => apiUrl(`/sca/school-calendars/${id}`),
+            delete:     (id: string | number) => apiUrl(`/sca/school-calendars/${id}`),
+            generate:   (id: string | number) => apiUrl(`/sca/school-calendars/${id}/generate`),
+            addDate:    (id: string | number) => apiUrl(`/sca/school-calendars/${id}/dates`),
+            removeDate: (id: string | number, dateId: string | number) => apiUrl(`/sca/school-calendars/${id}/dates/${dateId}`),
+            toggleDate: (id: string | number, dateId: string | number) => apiUrl(`/sca/school-calendars/${id}/dates/${dateId}/toggle`),
+        },
+        schoolCalendarEventTypes: {
+            list:   apiUrl('/sca/school-calendar-event-types'),
+            byId:   (id: string | number) => apiUrl(`/sca/school-calendar-event-types/${id}`),
+            create: apiUrl('/sca/school-calendar-event-types'),
+            update: (id: string | number) => apiUrl(`/sca/school-calendar-event-types/${id}`),
+            delete: (id: string | number) => apiUrl(`/sca/school-calendar-event-types/${id}`),
+        },
+        schoolCalendarEvents: {
+            list:   (calendarId: string | number) => apiUrl(`/sca/school-calendars/${calendarId}/events`),
+            create: (calendarId: string | number) => apiUrl(`/sca/school-calendars/${calendarId}/events`),
+            update: (calendarId: string | number, eventId: string | number) => apiUrl(`/sca/school-calendars/${calendarId}/events/${eventId}`),
+            delete: (calendarId: string | number, eventId: string | number) => apiUrl(`/sca/school-calendars/${calendarId}/events/${eventId}`),
+        },
+        academicLoadConfigs: {
+            list:             apiUrl('/sca/academic-load-configs'),
+            byId:             (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}`),
+            create:           apiUrl('/sca/academic-load-configs'),
+            update:           (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}`),
+            delete:           (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}`),
+            togglePhase:      (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/toggle-phase`),
+            syncFromCalendar: (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/sync-from-calendar`),
+            suggestedPhases:  (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/suggested-phases`),
+            history:          (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/history`),
+        },
+        schoolCalendarHolidays: {
+            list:   apiUrl('/sca/school-calendar-holidays'),
+            create: apiUrl('/sca/school-calendar-holidays'),
+            delete: (id: string | number) => apiUrl(`/sca/school-calendar-holidays/${id}`),
+        },
+        subjectPackages: {
+            canApprove:            apiUrl('/sca/subject-packages/can-approve'),
+            allowedAcademicOffers: apiUrl('/sca/subject-packages/allowed-academic-offers'),
+            summary:               (configId: string | number) => apiUrl(`/sca/subject-packages/summary/${configId}`),
+            list:               (configId: string | number, studyPlanId: string | number) => apiUrl(`/sca/subject-packages/${configId}/${studyPlanId}`),
+            curriculumSubjects: (configId: string | number, studyPlanId: string | number) => apiUrl(`/sca/subject-packages/${configId}/${studyPlanId}/curriculum-subjects`),
+            create:             apiUrl('/sca/subject-packages'),
+            bulkCreate:         apiUrl('/sca/subject-packages/bulk'),
+            update:             (id: string | number) => apiUrl(`/sca/subject-packages/${id}`),
+            delete:             (id: string | number) => apiUrl(`/sca/subject-packages/${id}`),
+            duplicate:          (id: string | number) => apiUrl(`/sca/subject-packages/${id}/duplicate`),
+            approve:            (id: string | number) => apiUrl(`/sca/subject-packages/${id}/approve`),
+        },
+        teacherRequests: {
+            me:        apiUrl('/sca/teacher-requests/me'),
+            list:      (configId: string | number) => apiUrl(`/sca/teacher-requests/${configId}`),
+            available: (configId: string | number) => apiUrl(`/sca/teacher-requests/${configId}/available`),
+            create:    apiUrl('/sca/teacher-requests'),
+            update:    (id: string | number) => apiUrl(`/sca/teacher-requests/${id}`),
+            delete:    (id: string | number) => apiUrl(`/sca/teacher-requests/${id}`),
+        },
+    },
+} satisfies ApiModule

@@ -50,7 +50,7 @@
                 >
                     <div class="flex flex-col">
                         <span class="font-bold text-slate-700 group-hover:text-blue-700 uppercase">
-                            {{ item[itemLabel] }}
+                            {{ resolveLabel(item) }}
                         </span>
                         <span v-if="item.official_code || item.officialCode" class="text-[10px] font-mono text-slate-400">
                             {{ item.official_code || item.officialCode }}
@@ -101,7 +101,7 @@ interface Props {
     searchFilters?: Record<string, any>
     label?: string
     placeholder?: string
-    itemLabel: string
+    itemLabel: string | ((item: any) => string)
     itemSearchs?: string[] // Ahora es opcional
     itemValue: string
     required?: boolean
@@ -140,6 +140,10 @@ let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 /* COMPUTED */
 /* -------------------------------------------------------------------------- */
 const isRecommendationMode = computed(() => search.value.trim() === '')
+
+function resolveLabel(item: any): string {
+    return typeof props.itemLabel === 'function' ? props.itemLabel(item) : item[props.itemLabel]
+}
 
 const inputClasses = computed(() => [
     'w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all outline-none',
@@ -193,7 +197,7 @@ async function fetchList(reset = false) {
                 props.itemSearchs.forEach((field) => {
                     searchParams[field] = searchValue
                 })
-            } else {
+            } else if (typeof props.itemLabel === 'string') {
                 // Si no se pasaron campos, usar por defecto el itemLabel
                 searchParams[props.itemLabel] = searchValue
             }
@@ -249,7 +253,7 @@ async function autoResolve(id: number | string | null) {
             }
             if (result && result[props.itemValue] !== undefined) {
                 selectedItem.value = result
-                search.value = result[props.itemLabel]
+                search.value = resolveLabel(result)
             }
         } catch (error) {
             console.error("Error auto-resolving ID:", error)
@@ -283,7 +287,7 @@ function onFocus() {
 
 function select(item: any) {
     selectedItem.value = item
-    search.value = item[props.itemLabel]
+    search.value = resolveLabel(item)
     emit('update:modelValue', item[props.itemValue])
     closeDropdown()
 }
@@ -310,10 +314,10 @@ watch(() => props.modelValue, (newVal) => {
 
 watch(search, (newVal) => {
     // Si el cambio de búsqueda fue por una selección manual, no disparamos la búsqueda API
-    if (selectedItem.value && newVal === selectedItem.value[props.itemLabel]) return
+    if (selectedItem.value && newVal === resolveLabel(selectedItem.value)) return
 
-    // Limpiar selección si se borra el texto
-    if (newVal === '') {
+    // Limpiar selección si el texto ya no coincide con el item seleccionado
+    if (selectedItem.value) {
         selectedItem.value = null
         emit('update:modelValue', null)
     }

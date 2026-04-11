@@ -227,4 +227,43 @@ export default [
         meta: { title: 'Eliminar Plan de Estudio' },
     },
 
+    // Approval Types
+    {
+        path: 'school-services/approval-types',
+        name: 'school-services.approval-types',
+        component: () => import('@/modules/school-services/pages/ApprovalTypesPage.vue'),
+        meta: { title: 'Tipos de Aprobacion' },
+    },
+    {
+        path: 'school-services/approval-types/create',
+        name: 'school-services.approval-types.create',
+        component: () => import('@/modules/school-services/pages/approval-type/ApprovalTypeCreate.vue'),
+        meta: { title: 'Registrar - Tipo de Aprobacion' },
+    },
+    {
+        path: 'school-services/approval-types/:id',
+        name: 'school-services.approval-types.show',
+        component: () => import('@/modules/school-services/pages/approval-type/ApprovalTypeShow.vue'),
+        meta: { title: 'Detalle - Tipo de Aprobacion' },
+    },
+    {
+        path: 'school-services/approval-types/:id/edit',
+        name: 'school-services.approval-types.edit',
+        component: () => import('@/modules/school-services/pages/approval-type/ApprovalTypeEdit.vue'),
+        meta: { title: 'Editar - Tipo de Aprobacion' },
+    },
+    {
+        path: 'school-services/approval-types/:id/delete',
+        name: 'school-services.approval-types.delete',
+        component: () => import('@/modules/school-services/pages/approval-type/ApprovalTypeDelete.vue'),
+        meta: { title: 'Eliminar - Tipo de Aprobacion' },
+    },
+
+    // Grade Import
+    {
+        path: 'school-services/grade-import',
+        name: 'school-services.grade-import',
+        component: () => import('@/modules/school-services/pages/GradeImportPage.vue'),
+        meta: { title: 'Carga de Calificaciones' },
+    },
 ]
