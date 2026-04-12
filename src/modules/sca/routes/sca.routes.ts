@@ -110,4 +110,12 @@ export default [
         component: () => import('@/modules/sca/pages/PackageValidationPage.vue'),
         meta: { title: 'Validación de Paquetes' },
     },
+
+    // ── Asignación Docente ────────────────────────────────────────────
+    {
+        path: 'sca/teacher-assignments',
+        name: 'sca.teacher-assignments',
+        component: () => import('@/modules/sca/pages/TeacherAssignmentPage.vue'),
+        meta: { title: 'Asignación Docente' },
+    },
 ]

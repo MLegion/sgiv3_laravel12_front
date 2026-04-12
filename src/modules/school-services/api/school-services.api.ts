@@ -99,5 +99,10 @@ export default {
             json: apiUrl('/school-services/grades/import'),
             csv:  apiUrl('/school-services/grades/import/csv'),
         },
+        collegeCareerSettings: {
+            list:     apiUrl('/school-services/college-career-settings'),
+            byCareer: (careerId: string | number) => apiUrl(`/school-services/college-career-settings/${careerId}`),
+            upsert:   apiUrl('/school-services/college-career-settings'),
+        },
     },
 } satisfies ApiModule

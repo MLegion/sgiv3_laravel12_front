@@ -84,5 +84,21 @@ export default {
             update:    (id: string | number) => apiUrl(`/sca/teacher-requests/${id}`),
             delete:    (id: string | number) => apiUrl(`/sca/teacher-requests/${id}`),
         },
+        teacherAssignments: {
+            allowedAcademicOffers: apiUrl('/sca/teacher-assignments/allowed-academic-offers'),
+            summary:              (configId: string | number) => apiUrl(`/sca/teacher-assignments/summary/${configId}`),
+            packages:             (configId: string | number, studyPlanId: string | number) => apiUrl(`/sca/teacher-assignments/${configId}/${studyPlanId}`),
+            availableTeachers:    (packageId: string | number) => apiUrl(`/sca/teacher-assignments/${packageId}/available-teachers`),
+            generateGroups:       (packageId: string | number) => apiUrl(`/sca/teacher-assignments/generate-groups/${packageId}`),
+            addRequest:           apiUrl('/sca/teacher-assignments/add-request'),
+            create:               apiUrl('/sca/teacher-assignments'),
+            update:               (id: string | number) => apiUrl(`/sca/teacher-assignments/${id}`),
+            delete:               (id: string | number) => apiUrl(`/sca/teacher-assignments/${id}`),
+        },
+        groups: {
+            list:   (configId: string | number) => apiUrl(`/sca/groups/${configId}`),
+            create: apiUrl('/sca/groups'),
+            delete: (id: string | number) => apiUrl(`/sca/groups/${id}`),
+        },
     },
 } satisfies ApiModule

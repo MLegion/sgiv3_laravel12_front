@@ -513,7 +513,12 @@ async function fetchStudyPlans() {
         for (const ao of aoItems) {
             const aoStudyPlans = ao.studyPlans ?? ao.study_plans ?? []
             for (const aosp of aoStudyPlans) {
+                // Solo study plans activos
+                const linkActive = aosp.status === true || aosp.status === 1
                 const sp = aosp.studyPlan ?? aosp.study_plan ?? aosp
+                const planActive = sp?.is_active !== false && sp?.isActive !== false
+                if (!linkActive || !planActive) continue
+
                 const spId = sp.id ?? aosp.studyPlanId ?? aosp.study_plan_id
                 if (spId && !plans.find((p: any) => p.id === spId)) {
                     plans.push({

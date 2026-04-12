@@ -266,4 +266,12 @@ export default [
         component: () => import('@/modules/school-services/pages/GradeImportPage.vue'),
         meta: { title: 'Carga de Calificaciones' },
     },
+
+    // College Career Settings
+    {
+        path: 'school-services/college-career-settings',
+        name: 'school-services.college-career-settings',
+        component: () => import('@/modules/school-services/pages/CollegeCareerSettingsPage.vue'),
+        meta: { title: 'Configuración de Carreras' },
+    },
 ]
