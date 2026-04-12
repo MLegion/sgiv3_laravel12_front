@@ -23,14 +23,6 @@
                 {{ row.collegeAcademicPeriod?.academicPeriod?.name ?? '—' }}
             </template>
 
-            <template #cell-modality="{ row }">
-                {{ row.modality?.modalityType?.name ?? '—' }}
-            </template>
-
-            <template #cell-strategy="{ row }">
-                {{ row.generationStrategy === 'weekday_range' ? 'AUTOMÁTICO' : 'MANUAL' }}
-            </template>
-
             <template #cell-status="{ row }">
                 <span class="px-2 py-1 text-xs font-semibold rounded-full"
                     :class="row.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'">
@@ -70,12 +62,10 @@ import type { SchoolCalendar } from '@/modules/sca/types/schoolCalendar.type'
 const router = useRouter()
 
 const columns: DataTableColumn<SchoolCalendar>[] = [
-    { key: 'id',        label: '#',          field: 'id',       sortable: true },
-    { key: 'period',    label: 'PERIODO' },
-    { key: 'modality',  label: 'MODALIDAD' },
-    { key: 'strategy',  label: 'ESTRATEGIA' },
-    { key: 'status',    label: 'ESTADO' },
-    { key: 'opciones',  label: 'OPCIONES' },
+    { key: 'id',       label: '#',       field: 'id', sortable: true },
+    { key: 'period',   label: 'PERIODO' },
+    { key: 'status',   label: 'ESTADO' },
+    { key: 'opciones', label: 'OPCIONES' },
 ]
 
 const { rows, loading, pagination, handleChange, fetchData } = useDataTableFetch<SchoolCalendar>({

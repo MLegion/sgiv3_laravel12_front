@@ -29,10 +29,6 @@ export default {
             create:     apiUrl('/sca/school-calendars'),
             update:     (id: string | number) => apiUrl(`/sca/school-calendars/${id}`),
             delete:     (id: string | number) => apiUrl(`/sca/school-calendars/${id}`),
-            generate:   (id: string | number) => apiUrl(`/sca/school-calendars/${id}/generate`),
-            addDate:    (id: string | number) => apiUrl(`/sca/school-calendars/${id}/dates`),
-            removeDate: (id: string | number, dateId: string | number) => apiUrl(`/sca/school-calendars/${id}/dates/${dateId}`),
-            toggleDate: (id: string | number, dateId: string | number) => apiUrl(`/sca/school-calendars/${id}/dates/${dateId}/toggle`),
         },
         schoolCalendarEventTypes: {
             list:   apiUrl('/sca/school-calendar-event-types'),
@@ -56,7 +52,9 @@ export default {
             togglePhase:      (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/toggle-phase`),
             syncFromCalendar: (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/sync-from-calendar`),
             suggestedPhases:  (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/suggested-phases`),
-            history:          (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/history`),
+            history:               (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/history`),
+            generateScheduleDates: (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/generate-schedule-dates`),
+            updateScheduleDates:   (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/schedule-dates`),
         },
         schoolCalendarHolidays: {
             list:   apiUrl('/sca/school-calendar-holidays'),

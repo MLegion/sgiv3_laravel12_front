@@ -1,20 +1,6 @@
-export interface SchoolCalendarDate {
-    id: number
-    schoolCalendarId: number
-    date: string
-    dayOfWeek: number
-    isActive: boolean
-    label: string | null
-    createdAt: string | null
-    updatedAt: string | null
-}
-
 export interface SchoolCalendar {
     id: number
     collegeAcademicPeriodId: number
-    modalityId: number
-    generationStrategy: 'weekday_range' | 'manual'
-    config: { days_of_week?: number[] } | null
     status: 'draft' | 'published'
     collegeAcademicPeriod: {
         id: number
@@ -29,17 +15,6 @@ export interface SchoolCalendar {
             shortName: string
         } | null
     } | null
-    modality: {
-        id: number
-        campusId: number
-        modalityType: {
-            id: number
-            name: string
-            shortName: string
-        } | null
-        status: boolean
-    } | null
-    dates: SchoolCalendarDate[] | null
     createdAt: string | null
     updatedAt: string | null
 }
@@ -52,11 +27,6 @@ export interface SchoolCalendarHoliday {
     createdAt: string | null
     updatedAt: string | null
 }
-
-export const STRATEGY_OPTIONS = [
-    { value: 'weekday_range', label: 'RANGO DE DÍAS (AUTOMÁTICO)' },
-    { value: 'manual', label: 'SELECCIÓN MANUAL' },
-]
 
 export const STATUS_OPTIONS = [
     { value: 'draft', label: 'BORRADOR' },

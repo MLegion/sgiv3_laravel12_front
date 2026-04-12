@@ -60,6 +60,16 @@
 
                         <button
                             type="button"
+                            class="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
+                            :disabled="generatingDates"
+                            @click="generateScheduleDates"
+                        >
+                            <CalendarDaysIcon class="w-3.5 h-3.5" :class="generatingDates ? 'animate-spin' : ''" />
+                            GENERAR FECHAS
+                        </button>
+
+                        <button
+                            type="button"
                             class="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold rounded-lg border hover:bg-slate-50"
                             @click="showHistoryDrawer = true"
                         >
@@ -118,6 +128,71 @@
                             Último cambio: {{ formatDateTime(lastChangeFor(phase.key)?.createdAt) }}
                             <span v-if="lastChangeFor(phase.key)?.changedByUser?.name">por {{ lastChangeFor(phase.key)?.changedByUser?.name }}</span>
                             <span v-if="lastChangeFor(phase.key)?.isExceptional" class="ml-1 px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded text-[8px] font-bold">EXCEPCIONAL</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SCHEDULE DATES SECTION -->
+                <div v-if="hasScheduleDates" class="mt-6">
+                    <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
+                        <div class="px-5 py-3 bg-indigo-50 border-b flex items-center justify-between">
+                            <div>
+                                <h2 class="text-sm font-black uppercase text-indigo-800 tracking-wider">Fechas para Modalidad</h2>
+                                <p class="text-[10px] text-indigo-500 mt-0.5">
+                                    {{ enabledCount() }} de {{ config!.scheduleDates!.length }} fechas habilitadas
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                class="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
+                                :disabled="savingDates"
+                                @click="saveScheduleDates"
+                            >
+                                <span v-if="savingDates" class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                GUARDAR FECHAS
+                            </button>
+                        </div>
+
+                        <div class="max-h-[500px] overflow-y-auto">
+                            <table class="w-full text-xs">
+                                <thead class="bg-slate-50 sticky top-0">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-[10px] font-black text-slate-400 uppercase w-16">SESIÓN</th>
+                                        <th class="px-4 py-2 text-left text-[10px] font-black text-slate-400 uppercase">FECHA</th>
+                                        <th class="px-4 py-2 text-left text-[10px] font-black text-slate-400 uppercase w-20">DÍA</th>
+                                        <th class="px-4 py-2 text-center text-[10px] font-black text-slate-400 uppercase w-24">HABILITADA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr
+                                        v-for="(sd, idx) in config!.scheduleDates!"
+                                        :key="sd.session"
+                                        class="border-t hover:bg-slate-50 cursor-pointer"
+                                        :class="!sd.enabled ? 'bg-red-50/50 text-slate-400' : ''"
+                                        @click="toggleScheduleDate(idx)"
+                                    >
+                                        <td class="px-4 py-2 font-bold">{{ sd.session }}</td>
+                                        <td class="px-4 py-2">{{ formatDateShort(sd.date) }}</td>
+                                        <td class="px-4 py-2">
+                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold"
+                                                :class="sd.enabled ? 'bg-slate-100 text-slate-600' : 'bg-red-100 text-red-500'">
+                                                {{ DAY_NAMES[sd.dayOfWeek] ?? sd.dayOfWeek }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-2 text-center">
+                                            <button
+                                                type="button"
+                                                class="relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors"
+                                                :class="sd.enabled ? 'bg-green-500' : 'bg-slate-300'"
+                                                @click.stop="toggleScheduleDate(idx)"
+                                            >
+                                                <span class="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform shadow"
+                                                    :class="sd.enabled ? 'translate-x-4' : 'translate-x-0.5'" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -226,11 +301,11 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
     ArrowPathIcon, ClockIcon, XMarkIcon, ArrowRightIcon,
-    CheckCircleIcon, ExclamationTriangleIcon,
+    CheckCircleIcon, ExclamationTriangleIcon, CalendarDaysIcon,
 } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { AcademicLoadConfig, AcademicLoadConfigHistory, PhaseKey } from '@/modules/sca/types/academicLoadConfig.type'
+import type { AcademicLoadConfig, AcademicLoadConfigHistory, PhaseKey, ScheduleDate } from '@/modules/sca/types/academicLoadConfig.type'
 import { PHASES, STATUS_OPTIONS } from '@/modules/sca/types/academicLoadConfig.type'
 
 const router = useRouter()
@@ -242,6 +317,8 @@ const suggestedPhases = ref<Record<string, boolean | null>>({})
 const history = ref<AcademicLoadConfigHistory[]>([])
 const loading = ref(true)
 const syncing = ref(false)
+const generatingDates = ref(false)
+const savingDates = ref(false)
 const updatingStatus = ref(false)
 const errorMsg = ref('')
 const showHistoryDrawer = ref(false)
@@ -318,6 +395,54 @@ function formatDateTime(s: string | null | undefined): string {
 function showError(msg: string) {
     errorMsg.value = msg
     setTimeout(() => errorMsg.value = '', 4000)
+}
+
+const hasScheduleDates = computed(() => config.value?.scheduleDates !== null && config.value?.scheduleDates !== undefined)
+
+const DAY_NAMES: Record<number, string> = {
+    1: 'LUN', 2: 'MAR', 3: 'MIÉ', 4: 'JUE', 5: 'VIE', 6: 'SÁB', 7: 'DOM',
+}
+
+function formatDateShort(s: string): string {
+    const d = new Date(s + 'T12:00:00')
+    return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+function enabledCount(): number {
+    return config.value?.scheduleDates?.filter(d => d.enabled).length ?? 0
+}
+
+function toggleScheduleDate(index: number) {
+    if (!config.value?.scheduleDates) return
+    config.value.scheduleDates[index].enabled = !config.value.scheduleDates[index].enabled
+}
+
+async function generateScheduleDates() {
+    generatingDates.value = true
+    errorMsg.value = ''
+    try {
+        await api.post(API.SCA_API.academicLoadConfigs.generateScheduleDates(id))
+        await loadConfig()
+    } catch (e: any) {
+        showError(e?.response?.data?.message ?? 'Error al generar fechas.')
+    } finally {
+        generatingDates.value = false
+    }
+}
+
+async function saveScheduleDates() {
+    if (!config.value?.scheduleDates) return
+    savingDates.value = true
+    errorMsg.value = ''
+    try {
+        await api.put(API.SCA_API.academicLoadConfigs.updateScheduleDates(id), {
+            schedule_dates: config.value.scheduleDates,
+        })
+    } catch (e: any) {
+        showError(e?.response?.data?.message ?? 'Error al guardar fechas.')
+    } finally {
+        savingDates.value = false
+    }
 }
 
 // ───────── Actions ─────────

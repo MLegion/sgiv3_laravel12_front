@@ -13,11 +13,9 @@
             <template v-else>
                 <div class="space-y-2 text-sm text-slate-700">
                     <p><strong>PERIODO:</strong> {{ periodName }}</p>
-                    <p><strong>MODALIDAD:</strong> {{ modalityName }}</p>
-                    <p><strong>ESTRATEGIA:</strong> {{ strategyLabel }}</p>
                 </div>
 
-                <p class="text-sm text-red-600 font-medium">Se eliminarán todas las fechas asociadas.</p>
+                <p class="text-sm text-red-600 font-medium">Se eliminarán todos los eventos asociados.</p>
 
                 <div v-if="error" class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{{ error }}</div>
 
@@ -49,17 +47,13 @@ const loading  = ref(true)
 const deleting = ref(false)
 const error    = ref('')
 
-const periodName   = ref('—')
-const modalityName = ref('—')
-const strategyLabel = ref('—')
+const periodName = ref('—')
 
 onMounted(async () => {
     try {
         const res = await api.get(API.SCA_API.schoolCalendars.byId(id))
         const cal = res.data as SchoolCalendar
-        periodName.value   = cal.collegeAcademicPeriod?.academicPeriod?.name ?? '—'
-        modalityName.value = cal.modality?.modalityType?.name ?? '—'
-        strategyLabel.value = cal.generationStrategy === 'weekday_range' ? 'AUTOMÁTICO' : 'MANUAL'
+        periodName.value = cal.collegeAcademicPeriod?.academicPeriod?.name ?? '—'
     } catch {
         error.value = 'No se pudo cargar el calendario.'
     } finally {

@@ -33,11 +33,6 @@
                         <span class="text-xs font-bold text-slate-600">
                             {{ calendar.collegeAcademicPeriod?.academicPeriod?.name ?? '---' }}
                         </span>
-                        <span class="text-slate-300">|</span>
-                        <span class="text-xs text-slate-500">{{ calendar.modality?.modalityType?.name ?? '---' }}</span>
-                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700">
-                            {{ calendar.generationStrategy === 'weekday_range' ? 'AUTOMATICO' : 'MANUAL' }}
-                        </span>
                         <span
                             class="px-2 py-0.5 text-[10px] font-bold rounded-full"
                             :class="calendar.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'"
@@ -46,18 +41,6 @@
                         </span>
 
                         <span class="text-slate-300">|</span>
-
-                        <!-- Action buttons -->
-                        <button
-                            v-if="calendar.generationStrategy === 'weekday_range'"
-                            type="button"
-                            class="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 uppercase"
-                            :disabled="generating"
-                            @click="generateDates"
-                        >
-                            <div v-if="generating" class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            GENERAR FECHAS
-                        </button>
 
                         <button
                             type="button"
@@ -264,7 +247,6 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type {
     SchoolCalendar,
-    SchoolCalendarDate,
     SchoolCalendarEvent,
     SchoolCalendarEventType,
 } from '@/modules/sca/types/schoolCalendar.type'
@@ -306,7 +288,6 @@ const calendar = ref<SchoolCalendar | null>(null)
 const events = ref<SchoolCalendarEvent[]>([])
 const eventTypes = ref<SchoolCalendarEventType[]>([])
 const loading = ref(true)
-const generating = ref(false)
 const togglingStatus = ref(false)
 const errorMsg = ref('')
 const selectedEventType = ref<SchoolCalendarEventType | null>(null)
@@ -326,16 +307,6 @@ const tooltip = reactive({
 })
 
 // ---------- Computed maps ----------
-const dateMap = computed(() => {
-    const map = new Map<string, SchoolCalendarDate>()
-    if (calendar.value?.dates) {
-        for (const d of calendar.value.dates) {
-            map.set(d.date, d)
-        }
-    }
-    return map
-})
-
 const holidayMap = computed(() => {
     const map = new Map<string, { name: string; color: string }>()
     for (const event of events.value) {
@@ -417,12 +388,6 @@ function isHoliday(year: number, month: number, day: number): boolean {
     return holidayMap.value.has(formatDate(year, month, day))
 }
 
-function isClassDay(year: number, month: number, day: number): boolean {
-    const dateStr = formatDate(year, month, day)
-    const calDate = dateMap.value.get(dateStr)
-    return !!(calDate && calDate.isActive)
-}
-
 function getDayEvents(year: number, month: number, day: number): SchoolCalendarEvent[] {
     return eventDateMap.value.get(formatDate(year, month, day)) || []
 }
@@ -436,10 +401,6 @@ function getDayCellClass(year: number, month: number, day: number): string {
 
     const dayEvents = eventDateMap.value.get(dateStr)
     if (dayEvents?.length) return 'text-slate-700 font-black'
-
-    const calDate = dateMap.value.get(dateStr)
-    if (calDate?.isActive) return 'bg-green-50 text-green-700'
-    if (calDate && !calDate.isActive) return 'bg-slate-50 text-slate-300'
 
     // In paint mode, highlight hover range
     if (painting.value) {
@@ -482,11 +443,6 @@ function getDayCellTitle(year: number, month: number, day: number): string {
     const dayEvents = eventDateMap.value.get(dateStr)
     if (dayEvents?.length) {
         return dayEvents.map(e => e.eventType?.name + (e.label ? ': ' + e.label : '')).join(', ')
-    }
-
-    const calDate = dateMap.value.get(dateStr)
-    if (calDate) {
-        return calDate.isActive ? 'DIA DE CLASE' : 'INACTIVO'
     }
 
     return ''
@@ -588,20 +544,6 @@ async function loadEventTypes() {
 }
 
 // ---------- Actions ----------
-async function generateDates() {
-    if (!calendar.value) return
-    generating.value = true
-    errorMsg.value = ''
-    try {
-        await api.post(API.SCA_API.schoolCalendars.generate(id))
-        await loadCalendar()
-    } catch (e: any) {
-        errorMsg.value = e?.response?.data?.message ?? 'ERROR AL GENERAR FECHAS.'
-    } finally {
-        generating.value = false
-    }
-}
-
 async function toggleStatus() {
     if (!calendar.value) return
     togglingStatus.value = true

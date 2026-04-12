@@ -16,6 +16,13 @@ export interface AcademicLoadConfigHistory {
     createdAt: string | null
 }
 
+export interface ScheduleDate {
+    session: number
+    date: string
+    dayOfWeek: number
+    enabled: boolean
+}
+
 export interface AcademicLoadConfig {
     id: number
     collegeAcademicPeriodId: number
@@ -27,6 +34,7 @@ export interface AcademicLoadConfig {
     phaseAssignment: boolean
     phaseSchedule: boolean
     phaseSchedulePublished: boolean
+    scheduleDates: ScheduleDate[] | null
     lastSyncedAt: string | null
     collegeAcademicPeriod: {
         id: number
