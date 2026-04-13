@@ -98,5 +98,13 @@ export default {
             create: apiUrl('/sca/groups'),
             delete: (id: string | number) => apiUrl(`/sca/groups/${id}`),
         },
+        complementaryHourTypes: {
+            list:     apiUrl('/sca/complementary-hour-types/list'),
+            paginate: apiUrl('/sca/complementary-hour-types'),
+            byId:     (id: string | number) => apiUrl(`/sca/complementary-hour-types/${id}`),
+            create:   apiUrl('/sca/complementary-hour-types'),
+            update:   (id: string | number) => apiUrl(`/sca/complementary-hour-types/${id}`),
+            delete:   (id: string | number) => apiUrl(`/sca/complementary-hour-types/${id}`),
+        },
     },
 } satisfies ApiModule

@@ -15,8 +15,28 @@
                 <p v-for="err in errors" :key="err">{{ err }}</p>
             </div>
 
+            <!-- Toggle Vacante -->
+            <div class="flex items-center justify-between p-3 rounded-lg border border-dashed" :class="form.isVacancy ? 'border-amber-400 bg-amber-50' : 'border-slate-300 bg-slate-50'">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-wider" :class="form.isVacancy ? 'text-amber-700' : 'text-slate-600'">
+                        {{ form.isVacancy ? 'DOCENTE VACANTE' : 'DOCENTE CON EMPLEADO' }}
+                    </p>
+                    <p class="text-[10px] text-slate-500 mt-0.5">
+                        {{ form.isVacancy ? 'Crear plaza sin empleado asignado (se requiere nombre y carrera)' : 'Seleccionar empleado existente del colegio' }}
+                    </p>
+                </div>
+                <button type="button"
+                    :class="['relative inline-flex h-5 w-9 items-center rounded-full transition-colors',
+                             form.isVacancy ? 'bg-amber-500' : 'bg-slate-300']"
+                    @click="toggleVacancy">
+                    <span :class="['inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform shadow',
+                                   form.isVacancy ? 'translate-x-[18px]' : 'translate-x-0.5']" />
+                </button>
+            </div>
+
             <form class="space-y-5" @submit.prevent="submit">
-                <FormRemoteSelect
+                <!-- Modo Empleado -->
+                <FormRemoteSelect v-if="!form.isVacancy"
                     label="EMPLEADO"
                     v-model="form.employeeId"
                     :endpoint="API.SHR_API.employee.list"
@@ -26,6 +46,33 @@
                     item-value="id"
                     required
                 />
+
+                <!-- Modo Vacante -->
+                <template v-else>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">NOMBRE DE LA VACANTE <span class="text-red-500">*</span></label>
+                        <input
+                            :value="form.name"
+                            type="text"
+                            maxlength="255"
+                            class="w-full border rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-amber-500"
+                            placeholder="EJ. VACANTE-ISC-01"
+                            @input="onNameInput"
+                        />
+                    </div>
+
+                    <FormRemoteSelect
+                        label="CARRERA"
+                        v-model="form.careerId"
+                        :endpoint="API.SUPERADMIN_API.careers.list"
+                        :endpoint-by-id="API.SUPERADMIN_API.careers.byId"
+                        item-label="name"
+                        item-value="id"
+                        placeholder="BUSCAR CARRERA..."
+                        uppercase
+                        required
+                    />
+                </template>
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">ID EXTERNO <span class="font-normal text-slate-400">(opcional)</span></label>
@@ -69,24 +116,51 @@ const submitting = ref(false)
 const errors   = ref<string[]>([])
 
 const form = reactive({
+    isVacancy:  false,
     employeeId: null as number | null,
+    name:       '' as string | null,
+    careerId:   null as number | null,
     customId:   '' as string | null,
     status:     true,
 })
 
+function toggleVacancy() {
+    form.isVacancy = !form.isVacancy
+    if (form.isVacancy) {
+        form.employeeId = null
+    } else {
+        form.name = ''
+        form.careerId = null
+    }
+}
+
 function employeeLabel(emp: any): string {
     return [emp.names, emp.firstSurname, emp.secondSurname].filter(Boolean).join(' ')
+}
+
+function onNameInput(e: Event) {
+    form.name = (e.target as HTMLInputElement).value.toUpperCase()
 }
 
 async function submit() {
     errors.value = []
     submitting.value = true
     try {
-        await api.post(API.SCA_API.teachers.create, {
-            employee_id: form.employeeId,
-            custom_id:   form.customId || null,
-            status:      form.status,
-        })
+        const payload: any = {
+            is_vacancy: form.isVacancy,
+            custom_id:  form.customId || null,
+            status:     form.status,
+        }
+        if (form.isVacancy) {
+            payload.employee_id = null
+            payload.name        = form.name
+            payload.career_id   = form.careerId
+        } else {
+            payload.employee_id = form.employeeId
+            payload.name        = null
+            payload.career_id   = null
+        }
+        await api.post(API.SCA_API.teachers.create, payload)
         router.push({ name: 'sca.teachers' })
     } catch (e: any) {
         const data = e?.response?.data

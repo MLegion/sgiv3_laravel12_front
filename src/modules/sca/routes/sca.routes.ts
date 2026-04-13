@@ -118,4 +118,12 @@ export default [
         component: () => import('@/modules/sca/pages/TeacherAssignmentPage.vue'),
         meta: { title: 'Asignación Docente' },
     },
+
+    // ── Tipos de Horas Complementarias (catálogo) ─────────────────────
+    {
+        path: 'sca/complementary-hour-types',
+        name: 'sca.complementary-hour-types',
+        component: () => import('@/modules/sca/pages/ComplementaryHourTypesPage.vue'),
+        meta: { title: 'Tipos de Horas Complementarias' },
+    },
 ]

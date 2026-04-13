@@ -431,4 +431,14 @@ export default [
         component: () => import('@/modules/superadmin/pages/adm-catalogs/GlobalIndigenousLanguagesPage.vue'),
         meta: { title: 'Lenguas Indígenas (Global)' },
     },
+
+    //###################################################################################
+    //# SCA CATALOGS (GLOBAL)                                                            #
+    //###################################################################################
+    {
+        path: 'superadmin/sca-catalogs/complementary-hour-types',
+        name: 'superadmin.sca-catalogs.complementary-hour-types',
+        component: () => import('@/modules/superadmin/pages/sca-catalogs/GlobalComplementaryHourTypesPage.vue'),
+        meta: { title: 'Tipos de Horas Complementarias (Global)' },
+    },
 ]

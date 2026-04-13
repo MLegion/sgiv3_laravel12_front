@@ -20,7 +20,15 @@
             @change="handleChange"
         >
             <template #cell-employee="{ row }">
-                <span class="font-medium">{{ teacherFullName(row) }}</span>
+                <div class="flex items-center gap-2">
+                    <span class="font-medium">{{ teacherFullName(row) }}</span>
+                    <span v-if="row.isVacancy" class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">VACANTE</span>
+                </div>
+            </template>
+
+            <template #cell-career="{ row }">
+                <span v-if="row.isVacancy && row.career" class="text-xs text-slate-600">{{ row.career.shortName || row.career.name }}</span>
+                <span v-else class="text-slate-300">—</span>
             </template>
 
             <template #cell-status="{ row }">
@@ -65,6 +73,7 @@ const router = useRouter()
 const columns: DataTableColumn<Teacher>[] = [
     { key: 'id',        label: '#',        field: 'id',       sortable: true },
     { key: 'employee',  label: 'DOCENTE' },
+    { key: 'career',    label: 'CARRERA (VACANTE)' },
     { key: 'customId',  label: 'ID EXTERNO', field: 'customId' },
     { key: 'status',    label: 'ESTADO' },
     { key: 'opciones',  label: 'OPCIONES' },

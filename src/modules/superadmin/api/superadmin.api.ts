@@ -119,5 +119,14 @@ export default {
                 delete:   (id: string | number) => apiUrl(`/superadmin/adm-catalogs/indigenous-languages/${id}`),
             },
         },
+        scaCatalogs: {
+            complementaryHourTypes: {
+                paginate: apiUrl('/superadmin/sca-catalogs/complementary-hour-types'),
+                byId:     (id: string | number) => apiUrl(`/superadmin/sca-catalogs/complementary-hour-types/${id}`),
+                create:   apiUrl('/superadmin/sca-catalogs/complementary-hour-types'),
+                update:   (id: string | number) => apiUrl(`/superadmin/sca-catalogs/complementary-hour-types/${id}`),
+                delete:   (id: string | number) => apiUrl(`/superadmin/sca-catalogs/complementary-hour-types/${id}`),
+            },
+        },
     },
 } satisfies ApiModule

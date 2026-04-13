@@ -78,6 +78,7 @@
                             <th class="px-3 py-2.5 w-32">Grupo</th>
                             <th class="px-3 py-2.5">Docente</th>
                             <th class="px-3 py-2.5 w-20 text-center">Cap.</th>
+                            <th v-if="usesSpecificDates" class="px-3 py-2.5 w-20 text-center">Sesiones</th>
                             <th class="px-3 py-2.5 w-10"></th>
                         </tr>
                     </thead>
@@ -165,7 +166,12 @@
 
                                 <!-- Docente -->
                                 <td class="px-3 py-2">
-                                    <span v-if="row.teacherName" class="text-xs font-bold uppercase" :class="[row.saved ? 'text-slate-800' : 'text-blue-700', isRowBusy(row.key) ? 'opacity-50' : '']">{{ row.teacherName }}</span>
+                                    <template v-if="row.teacherName">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-xs font-bold uppercase" :class="[row.saved ? 'text-slate-800' : 'text-blue-700', isRowBusy(row.key) ? 'opacity-50' : '']">{{ row.teacherName }}</span>
+                                            <span v-if="row.isVacancy" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">VAC</span>
+                                        </div>
+                                    </template>
                                     <span v-else class="text-xs text-slate-400">VACIO</span>
                                 </td>
 
@@ -183,6 +189,24 @@
                                             class="border rounded px-1 py-0.5 text-xs w-16 text-center disabled:opacity-50" />
                                     </template>
                                     <span v-else-if="row.saved" class="text-xs text-slate-600">{{ row.savedCapacity }}</span>
+                                    <span v-else class="text-xs text-slate-300">---</span>
+                                </td>
+
+                                <!-- Sesiones (solo para modalidades que trabajan con fechas) -->
+                                <td v-if="usesSpecificDates" class="px-3 py-2 text-center">
+                                    <template v-if="phaseActive && row.saved">
+                                        <input type="number" :value="row.savedSessionsCount ?? ''" min="1" max="999"
+                                            :disabled="isRowBusy(row.key)"
+                                            class="border rounded px-1 py-0.5 text-xs w-16 text-center disabled:opacity-50"
+                                            @change="onSessionsCountChange(row, Number(($event.target as HTMLInputElement).value))" />
+                                    </template>
+                                    <template v-else-if="phaseActive && row.checked && !row.saved">
+                                        <input type="number" v-model.number="row.sessionsCount" min="1" max="999"
+                                            :disabled="isRowBusy(row.key)"
+                                            class="border rounded px-1 py-0.5 text-xs w-16 text-center disabled:opacity-50"
+                                            @input="syncSessionsCountToState(row)" />
+                                    </template>
+                                    <span v-else-if="row.saved && row.savedSessionsCount !== null" class="text-xs text-slate-600">{{ row.savedSessionsCount }}</span>
                                     <span v-else class="text-xs text-slate-300">---</span>
                                 </td>
 
@@ -205,7 +229,7 @@
                             </tr>
                         </template>
                         <tr v-if="filteredPackages.length === 0">
-                            <td colspan="9" class="px-4 py-8 text-center text-xs text-slate-400 uppercase font-bold">No hay materias aprobadas para este nivel.</td>
+                            <td :colspan="usesSpecificDates ? 10 : 9" class="px-4 py-8 text-center text-xs text-slate-400 uppercase font-bold">No hay materias aprobadas para este nivel.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -228,9 +252,10 @@
                         class="flex items-center justify-between rounded-lg px-3 py-2 border"
                         :class="t.atMax ? 'bg-slate-100 border-slate-200 opacity-50' : 'bg-blue-50 border-blue-200 cursor-pointer hover:bg-blue-100'"
                         @click="!t.atMax && selectTeacher(t)">
-                        <div>
+                        <div class="flex items-center gap-2">
                             <span class="text-xs font-bold uppercase" :class="t.atMax ? 'text-slate-400' : 'text-blue-800'">{{ t.teacherName }}</span>
-                            <span class="ml-2 text-[10px]" :class="t.atMax ? 'text-slate-400' : 'text-blue-500'">{{ t.requestedGroups }}/{{ searchModal.maxGroups }} grupos</span>
+                            <span v-if="t.isVacancy" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">VACANTE</span>
+                            <span class="text-[10px]" :class="t.atMax ? 'text-slate-400' : 'text-blue-500'">{{ t.requestedGroups }}/{{ searchModal.maxGroups }} grupos</span>
                         </div>
                         <span v-if="t.atMax" class="text-[9px] font-bold text-slate-400 uppercase">MAX</span>
                         <svg v-else class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -250,10 +275,14 @@
                     </div>
                     <template v-else>
                         <div v-for="t in filteredSearchResults" :key="t.teacherId"
-                            class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition"
+                            class="flex items-center justify-between rounded-lg px-3 py-2 cursor-pointer transition border"
+                            :class="t.isVacancy ? 'bg-amber-50 border-amber-200 hover:bg-amber-100' : 'bg-slate-50 border-slate-200 hover:bg-blue-50 hover:border-blue-300'"
                             @click="selectTeacher(t)">
-                            <span class="text-xs font-bold text-slate-700 uppercase">{{ t.teacherName }}</span>
-                            <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold uppercase" :class="t.isVacancy ? 'text-amber-800' : 'text-slate-700'">{{ t.teacherName }}</span>
+                                <span v-if="t.isVacancy" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-200 text-amber-800">VACANTE</span>
+                            </div>
+                            <svg class="w-4 h-4" :class="t.isVacancy ? 'text-amber-600' : 'text-blue-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         </div>
                         <div v-if="filteredSearchResults.length === 0" class="text-center py-4 text-[10px] text-slate-400 uppercase">
                             {{ searchModal.query ? 'Sin resultados' : 'No hay m\u00e1s docentes disponibles' }}
@@ -322,7 +351,7 @@ const selectedCareer = ref<any>(null)
 const tableScrollRef = ref<HTMLElement | null>(null)
 
 /* ── Estado filas editables ──────────────────────────────────────── */
-const rowState = ref(new Map<string, { checked: boolean; shift: string; groupName: string; capacity: number }>())
+const rowState = ref(new Map<string, { checked: boolean; shift: string; groupName: string; capacity: number; sessionsCount: number | null }>())
 const savingKeys = ref(new Set<string>())
 const savedKeys = ref(new Set<string>())
 
@@ -362,16 +391,19 @@ interface RowData {
     type: 'request' | 'direct' | 'empty'
     teacherId: number | null
     teacherName: string | null
+    isVacancy: boolean
     requestId: number | null
     saved: boolean
     savedShift: string
     savedGroupName: string
     savedCapacity: number
+    savedSessionsCount: number | null
     assignmentId: number | null
     checked: boolean
     shift: string
     groupName: string
     capacity: number
+    sessionsCount: number | null
     key: string
 }
 
@@ -380,6 +412,8 @@ function buildRows(pkg: any): RowData[] {
     const assignments = pkg.assignments ?? []
     const rows: RowData[] = []
     let idx = 0
+    // Default de sesiones = ht + hp del subject (cuando modalidad usa fechas)
+    const defaultSessions = ((Number(pkg.ht) || 0) + (Number(pkg.hp) || 0)) || null
 
     for (const req of requests) {
         const teacherAssigns = assignments.filter((a: any) => a.teacherId === req.teacherId)
@@ -388,9 +422,12 @@ function buildRows(pkg: any): RowData[] {
             const key = `${pkg.id}-${idx}`
             const st = rowState.value.get(key)
             rows.push({
-                type: 'request', teacherId: req.teacherId, teacherName: req.teacherName, requestId: req.id,
-                saved: !!a, savedShift: a?.groupShift ?? '', savedGroupName: a?.groupName ?? '', savedCapacity: a?.capacity ?? 40, assignmentId: a?.id ?? null,
+                type: 'request', teacherId: req.teacherId, teacherName: req.teacherName, isVacancy: !!req.isVacancy, requestId: req.id,
+                saved: !!a, savedShift: a?.groupShift ?? '', savedGroupName: a?.groupName ?? '', savedCapacity: a?.capacity ?? 40,
+                savedSessionsCount: a?.sessionsCount ?? null,
+                assignmentId: a?.id ?? null,
                 checked: !!a || (st?.checked ?? false), shift: st?.shift ?? '', groupName: st?.groupName ?? '', capacity: st?.capacity ?? 40,
+                sessionsCount: st?.sessionsCount ?? defaultSessions,
                 key,
             })
             idx++
@@ -401,9 +438,11 @@ function buildRows(pkg: any): RowData[] {
     for (const a of assignments.filter((a: any) => !reqTeacherIds.includes(a.teacherId))) {
         const key = `${pkg.id}-${idx}`
         rows.push({
-            type: 'direct', teacherId: a.teacherId, teacherName: a.teacherName, requestId: null,
-            saved: true, savedShift: a.groupShift ?? '', savedGroupName: a.groupName ?? '', savedCapacity: a.capacity ?? 40, assignmentId: a.id,
-            checked: true, shift: '', groupName: '', capacity: 40, key,
+            type: 'direct', teacherId: a.teacherId, teacherName: a.teacherName, isVacancy: !!a.isVacancy, requestId: null,
+            saved: true, savedShift: a.groupShift ?? '', savedGroupName: a.groupName ?? '', savedCapacity: a.capacity ?? 40,
+            savedSessionsCount: a.sessionsCount ?? null,
+            assignmentId: a.id,
+            checked: true, shift: '', groupName: '', capacity: 40, sessionsCount: null, key,
         })
         idx++
     }
@@ -413,9 +452,10 @@ function buildRows(pkg: any): RowData[] {
         const emptyKey = `${pkg.id}-empty`
         const emptyState = rowState.value.get(emptyKey)
         rows.push({
-            type: 'empty', teacherId: null, teacherName: null, requestId: null,
-            saved: false, savedShift: '', savedGroupName: '', savedCapacity: 40, assignmentId: null,
+            type: 'empty', teacherId: null, teacherName: null, isVacancy: false, requestId: null,
+            saved: false, savedShift: '', savedGroupName: '', savedCapacity: 40, savedSessionsCount: null, assignmentId: null,
             checked: emptyState?.checked ?? false, shift: emptyState?.shift ?? '', groupName: emptyState?.groupName ?? '', capacity: emptyState?.capacity ?? 40,
+            sessionsCount: emptyState?.sessionsCount ?? defaultSessions,
             key: emptyKey,
         })
     }
@@ -465,7 +505,8 @@ function onCheckboxChange(pkg: any, row: RowData) {
         return
     }
     const newChecked = !row.checked
-    rowState.value.set(row.key, { checked: newChecked, shift: '', groupName: '', capacity: 40 })
+    const defaultSessions = ((Number(pkg.ht) || 0) + (Number(pkg.hp) || 0)) || null
+    rowState.value.set(row.key, { checked: newChecked, shift: '', groupName: '', capacity: 40, sessionsCount: defaultSessions })
     packageItems.value = [...packageItems.value]
 }
 
@@ -510,16 +551,33 @@ async function onCapacityChange(row: RowData, newCapacity: number) {
     }, 'Capacidad actualizada')
 }
 
+async function onSessionsCountChange(row: RowData, newSessions: number) {
+    if (!row.saved || !row.assignmentId) return
+    await withRowSaving(row.key, async () => {
+        await api.put(API.SCA_API.teacherAssignments.update(row.assignmentId!), { sessions_count: newSessions })
+        await fetchPackages(true)
+    }, 'Sesiones actualizadas')
+}
+
+function syncSessionsCountToState(row: RowData) {
+    const st = rowState.value.get(row.key)
+    if (st) st.sessionsCount = row.sessionsCount
+}
+
 async function tryAutoSave(pkg: any, row: RowData) {
     const st = rowState.value.get(row.key)
     if (!st || !row.shift || !row.groupName || !row.teacherId) return
 
     await withRowSaving(row.key, async () => {
-        await api.post(API.SCA_API.teacherAssignments.create, {
+        const payload: any = {
             subject_package_id: pkg.id, teacher_id: row.teacherId,
             group_name: row.groupName, shift: row.shift,
             teacher_subject_request_id: row.requestId, capacity: row.capacity,
-        })
+        }
+        if (usesSpecificDates.value && row.sessionsCount) {
+            payload.sessions_count = row.sessionsCount
+        }
+        await api.post(API.SCA_API.teacherAssignments.create, payload)
         rowState.value.delete(row.key)
         await fetchPackages(true)
     }, 'Docente asignado')
@@ -599,7 +657,12 @@ function toggleLock() {
 
 /* ── Fetch ───────────────────────────────────────────────────────── */
 async function fetchCampuses() { try { const { data } = await api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 100 } }); campuses.value = (data?.items ?? data?.data ?? data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName ?? `#${c.id}` })) } catch { campuses.value = [] } }
-async function fetchModalityTypes() { try { const { data } = await api.get(API.SUPERADMIN_API.modalityTypes.list, { params: { per_page: 100 } }); modalityTypes.value = (data?.items ?? data?.data ?? data ?? []).map((mt: any) => ({ id: mt.id, name: mt.name ?? `#${mt.id}` })) } catch { modalityTypes.value = [] } }
+async function fetchModalityTypes() { try { const { data } = await api.get(API.SUPERADMIN_API.modalityTypes.list, { params: { per_page: 100 } }); modalityTypes.value = (data?.items ?? data?.data ?? data ?? []).map((mt: any) => ({ id: mt.id, name: mt.name ?? `#${mt.id}`, config: mt.config ?? null })) } catch { modalityTypes.value = [] } }
+
+const usesSpecificDates = computed(() => {
+    const mt = modalityTypes.value.find(x => x.id === selectedModalityTypeId.value)
+    return !!mt?.config?.config?.schedule?.uses_specific_dates
+})
 async function fetchModalities() { try { const { data } = await api.get(API.SCHOOL_SERVICES_API.modalities.list, { params: { per_page: 200 } }); modalities.value = data?.items ?? data?.data ?? data ?? [] } catch { modalities.value = [] } }
 async function fetchAcademicOffers() {
     if (!resolvedModalityId.value) { academicOffers.value = []; return }
