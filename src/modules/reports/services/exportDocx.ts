@@ -5,12 +5,15 @@
 import {
     Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
     HeadingLevel, AlignmentType, WidthType, BorderStyle, Header, Footer,
-    type IParagraphOptions,
+    VerticalAlign, ShadingType,
+    type IParagraphOptions, type ITableBordersOptions,
 } from 'docx'
 import type { TipTapDoc, TipTapNode } from './templateEngine'
 import type { PageConfig } from '@/modules/reports/types/report.type'
 
 function mmToTwip(mm: number): number { return Math.round(mm * 56.6929) }
+// TipTap guarda colwidth en píxeles @96DPI. docx usa DXA (1/20 pt). 1 px = 0.75 pt = 15 DXA.
+function pxToDxa(px: number): number { return Math.round(px * 15) }
 
 export async function exportToDocx(
     doc:        TipTapDoc,
@@ -78,7 +81,7 @@ function convertParagraph(node: TipTapNode, opts: IParagraphOptions = {}): Parag
 
 function convertHeading(node: TipTapNode): Paragraph {
     const level = node.attrs?.level ?? 1
-    const headingMap: Record<number, HeadingLevel> = {
+    const headingMap: Record<number, (typeof HeadingLevel)[keyof typeof HeadingLevel]> = {
         1: HeadingLevel.HEADING_1,
         2: HeadingLevel.HEADING_2,
         3: HeadingLevel.HEADING_3,
@@ -104,23 +107,94 @@ function convertList(listNode: TipTapNode): Paragraph[] {
     })
 }
 
-function convertTable(tableNode: TipTapNode): Table {
-    const rows = (tableNode.content ?? [])
-        .filter(n => n.type === 'tableRow')
-        .map(row =>
-            new TableRow({
-                children: (row.content ?? [])
-                    .filter(c => c.type === 'tableCell' || c.type === 'tableHeader')
-                    .map(cell =>
-                        new TableCell({
-                            width: { size: 100 / Math.max(1, row.content?.length ?? 1), type: WidthType.PERCENTAGE },
-                            children: (cell.content ?? []).map(p => convertParagraph(p)),
-                        })
-                    ),
-            })
-        )
+// ─────────────────────────────────────────────
+// Tablas: colspan / rowspan / bordes / bg / valign
+// ─────────────────────────────────────────────
 
-    return new Table({ rows, width: { size: 100, type: WidthType.PERCENTAGE } })
+type BorderName = 'solid' | 'dashed' | 'dotted' | 'none'
+
+function mapBorderStyle(style: BorderName) {
+    switch (style) {
+        case 'none':   return { style: BorderStyle.NONE,    size: 0, color: 'FFFFFF' }
+        case 'dashed': return { style: BorderStyle.DASHED,  size: 4, color: '000000' }
+        case 'dotted': return { style: BorderStyle.DOTTED,  size: 4, color: '000000' }
+        default:       return { style: BorderStyle.SINGLE,  size: 4, color: '000000' }
+    }
+}
+
+function mapVerticalAlign(v: string): (typeof VerticalAlign)[keyof typeof VerticalAlign] {
+    if (v === 'middle') return VerticalAlign.CENTER
+    if (v === 'bottom') return VerticalAlign.BOTTOM
+    return VerticalAlign.TOP
+}
+
+function convertTable(tableNode: TipTapNode): Table {
+    const tipRows = (tableNode.content ?? []).filter(n => n.type === 'tableRow')
+
+    // 1. colCount + columnWidths desde la primera fila (respetando colspans)
+    const firstRowCells = (tipRows[0]?.content ?? [])
+        .filter(c => c.type === 'tableCell' || c.type === 'tableHeader')
+    let colCount = 0
+    const columnWidths: number[] = []
+    for (const cell of firstRowCells) {
+        const colSpan = (cell.attrs?.colspan as number) ?? 1
+        colCount += colSpan
+        const cw = cell.attrs?.colwidth as number[] | null | undefined
+        if (Array.isArray(cw) && cw.length > 0) {
+            for (let i = 0; i < colSpan; i++) {
+                const px = cw[i] ?? cw[cw.length - 1] ?? 100
+                columnWidths.push(pxToDxa(px))
+            }
+        } else {
+            for (let i = 0; i < colSpan; i++) columnWidths.push(1500)
+        }
+    }
+    if (colCount === 0) colCount = 1
+
+    // 2. Filas. docx maneja rowspan nativamente: la fila siguiente simplemente
+    //    tiene menos celdas, el rowspan anterior "absorbe" el espacio. Mismo
+    //    modelo que TipTap, así que pasamos la estructura directo.
+    const rows: TableRow[] = []
+    for (const row of tipRows) {
+        const cells = (row.content ?? [])
+            .filter(c => c.type === 'tableCell' || c.type === 'tableHeader')
+        const docxCells = cells.map(cell => {
+            const colSpan = (cell.attrs?.colspan as number) ?? 1
+            const rowSpan = (cell.attrs?.rowspan as number) ?? 1
+            const valign  = (cell.attrs?.verticalAlign as string) || 'top'
+            const bgColor = cell.attrs?.backgroundColor as string | undefined
+            const borders: ITableBordersOptions = {
+                top:    mapBorderStyle(((cell.attrs?.borderTop    as BorderName) || 'solid')),
+                right:  mapBorderStyle(((cell.attrs?.borderRight  as BorderName) || 'solid')),
+                bottom: mapBorderStyle(((cell.attrs?.borderBottom as BorderName) || 'solid')),
+                left:   mapBorderStyle(((cell.attrs?.borderLeft   as BorderName) || 'solid')),
+            }
+            return new TableCell({
+                children: (cell.content ?? []).map(p => convertParagraph(p)),
+                columnSpan: colSpan > 1 ? colSpan : undefined,
+                rowSpan:    rowSpan > 1 ? rowSpan : undefined,
+                verticalAlign: mapVerticalAlign(valign),
+                shading: bgColor
+                    ? { fill: bgColor.replace('#', ''), type: ShadingType.CLEAR, color: 'auto' }
+                    : undefined,
+                borders,
+            })
+        })
+        // Alto explícito (px → DXA; 1 px = 15 DXA aprox). `atLeast` hace que
+        // docx respete el mínimo pero lo crezca si el contenido no cabe.
+        const rowHeightPx = (row.attrs?.rowHeight as number | null | undefined) ?? null
+        const rowOpts: any = { children: docxCells }
+        if (rowHeightPx && rowHeightPx > 0) {
+            rowOpts.height = { value: Math.round(rowHeightPx * 15), rule: 'atLeast' }
+        }
+        rows.push(new TableRow(rowOpts))
+    }
+
+    return new Table({
+        rows,
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        columnWidths,
+    })
 }
 
 // ─────────────────────────────────────────────
@@ -147,7 +221,7 @@ function convertInline(node: TipTapNode): TextRun[] {
 // Helpers
 // ─────────────────────────────────────────────
 
-function mapAlign(align?: string): AlignmentType {
+function mapAlign(align?: string): (typeof AlignmentType)[keyof typeof AlignmentType] {
     switch (align) {
         case 'center':  return AlignmentType.CENTER
         case 'right':   return AlignmentType.RIGHT

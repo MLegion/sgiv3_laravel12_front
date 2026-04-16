@@ -18,6 +18,10 @@ export default {
             update:  (id: string | number) => apiUrl(`/reports/daos/${id}`),
             delete:  (id: string | number) => apiUrl(`/reports/daos/${id}`),
             execute: (id: string | number) => apiUrl(`/reports/daos/${id}/execute`),
+            dryRun:  apiUrl('/reports/daos/dry-run'),
+        },
+        schema: {
+            get: apiUrl('/reports/schema'),
         },
     },
 } satisfies ApiModule

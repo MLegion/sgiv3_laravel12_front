@@ -76,7 +76,10 @@ function processNodes(nodes: TipTapNode[], ctx: TemplateContext): TipTapNode[] {
                 i++
             }
         } else {
-            result.push(processNode(node, ctx))
+            const processed = processNode(node, ctx)
+            // TipTap no acepta text nodes con string vacío (RangeError al cargar
+            // el doc). Si una interpolación resolvió a "", se omite el nodo.
+            if (processed !== null) result.push(processed)
             i++
         }
     }
@@ -84,15 +87,85 @@ function processNodes(nodes: TipTapNode[], ctx: TemplateContext): TipTapNode[] {
     return result
 }
 
-/** Procesa un nodo no-directiva: interpola texto y desciende recursivamente. */
-function processNode(node: TipTapNode, ctx: TemplateContext): TipTapNode {
+/**
+ * Procesa un nodo no-directiva: interpola texto y desciende recursivamente.
+ * Devuelve `null` si el nodo debe eliminarse (text nodes vacíos rompen TipTap).
+ */
+function processNode(node: TipTapNode, ctx: TemplateContext): TipTapNode | null {
     if (node.type === 'text' && node.text) {
-        return { ...node, text: interpolate(node.text, ctx) }
+        const text = interpolate(node.text, ctx)
+        if (text === '') return null
+        return { ...node, text }
+    }
+    if (node.type === 'table' && node.content) {
+        return { ...node, content: processTableRows(node.content, ctx) }
     }
     if (node.content) {
         return { ...node, content: processNodes(node.content, ctx) }
     }
     return node
+}
+
+// ─────────────────────────────────────────────
+// @foreach a nivel de fila de tabla
+// ─────────────────────────────────────────────
+//
+// Si la primera celda de una `tableRow` contiene como primer párrafo una
+// directiva `@foreach(arr as item)`, esa fila se duplica N veces (una por cada
+// elemento de `arr`) con `item` accesible en las interpolaciones del resto de
+// la fila. La directiva en sí se elimina del primer párrafo de la celda.
+// No requiere `@endforeach` — el cierre es implícito al final de la fila.
+
+function processTableRows(rows: TipTapNode[], ctx: TemplateContext): TipTapNode[] {
+    const out: TipTapNode[] = []
+    const pushIfNode = (n: TipTapNode | null) => { if (n !== null) out.push(n) }
+    for (const row of rows) {
+        if (row.type !== 'tableRow') {
+            pushIfNode(processNode(row, ctx))
+            continue
+        }
+        const directive = extractRowForeachDirective(row)
+        if (directive) {
+            const arr = resolvePath(directive.arrPath, ctx)
+            if (Array.isArray(arr)) {
+                for (let idx = 0; idx < arr.length; idx++) {
+                    const itemCtx: TemplateContext = {
+                        ...ctx,
+                        [directive.itemName]: arr[idx],
+                        loop: { index: idx, first: idx === 0, last: idx === arr.length - 1, count: arr.length },
+                    }
+                    const stripped = stripRowForeachDirective(row)
+                    pushIfNode(processNode(stripped, itemCtx))
+                }
+            }
+            continue
+        }
+        pushIfNode(processNode(row, ctx))
+    }
+    return out
+}
+
+function extractRowForeachDirective(row: TipTapNode): { arrPath: string; itemName: string } | null {
+    const firstCell = row.content?.[0]
+    if (!firstCell) return null
+    if (firstCell.type !== 'tableCell' && firstCell.type !== 'tableHeader') return null
+    const firstPara = firstCell.content?.[0]
+    if (!firstPara) return null
+    const directive = getDirectiveText(firstPara)
+    if (!directive || !directive.startsWith('@foreach(')) return null
+    return parseForEach(directive)
+}
+
+function stripRowForeachDirective(row: TipTapNode): TipTapNode {
+    const cells = row.content ?? []
+    const firstCell = cells[0]
+    if (!firstCell) return row
+    const cellContent = firstCell.content ?? []
+    const newCellContent = cellContent.slice(1)
+    // TipTap requiere al menos un bloque dentro de una celda
+    if (newCellContent.length === 0) newCellContent.push({ type: 'paragraph' })
+    const newFirstCell: TipTapNode = { ...firstCell, content: newCellContent }
+    return { ...row, content: [newFirstCell, ...cells.slice(1)] }
 }
 
 // ─────────────────────────────────────────────

@@ -22,6 +22,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
+    allowedHosts: ['sgiv3-laravel.itstb.test'],
     hmr: {
         host: 'sgiv3-laravel.itstb.test',
         port: 5173,

@@ -5,6 +5,8 @@ export interface ReportDao {
     name: string
     type: number
     varName: string
+    preScript:  string | null
+    postScript: string | null
     dataSource: string
     status: boolean
 }
