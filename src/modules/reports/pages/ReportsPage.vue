@@ -62,9 +62,6 @@ import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { API } from '@/shared/api'
 import { api } from '@/shared/services/api'
 import type { Report } from '@/modules/reports/types/report.type'
-import { EMPTY_STRUCTURE } from '@/modules/reports/types/report.type'
-
-
 
 const router  = useRouter()
 const creating = ref(false)
@@ -73,9 +70,8 @@ async function createReport() {
     creating.value = true
     try {
         const res = await api.post(API.REPORTS_API.reports.create, {
-            name:      'Reporte sin título',
-            structure: JSON.stringify(EMPTY_STRUCTURE),
-            status:    false,
+            name:   'Reporte sin título',
+            status: false,
         })
         router.push({ name: 'reports.reports.edit', params: { id: res.data.id } })
     } finally {

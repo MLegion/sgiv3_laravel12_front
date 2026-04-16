@@ -5,11 +5,13 @@ export default {
     name: 'REPORTS_API',
     api: {
         reports: {
-            list:   apiUrl('/reports/reports'),
-            byId:   (id: string | number) => apiUrl(`/reports/reports/${id}`),
-            create: apiUrl('/reports/reports'),
-            update: (id: string | number) => apiUrl(`/reports/reports/${id}`),
-            delete: (id: string | number) => apiUrl(`/reports/reports/${id}`),
+            list:     apiUrl('/reports/reports'),
+            byId:     (id: string | number) => apiUrl(`/reports/reports/${id}`),
+            create:   apiUrl('/reports/reports'),
+            update:   (id: string | number) => apiUrl(`/reports/reports/${id}`),
+            delete:   (id: string | number) => apiUrl(`/reports/reports/${id}`),
+            template: (id: string | number) => apiUrl(`/reports/reports/${id}/template`),
+            nextCode: apiUrl('/reports/reports/next-code'),
         },
         daos: {
             list:    apiUrl('/reports/daos'),
