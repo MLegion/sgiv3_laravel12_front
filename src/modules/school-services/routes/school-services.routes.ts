@@ -274,4 +274,12 @@ export default [
         component: () => import('@/modules/school-services/pages/CollegeCareerSettingsPage.vue'),
         meta: { title: 'Configuración de Carreras' },
     },
+
+    // Configuración general de Servicios Escolares (num_control, etc.)
+    {
+        path: 'school-services/config',
+        name: 'school-services.config',
+        component: () => import('@/modules/school-services/pages/SchoolServicesConfigPage.vue'),
+        meta: { title: 'Configuración - Servicios Escolares' },
+    },
 ]

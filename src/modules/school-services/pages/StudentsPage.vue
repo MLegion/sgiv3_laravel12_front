@@ -44,7 +44,7 @@
             <table class="min-w-full text-sm">
                 <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
                     <tr>
-                        <th class="px-4 py-3 text-left">Folio</th>
+                        <th class="px-4 py-3 text-left">No. Control</th>
                         <th class="px-4 py-3 text-left">Nombre</th>
                         <th class="px-4 py-3 text-left">CURP</th>
                         <th class="px-4 py-3 text-left">Carrera / Plan</th>
@@ -55,7 +55,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     <tr v-for="s in items" :key="s.id" class="hover:bg-slate-50 transition">
-                        <td class="px-4 py-3 font-mono text-xs text-slate-500">{{ s.enrollmentFolio ?? '—' }}</td>
+                        <td class="px-4 py-3 font-mono text-xs font-bold text-slate-700">{{ s.numControl ?? '—' }}</td>
                         <td class="px-4 py-3 font-medium text-slate-800">
                             {{ s.names }} {{ s.firstSurname }} {{ s.secondSurname ?? '' }}
                         </td>

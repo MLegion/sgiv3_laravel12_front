@@ -8,7 +8,7 @@
                     {{ student.names }} {{ student.firstSurname }} {{ student.secondSurname ?? '' }}
                 </h1>
                 <p v-if="student" class="mt-1 text-sm text-slate-500 font-mono">
-                    Folio: {{ student.enrollmentFolio ?? '—' }}
+                    No. Control: <span class="text-slate-800 font-bold">{{ student.numControl ?? '—' }}</span>
                 </p>
                 <div v-if="loading" class="h-6 w-64 bg-slate-200 animate-pulse rounded" />
             </div>

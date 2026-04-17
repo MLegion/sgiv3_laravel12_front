@@ -104,5 +104,9 @@ export default {
             byCareer: (careerId: string | number) => apiUrl(`/school-services/college-career-settings/${careerId}`),
             upsert:   apiUrl('/school-services/college-career-settings'),
         },
+        sesConfig: {
+            show:   apiUrl('/school-services/config'),
+            update: apiUrl('/school-services/config'),
+        },
     },
 } satisfies ApiModule
