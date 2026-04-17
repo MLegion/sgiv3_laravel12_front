@@ -8,9 +8,10 @@ import { fillDocxTemplate } from '@/modules/reports/services/docxGenerator'
 import type { Report } from '@/modules/reports/types/report.type'
 
 export interface GenerateOptions {
-    reportId: number | string
-    params?:  Record<string, unknown>
-    filename?: string
+    reportId?:   number | string
+    reportCode?: string
+    params?:     Record<string, unknown>
+    filename?:   string
 }
 
 /**
@@ -28,9 +29,16 @@ export function useReportGenerator() {
     const loading = ref(false)
     const error   = ref<string | null>(null)
 
-    async function fetchReport(reportId: number | string): Promise<Report> {
-        const { data } = await api.get(API.REPORTS_API.reports.byId(reportId))
-        return data as Report
+    async function fetchReport(options: GenerateOptions): Promise<Report> {
+        if (options.reportCode) {
+            const { data } = await api.get(API.REPORTS_API.reports.byCode(options.reportCode))
+            return data as Report
+        }
+        if (options.reportId) {
+            const { data } = await api.get(API.REPORTS_API.reports.byId(options.reportId))
+            return data as Report
+        }
+        throw new Error('Debe indicar reportId o reportCode.')
     }
 
     async function runDaos(report: Report, reportId: number | string, params: Record<string, unknown>) {
@@ -56,13 +64,14 @@ export function useReportGenerator() {
         loading.value = true
         error.value   = null
         try {
-            const report  = await fetchReport(options.reportId)
+            const report  = await fetchReport(options)
             if (!report.hasTemplate && !report.templatePath) {
                 throw new Error('El reporte no tiene plantilla Word asociada.')
             }
-            const context = await runDaos(report, options.reportId, options.params ?? {})
-            const tpl     = await fetchTemplate(options.reportId)
-            const blob    = await fillDocxTemplate(tpl, context)
+            const reportId = report.id
+            const context  = await runDaos(report, reportId, options.params ?? {})
+            const tpl      = await fetchTemplate(reportId)
+            const blob     = await fillDocxTemplate(tpl, context)
             const filename = `${options.filename ?? report.code ?? report.name ?? 'reporte'}.docx`
             return { blob, filename, report }
         } catch (e: any) {

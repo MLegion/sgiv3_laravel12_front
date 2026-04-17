@@ -22,24 +22,21 @@
             </div>
         </div>
 
-        <!-- Periodo -->
-        <div class="flex items-center gap-3">
-            <PeriodSelector v-if="!periodLocked" ref="periodSelectorRef" v-model="selectedPeriodId" @update:model-value="onPeriodChange" label="" placeholder="SELECCIONE UN PERIODO" class="flex-1" />
-            <div v-else class="flex-1 border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold uppercase bg-slate-50 text-slate-700">
-                {{ lockedPeriodName }}
-            </div>
-            <button
-                class="w-12 h-[46px] border-2 rounded-xl flex items-center justify-center transition"
-                :class="periodLocked ? 'border-slate-300 bg-slate-50 text-slate-500 hover:bg-slate-100' : 'border-blue-500 bg-blue-50 text-blue-600 hover:bg-blue-100'"
-                :disabled="!selectedPeriodId && !periodLocked"
-                @click="toggleLock"
-            >
-                <svg v-if="periodLocked" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
-                <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z"/></svg>
-            </button>
+        <!-- Periodo (auto-detectado) -->
+        <div v-if="activePeriodName" class="flex items-center gap-2 border-2 border-emerald-200 bg-emerald-50 rounded-xl px-4 py-2.5">
+            <svg class="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+            <span class="text-sm font-bold uppercase text-emerald-800">{{ activePeriodName }}</span>
+            <span class="text-[10px] text-emerald-600 font-semibold">(Fase de solicitud activa)</span>
+        </div>
+        <div v-else-if="!loadingActiveConfigs && teacherChecked && isTeacher" class="bg-amber-50 border-2 border-amber-300 rounded-xl px-6 py-8 text-center space-y-2">
+            <svg class="w-10 h-10 mx-auto text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            <p class="text-sm font-bold text-amber-800 uppercase">No hay solicitud de materias activa</p>
+            <p class="text-xs text-amber-600">Actualmente no hay un periodo académico con la fase de solicitud de materias habilitada. Comuníquese con el coordinador de carga académica.</p>
         </div>
 
-        <template v-if="periodLocked">
+        <template v-if="selectedPeriodId">
 
         <!-- Filtros: Campus + Tipo Modalidad -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -88,7 +85,17 @@
         <div v-if="panel === 'requests'" class="bg-white border rounded-xl shadow-sm overflow-hidden">
             <div class="bg-slate-50 border-b px-4 py-3 flex items-center justify-between">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Materias Solicitadas</h2>
-                <span class="text-xs text-slate-400">{{ requestItems.length }} materias</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-slate-400">{{ requestItems.length }} materias</span>
+                    <ReportGenerateButton
+                        :report-code="ReportCode.TEACHER_SUBJECT_REQUEST"
+                        :params="{ teacher_id: teacherId, period_id: selectedPeriodId, modality_id: resolvedModalityId }"
+                        :disabled="requestItems.length === 0"
+                        format="pdf"
+                        label="IMPRIMIR SOLICITUD"
+                        button-class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-40"
+                    />
+                </div>
             </div>
 
             <!-- Header tabla -->
@@ -220,7 +227,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
+import ReportGenerateButton from '@/modules/reports/components/ReportGenerateButton.vue'
+import { ReportCode } from '@/modules/reports/types/reportCodes'
 
 /* ── State: Teacher ──────────────────────────────────────────────── */
 const teacherChecked = ref(false)
@@ -231,6 +239,10 @@ const teacherError   = ref('')
 
 /* ── State: Filtros ──────────────────────────────────────────────── */
 const selectedPeriodId       = ref<number | null>(null)
+const activePeriodName       = ref<string>('')
+const loadingActiveConfigs   = ref(false)
+const activeRequestConfigs   = ref<any[]>([])
+
 const selectedCampusId       = ref<number | null>(null)
 const selectedModalityTypeId = ref<number | null>(null)
 
@@ -238,15 +250,9 @@ const campuses      = ref<any[]>([])
 const modalityTypes = ref<any[]>([])
 const modalities    = ref<any[]>([])
 
-const periodSelectorRef  = ref<InstanceType<typeof PeriodSelector> | null>(null)
-const periodLocked       = ref(false)
-const lockedPeriodName   = ref('')
-
 const resolvedModalityId = ref<number | null>(null)
 const resolvedConfigId   = ref<number | null>(null)
 const configError        = ref<string | null>(null)
-
-const STORAGE_KEY = 'sca_treq_period'
 
 /* ── State: Datos ────────────────────────────────────────────────── */
 const panel           = ref<'requests' | 'available'>('requests')
@@ -257,41 +263,24 @@ const loadingAvailable = ref(false)
 const searchQuery     = ref('')
 const addingId        = ref<number | null>(null)
 
-/* ── Period lock ─────────────────────────────────────────────────── */
-function savePeriodToStorage() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        id: selectedPeriodId.value,
-        name: lockedPeriodName.value,
-    }))
-}
-
-function clearPeriodStorage() { localStorage.removeItem(STORAGE_KEY) }
-
-function restorePeriodFromStorage() {
+/* ── Auto-detección del periodo activo para solicitudes ──────────── */
+async function fetchActiveRequestConfigs() {
+    loadingActiveConfigs.value = true
     try {
-        const raw = localStorage.getItem(STORAGE_KEY)
-        if (!raw) return
-        const saved = JSON.parse(raw)
-        if (saved?.id) {
-            selectedPeriodId.value = saved.id
-            lockedPeriodName.value = saved.name ?? ''
-            periodLocked.value = true
-        }
-    } catch { /* ignore */ }
-}
+        const { data } = await api.get(API.SCA_API.academicLoadConfigs.list, {
+            params: { per_page: 50, search: { phase_request: 1 } },
+        })
+        const items = data?.items ?? data?.data ?? []
+        activeRequestConfigs.value = items
 
-function toggleLock() {
-    if (!periodLocked.value) {
-        if (!selectedPeriodId.value) return
-        const p = periodSelectorRef.value?.selectedPeriod
-        lockedPeriodName.value = p?.name ?? 'SIN PERIODO'
-        periodLocked.value = true
-        savePeriodToStorage()
-    } else {
-        periodLocked.value = false
-        clearPeriodStorage()
-        resetAll()
-    }
+        if (items.length > 0) {
+            const first = items[0]
+            const cap = first.collegeAcademicPeriod ?? first.college_academic_period
+            selectedPeriodId.value = cap?.id ?? first.collegeAcademicPeriodId ?? first.college_academic_period_id
+            activePeriodName.value = cap?.academicPeriod?.name ?? cap?.academic_period?.name ?? cap?.name ?? 'Periodo activo'
+        }
+    } catch { /* silent */ }
+    finally { loadingActiveConfigs.value = false }
 }
 
 /* ── Computed ────────────────────────────────────────────────────── */
@@ -468,26 +457,6 @@ function switchToAvailable() {
 }
 
 /* ── Filter events ───────────────────────────────────────────────── */
-function resetAll() {
-    selectedCampusId.value = null
-    selectedModalityTypeId.value = null
-    resolvedModalityId.value = null
-    resolvedConfigId.value = null
-    configError.value = null
-    requestItems.value = []
-    availableItems.value = []
-    panel.value = 'requests'
-}
-
-function onPeriodChange() {
-    resolvedConfigId.value = null
-    configError.value = null
-    requestItems.value = []
-    availableItems.value = []
-    if (selectedPeriodId.value && resolvedModalityId.value) {
-        resolveConfig()
-    }
-}
 
 function onCampusOrTypeChange() {
     requestItems.value = []
@@ -497,9 +466,11 @@ function onCampusOrTypeChange() {
 }
 
 /* ── Init ────────────────────────────────────────────────────────── */
-onMounted(() => {
-    checkTeacher()
-    restorePeriodFromStorage()
+onMounted(async () => {
+    await checkTeacher()
+    if (isTeacher.value) {
+        await fetchActiveRequestConfigs()
+    }
     fetchCampuses()
     fetchModalityTypes()
     fetchModalities()

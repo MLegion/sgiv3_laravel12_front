@@ -3,7 +3,7 @@
         <button
             type="button"
             :class="buttonClass ?? defaultButtonClass"
-            :disabled="loading"
+            :disabled="loading || disabled"
             @click="onClick"
         >
             <svg v-if="loading" class="w-3.5 h-3.5 animate-spin inline mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -58,20 +58,25 @@ import { useReportGenerator, type GenerateOptions } from '@/modules/reports/comp
 type Format = 'pdf' | 'docx'
 
 const props = withDefaults(defineProps<{
-    reportId:      number | string
+    reportId?:     number | string
+    reportCode?:   string
     params?:       Record<string, unknown>
     format?:       Format
     label?:        string
     loadingLabel?: string
     filename?:     string
     buttonClass?:  string
+    disabled?:     boolean
 }>(), {
+    reportId:     undefined,
+    reportCode:   undefined,
     params:       () => ({}),
     format:       'pdf',
     label:        undefined,
     loadingLabel: undefined,
     filename:     undefined,
     buttonClass:  undefined,
+    disabled:     false,
 })
 
 const emit = defineEmits<{
@@ -95,8 +100,9 @@ const modalTitle = computed(() => `Vista previa — ${currentName.value || 'Repo
 async function onClick() {
     errorMessage.value = null
     const opts: GenerateOptions = {
-        reportId: props.reportId,
-        params:   props.params,
+        reportId:   props.reportId,
+        reportCode: props.reportCode,
+        params:     props.params,
         filename: props.filename,
     }
 

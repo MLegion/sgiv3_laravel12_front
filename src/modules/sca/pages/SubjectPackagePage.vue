@@ -573,12 +573,35 @@ const selectedStudyPlanId    = ref<number | null>(null)
 const selectedSpecialtyId    = ref<number | null>(null)
 const selectedOptionalGroupId = ref<number | null>(null)
 
-const campuses      = ref<any[]>([])
-const modalityTypes = ref<any[]>([])
-const modalities    = ref<any[]>([])
-const studyPlans    = ref<any[]>([])
-const specialties   = ref<any[]>([])
-const optionalGroups = ref<any[]>([])
+const allCampuses      = ref<any[]>([])
+const allModalityTypes = ref<any[]>([])
+const modalities       = ref<any[]>([])
+const studyPlans       = ref<any[]>([])
+const specialties      = ref<any[]>([])
+const optionalGroups   = ref<any[]>([])
+
+interface ScaContext { isAdmin: boolean; careerIds: number[]|null; modalityIds: number[]|null; campusIds: number[]|null; modalityTypeIds: number[]|null }
+const ctx = ref<ScaContext | null>(null)
+
+const campuses = computed(() => {
+    if (!ctx.value) return allCampuses.value
+    if (ctx.value.isAdmin || !ctx.value.campusIds) return allCampuses.value
+    return allCampuses.value.filter(c => ctx.value!.campusIds!.includes(c.id))
+})
+
+const modalityTypes = computed(() => {
+    let types = allModalityTypes.value
+    if (ctx.value && !ctx.value.isAdmin && ctx.value.modalityTypeIds) {
+        types = types.filter(mt => ctx.value!.modalityTypeIds!.includes(mt.id))
+    }
+    if (selectedCampusId.value) {
+        const typesInCampus = modalities.value
+            .filter((m: any) => (m.campusId ?? m.campus_id) === selectedCampusId.value)
+            .map((m: any) => m.modalityTypeId ?? m.modality_type_id)
+        types = types.filter(mt => typesInCampus.includes(mt.id))
+    }
+    return types
+})
 
 const periodSelectorRef  = ref<InstanceType<typeof PeriodSelector> | null>(null)
 const periodLocked       = ref(false)
@@ -768,18 +791,25 @@ function gridCardClass(cs: any) {
 }
 
 /* ── Fetch data ──────────────────────────────────────────────────── */
+async function fetchContext() {
+    try {
+        const { data } = await api.get(API.SCA_API.myContext)
+        ctx.value = data
+    } catch { ctx.value = { isAdmin: false, careerIds: [], modalityIds: [], campusIds: [], modalityTypeIds: [] } }
+}
+
 async function fetchCampuses() {
     try {
         const { data } = await api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 100 } })
-        campuses.value = (data?.items ?? data?.data ?? data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName ?? `Campus #${c.id}` }))
-    } catch { campuses.value = [] }
+        allCampuses.value = (data?.items ?? data?.data ?? data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName ?? `Campus #${c.id}` }))
+    } catch { allCampuses.value = [] }
 }
 
 async function fetchModalityTypes() {
     try {
         const { data } = await api.get(API.SUPERADMIN_API.modalityTypes.list, { params: { per_page: 100 } })
-        modalityTypes.value = (data?.items ?? data?.data ?? data ?? []).map((mt: any) => ({ id: mt.id, name: mt.name ?? `Tipo #${mt.id}` }))
-    } catch { modalityTypes.value = [] }
+        allModalityTypes.value = (data?.items ?? data?.data ?? data ?? []).map((mt: any) => ({ id: mt.id, name: mt.name ?? `Tipo #${mt.id}` }))
+    } catch { allModalityTypes.value = [] }
 }
 
 async function fetchModalities() {
@@ -1118,6 +1148,7 @@ async function checkCanApprove() {
 }
 
 onMounted(() => {
+    fetchContext()
     restorePeriodFromStorage()
     fetchCampuses()
     fetchModalityTypes()

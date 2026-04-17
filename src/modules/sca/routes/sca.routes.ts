@@ -126,4 +126,12 @@ export default [
         component: () => import('@/modules/sca/pages/ComplementaryHourTypesPage.vue'),
         meta: { title: 'Tipos de Horas Complementarias' },
     },
+
+    // ── Reportes de Carga Académica ──────────────────────────────────
+    {
+        path: 'sca/reports',
+        name: 'sca.reports',
+        component: () => import('@/modules/sca/pages/ScaReportsPage.vue'),
+        meta: { title: 'Reportes — Carga Académica' },
+    },
 ]

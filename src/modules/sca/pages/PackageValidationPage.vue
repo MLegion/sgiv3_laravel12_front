@@ -155,18 +155,21 @@
                                     <span class="text-[10px] font-bold text-green-600">{{ detailStats.approved }} aprobadas</span>
                                     <span class="text-[10px] font-bold text-amber-600">{{ detailStats.pending }} pendientes</span>
                                 </div>
-                                <button v-if="detailStats.pending > 0"
-                                    class="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-green-600 text-white hover:bg-green-700 uppercase disabled:opacity-50"
-                                    :disabled="bulkApproving"
-                                    @click="approveAll">
-                                    {{ bulkApproving ? 'Aprobando...' : 'Aprobar Todo' }}
-                                </button>
-                                <button v-if="detailStats.approved > 0"
-                                    class="px-3 py-1.5 text-[10px] font-bold rounded-lg border border-red-200 text-red-500 hover:bg-red-50 uppercase disabled:opacity-50"
-                                    :disabled="bulkApproving"
-                                    @click="revokeAll">
-                                    Revocar Todo
-                                </button>
+                                <template v-if="!isViewOnly">
+                                    <button v-if="detailStats.pending > 0"
+                                        class="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-green-600 text-white hover:bg-green-700 uppercase disabled:opacity-50"
+                                        :disabled="bulkApproving"
+                                        @click="approveAll">
+                                        {{ bulkApproving ? 'Aprobando...' : 'Aprobar Todo' }}
+                                    </button>
+                                    <button v-if="detailStats.approved > 0"
+                                        class="px-3 py-1.5 text-[10px] font-bold rounded-lg border border-red-200 text-red-500 hover:bg-red-50 uppercase disabled:opacity-50"
+                                        :disabled="bulkApproving"
+                                        @click="revokeAll">
+                                        Revocar Todo
+                                    </button>
+                                </template>
+                                <span v-else class="text-[10px] font-bold text-slate-400 uppercase">Solo lectura</span>
                             </div>
                         </div>
                         <!-- Barra de progreso -->
@@ -240,25 +243,29 @@
                                     <div>
                                         <input type="text"
                                             :value="item.directorNotes ?? ''"
-                                            placeholder="Agregar comentario..."
-                                            class="w-full border rounded-lg px-2 py-1 text-xs text-slate-600 placeholder:text-slate-300"
-                                            @change="approveItem(item.id, item.directorApproval, ($event.target as HTMLInputElement).value)"
+                                            :placeholder="isViewOnly ? '' : 'Agregar comentario...'"
+                                            :disabled="isViewOnly"
+                                            class="w-full border rounded-lg px-2 py-1 text-xs text-slate-600 placeholder:text-slate-300 disabled:bg-slate-50"
+                                            @change="!isViewOnly && approveItem(item.id, item.directorApproval, ($event.target as HTMLInputElement).value)"
                                         />
                                     </div>
                                     <!-- Acción -->
                                     <div class="flex justify-center gap-1">
-                                        <button v-if="!item.directorApproval"
-                                            class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg bg-green-600 text-white hover:bg-green-700 uppercase disabled:opacity-50"
-                                            :disabled="approvingId === item.id"
-                                            @click="approveItem(item.id, true, item.directorNotes)">
-                                            Aprobar
-                                        </button>
-                                        <button v-else
-                                            class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border border-red-200 text-red-500 hover:bg-red-50 uppercase disabled:opacity-50"
-                                            :disabled="approvingId === item.id"
-                                            @click="approveItem(item.id, false, item.directorNotes)">
-                                            Revocar
-                                        </button>
+                                        <template v-if="!isViewOnly">
+                                            <button v-if="!item.directorApproval"
+                                                class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg bg-green-600 text-white hover:bg-green-700 uppercase disabled:opacity-50"
+                                                :disabled="approvingId === item.id"
+                                                @click="approveItem(item.id, true, item.directorNotes)">
+                                                Aprobar
+                                            </button>
+                                            <button v-else
+                                                class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border border-red-200 text-red-500 hover:bg-red-50 uppercase disabled:opacity-50"
+                                                :disabled="approvingId === item.id"
+                                                @click="approveItem(item.id, false, item.directorNotes)">
+                                                Revocar
+                                            </button>
+                                        </template>
+                                        <span v-else class="text-[10px] text-slate-400">—</span>
                                     </div>
                                 </div>
                             </div>
@@ -296,10 +303,35 @@ const selectedCampusId       = ref<number | null>(null)
 const selectedModalityTypeId = ref<number | null>(null)
 const selectedStudyPlanId    = ref<number | null>(null)
 
-const campuses      = ref<any[]>([])
-const modalityTypes = ref<any[]>([])
-const modalities    = ref<any[]>([])
-const studyPlans    = ref<any[]>([])
+const allCampuses      = ref<any[]>([])
+const allModalityTypes = ref<any[]>([])
+const modalities       = ref<any[]>([])
+const studyPlans       = ref<any[]>([])
+
+interface ScaContext { isAdmin: boolean; careerIds: number[]|null; modalityIds: number[]|null; campusIds: number[]|null; modalityTypeIds: number[]|null }
+const ctx = ref<ScaContext | null>(null)
+
+const isViewOnly = computed(() => ctx.value !== null && !ctx.value.isAdmin)
+
+const campuses = computed(() => {
+    if (!ctx.value) return allCampuses.value
+    if (ctx.value.isAdmin || !ctx.value.campusIds) return allCampuses.value
+    return allCampuses.value.filter(c => ctx.value!.campusIds!.includes(c.id))
+})
+
+const modalityTypes = computed(() => {
+    let types = allModalityTypes.value
+    if (ctx.value && !ctx.value.isAdmin && ctx.value.modalityTypeIds) {
+        types = types.filter(mt => ctx.value!.modalityTypeIds!.includes(mt.id))
+    }
+    if (selectedCampusId.value) {
+        const typesInCampus = modalities.value
+            .filter((m: any) => (m.campusId ?? m.campus_id) === selectedCampusId.value)
+            .map((m: any) => m.modalityTypeId ?? m.modality_type_id)
+        types = types.filter(mt => typesInCampus.includes(mt.id))
+    }
+    return types
+})
 
 const periodSelectorRef  = ref<InstanceType<typeof PeriodSelector> | null>(null)
 const periodLocked       = ref(false)
@@ -456,18 +488,25 @@ const groupedDetailItems = computed(() => {
 })
 
 /* ── Fetch data ──────────────────────────────────────────────────── */
+async function fetchContext() {
+    try {
+        const { data } = await api.get(API.SCA_API.myContext)
+        ctx.value = data
+    } catch { ctx.value = { isAdmin: false, careerIds: [], modalityIds: [], campusIds: [], modalityTypeIds: [] } }
+}
+
 async function fetchCampuses() {
     try {
         const { data } = await api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 100 } })
-        campuses.value = (data?.items ?? data?.data ?? data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName ?? `Campus #${c.id}` }))
-    } catch { campuses.value = [] }
+        allCampuses.value = (data?.items ?? data?.data ?? data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName ?? `Campus #${c.id}` }))
+    } catch { allCampuses.value = [] }
 }
 
 async function fetchModalityTypes() {
     try {
         const { data } = await api.get(API.SUPERADMIN_API.modalityTypes.list, { params: { per_page: 100 } })
-        modalityTypes.value = (data?.items ?? data?.data ?? data ?? []).map((mt: any) => ({ id: mt.id, name: mt.name ?? `Tipo #${mt.id}` }))
-    } catch { modalityTypes.value = [] }
+        allModalityTypes.value = (data?.items ?? data?.data ?? data ?? []).map((mt: any) => ({ id: mt.id, name: mt.name ?? `Tipo #${mt.id}` }))
+    } catch { allModalityTypes.value = [] }
 }
 
 async function fetchModalities() {
@@ -678,6 +717,7 @@ function onStudyPlanChange() {
 
 /* ── Init ────────────────────────────────────────────────────────── */
 onMounted(() => {
+    fetchContext()
     restorePeriodFromStorage()
     fetchCampuses()
     fetchModalityTypes()

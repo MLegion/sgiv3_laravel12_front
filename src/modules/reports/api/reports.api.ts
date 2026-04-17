@@ -7,6 +7,7 @@ export default {
         reports: {
             list:     apiUrl('/reports/reports'),
             byId:     (id: string | number) => apiUrl(`/reports/reports/${id}`),
+            byCode:   (code: string) => apiUrl(`/reports/reports/by-code/${code}`),
             create:   apiUrl('/reports/reports'),
             update:   (id: string | number) => apiUrl(`/reports/reports/${id}`),
             delete:   (id: string | number) => apiUrl(`/reports/reports/${id}`),

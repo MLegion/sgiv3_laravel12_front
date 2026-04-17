@@ -106,5 +106,6 @@ export default {
             update:   (id: string | number) => apiUrl(`/sca/complementary-hour-types/${id}`),
             delete:   (id: string | number) => apiUrl(`/sca/complementary-hour-types/${id}`),
         },
+        myContext: apiUrl('/sca/my-context'),
     },
 } satisfies ApiModule
