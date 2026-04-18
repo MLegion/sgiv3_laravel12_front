@@ -263,7 +263,7 @@ async function loadData() {
     }
 }
 
-async function submit() {
+async function submit(forceActivate = false) {
     error.value = null
     submitting.value = true
     try {
@@ -273,12 +273,24 @@ async function submit() {
             description: form.description || null,
             is_template: form.is_template,
             status:      form.status,
+            force_activate: forceActivate,
             daos: form.daos
                 .filter(d => d.dao_id && d.var_name)
                 .map(d => ({ dao_id: d.dao_id, var_name: d.var_name, pre_script: d.pre_script, post_script: d.post_script })),
         })
     } catch (e: any) {
-        error.value = e?.response?.data?.message ?? 'Error al guardar.'
+        const errors = e?.response?.data?.errors
+        if (errors?._conflict && errors?.status) {
+            const msg = Array.isArray(errors.status) ? errors.status[0] : errors.status
+            if (confirm(msg)) {
+                await submit(true)
+                return
+            }
+            error.value = null
+            submitting.value = false
+            return
+        }
+        error.value = e?.response?.data?.message ?? errors?.status?.[0] ?? 'Error al guardar.'
     } finally {
         submitting.value = false
     }

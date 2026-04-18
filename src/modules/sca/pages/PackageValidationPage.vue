@@ -343,7 +343,7 @@ const resolvedConfigId   = ref<number | null>(null)
 const resolvedConfig     = ref<any>(null)
 const configError        = ref<string | null>(null)
 
-const STORAGE_KEY = 'sca_validation_period'
+const STORAGE_KEY = 'sca_period'
 
 /* ── State: Datos ────────────────────────────────────────────────── */
 const summaryData   = ref<any[]>([])

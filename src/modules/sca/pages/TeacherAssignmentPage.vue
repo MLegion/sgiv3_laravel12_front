@@ -340,7 +340,7 @@ const resolvedModalityId = ref<number | null>(null)
 const resolvedConfigId = ref<number | null>(null)
 const configError = ref<string | null>(null)
 const phaseActive = ref(false)
-const STORAGE_KEY = 'sca_tassign_period'
+const STORAGE_KEY = 'sca_period'
 
 /* ── Datos ───────────────────────────────────────────────────────── */
 const packageItems = ref<any[]>([])

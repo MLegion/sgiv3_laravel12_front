@@ -429,7 +429,7 @@ const periodLocked       = ref(false)
 const lockedPeriodName   = ref('')
 const activeTab          = ref('proyeccion')
 
-const STORAGE_KEY = 'sca_reports_period'
+const STORAGE_KEY = 'sca_period'
 
 function savePeriodToStorage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: selectedPeriodId.value, name: lockedPeriodName.value }))

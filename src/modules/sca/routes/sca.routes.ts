@@ -134,4 +134,30 @@ export default [
         component: () => import('@/modules/sca/pages/ScaReportsPage.vue'),
         meta: { title: 'Reportes — Carga Académica' },
     },
+
+    // ── Gestión ──────────────────────────────────────────────────────
+    {
+        path: 'sca/assign-vacancy',
+        name: 'sca.assign-vacancy',
+        component: () => import('@/modules/sca/pages/AssignVacancyPage.vue'),
+        meta: { title: 'Asignar Docente a Vacante' },
+    },
+    {
+        path: 'sca/change-teacher',
+        name: 'sca.change-teacher',
+        component: () => import('@/modules/sca/pages/ChangeTeacherPage.vue'),
+        meta: { title: 'Cambiar Docente de Asignatura' },
+    },
+    {
+        path: 'sca/swap-subjects',
+        name: 'sca.swap-subjects',
+        component: () => import('@/modules/sca/pages/SwapSubjectsPage.vue'),
+        meta: { title: 'Intercambiar Materias' },
+    },
+    {
+        path: 'sca/late-opening',
+        name: 'sca.late-opening',
+        component: () => import('@/modules/sca/pages/LateOpeningPage.vue'),
+        meta: { title: 'Apertura Tardía' },
+    },
 ]

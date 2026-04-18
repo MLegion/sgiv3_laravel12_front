@@ -608,7 +608,7 @@ const periodLocked       = ref(false)
 const lockedPeriodName   = ref('')
 const lockedPeriodStatus = ref('')
 
-const STORAGE_KEY = 'sca_period_selection'
+const STORAGE_KEY = 'sca_period'
 
 function savePeriodToStorage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
