@@ -1,6 +1,9 @@
 <template>
     <div class="h-screen flex flex-col bg-slate-50 overflow-hidden text-slate-900">
 
+        <!-- Banner de Impersonación (solo visible en modo simulación) -->
+        <ImpersonationBanner />
+
         <!-- Navbar Superior: Ahora incluye el botón de menú móvil -->
         <AppNavbar @toggle-sidebar="layout.toggleMobileSidebar()" />
 
@@ -64,6 +67,7 @@ import { onMounted, onUnmounted } from 'vue';
 import AppNavbar from '@/app/components/AppNavbar.vue';
 import AppSidebar from '@/app/components/AppSidebar.vue';
 import Breadcrumbs from '@/app/components/Breadcrumbs.vue';
+import ImpersonationBanner from '@/app/components/ImpersonationBanner.vue';
 import { useLayoutStore } from '@/app/stores/layout.store';
 
 const layout = useLayoutStore();

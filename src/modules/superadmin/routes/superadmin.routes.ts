@@ -441,4 +441,20 @@ export default [
         component: () => import('@/modules/superadmin/pages/sca-catalogs/GlobalComplementaryHourTypesPage.vue'),
         meta: { title: 'Tipos de Horas Complementarias (Global)' },
     },
+
+    //###################################################################################
+    //# IMPERSONATION                                                                    #
+    //###################################################################################
+    {
+        path: 'superadmin/impersonate',
+        name: 'superadmin.impersonate',
+        component: () => import('@/modules/superadmin/pages/ImpersonateUsersPage.vue'),
+        meta: { title: 'Simular Usuario' },
+    },
+    {
+        path: 'superadmin/impersonate/logs',
+        name: 'superadmin.impersonate.logs',
+        component: () => import('@/modules/superadmin/pages/ImpersonationLogsPage.vue'),
+        meta: { title: 'Bitácora de Simulaciones' },
+    },
 ]

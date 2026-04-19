@@ -128,5 +128,11 @@ export default {
                 delete:   (id: string | number) => apiUrl(`/superadmin/sca-catalogs/complementary-hour-types/${id}`),
             },
         },
+        impersonation: {
+            users: apiUrl('/superadmin/impersonate/users'),
+            logs:  apiUrl('/superadmin/impersonate/logs'),
+            start: (userId: string | number) => apiUrl(`/superadmin/impersonate/${userId}`),
+            stop:  apiUrl('/superadmin/impersonate/stop'),
+        },
     },
 } satisfies ApiModule

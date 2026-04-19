@@ -18,8 +18,15 @@ export const useMenuStore = defineStore('menu', () => {
         loaded.value = true
     }
 
+    async function reload() {
+        loaded.value = false
+        menus.value = []
+        await loadMenu()
+    }
+
     function clearMenu() {
         menus.value = []
+        loaded.value = false
     }
 
     function handleNavigate() {
@@ -30,6 +37,7 @@ export const useMenuStore = defineStore('menu', () => {
         menus, // Acceder como menuStore.menus
         loaded,
         loadMenu,
+        reload,
         clearMenu,
         handleNavigate
     }

@@ -1,10 +1,10 @@
 <template>
-    <div class="w-full px-2 mb-1">
+    <div class="w-full mb-0.5" :class="depth > 0 ? 'px-0.5' : 'px-2'">
 
         <!-- ── Etiqueta de sección (grupo de nivel 2+ con children) ── -->
         <div
             v-if="depth > 0 && item.children && !collapsed"
-            class="flex items-center gap-2 px-3 pt-3 pb-1 cursor-pointer select-none group"
+            class="flex items-center gap-2 px-2 pt-2.5 pb-0.5 cursor-pointer select-none group"
             :title="item.label"
             @click="handleClick"
         >
@@ -34,13 +34,13 @@
             v-else
             :is="item.route && !item.children ? 'router-link' : 'div'"
             :to="item.route"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-300 group select-none relative overflow-hidden active:scale-[0.96]"
+            class="flex items-center gap-2 rounded-xl cursor-pointer transition-all duration-300 group select-none relative overflow-hidden active:scale-[0.96]"
             :class="[
                 isActive
                     ? 'text-white bg-indigo-600 shadow-md shadow-indigo-100'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-indigo-600',
                 collapsed ? 'justify-center px-0 w-10 h-10 mx-auto py-0' : '',
-                depth > 0 ? 'py-2' : ''
+                depth > 0 ? 'px-3 py-1.5' : 'px-4 py-2.5'
             ]"
             @click="handleClick"
             :title="item.label"
@@ -69,8 +69,8 @@
             <transition name="fade-text">
                 <span
                     v-if="!collapsed"
-                    class="flex-1 truncate tracking-tight whitespace-nowrap"
-                    :class="depth > 0 ? 'text-[13px] font-medium' : 'text-[14px] font-semibold'"
+                    class="flex-1 tracking-tight leading-tight uppercase"
+                    :class="depth > 0 ? 'text-[12px] font-medium' : 'text-[13px] font-semibold'"
                 >
                     {{ item.label }}
                 </span>
@@ -93,7 +93,7 @@
             <div
                 v-if="!collapsed && item.children && open"
                 class="overflow-hidden"
-                :class="depth === 0 ? 'mt-1 ml-4 space-y-0.5 border-l-2 border-indigo-100 pl-2' : 'mt-0.5 space-y-0.5'"
+                :class="depth === 0 ? 'mt-1 ml-2 space-y-0.5 border-l-2 border-indigo-100 pl-1' : 'mt-0.5 ml-1 space-y-0.5'"
             >
                 <SidebarItem
                     v-for="child in item.children"
@@ -130,17 +130,9 @@ const Icon = computed(() =>
     props.item.icon ? iconMap[props.item.icon] : null
 )
 
+/** Solo las hojas (items con ruta y sin children) se marcan como activos */
 const isActive = computed(() => {
-    if (props.item.route) return route.path === props.item.route
-    if (props.item.children) {
-        return props.item.children.some((child: any) => {
-            if (route.path === child.route) return true
-            if (child.children) {
-                return child.children.some((subChild: any) => route.path === subChild.route)
-            }
-            return false
-        })
-    }
+    if (props.item.route && !props.item.children) return route.path === props.item.route
     return false
 })
 

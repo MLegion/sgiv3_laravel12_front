@@ -2,9 +2,14 @@ export const baseProtectedRoutes = [
     {
         path: '',
         name: 'dashboard',
-        // Apuntamos al contenedor que usa tu Resolver lógico
         component: () => import('@/app/dashboards/DashboardContainer.vue'),
         meta: { title: 'Inicio' }
+    },
+    {
+        path: 'profile',
+        name: 'profile',
+        component: () => import('@/app/pages/ProfilePage.vue'),
+        meta: { title: 'Mi Perfil' }
     },
 ]
 

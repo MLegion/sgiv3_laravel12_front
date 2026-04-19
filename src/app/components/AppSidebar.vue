@@ -2,7 +2,7 @@
     <aside
         class="bg-white border-r border-slate-200 transition-all duration-300 ease-in-out flex flex-col z-50 shadow-sm overflow-hidden h-full"
         :class="[
-            isExpanded ? 'w-64' : 'w-20'
+            isExpanded ? 'w-72' : 'w-20'
         ]"
         @mouseenter="layout.setHovered(true)"
         @mouseleave="layout.setHovered(false)"
