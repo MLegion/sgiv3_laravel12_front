@@ -40,6 +40,7 @@ export interface SchoolCalendarEventType {
     color: string
     excludesClasses: boolean
     isHoliday: boolean
+    isPerModality: boolean
     maxOccurrences: number
     dependencyId: number | null
     visible: boolean
@@ -50,6 +51,12 @@ export interface SchoolCalendarEventType {
     updatedAt: string | null
 }
 
+export interface SchoolCalendarEventModalitySnapshot {
+    id: number
+    modality_type?: { id: number, name: string, short_name?: string | null } | null
+    campus?: { id: number, name: string } | null
+}
+
 export interface SchoolCalendarEvent {
     id: number
     schoolCalendarId: number
@@ -57,6 +64,8 @@ export interface SchoolCalendarEvent {
     startDate: string
     endDate: string
     label: string | null
+    modalityId: number | null
+    modality: SchoolCalendarEventModalitySnapshot | null
     eventType: SchoolCalendarEventType | null
     createdAt: string | null
     updatedAt: string | null

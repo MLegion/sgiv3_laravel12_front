@@ -55,6 +55,8 @@ export default {
             history:               (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/history`),
             generateScheduleDates: (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/generate-schedule-dates`),
             updateScheduleDates:   (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/schedule-dates`),
+            scheduleConflicts:     (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/schedule-conflicts`),
+            adjustScheduleDates:   (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/adjust-schedule-dates`),
         },
         schoolCalendarHolidays: {
             list:   apiUrl('/sca/school-calendar-holidays'),

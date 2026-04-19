@@ -160,4 +160,10 @@ export default [
         component: () => import('@/modules/sca/pages/LateOpeningPage.vue'),
         meta: { title: 'Apertura Tardía' },
     },
+    {
+        path: 'sca/schedule-adjustment',
+        name: 'sca.schedule-adjustment',
+        component: () => import('@/modules/sca/pages/ScheduleAdjustmentPage.vue'),
+        meta: { title: 'Reajuste de Fechas' },
+    },
 ]

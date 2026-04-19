@@ -1,15 +1,37 @@
 <template>
     <div class="space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between flex-wrap gap-3">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Docentes</h1>
-            <button
-                type="button"
-                class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-                @click="router.push({ name: 'sca.teachers.create' })"
-            >
-                <PlusIcon class="w-4 h-4" />
-                REGISTRAR DOCENTE
-            </button>
+            <div class="flex items-center gap-3">
+                <div class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
+                    <button
+                        type="button"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-md transition"
+                        :class="filterVacancy === null ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                        @click="setFilter(null)"
+                    >Todos</button>
+                    <button
+                        type="button"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-md transition"
+                        :class="filterVacancy === false ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                        @click="setFilter(false)"
+                    >Docentes</button>
+                    <button
+                        type="button"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-md transition"
+                        :class="filterVacancy === true ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                        @click="setFilter(true)"
+                    >Solo Vacantes</button>
+                </div>
+                <button
+                    type="button"
+                    class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                    @click="router.push({ name: 'sca.teachers.create' })"
+                >
+                    <PlusIcon class="w-4 h-4" />
+                    REGISTRAR DOCENTE
+                </button>
+            </div>
         </div>
 
         <DataTable
@@ -59,6 +81,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
@@ -79,9 +102,22 @@ const columns: DataTableColumn<Teacher>[] = [
     { key: 'opciones',  label: 'OPCIONES' },
 ]
 
+const filterVacancy = ref<boolean | null>(null)
+
+const extraSearch = computed<Record<string, any>>(() =>
+    filterVacancy.value === null ? {} : { is_vacancy: filterVacancy.value ? 'true' : 'false' }
+)
+
 const { rows, loading, pagination, handleChange, fetchData } = useDataTableFetch<Teacher>({
     endpoint: API.SCA_API.teachers.list,
+    extraSearch,
 })
+
+function setFilter(v: boolean | null) {
+    filterVacancy.value = v
+    pagination.value.page = 1
+    fetchData()
+}
 
 fetchData()
 </script>

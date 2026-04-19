@@ -62,10 +62,25 @@
                     <h2 class="text-[10px] font-black uppercase text-slate-400 tracking-widest">TIPOS DE EVENTO</h2>
 
                     <!-- Selected event type indicator -->
-                    <div v-if="selectedEventType" class="p-2 rounded-lg border-2 border-dashed border-blue-400 bg-blue-50 text-center">
-                        <span class="text-[10px] font-bold text-blue-600 uppercase">MODO PINTAR</span>
-                        <p class="text-xs font-bold mt-1" :style="{ color: selectedEventType.color }">{{ selectedEventType.name }}</p>
-                        <button @click="selectedEventType = null" class="text-[10px] text-red-500 mt-1 hover:underline">CANCELAR</button>
+                    <div v-if="selectedEventType" class="p-2 rounded-lg border-2 border-dashed border-blue-400 bg-blue-50 space-y-2">
+                        <div class="text-center">
+                            <span class="text-[10px] font-bold text-blue-600 uppercase">MODO PINTAR</span>
+                            <p class="text-xs font-bold mt-1" :style="{ color: selectedEventType.color }">{{ selectedEventType.name }}</p>
+                        </div>
+
+                        <!-- Select modalidad (solo si el tipo lo permite) -->
+                        <div v-if="selectedEventType.isPerModality">
+                            <label class="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Aplicar a</label>
+                            <select
+                                v-model="selectedModalityId"
+                                class="w-full text-[11px] font-semibold rounded-md border border-blue-300 bg-white px-2 py-1 focus:ring-1 focus:ring-blue-500 outline-none"
+                            >
+                                <option :value="null">Todas (global)</option>
+                                <option v-for="m in modalities" :key="m.id" :value="m.id">{{ m.label }}</option>
+                            </select>
+                        </div>
+
+                        <button @click="cancelPaintMode" class="w-full text-[10px] text-red-500 hover:underline">CANCELAR</button>
                     </div>
 
                     <!-- Visible event type cards -->
@@ -137,6 +152,11 @@
                                 <component v-if="getIcon(event.eventType?.image)" :is="getIcon(event.eventType?.image)" class="w-3.5 h-3.5" />
                                 <span>{{ event.eventType?.shortName }}</span>
                                 <span class="opacity-75">{{ formatShortDate(event.startDate) }} &rarr; {{ formatShortDate(event.endDate) }}</span>
+                                <span
+                                    v-if="event.modalityId"
+                                    class="ml-0.5 px-1.5 py-0.5 rounded bg-white/25 text-[9px] font-semibold uppercase"
+                                    :title="`Solo aplica a: ${modalityLabelOf(event)}`"
+                                >→ {{ modalityShortOf(event) }}</span>
                                 <button
                                     @click="deleteEvent(event.id)"
                                     class="ml-1 w-4 h-4 flex items-center justify-center rounded-full bg-white/30 hover:bg-white/60 text-white hover:text-red-700 transition-colors"
@@ -291,6 +311,8 @@ const loading = ref(true)
 const togglingStatus = ref(false)
 const errorMsg = ref('')
 const selectedEventType = ref<SchoolCalendarEventType | null>(null)
+const selectedModalityId = ref<number | null>(null)
+const modalities = ref<Array<{ id: number, label: string }>>([])
 const showHidden = ref(false)
 const painting = ref(false)
 const paintStartDate = ref('')
@@ -451,6 +473,8 @@ function getDayCellTitle(year: number, month: number, day: number): string {
 // ---------- Paint mode ----------
 function selectEventType(et: SchoolCalendarEventType) {
     selectedEventType.value = selectedEventType.value?.id === et.id ? null : et
+    // Al cambiar tipo, resetear el scope (se podrá volver a elegir)
+    selectedModalityId.value = null
 }
 
 function startPaint(year: number, month: number, day: number) {
@@ -484,6 +508,7 @@ async function endPaint() {
             event_type_id: selectedEventType.value.id,
             start_date: start,
             end_date: end,
+            modality_id: selectedEventType.value.isPerModality ? selectedModalityId.value : null,
         })
         await loadEvents()
     } catch (e: any) {
@@ -575,6 +600,37 @@ function handleOutsideClick() {
 }
 
 // ---------- Lifecycle ----------
+async function loadModalities() {
+    try {
+        // school-services/modalities devuelve modalities filtrados al college
+        const res = await api.get('/api/v1/school-services/modalities', { params: { per_page: 100 } })
+        const items = res.data?.items ?? res.data?.data ?? (Array.isArray(res.data) ? res.data : [])
+        modalities.value = items.map((m: any) => ({
+            id: m.id,
+            label: [m.campus?.name, m.modalityType?.name].filter(Boolean).join(' — ') || `Modalidad ${m.id}`,
+        }))
+    } catch {
+        modalities.value = []
+    }
+}
+
+function cancelPaintMode() {
+    selectedEventType.value = null
+    selectedModalityId.value = null
+}
+
+function modalityLabelOf(event: any): string {
+    if (!event?.modality) return 'Modalidad'
+    const type = event.modality.modality_type?.name ?? ''
+    const campus = event.modality.campus?.name ?? ''
+    return [campus, type].filter(Boolean).join(' — ') || 'Modalidad'
+}
+
+function modalityShortOf(event: any): string {
+    if (!event?.modality) return 'MOD'
+    return (event.modality.modality_type?.short_name || event.modality.modality_type?.name || 'MOD').toUpperCase()
+}
+
 onMounted(async () => {
     document.addEventListener('click', handleOutsideClick)
     document.addEventListener('mouseup', endPaint)
@@ -583,7 +639,7 @@ onMounted(async () => {
     errorMsg.value = ''
     await loadCalendar()
     if (calendar.value) {
-        await Promise.all([loadEventTypes(), loadEvents()])
+        await Promise.all([loadEventTypes(), loadEvents(), loadModalities()])
     }
     loading.value = false
 })
