@@ -78,6 +78,14 @@ export default {
         studentStatuses: {
             list: apiUrl('/school-services/student-statuses'),
         },
+        studentGroups: {
+            pendingStudents:  apiUrl('/school-services/student-groups/pending-students'),
+            cohortGroups:     apiUrl('/school-services/student-groups/cohort-groups'),
+            studentsInGroup:  (groupId: string | number) => apiUrl(`/school-services/student-groups/${groupId}/students`),
+            assign:           apiUrl('/school-services/student-groups/assign'),
+            bulkAssign:       apiUrl('/school-services/student-groups/bulk-assign'),
+            remove:           apiUrl('/school-services/student-groups'),
+        },
         approvalTypes: {
             list:   apiUrl('/school-services/approval-types'),
             active: apiUrl('/school-services/approval-types/active'),

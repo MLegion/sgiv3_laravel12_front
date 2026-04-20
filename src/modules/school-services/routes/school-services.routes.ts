@@ -282,4 +282,12 @@ export default [
         component: () => import('@/modules/school-services/pages/SchoolServicesConfigPage.vue'),
         meta: { title: 'Configuración - Servicios Escolares' },
     },
+
+    // Asignación de grupos (nuevo ingreso / reinscripción)
+    {
+        path: 'school-services/group-assignment',
+        name: 'school-services.group-assignment',
+        component: () => import('@/modules/school-services/pages/StudentGroupAssignmentPage.vue'),
+        meta: { title: 'Asignación de Grupos' },
+    },
 ]
