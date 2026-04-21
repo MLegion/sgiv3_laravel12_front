@@ -10,6 +10,7 @@ export default {
             create: apiUrl('/sca/teachers'),
             update: (id: string | number) => apiUrl(`/sca/teachers/${id}`),
             delete: (id: string | number) => apiUrl(`/sca/teachers/${id}`),
+            workload: (id: string | number) => apiUrl(`/sca/teachers/${id}/workload`),
         },
         teacherAcademicOffers: {
             assigned:  (aoId: string | number) => apiUrl(`/sca/teacher-academic-offers/assigned/${aoId}`),
@@ -48,6 +49,7 @@ export default {
             byId:             (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}`),
             create:           apiUrl('/sca/academic-load-configs'),
             update:           (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}`),
+            updateStatus:     (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/status`),
             delete:           (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}`),
             togglePhase:      (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/toggle-phase`),
             syncFromCalendar: (id: string | number) => apiUrl(`/sca/academic-load-configs/${id}/sync-from-calendar`),

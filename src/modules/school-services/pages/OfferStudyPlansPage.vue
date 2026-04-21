@@ -4,10 +4,39 @@
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Oferta por Plan de Estudio</h1>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando ofertas...</div>
+        <div class="bg-white rounded-lg shadow p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label class="block">
+                <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Campus</span>
+                <select
+                    v-model="selectedCampusId"
+                    @change="fetchOffers"
+                    class="mt-1 w-full border-2 rounded-lg px-3 py-2 text-sm border-slate-200 focus:border-blue-500 outline-none"
+                >
+                    <option :value="null">TODOS</option>
+                    <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
+                </select>
+            </label>
+            <label class="block">
+                <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Tipo de modalidad</span>
+                <select
+                    v-model="selectedModalityTypeId"
+                    @change="fetchOffers"
+                    class="mt-1 w-full border-2 rounded-lg px-3 py-2 text-sm border-slate-200 focus:border-blue-500 outline-none"
+                >
+                    <option :value="null">TODOS</option>
+                    <option v-for="t in modalityTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
+                </select>
+            </label>
+        </div>
+
+        <div v-if="!bothFiltersSelected" class="bg-white border rounded-xl p-8 text-center text-sm text-slate-400 italic">
+            Selecciona un campus y un tipo de modalidad para ver las ofertas.
+        </div>
+
+        <div v-else-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando ofertas...</div>
 
         <div v-else-if="offers.length === 0" class="bg-white border rounded-xl p-8 text-center text-sm text-slate-400 italic">
-            No hay ofertas académicas registradas.
+            No hay ofertas académicas registradas con esos filtros.
         </div>
 
         <div v-else class="space-y-3">
@@ -41,7 +70,7 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="text-xs text-slate-400">
-                            {{ (studyPlansMap[offer.id] ?? []).length }} plan(es)
+                            {{ studyPlansMap[offer.id]?.length ?? offer.studyPlansCount ?? 0 }} plan(es)
                         </span>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -98,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
@@ -114,13 +143,76 @@ const loadingPlans = ref<Set<number>>(new Set())
 const studyPlansMap = reactive<Record<number, AcademicOfferStudyPlanType[]>>({})
 const totalAvailableMap = reactive<Record<number, number>>({})
 
+/* ---------- Filtros ---------- */
+interface Catalog { id: number; name: string }
+const campuses      = ref<Catalog[]>([])
+const modalityTypes = ref<Catalog[]>([])
+
+/* Persistencia en sessionStorage para no perder filtros al navegar a
+   vincular/desvincular plan y regresar. */
+const FILTERS_KEY = 'sgiv3:offer-study-plans-page:filters'
+function loadSavedFilters(): { campusId: number | null; modalityTypeId: number | null } {
+    try {
+        const raw = sessionStorage.getItem(FILTERS_KEY)
+        if (!raw) return { campusId: null, modalityTypeId: null }
+        const parsed = JSON.parse(raw)
+        return {
+            campusId:       typeof parsed?.campusId === 'number' ? parsed.campusId : null,
+            modalityTypeId: typeof parsed?.modalityTypeId === 'number' ? parsed.modalityTypeId : null,
+        }
+    } catch {
+        return { campusId: null, modalityTypeId: null }
+    }
+}
+const savedFilters = loadSavedFilters()
+const selectedCampusId       = ref<number | null>(savedFilters.campusId)
+const selectedModalityTypeId = ref<number | null>(savedFilters.modalityTypeId)
+
+function persistFilters() {
+    sessionStorage.setItem(FILTERS_KEY, JSON.stringify({
+        campusId:       selectedCampusId.value,
+        modalityTypeId: selectedModalityTypeId.value,
+    }))
+}
+
+const bothFiltersSelected = computed(
+    () => !!selectedCampusId.value && !!selectedModalityTypeId.value
+)
+
 async function fetchOffers() {
+    persistFilters()
+    if (!bothFiltersSelected.value) {
+        offers.value = []
+        return
+    }
     loading.value = true
     try {
-        const { data } = await api.get(API.SCHOOL_SERVICES_API.academicOffers.list, { params: { per_page: 200 } })
+        const { data } = await api.get(API.SCHOOL_SERVICES_API.academicOffers.list, {
+            params: {
+                per_page: 200,
+                search: {
+                    campus_id:        selectedCampusId.value,
+                    modality_type_id: selectedModalityTypeId.value,
+                },
+            },
+        })
         offers.value = data.items ?? []
     } finally {
         loading.value = false
+    }
+}
+
+async function loadCatalogs() {
+    try {
+        const [c, t] = await Promise.all([
+            api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 500, status: 1 } }),
+            api.get(API.SUPERADMIN_API.modalityTypes.list, { params: { per_page: 100 } }),
+        ])
+        campuses.value      = c.data?.items ?? c.data?.data ?? c.data ?? []
+        modalityTypes.value = t.data?.items ?? t.data?.data ?? t.data ?? []
+    } catch {
+        campuses.value = []
+        modalityTypes.value = []
     }
 }
 
@@ -155,5 +247,12 @@ async function toggle(offer: AcademicOfferType) {
     }
 }
 
-onMounted(fetchOffers)
+onMounted(async () => {
+    loading.value = false
+    await loadCatalogs()
+    // Si el usuario ya tenía filtros guardados, recargar sus ofertas automáticamente.
+    if (bothFiltersSelected.value) {
+        await fetchOffers()
+    }
+})
 </script>

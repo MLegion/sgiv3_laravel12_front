@@ -11,6 +11,25 @@
             </button>
         </div>
 
+        <div v-if="errorMsg" class="text-sm px-4 py-3 rounded-lg bg-red-50 text-red-700 border border-red-100">
+            {{ errorMsg }}
+        </div>
+
+        <div class="bg-white rounded-lg shadow px-4 py-3 flex items-center gap-3">
+            <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    v-model="showArchived"
+                    @change="onToggleArchived"
+                />
+                <span class="text-sm text-slate-700">Incluir periodos archivados</span>
+            </label>
+            <span class="text-xs text-slate-400">
+                (ocultos por defecto para facilitar la búsqueda)
+            </span>
+        </div>
+
         <DataTable
             :columns="columns"
             :rows="rows"
@@ -18,15 +37,27 @@
             :pagination="pagination"
             @change="handleChange"
         >
-            <template #cell-academicPeriod="{ row }">
+            <template #cell-name="{ row }">
                 {{ row.academicPeriod?.name ?? '-' }}
                 <span v-if="row.academicPeriod" class="text-xs text-slate-400 ml-1">({{ row.academicPeriod.shortName }})</span>
             </template>
 
             <template #cell-status="{ row }">
-                <span class="px-2 py-1 text-xs font-semibold rounded-full" :class="STATUS_CLASSES[row.status]">
-                    {{ row.statusLabel }}
-                </span>
+                <div class="flex items-center gap-2">
+                    <select
+                        :value="row.status"
+                        :disabled="savingIds.has(row.id)"
+                        class="text-xs font-semibold rounded-full border-0 focus:ring-2 focus:ring-blue-400 px-3 py-1 cursor-pointer disabled:opacity-60"
+                        :class="STATUS_CLASSES[row.status]"
+                        @change="onStatusChange(row, ($event.target as HTMLSelectElement).value)"
+                    >
+                        <option v-for="opt in STATUS_OPTIONS" :key="opt.value" :value="opt.value">
+                            {{ opt.label }}
+                        </option>
+                    </select>
+                    <span v-if="savingIds.has(row.id)" class="text-[10px] text-slate-400">Guardando…</span>
+                    <span v-else-if="savedIds.has(row.id)" class="text-[10px] text-emerald-600">✓ Guardado</span>
+                </div>
             </template>
 
             <template #cell-opciones="{ row }">
@@ -69,30 +100,75 @@
 </template>
 
 <script setup lang="ts">
+import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { CollegeAcademicPeriod } from '@/modules/school-services/types/college-academic-period.type'
-import { STATUS_CLASSES } from '@/modules/school-services/types/college-academic-period.type'
+import type { AcademicPeriodStatus, CollegeAcademicPeriod } from '@/modules/school-services/types/college-academic-period.type'
+import { STATUS_CLASSES, STATUS_OPTIONS } from '@/modules/school-services/types/college-academic-period.type'
 
 const router = useRouter()
 
 const columns: DataTableColumn<CollegeAcademicPeriod>[] = [
     { key: 'id',              label: '#',              field: 'id',        sortable: true },
-    { key: 'academicPeriod',  label: 'PERIODO GLOBAL', field: 'academicPeriodId' },
+    { key: 'name',            label: 'PERIODO GLOBAL', field: 'academicPeriodId',            searchable: true },
     { key: 'actualStartDate', label: 'INICIO REAL',    field: 'actualStartDate' },
     { key: 'actualEndDate',   label: 'FIN REAL',       field: 'actualEndDate' },
     { key: 'status',          label: 'ESTADO' },
     { key: 'opciones',        label: 'OPCIONES' },
 ]
 
+const showArchived = ref(false)
+const extraSearch = computed<Record<string, any>>(() =>
+    showArchived.value ? {} : { status_exclude: 'archived' }
+)
+
 const { rows, loading, pagination, handleChange, fetchData } =
     useDataTableFetch<CollegeAcademicPeriod>({
         endpoint: API.SCHOOL_SERVICES_API.collegeAcademicPeriods.list,
+        extraSearch,
     })
+
+function onToggleArchived() {
+    pagination.value.page = 1
+    fetchData()
+}
+
+/* ---------- Cambio de estado inline ---------- */
+const savingIds = reactive(new Set<number>())
+const savedIds  = reactive(new Set<number>())
+const errorMsg  = ref('')
+
+async function onStatusChange(row: CollegeAcademicPeriod, newStatus: string) {
+    if (newStatus === row.status) return
+
+    const prevStatus = row.status
+    row.status = newStatus as AcademicPeriodStatus
+    savingIds.add(row.id)
+    errorMsg.value = ''
+
+    try {
+        const { data } = await api.patch(
+            API.SCHOOL_SERVICES_API.collegeAcademicPeriods.updateStatus(row.id),
+            { status: newStatus },
+        )
+        row.status      = data.status ?? newStatus
+        row.statusLabel = data.statusLabel ?? row.statusLabel
+        savedIds.add(row.id)
+        setTimeout(() => savedIds.delete(row.id), 2000)
+    } catch (e: any) {
+        row.status = prevStatus
+        errorMsg.value = e?.response?.data?.message
+            || e?.response?.data?.errors?.status?.[0]
+            || 'Error al cambiar el estado.'
+    } finally {
+        savingIds.delete(row.id)
+    }
+}
 
 fetchData()
 </script>

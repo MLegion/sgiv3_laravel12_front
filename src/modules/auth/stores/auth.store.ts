@@ -63,12 +63,51 @@ export const useAuthStore = defineStore('auth', {
 
             router.replace('/auth/splash')
         },
+
+        /**
+         * Login con Google OAuth (access_token emitido por GIS).
+         * El backend valida que el email matchee el dominio Workspace del college.
+         */
+        async loginWithGoogle(payload: { accessToken: string; collegeId: number }) {
+            const { data } = await api.post('/api/v1/auth/google', {
+                access_token: payload.accessToken,
+                college_id:   payload.collegeId,
+            })
+
+            this.token = data.access_token
+            this.user  = data.user
+            this.mustChangePassword = data.must_change_password ?? false
+
+            localStorage.setItem('token', data.access_token)
+            localStorage.setItem('user', JSON.stringify(data.user))
+            localStorage.setItem('must_change_password', String(this.mustChangePassword))
+
+            router.replace('/auth/splash')
+        },
         /**
          * Hidrata el estado del usuario al refrescar la página
          * Se ejecuta SOLO desde el router guard
          */
         async hydrate() {
             if (this.hydrated) return
+
+            // Limpieza proactiva: si la simulación tenía expires_at en el pasado,
+            // cae automáticamente al token del impersonador (antes de que un 401
+            // tenga que disparar el interceptor).
+            const expiresAt = localStorage.getItem('impersonation_expires_at')
+            if (expiresAt && new Date(expiresAt).getTime() < Date.now()) {
+                const impToken = localStorage.getItem('impersonator_token')
+                const impUser  = localStorage.getItem('impersonator_user')
+                if (impToken && impUser) {
+                    localStorage.setItem('token', impToken)
+                    localStorage.setItem('user', impUser)
+                    localStorage.setItem('must_change_password', 'false')
+                }
+                localStorage.removeItem('impersonator_token')
+                localStorage.removeItem('impersonator_user')
+                localStorage.removeItem('impersonator_info')
+                localStorage.removeItem('impersonation_expires_at')
+            }
 
             const storedUser = localStorage.getItem('user')
             const storeToken = localStorage.getItem('token')
@@ -85,7 +124,7 @@ export const useAuthStore = defineStore('auth', {
                 this.token = storeToken
                 this.mustChangePassword = mustChange === 'true'
 
-                // Hidrata estado de impersonación si existe
+                // Hidrata estado de impersonación si existe (aún vigente)
                 const impToken = localStorage.getItem('impersonator_token')
                 const impUser = localStorage.getItem('impersonator_user')
                 const impInfo = localStorage.getItem('impersonator_info')
@@ -93,9 +132,17 @@ export const useAuthStore = defineStore('auth', {
                     this.impersonatorToken = impToken
                     this.impersonatorUser = JSON.parse(impUser)
                     this.impersonator = impInfo ? JSON.parse(impInfo) : null
+                    this.impersonationExpiresAt = localStorage.getItem('impersonation_expires_at')
                 }
 
                 this.hydrated = true
+
+                // Ping al backend para verificar que el token siga vivo.
+                // Si el token actual está revocado/expirado, el interceptor 401
+                // lo detecta y limpia la sesión (si hay impersonator_token vivo lo restaura).
+                // Esto cierra el caso de "cerré la ventana y al reabrir el token
+                // ya no sirve pero sigue en localStorage".
+                api.get('/api/v1/auth/me').catch(() => { /* 401 manejado por interceptor */ })
             }
         },
 
@@ -124,8 +171,9 @@ export const useAuthStore = defineStore('auth', {
         }) {
             const { data } = await api.post(`/api/v1/superadmin/impersonate/${payload.userId}`)
 
-            // Preservar sesión original
-            if (this.token && this.user) {
+            // Preservar sesión original — SOLO si no estábamos ya simulando
+            // (evita pisar el token real del superadmin con el de una simulación previa)
+            if (this.token && this.user && !this.impersonatorToken) {
                 this.impersonatorToken = this.token
                 this.impersonatorUser = this.user
                 localStorage.setItem('impersonator_token', this.token)

@@ -52,8 +52,10 @@ export default {
                 apiUrl(`/school-services/college-academic-periods?per_page=1&search[academic_period_id]=${academicPeriodId}`),
             create:          apiUrl('/school-services/college-academic-periods'),
             update:          (id: string | number) => apiUrl(`/school-services/college-academic-periods/${id}`),
+            updateStatus:    (id: string | number) => apiUrl(`/school-services/college-academic-periods/${id}/status`),
             delete:          (id: string | number) => apiUrl(`/school-services/college-academic-periods/${id}`),
         },
+
         admittedApplicants: {
             list:   apiUrl('/school-services/admitted-applicants'),
         },

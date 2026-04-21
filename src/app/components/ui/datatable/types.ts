@@ -58,6 +58,13 @@ export interface DataTableColumn<T = any> {
      * (por defecto true)
      */
     exportable?: boolean
+
+    /**
+     * Indica si esta columna participa en la búsqueda global del DataTable.
+     * Cuando el usuario escribe en el input de búsqueda, se incluye el término
+     * en search[col.key] que se envía al backend.
+     */
+    searchable?: boolean
 }
 
 /**

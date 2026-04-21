@@ -57,15 +57,15 @@
                         <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">{{ filterType === 'teacher' ? 'DOCENTE' : filterType === 'group' ? 'GRUPO' : 'AULA' }}</label>
                         <select v-model="filterValue" :disabled="!resolvedConfigId"
                             class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase disabled:bg-slate-100 disabled:text-slate-400">
-                            <option :value="null">-- TODOS --</option>
+                            <option :value="null">-- SELECCIONA UN VALOR --</option>
                             <option v-for="opt in filterOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
                         </select>
                     </div>
                 </div>
             </section>
 
-            <!-- ═════ Sección: Herramientas (solo cuando hay editor visible) ═════ -->
-            <section v-if="resolvedConfigId && !configError" class="bg-white border rounded-xl shadow-sm overflow-hidden">
+            <!-- ═════ Sección: Herramientas (solo cuando hay editor visible y filtro elegido) ═════ -->
+            <section v-if="resolvedConfigId && !configError && filterValue" class="bg-white border rounded-xl shadow-sm overflow-hidden">
                 <header class="px-4 py-2 bg-slate-50 border-b flex items-center justify-between flex-wrap gap-2">
                     <h2 class="text-[11px] font-black text-slate-600 uppercase tracking-widest">Herramientas</h2>
                     <span v-if="eraserMode" class="text-[10px] font-bold uppercase text-red-600 flex items-center gap-1.5">
@@ -187,8 +187,13 @@
                 <p class="text-sm text-amber-700 font-semibold uppercase">{{ configError }}</p>
             </div>
 
+            <!-- ═════ Placeholder cuando no hay filtro seleccionado ═════ -->
+            <div v-if="resolvedConfigId && !configError && !filterValue" class="bg-white border rounded-xl p-8 text-center text-sm text-slate-400 italic">
+                Selecciona un {{ filterType === 'teacher' ? 'docente' : filterType === 'group' ? 'grupo' : 'aula' }} para ver y gestionar su horario.
+            </div>
+
             <!-- ═════ Body: panel + grid ═════ -->
-            <template v-if="resolvedConfigId && !configError && !comparisonMode && !listMode">
+            <template v-if="resolvedConfigId && !configError && filterValue && !comparisonMode && !listMode">
                 <div class="flex gap-0">
 
                     <!-- ── Panel izquierdo (asignaturas) ── -->
@@ -213,7 +218,10 @@
                                 @pointerdown="onAssignmentPointerDown(a, $event)"
                             >
                                 <div class="px-2 py-1.5 bg-orange-200/60 border-b border-slate-300 text-center">
-                                    <span class="text-[11px] font-black text-slate-800 uppercase leading-tight block truncate">
+                                    <span
+                                        class="text-[11px] font-black text-slate-800 uppercase leading-tight block truncate"
+                                        :title="a.subject?.name || a.subject?.shortName || ''"
+                                    >
                                         {{ a.subject?.shortName || a.subject?.name || '—' }}
                                     </span>
                                 </div>
@@ -331,7 +339,10 @@
                                     :style="blockGridStyle(block)"
                                     @pointerdown="onBlockPointerDown(block, $event)"
                                 >
-                                    <div class="text-[11px] font-black uppercase text-slate-800 truncate w-full leading-tight">
+                                    <div
+                                        class="text-[11px] font-black uppercase text-slate-800 truncate w-full leading-tight"
+                                        :title="block.teacherAssignment?.subject?.name || block.teacherAssignment?.subject?.shortName || ''"
+                                    >
                                         {{ block.teacherAssignment?.subject?.shortName || block.teacherAssignment?.subject?.name || '—' }}
                                     </div>
                                     <div class="text-[10px] text-slate-700 truncate w-full mt-0.5">
@@ -362,7 +373,10 @@
                                 >
                                 <!-- Info de la asignatura (NO clickable) -->
                                 <div class="bg-slate-800 text-white px-1 py-1 text-center flex-shrink-0">
-                                    <div class="text-[10px] font-black uppercase truncate leading-tight">
+                                    <div
+                                        class="text-[10px] font-black uppercase truncate leading-tight"
+                                        :title="block.teacherAssignment?.subject?.name || block.teacherAssignment?.subject?.shortName || ''"
+                                    >
                                         {{ block.teacherAssignment?.subject?.shortName || block.teacherAssignment?.subject?.name || '—' }}
                                     </div>
                                     <div class="text-[8px] opacity-75 uppercase truncate leading-tight">
@@ -414,7 +428,7 @@
             </template>
 
             <!-- ═════ Vista: Modo Lista ═════ -->
-            <template v-if="resolvedConfigId && !configError && listMode">
+            <template v-if="resolvedConfigId && !configError && filterValue && listMode">
                 <div class="bg-white border-2 border-sky-800 rounded-lg overflow-hidden">
                     <div class="px-4 py-2 bg-sky-50 border-b-2 border-sky-800 flex items-center justify-between flex-wrap gap-2">
                         <h2 class="text-[13px] font-black uppercase text-sky-800 tracking-tight">HORARIO COMPLETO ({{ listRows.length }} clases)</h2>
@@ -450,7 +464,7 @@
                                         {{ row.startTime }} — {{ row.endTime }}
                                     </td>
                                     <td class="px-3 py-1.5 font-bold text-slate-700">{{ row.group || '—' }}</td>
-                                    <td class="px-3 py-1.5 uppercase text-slate-700">
+                                    <td class="px-3 py-1.5 uppercase text-slate-700" :title="row.subjectFullName || row.subject || ''">
                                         <div class="font-bold">{{ row.subject || '—' }}</div>
                                         <div v-if="row.subjectCode" class="text-[9px] text-slate-400 font-mono">{{ row.subjectCode }}</div>
                                     </td>
@@ -474,7 +488,7 @@
             </template>
 
             <!-- ═════ Vista: Comparación ═════ -->
-            <template v-if="resolvedConfigId && !configError && comparisonMode">
+            <template v-if="resolvedConfigId && !configError && filterValue && comparisonMode">
                 <div class="flex gap-0">
 
                     <!-- ── Panel izquierdo: selector de items a comparar ── -->
@@ -1079,7 +1093,7 @@ const filterType = ref<'teacher' | 'group' | 'place'>('teacher')
 const filterValue = ref<number | null>(null)
 
 // ══════════════════════ COMPUTED ═══════════════════════════
-const modalityTypeConfig = computed(() => selectedConfig.value?.modality?.modalityType?.config?.config ?? null)
+const modalityTypeConfig = computed(() => selectedConfig.value?.modality?.modalityType?.config ?? null)
 
 const usesSpecificDates = computed(() => !!modalityTypeConfig.value?.schedule?.uses_specific_dates)
 
@@ -1475,7 +1489,7 @@ function toggleLock() {
 // ══════════════════════ DATA LOADING ═══════════════════════════
 async function fetchCampuses() {
     try {
-        const { data } = await api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 100 } })
+        const { data } = await api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 100, status: 1 } })
         campuses.value = (data?.items ?? data?.data ?? data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName ?? `#${c.id}` }))
     } catch { campuses.value = [] }
 }
@@ -2393,6 +2407,7 @@ interface ListRow {
     startMinutes: number
     group: string
     subject: string
+    subjectFullName: string
     subjectCode: string
     teacher: string
     isVacancy: boolean
@@ -2428,7 +2443,8 @@ const listRows = computed<ListRow[]>(() => {
             endTime: s.endTime,
             startMinutes: parseTime(s.startTime),
             group: s.teacherAssignment?.group?.name ?? '',
-            subject: s.teacherAssignment?.subject?.name ?? '',
+            subject: s.teacherAssignment?.subject?.shortName ?? s.teacherAssignment?.subject?.name ?? '',
+            subjectFullName: s.teacherAssignment?.subject?.name ?? '',
             subjectCode: s.teacherAssignment?.subject?.officialCode ?? '',
             teacher: s.teacherAssignment?.teacher?.name ?? '',
             isVacancy: s.teacherAssignment?.teacher?.isVacancy ?? false,

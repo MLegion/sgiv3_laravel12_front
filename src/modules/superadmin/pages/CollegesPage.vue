@@ -150,6 +150,7 @@
                 </div>
             </template>
         </DataTable>
+
     </div>
 </template>
 
@@ -169,7 +170,7 @@ import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFet
 const router = useRouter()
 
 /**
- * Modelo mínimo de Empleado para la tabla
+ * Modelo mínimo de College para la tabla
  */
 interface College {
     id: number

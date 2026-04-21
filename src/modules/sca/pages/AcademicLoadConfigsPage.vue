@@ -12,6 +12,25 @@
             </button>
         </div>
 
+        <div v-if="errorMsg" class="text-sm px-4 py-3 rounded-lg bg-red-50 text-red-700 border border-red-100">
+            {{ errorMsg }}
+        </div>
+
+        <div class="bg-white rounded-lg shadow px-4 py-3 flex items-center gap-3">
+            <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    v-model="showArchived"
+                    @change="onToggleArchived"
+                />
+                <span class="text-sm text-slate-700">Incluir configuraciones de periodos archivados</span>
+            </label>
+            <span class="text-xs text-slate-400">
+                (ocultas por defecto para facilitar la búsqueda)
+            </span>
+        </div>
+
         <DataTable
             :columns="columns"
             :rows="rows"
@@ -23,6 +42,10 @@
                 {{ row.collegeAcademicPeriod?.academicPeriod?.name ?? '—' }}
             </template>
 
+            <template #cell-campus="{ row }">
+                {{ row.modality?.campus?.name ?? row.modality?.campus?.shortName ?? '—' }}
+            </template>
+
             <template #cell-modality="{ row }">
                 {{ row.modality?.modalityType?.name ?? '—' }}
             </template>
@@ -30,15 +53,26 @@
             <template #cell-period_status="{ row }">
                 <span class="px-2 py-1 text-[10px] font-semibold rounded-full"
                     :class="periodStatusClass(row.collegeAcademicPeriod?.status)">
-                    {{ (row.collegeAcademicPeriod?.status ?? '—').toUpperCase() }}
+                    {{ periodStatusLabel(row.collegeAcademicPeriod?.status) }}
                 </span>
             </template>
 
             <template #cell-status="{ row }">
-                <span class="px-2 py-1 text-[10px] font-semibold rounded-full"
-                    :class="configStatusClass(row.status)">
-                    {{ statusLabel(row.status) }}
-                </span>
+                <div class="flex items-center gap-2">
+                    <select
+                        :value="row.status"
+                        :disabled="savingIds.has(row.id)"
+                        class="text-[10px] font-semibold rounded-full border-0 focus:ring-2 focus:ring-blue-400 px-3 py-1 cursor-pointer disabled:opacity-60"
+                        :class="configStatusClass(row.status)"
+                        @change="onStatusChange(row, ($event.target as HTMLSelectElement).value)"
+                    >
+                        <option v-for="opt in CONFIG_STATUS_OPTIONS" :key="opt.value" :value="opt.value">
+                            {{ opt.label }}
+                        </option>
+                    </select>
+                    <span v-if="savingIds.has(row.id)" class="text-[10px] text-slate-400">Guardando…</span>
+                    <span v-else-if="savedIds.has(row.id)" class="text-[10px] text-emerald-600">✓ Guardado</span>
+                </div>
             </template>
 
             <template #cell-phases_active="{ row }">
@@ -72,6 +106,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
@@ -80,12 +115,24 @@ import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { API } from '@/shared/api'
 import { api } from '@/shared/services/api'
 import type { AcademicLoadConfig } from '@/modules/sca/types/academicLoadConfig.type'
+import { STATUS_OPTIONS as PERIOD_STATUS_OPTIONS } from '@/modules/school-services/types/college-academic-period.type'
+
+const CONFIG_STATUS_OPTIONS = [
+    { value: 'draft',  label: 'Borrador' },
+    { value: 'active', label: 'Activo' },
+    { value: 'closed', label: 'Cerrado' },
+]
+
+const PERIOD_LABEL_MAP: Record<string, string> = Object.fromEntries(
+    PERIOD_STATUS_OPTIONS.map(o => [o.value, o.label])
+)
 
 const router = useRouter()
 
 const columns: DataTableColumn<AcademicLoadConfig>[] = [
     { key: 'id',             label: '#',             field: 'id', sortable: true },
     { key: 'period',         label: 'PERIODO' },
+    { key: 'campus',         label: 'CAMPUS' },
     { key: 'modality',       label: 'MODALIDAD' },
     { key: 'period_status',  label: 'PERIODO' },
     { key: 'status',         label: 'CONFIG' },
@@ -94,9 +141,20 @@ const columns: DataTableColumn<AcademicLoadConfig>[] = [
     { key: 'opciones',       label: 'OPCIONES' },
 ]
 
+const showArchived = ref(false)
+const extraSearch = computed<Record<string, any>>(() =>
+    showArchived.value ? {} : { period_status_exclude: 'archived' }
+)
+
 const { rows, loading, pagination, handleChange, fetchData } = useDataTableFetch<AcademicLoadConfig>({
     endpoint: API.SCA_API.academicLoadConfigs.list,
+    extraSearch,
 })
+
+function onToggleArchived() {
+    pagination.value.page = 1
+    fetchData()
+}
 
 fetchData()
 
@@ -113,6 +171,11 @@ function activePhasesCount(row: AcademicLoadConfig): number {
 
 function statusLabel(status: string): string {
     return ({ draft: 'BORRADOR', active: 'ACTIVO', closed: 'CERRADO' } as Record<string, string>)[status] ?? status.toUpperCase()
+}
+
+function periodStatusLabel(status?: string | null): string {
+    if (!status) return '—'
+    return (PERIOD_LABEL_MAP[status] ?? status).toUpperCase()
 }
 
 function configStatusClass(status: string): string {
@@ -137,6 +200,37 @@ function formatSync(s: string | null): string {
     if (!s) return 'NUNCA'
     const d = new Date(s)
     return d.toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+}
+
+/* ---------- Cambio de estado inline ---------- */
+const savingIds = reactive(new Set<number>())
+const savedIds  = reactive(new Set<number>())
+const errorMsg  = ref('')
+
+async function onStatusChange(row: AcademicLoadConfig, newStatus: string) {
+    if (newStatus === row.status) return
+
+    const prevStatus = row.status
+    row.status = newStatus as AcademicLoadConfig['status']
+    savingIds.add(row.id)
+    errorMsg.value = ''
+
+    try {
+        const { data } = await api.patch(
+            API.SCA_API.academicLoadConfigs.updateStatus(row.id),
+            { status: newStatus },
+        )
+        row.status = data.status ?? newStatus
+        savedIds.add(row.id)
+        setTimeout(() => savedIds.delete(row.id), 2000)
+    } catch (e: any) {
+        row.status = prevStatus
+        errorMsg.value = e?.response?.data?.message
+            || e?.response?.data?.errors?.status?.[0]
+            || 'Error al cambiar el estado.'
+    } finally {
+        savingIds.delete(row.id)
+    }
 }
 
 async function confirmDelete(row: AcademicLoadConfig) {

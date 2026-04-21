@@ -20,9 +20,36 @@
             {{ banner.message }}
         </div>
 
+        <!-- Toggle: mostrar solo con simulación activa -->
+        <div class="bg-white rounded-lg border px-4 py-2 flex items-center justify-between flex-wrap gap-2">
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                    type="checkbox"
+                    v-model="onlyActive"
+                    class="rounded border-gray-300"
+                />
+                <span class="text-slate-700">Solo usuarios con simulación activa</span>
+                <span
+                    v-if="activeUserIds.size > 0"
+                    class="ml-1 inline-flex items-center justify-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700"
+                >
+                    {{ activeUserIds.size }}
+                </span>
+            </label>
+            <button
+                type="button"
+                class="text-xs px-3 py-1 rounded border hover:bg-gray-50"
+                :disabled="loading"
+                @click="loadActiveImpersonations"
+                title="Refrescar lista de sesiones activas"
+            >
+                Refrescar
+            </button>
+        </div>
+
         <DataTable
             :columns="columns"
-            :rows="rows"
+            :rows="filteredRows"
             :loading="loading"
             :pagination="pagination"
             :perPageOptions="[10, 15, 30, 50]"
@@ -34,6 +61,14 @@
 
             <template #cell-name="{ row }">
                 <span class="font-medium text-slate-800">{{ row.name }}</span>
+                <span
+                    v-if="activeUserIds.has(row.id)"
+                    class="ml-2 inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200"
+                    title="Tiene una sesión de simulación activa"
+                >
+                    <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                    Activa
+                </span>
             </template>
 
             <template #cell-email="{ row }">
@@ -63,6 +98,18 @@
             <template #cell-acciones="{ row }">
                 <div class="flex items-center justify-center">
                     <button
+                        v-if="activeUserIds.has(row.id)"
+                        type="button"
+                        :disabled="busyUserId === row.id"
+                        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition"
+                        :title="'Hay una simulación activa para este usuario. Clic para forzar cierre.'"
+                        @click="handleRevoke(row)"
+                    >
+                        <XMarkIcon class="w-4 h-4" />
+                        {{ busyUserId === row.id ? 'Revocando...' : 'Revocar' }}
+                    </button>
+                    <button
+                        v-else
                         type="button"
                         :disabled="busyUserId === row.id"
                         class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60 transition"
@@ -78,13 +125,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
+import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
-import { EyeIcon, ClipboardDocumentListIcon } from '@heroicons/vue/24/outline'
+import { EyeIcon, XMarkIcon, ClipboardDocumentListIcon } from '@heroicons/vue/24/outline'
 
 interface UserRow {
     id: number
@@ -99,11 +147,26 @@ interface UserRow {
 const auth = useAuthStore()
 const busyUserId = ref<number | null>(null)
 const banner = reactive({ message: '', ok: false })
+const activeUserIds = ref<Set<number>>(new Set())
+const onlyActive = ref(false)
+
+async function loadActiveImpersonations() {
+    try {
+        const { data } = await api.get(API.SUPERADMIN_API.impersonation.active)
+        activeUserIds.value = new Set<number>(
+            (data.items ?? []).map((i: any) => i.impersonated_user_id)
+        )
+    } catch {
+        activeUserIds.value = new Set()
+    }
+}
+
+onMounted(loadActiveImpersonations)
 
 const columns: DataTableColumn<UserRow>[] = [
     { key: 'id',        label: '#',          field: 'id',    sortable: true },
-    { key: 'name',      label: 'NOMBRE',     field: 'name',  sortable: true },
-    { key: 'email',     label: 'CORREO',     field: 'email', sortable: true },
+    { key: 'name',      label: 'NOMBRE',     field: 'name',  sortable: true, searchable: true },
+    { key: 'email',     label: 'CORREO',     field: 'email', sortable: true, searchable: true },
     { key: 'type',      label: 'TIPO'                                       },
     { key: 'college',   label: 'COLLEGE'                                    },
     { key: 'acciones',  label: 'ACCIONES' },
@@ -140,6 +203,12 @@ const {
 
 fetchData()
 
+const filteredRows = computed(() =>
+    onlyActive.value
+        ? rows.value.filter(r => activeUserIds.value.has(r.id))
+        : rows.value
+)
+
 async function handleImpersonate(row: UserRow) {
     if (busyUserId.value !== null) return
     busyUserId.value = row.id
@@ -149,6 +218,25 @@ async function handleImpersonate(row: UserRow) {
     } catch (e: any) {
         banner.ok = false
         banner.message = e.response?.data?.message || 'No se pudo iniciar la simulación.'
+    } finally {
+        busyUserId.value = null
+    }
+}
+
+async function handleRevoke(row: UserRow) {
+    if (busyUserId.value !== null) return
+    if (!confirm(`¿Revocar la simulación activa de ${row.name}?`)) return
+    busyUserId.value = row.id
+    banner.message = ''
+    try {
+        await api.delete(API.SUPERADMIN_API.impersonation.revoke(row.id))
+        activeUserIds.value.delete(row.id)
+        activeUserIds.value = new Set(activeUserIds.value)  // trigger reactivity
+        banner.ok = true
+        banner.message = `Simulación de ${row.name} revocada.`
+    } catch (e: any) {
+        banner.ok = false
+        banner.message = e.response?.data?.message || 'No se pudo revocar la simulación.'
     } finally {
         busyUserId.value = null
     }

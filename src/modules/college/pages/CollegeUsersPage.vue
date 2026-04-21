@@ -11,6 +11,29 @@
             {{ banner.message }}
         </div>
 
+        <!-- Filtro por rol -->
+        <div class="bg-white rounded-lg shadow p-4 flex items-center gap-4">
+            <label class="flex-1 block max-w-md">
+                <span class="text-sm text-gray-700">Filtrar por rol</span>
+                <select
+                    v-model="selectedRoleCode"
+                    @change="fetchData"
+                    class="mt-1 w-full h-10 border rounded-md px-3 text-sm"
+                >
+                    <option value="">Todos los roles</option>
+                    <option v-for="r in availableRoles" :key="r.code" :value="r.code">
+                        {{ r.name }}
+                    </option>
+                </select>
+            </label>
+            <div v-if="selectedRoleCode" class="text-sm">
+                <span class="text-gray-600">Usuarios con este rol:</span>
+                <span class="ml-2 inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 font-semibold">
+                    {{ pagination?.total ?? 0 }}
+                </span>
+            </div>
+        </div>
+
         <DataTable
             :columns="columns"
             :rows="rows"
@@ -70,10 +93,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
+import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import AssignRoleDrawer from '@/modules/college/components/AssignRoleDrawer.vue'
 import { AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline'
@@ -96,10 +120,14 @@ interface UserRow {
 const drawerUser = ref<UserRow | null>(null)
 const banner = reactive({ message: '', ok: false })
 
+const selectedRoleCode = ref<string>('')
+const availableRoles = ref<{ code: string; name: string }[]>([])
+const extraSearch = ref<Record<string, string>>({})
+
 const columns: DataTableColumn<UserRow>[] = [
     { key: 'id',       label: '#',       field: 'id',    sortable: true },
-    { key: 'name',     label: 'NOMBRE',  field: 'name',  sortable: true },
-    { key: 'email',    label: 'CORREO',  field: 'email', sortable: true },
+    { key: 'name',     label: 'NOMBRE',  field: 'name',  sortable: true, searchable: true },
+    { key: 'email',    label: 'CORREO',  field: 'email', sortable: true, searchable: true },
     { key: 'roles',    label: 'ROLES ASIGNADOS'                         },
     { key: 'acciones', label: 'ACCIONES'                                },
 ]
@@ -108,11 +136,12 @@ const {
     rows,
     loading,
     pagination,
-    fetchData,
+    fetchData: rawFetch,
     handleChange,
 } = useDataTableFetch<UserRow>({
     endpoint: API.COLLEGE_API.users.list,
     initialPerPage: 15,
+    extraSearch,
     mapResponse: data => ({
         items:   data.items,
         total:   data.total,
@@ -121,6 +150,26 @@ const {
     }),
 })
 
+/** Re-fetch agregando role_code como query param extra */
+function fetchData() {
+    // usa extraSearch para que el useDataTableFetch envíe role_code
+    extraSearch.value = selectedRoleCode.value
+        ? { role_code: selectedRoleCode.value }
+        : {}
+    rawFetch()
+}
+
+async function loadRoles() {
+    try {
+        const { data } = await api.get(API.COLLEGE_API.assignableRoles)
+        availableRoles.value = (data?.items ?? data ?? [])
+            .map((r: any) => ({ code: r.code, name: r.name }))
+    } catch (e) {
+        availableRoles.value = []
+    }
+}
+
+onMounted(loadRoles)
 fetchData()
 
 function openDrawer(row: UserRow) {

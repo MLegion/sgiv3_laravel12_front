@@ -137,7 +137,7 @@
                                             class="border rounded px-1 py-0.5 text-xs w-16 text-center disabled:opacity-50">
                                             <option value="">---</option>
                                             <option value="M">M</option>
-                                            <option value="T">V</option>
+                                            <option value="V">V</option>
                                             <option value="N">N</option>
                                         </select>
                                     </template>
@@ -168,7 +168,14 @@
                                 <td class="px-3 py-2">
                                     <template v-if="row.teacherName">
                                         <div class="flex items-center gap-1.5">
-                                            <span class="text-xs font-bold uppercase" :class="[row.saved ? 'text-slate-800' : 'text-blue-700', isRowBusy(row.key) ? 'opacity-50' : '']">{{ row.teacherName }}</span>
+                                            <span
+                                                class="text-xs font-bold uppercase cursor-pointer hover:text-blue-600 hover:underline"
+                                                :class="[row.saved ? 'text-slate-800' : 'text-blue-700', isRowBusy(row.key) ? 'opacity-50' : '']"
+                                                :title="`Ver carga de ${row.teacherName}`"
+                                                @click="openTeacherDrawer(row.teacherId!, row.teacherName!)"
+                                            >
+                                                {{ row.teacherName }}
+                                            </span>
                                             <span v-if="row.isVacancy" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">VAC</span>
                                         </div>
                                     </template>
@@ -307,6 +314,134 @@
                 {{ toast.message }}
             </div>
         </Transition>
+
+        <!-- Drawer: carga del docente -->
+        <teleport to="body">
+            <div v-if="teacherDrawer.open" class="fixed inset-0 z-[60]">
+                <div class="absolute inset-0 bg-black/40" @click="closeTeacherDrawer"></div>
+                <aside class="absolute right-0 top-0 h-full w-full max-w-5xl bg-white shadow-2xl overflow-hidden flex flex-col">
+                    <div class="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b">
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-800 uppercase">
+                                {{ teacherDrawer.teacherName }}
+                            </h3>
+                            <p class="text-[11px] text-slate-500 mt-0.5">
+                                Carga total del docente en el periodo seleccionado (todas las carreras y modalidades)
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            class="text-gray-400 hover:text-gray-700"
+                            @click="closeTeacherDrawer"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div v-if="teacherDrawer.error" class="mx-6 mt-4 text-xs px-4 py-3 rounded-lg bg-red-50 text-red-700 border border-red-100">
+                        {{ teacherDrawer.error }}
+                    </div>
+
+                    <div v-if="teacherDrawer.loading" class="flex-1 flex items-center justify-center text-sm text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></span>
+                            Cargando carga del docente…
+                        </div>
+                    </div>
+
+                    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-6 overflow-y-auto flex-1">
+                        <!-- SOLICITADAS -->
+                        <section class="bg-white border rounded-xl overflow-hidden">
+                            <div class="px-4 py-3 bg-blue-50 border-b flex items-center justify-between">
+                                <h4 class="text-sm font-black uppercase tracking-wider text-blue-800">Materias solicitadas</h4>
+                                <span class="text-[10px] text-blue-600">{{ drawerRequested.length }}</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table v-if="drawerRequested.length" class="w-full text-xs">
+                                    <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left">Materia</th>
+                                            <th class="px-3 py-2 text-left">Clave</th>
+                                            <th class="px-3 py-2 text-left">Carrera</th>
+                                            <th class="px-3 py-2 text-left">Modalidad</th>
+                                            <th class="px-3 py-2 text-center">Sem.</th>
+                                            <th class="px-3 py-2 text-center"># Grupos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        <tr v-for="(r, i) in drawerRequested" :key="'req-'+i">
+                                            <td class="px-3 py-2 font-medium text-slate-700">{{ r.subjectName }}</td>
+                                            <td class="px-3 py-2 font-mono text-slate-500">{{ r.subjectCode }}</td>
+                                            <td class="px-3 py-2 text-slate-500">{{ r.careerName }}</td>
+                                            <td class="px-3 py-2 text-[10px] text-slate-500">{{ r.modalityType || '—' }}</td>
+                                            <td class="px-3 py-2 text-center">{{ r.semester }}</td>
+                                            <td class="px-3 py-2 text-center font-bold text-blue-700">{{ r.numGroups }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p v-else class="p-6 text-center text-xs text-slate-400 italic">
+                                    No tiene solicitudes en este periodo.
+                                </p>
+                            </div>
+                        </section>
+
+                        <!-- ASIGNADAS -->
+                        <section class="bg-white border rounded-xl overflow-hidden">
+                            <div class="px-4 py-3 bg-green-50 border-b flex items-center justify-between">
+                                <h4 class="text-sm font-black uppercase tracking-wider text-green-800">Materias asignadas</h4>
+                                <span class="text-[10px] text-green-700">
+                                    {{ drawerAssigned.length }} ·
+                                    {{ drawerTotalHours }} hrs totales
+                                </span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table v-if="drawerAssigned.length" class="w-full text-xs">
+                                    <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left">Materia</th>
+                                            <th class="px-3 py-2 text-left">Clave</th>
+                                            <th class="px-3 py-2 text-left">Carrera</th>
+                                            <th class="px-3 py-2 text-left">Modalidad</th>
+                                            <th class="px-3 py-2 text-center">Grupo</th>
+                                            <th class="px-3 py-2 text-center">HT</th>
+                                            <th class="px-3 py-2 text-center">HP</th>
+                                            <th class="px-3 py-2 text-center">Créd.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        <tr v-for="(a, i) in drawerAssigned" :key="'asg-'+i">
+                                            <td class="px-3 py-2 font-medium text-slate-700">{{ a.subjectName }}</td>
+                                            <td class="px-3 py-2 font-mono text-slate-500">{{ a.subjectCode }}</td>
+                                            <td class="px-3 py-2 text-slate-500">{{ a.careerName }}</td>
+                                            <td class="px-3 py-2 text-[10px] text-slate-500">{{ a.modalityType || '—' }}</td>
+                                            <td class="px-3 py-2 text-center font-bold text-slate-700">{{ a.groupName || '---' }}</td>
+                                            <td class="px-3 py-2 text-center">{{ a.ht ?? 0 }}</td>
+                                            <td class="px-3 py-2 text-center">{{ a.hp ?? 0 }}</td>
+                                            <td class="px-3 py-2 text-center">{{ a.credits ?? 0 }}</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot class="bg-slate-50 border-t">
+                                        <tr>
+                                            <td colspan="5" class="px-3 py-2 text-right text-[10px] font-black uppercase text-slate-500">
+                                                Total horas asignadas
+                                            </td>
+                                            <td class="px-3 py-2 text-center font-black text-green-700" colspan="3">
+                                                {{ drawerTotalHours }} hrs
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                                <p v-else class="p-6 text-center text-xs text-slate-400 italic">
+                                    No tiene asignaciones guardadas en este periodo.
+                                </p>
+                            </div>
+                        </section>
+                    </div>
+                </aside>
+            </div>
+        </teleport>
     </div>
 </template>
 
@@ -354,6 +489,54 @@ const tableScrollRef = ref<HTMLElement | null>(null)
 const rowState = ref(new Map<string, { checked: boolean; shift: string; groupName: string; capacity: number; sessionsCount: number | null }>())
 const savingKeys = ref(new Set<string>())
 const savedKeys = ref(new Set<string>())
+
+/* ── Drawer: carga del docente ──────────────────────────────────── */
+interface DrawerRequestedRow { subjectName: string; subjectCode: string; careerName: string; modalityType?: string | null; semester: number; numGroups: number }
+interface DrawerAssignedRow  { subjectName: string; subjectCode: string; careerName: string; modalityType?: string | null; groupName: string | null; ht: number; hp: number; credits: number }
+
+const teacherDrawer = reactive({ open: false, teacherId: null as number | null, teacherName: '', loading: false, error: '' })
+const drawerRequested  = ref<DrawerRequestedRow[]>([])
+const drawerAssigned   = ref<DrawerAssignedRow[]>([])
+const drawerTotalHours = ref(0)
+
+async function openTeacherDrawer(teacherId: number, teacherName: string) {
+    teacherDrawer.teacherId = teacherId
+    teacherDrawer.teacherName = teacherName
+    teacherDrawer.open = true
+    teacherDrawer.error = ''
+    drawerRequested.value = []
+    drawerAssigned.value  = []
+    drawerTotalHours.value = 0
+
+    if (!selectedPeriodId.value) {
+        teacherDrawer.error = 'Selecciona un periodo académico primero.'
+        return
+    }
+
+    teacherDrawer.loading = true
+    try {
+        const { data } = await api.get(API.SCA_API.teachers.workload(teacherId), {
+            params: { college_academic_period_id: selectedPeriodId.value },
+        })
+        drawerRequested.value = data?.requested ?? []
+        drawerAssigned.value  = data?.assigned ?? []
+        drawerTotalHours.value = Number(data?.totalAssignedHours ?? 0)
+    } catch (e: any) {
+        teacherDrawer.error = e?.response?.data?.message ?? 'Error al cargar la carga del docente.'
+    } finally {
+        teacherDrawer.loading = false
+    }
+}
+
+function closeTeacherDrawer() {
+    teacherDrawer.open = false
+    teacherDrawer.teacherId = null
+    teacherDrawer.teacherName = ''
+    teacherDrawer.error = ''
+    drawerRequested.value = []
+    drawerAssigned.value  = []
+    drawerTotalHours.value = 0
+}
 
 /* ── Toast ───────────────────────────────────────────────────────── */
 const toast = reactive({ show: false, message: '', type: 'success' as 'success' | 'error' })
@@ -465,11 +648,11 @@ function buildRows(pkg: any): RowData[] {
 
 function assignedCount(pkg: any): number { return (pkg.assignments ?? []).length }
 function isPackageFull(pkg: any): boolean { return assignedCount(pkg) >= pkg.numGroups }
-function shiftLabel(s: string): string { return s === 'M' ? 'M' : s === 'T' ? 'V' : s === 'N' ? 'N' : '---' }
+function shiftLabel(s: string): string { return s === 'M' || s === 'V' || s === 'N' ? s : '---' }
 
 /* ── Grupo names ─────────────────────────────────────────────────── */
 function generateGroupNames(pkg: any): string[] {
-    const format = careerSetting.value?.groupFormat || '[D,numberPeriod][DD,carreraId]-[L,sec]'
+    const format = careerSetting.value?.groupFormat || '[D,numberPeriod][CC,officialCode,0]-[L,sec]'
     const careerId = selectedCareer.value?.id ?? 0
     const code = selectedCareer.value?.official_code ?? ''
     const semester = pkg.targetSemester ?? 1
@@ -490,7 +673,15 @@ function generateGroupNames(pkg: any): string[] {
         name = name.replace(/\[L,sec\]/gi, letter)
         names.push(name)
     }
-    return names
+
+    // Incluir también los nombres que ya están guardados en asignaciones del
+    // paquete, así el <select> puede mostrar valores legados o provenientes
+    // de un formato distinto al default actual (p.ej. datos migrados de v2).
+    const savedNames: string[] = (pkg.assignments ?? [])
+        .map((a: any) => a.groupName)
+        .filter((n: any): n is string => typeof n === 'string' && n.length > 0)
+
+    return Array.from(new Set([...names, ...savedNames]))
 }
 
 function isGroupNameTakenByOther(pkg: any, groupName: string, currentRow: RowData): boolean {
@@ -656,12 +847,12 @@ function toggleLock() {
 }
 
 /* ── Fetch ───────────────────────────────────────────────────────── */
-async function fetchCampuses() { try { const { data } = await api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 100 } }); campuses.value = (data?.items ?? data?.data ?? data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName ?? `#${c.id}` })) } catch { campuses.value = [] } }
+async function fetchCampuses() { try { const { data } = await api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 100, status: 1 } }); campuses.value = (data?.items ?? data?.data ?? data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName ?? `#${c.id}` })) } catch { campuses.value = [] } }
 async function fetchModalityTypes() { try { const { data } = await api.get(API.SUPERADMIN_API.modalityTypes.list, { params: { per_page: 100 } }); modalityTypes.value = (data?.items ?? data?.data ?? data ?? []).map((mt: any) => ({ id: mt.id, name: mt.name ?? `#${mt.id}`, config: mt.config ?? null })) } catch { modalityTypes.value = [] } }
 
 const usesSpecificDates = computed(() => {
     const mt = modalityTypes.value.find(x => x.id === selectedModalityTypeId.value)
-    return !!mt?.config?.config?.schedule?.uses_specific_dates
+    return !!mt?.config?.schedule?.uses_specific_dates
 })
 async function fetchModalities() { try { const { data } = await api.get(API.SCHOOL_SERVICES_API.modalities.list, { params: { per_page: 200 } }); modalities.value = data?.items ?? data?.data ?? data ?? [] } catch { modalities.value = [] } }
 async function fetchAcademicOffers() {

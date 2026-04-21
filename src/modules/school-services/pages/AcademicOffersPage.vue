@@ -12,7 +12,37 @@
             </button>
         </div>
 
+        <div class="bg-white rounded-lg shadow p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label class="block">
+                <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Campus</span>
+                <select
+                    v-model="selectedCampusId"
+                    @change="onFilterChange"
+                    class="mt-1 w-full border-2 rounded-lg px-3 py-2 text-sm border-slate-200 focus:border-blue-500 outline-none"
+                >
+                    <option :value="null">TODOS</option>
+                    <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
+                </select>
+            </label>
+            <label class="block">
+                <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Tipo de modalidad</span>
+                <select
+                    v-model="selectedModalityTypeId"
+                    @change="onFilterChange"
+                    class="mt-1 w-full border-2 rounded-lg px-3 py-2 text-sm border-slate-200 focus:border-blue-500 outline-none"
+                >
+                    <option :value="null">TODOS</option>
+                    <option v-for="t in modalityTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
+                </select>
+            </label>
+        </div>
+
+        <div v-if="!bothFiltersSelected" class="bg-white border rounded-xl p-8 text-center text-sm text-slate-400 italic">
+            Selecciona un campus y un tipo de modalidad para ver las ofertas.
+        </div>
+
         <DataTable
+            v-else
             :columns="columns"
             :rows="rows"
             :loading="loading"
@@ -29,6 +59,13 @@
 
             <template #cell-campus="{ row }">
                 {{ row.modality?.campus?.name ?? '-' }}
+            </template>
+
+            <template #cell-study_plans_count="{ row }">
+                <span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 text-xs font-bold rounded-full"
+                    :class="(row.studyPlansCount ?? 0) > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'">
+                    {{ row.studyPlansCount ?? 0 }}
+                </span>
             </template>
 
             <template #cell-status="{ row }">
@@ -58,28 +95,106 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { AcademicOfferType } from '@/modules/school-services/types/academic-offer.type'
 
 const router = useRouter()
 
 const columns: DataTableColumn<AcademicOfferType>[] = [
-    { key: 'id',       label: '#',           field: 'id',       sortable: true },
-    { key: 'career',   label: 'CARRERA',     field: 'careerId' },
-    { key: 'modality', label: 'MODALIDAD',   field: 'modalityId' },
-    { key: 'campus',   label: 'PLANTEL',     field: 'modalityId' },
-    { key: 'status',   label: 'ESTADO' },
-    { key: 'opciones', label: 'OPCIONES' },
+    { key: 'id',                 label: '#',                field: 'id',       sortable: true },
+    { key: 'career',             label: 'CARRERA',          field: 'careerId' },
+    { key: 'modality',           label: 'MODALIDAD',        field: 'modalityId' },
+    { key: 'campus',             label: 'PLANTEL',          field: 'modalityId' },
+    { key: 'study_plans_count',  label: 'PLANES VINCULADOS' },
+    { key: 'status',             label: 'ESTADO' },
+    { key: 'opciones',           label: 'OPCIONES' },
 ]
+
+/* ---------- Filtros ---------- */
+interface Catalog { id: number; name: string }
+const campuses       = ref<Catalog[]>([])
+const modalityTypes  = ref<Catalog[]>([])
+
+/* Persistencia en sessionStorage para no perder filtros al navegar a
+   create/delete de plan y regresar. */
+const FILTERS_KEY = 'sgiv3:academic-offers-page:filters'
+function loadSavedFilters(): { campusId: number | null; modalityTypeId: number | null } {
+    try {
+        const raw = sessionStorage.getItem(FILTERS_KEY)
+        if (!raw) return { campusId: null, modalityTypeId: null }
+        const parsed = JSON.parse(raw)
+        return {
+            campusId:       typeof parsed?.campusId === 'number' ? parsed.campusId : null,
+            modalityTypeId: typeof parsed?.modalityTypeId === 'number' ? parsed.modalityTypeId : null,
+        }
+    } catch {
+        return { campusId: null, modalityTypeId: null }
+    }
+}
+const saved = loadSavedFilters()
+const selectedCampusId       = ref<number | null>(saved.campusId)
+const selectedModalityTypeId = ref<number | null>(saved.modalityTypeId)
+
+function persistFilters() {
+    sessionStorage.setItem(FILTERS_KEY, JSON.stringify({
+        campusId:       selectedCampusId.value,
+        modalityTypeId: selectedModalityTypeId.value,
+    }))
+}
+
+const bothFiltersSelected = computed(
+    () => !!selectedCampusId.value && !!selectedModalityTypeId.value
+)
+
+const extraSearch = computed<Record<string, any>>(() => {
+    const s: Record<string, any> = {}
+    if (selectedCampusId.value)       s.campus_id        = selectedCampusId.value
+    if (selectedModalityTypeId.value) s.modality_type_id = selectedModalityTypeId.value
+    return s
+})
 
 const { rows, loading, pagination, handleChange, fetchData } = useDataTableFetch<AcademicOfferType>({
     endpoint: API.SCHOOL_SERVICES_API.academicOffers.list,
+    extraSearch,
 })
 
-fetchData()
+function onFilterChange() {
+    persistFilters()
+    if (!bothFiltersSelected.value) {
+        rows.value = []
+        pagination.value.total = 0
+        return
+    }
+    pagination.value.page = 1
+    fetchData()
+}
+
+async function loadCatalogs() {
+    try {
+        const [c, t] = await Promise.all([
+            api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 500, status: 1 } }),
+            api.get(API.SUPERADMIN_API.modalityTypes.list, { params: { per_page: 100 } }),
+        ])
+        campuses.value      = c.data?.items ?? c.data?.data ?? c.data ?? []
+        modalityTypes.value = t.data?.items ?? t.data?.data ?? t.data ?? []
+    } catch {
+        campuses.value = []
+        modalityTypes.value = []
+    }
+}
+
+onMounted(async () => {
+    await loadCatalogs()
+    // Si el usuario ya tenía filtros guardados, disparar el fetch automáticamente.
+    if (bothFiltersSelected.value) {
+        fetchData()
+    }
+})
 </script>

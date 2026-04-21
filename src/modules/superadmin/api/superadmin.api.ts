@@ -10,6 +10,12 @@ export default {
             createWithAdmin: apiUrl('/superadmin/colleges/create.with.admin'),
             update: (id: string | number) => apiUrl(`/superadmin/colleges/${id}`),
             delete: (id: string | number) => apiUrl(`/superadmin/colleges/${id}`),
+
+            // Admins del college (máx 2)
+            employeesWithAdminFlag: (id: string | number) => apiUrl(`/superadmin/colleges/${id}/employees-with-admin-flag`),
+            assignAdmin:            (id: string | number) => apiUrl(`/superadmin/colleges/${id}/admins`),
+            removeAdmin: (id: string | number, userId: string | number) =>
+                apiUrl(`/superadmin/colleges/${id}/admins/${userId}`),
         },
         modalityTypes: {
             list: apiUrl('/superadmin/modality-types'),
@@ -129,10 +135,12 @@ export default {
             },
         },
         impersonation: {
-            users: apiUrl('/superadmin/impersonate/users'),
-            logs:  apiUrl('/superadmin/impersonate/logs'),
-            start: (userId: string | number) => apiUrl(`/superadmin/impersonate/${userId}`),
-            stop:  apiUrl('/superadmin/impersonate/stop'),
+            users:  apiUrl('/superadmin/impersonate/users'),
+            active: apiUrl('/superadmin/impersonate/active'),
+            logs:   apiUrl('/superadmin/impersonate/logs'),
+            start:  (userId: string | number) => apiUrl(`/superadmin/impersonate/${userId}`),
+            revoke: (userId: string | number) => apiUrl(`/superadmin/impersonate/${userId}`),
+            stop:   apiUrl('/superadmin/impersonate/stop'),
         },
     },
 } satisfies ApiModule

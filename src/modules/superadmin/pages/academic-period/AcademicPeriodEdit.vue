@@ -36,10 +36,14 @@
                 :options="STATUS_OPTIONS"
             />
 
-            <FormSelect
+            <FormRemoteSelect
                 label="PERIODO ANTERIOR (OPCIONAL)"
                 v-model="form.previousPeriodId"
-                :options="periodOptions"
+                :endpoint="API.SUPERADMIN_API.academicPeriods.list"
+                :endpoint-by-id="API.SUPERADMIN_API.academicPeriods.byId"
+                item-label="name"
+                item-value="id"
+                :item-searchs="['name', 'short_name']"
             />
 
             <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
@@ -65,14 +69,13 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
+import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import { ACADEMIC_PERIOD_STATUS_OPTIONS as STATUS_OPTIONS } from '@/modules/superadmin/types/academic-period.type'
-import type { AcademicPeriod } from '@/modules/superadmin/types/academic-period.type'
 
 const route = useRoute()
 const router = useRouter()
 const submitting = ref(false)
 const error = ref<string | null>(null)
-const periodOptions = ref<{ label: string; value: any }[]>([])
 
 const form = reactive({
     name: '',
@@ -84,10 +87,7 @@ const form = reactive({
 })
 
 async function fetchData() {
-    const [{ data: period }, { data: list }] = await Promise.all([
-        api.get(API.SUPERADMIN_API.academicPeriods.byId(route.params.id)),
-        api.get(API.SUPERADMIN_API.academicPeriods.list),
-    ])
+    const { data: period } = await api.get(API.SUPERADMIN_API.academicPeriods.byId(route.params.id))
 
     form.name               = period.name
     form.shortName          = period.shortName
@@ -95,10 +95,6 @@ async function fetchData() {
     form.suggestedEndDate   = period.suggestedEndDate
     form.status             = period.status
     form.previousPeriodId   = period.previousPeriodId
-
-    periodOptions.value = (list.data ?? [])
-        .filter((p: AcademicPeriod) => p.id !== period.id)
-        .map((p: AcademicPeriod) => ({ label: `${p.name} (${p.shortName})`, value: p.id }))
 }
 
 async function submit() {

@@ -9,10 +9,13 @@ export async function fetchColleges() {
     )
 
     // 🔒 Mapeo seguro (solo lo que la UI necesita)
-    const colleges: College[] = data.items.map(item => ({
+    const colleges: College[] = data.items.map((item: any) => ({
         id: item.id,
         name: item.name,
-        short_name: item.short_name,
+        short_name: item.shortName ?? item.short_name,
+        googleWorkspaceDomain: item.googleWorkspaceDomain ?? null,
+        googleClientId: item.googleClientId ?? null,
+        googleSecretConfigured: !!item.googleSecretConfigured,
     }))
 
     return colleges

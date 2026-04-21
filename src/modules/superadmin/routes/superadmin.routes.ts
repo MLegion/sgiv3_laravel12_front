@@ -42,6 +42,14 @@ export default [
             title: 'Eliminar - Instituciones Educativas',
         },
     },
+    {
+        path: 'superadmin/college-admins',
+        name: 'superadmin.college-admins',
+        component: () => import('@/modules/superadmin/pages/CollegeAdminsPage.vue'),
+        meta: {
+            title: 'Administradores de College',
+        },
+    },
     //###################################################################################
     //# MODALITY TYPES                                                                  #
     //###################################################################################

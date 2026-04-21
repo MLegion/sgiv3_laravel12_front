@@ -1305,7 +1305,7 @@ async function fetchContext() {
 
 async function fetchCampuses() {
     try {
-        const { data } = await api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 100 } })
+        const { data } = await api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 100, status: 1 } })
         allCampuses.value = (data?.items ?? data?.data ?? data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName }))
     } catch { allCampuses.value = [] }
 }

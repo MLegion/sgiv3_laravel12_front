@@ -52,6 +52,11 @@ export interface AcademicLoadConfig {
     modality: {
         id: number
         campusId: number
+        campus: {
+            id: number
+            name: string
+            shortName: string
+        } | null
         modalityType: {
             id: number
             name: string

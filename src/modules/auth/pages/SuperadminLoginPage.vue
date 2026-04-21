@@ -61,12 +61,24 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Contraseña
                         </label>
-                        <input
-                            v-model="password"
-                            type="password"
-                            placeholder="Contraseña"
-                            class="form-control"
-                        />
+                        <div class="relative">
+                            <input
+                                v-model="password"
+                                :type="showPassword ? 'text' : 'password'"
+                                placeholder="Contraseña"
+                                class="form-control pr-10"
+                            />
+                            <button
+                                type="button"
+                                @click="showPassword = !showPassword"
+                                class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+                                :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                                tabindex="-1"
+                            >
+                                <EyeSlashIcon v-if="showPassword" class="h-5 w-5" />
+                                <EyeIcon v-else class="h-5 w-5" />
+                            </button>
+                        </div>
                         <span v-if="errors.password" class="text-sm text-red-600">
                           {{ errors.password }}
                         </span>
@@ -109,6 +121,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { useCollegeStore } from '@/modules/auth/stores/college.store'
 
@@ -119,6 +132,7 @@ const collegeStore = useCollegeStore()
 const collegeId = ref<number | null>(null)
 const email = ref('')
 const password = ref('')
+const showPassword = ref(false)
 
 const rememberMe = ref(false)
 

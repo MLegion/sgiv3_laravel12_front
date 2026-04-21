@@ -86,12 +86,24 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Contraseña
                         </label>
-                        <input
-                            v-model="password"
-                            type="password"
-                            placeholder="Contraseña"
-                            class="form-control"
-                        />
+                        <div class="relative">
+                            <input
+                                v-model="password"
+                                :type="showPassword ? 'text' : 'password'"
+                                placeholder="Contraseña"
+                                class="form-control pr-10"
+                            />
+                            <button
+                                type="button"
+                                @click="showPassword = !showPassword"
+                                class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+                                :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                                tabindex="-1"
+                            >
+                                <EyeSlashIcon v-if="showPassword" class="h-5 w-5" />
+                                <EyeIcon v-else class="h-5 w-5" />
+                            </button>
+                        </div>
                         <span v-if="errors.password" class="text-sm text-red-600">
                           {{ errors.password }}
                         </span>
@@ -126,6 +138,38 @@
                         INGRESAR
                     </button>
 
+                    <!-- Google Workspace (solo si el college lo tiene configurado) -->
+                    <div v-if="googleReady" class="pt-2">
+                        <div class="relative text-center my-2">
+                            <span class="px-3 text-xs uppercase tracking-wide text-gray-400 bg-white relative z-10">
+                                o
+                            </span>
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-200"></div>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            :disabled="googleLoading"
+                            @click="onGoogleLogin"
+                            class="w-full h-12 flex items-center justify-center gap-3
+                                   border border-gray-300 rounded-lg hover:bg-gray-50
+                                   transition disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                            <svg class="h-5 w-5" viewBox="0 0 48 48" aria-hidden="true">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                                <path fill="none" d="M0 0h48v48H0z"/>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-700">
+                                {{ googleLoading ? 'Abriendo Google…' : `Continuar con Google (${googleDomain})` }}
+                            </span>
+                        </button>
+                    </div>
+
                     <p class="text-center text-sm text-slate-500 pt-1">
                         ¿Eres aspirante?
                         <router-link to="/inscripciones" class="text-indigo-600 hover:underline">
@@ -140,9 +184,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
+import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { useCollegeStore } from '@/modules/auth/stores/college.store'
+import { requestGoogleAccessToken } from '@/modules/auth/composables/useGoogleAuth'
 
 /* ---------- state ---------- */
 const authStore = useAuthStore()
@@ -151,8 +197,49 @@ const collegeStore = useCollegeStore()
 const collegeId = ref<number | null>(null)
 const email = ref('')
 const password = ref('')
+const showPassword = ref(false)
+const googleLoading = ref(false)
 
 const rememberMe = ref(false)
+
+const googleDomain = computed(() => {
+    const c: any = collegeStore.selectedCollege
+    return c?.googleWorkspaceDomain || c?.google_workspace_domain || null
+})
+
+const googleClientId = computed(() => {
+    const c: any = collegeStore.selectedCollege
+    return c?.googleClientId || null
+})
+
+const googleReady = computed(
+    () => !!googleDomain.value && !!googleClientId.value
+)
+
+async function onGoogleLogin() {
+    errors.value = {}
+    if (!collegeStore.selectedCollege) {
+        errors.value.college = 'Selecciona una institución'
+        return
+    }
+    if (!googleReady.value) return
+
+    try {
+        googleLoading.value = true
+        const { access_token } = await requestGoogleAccessToken(
+            googleClientId.value!,
+            googleDomain.value!,
+        )
+        await authStore.loginWithGoogle({
+            accessToken: access_token,
+            collegeId: collegeStore.selectedCollege.id,
+        })
+    } catch (e: any) {
+        errors.value.general = e?.response?.data?.message || e?.message || 'Error al iniciar sesión con Google.'
+    } finally {
+        googleLoading.value = false
+    }
+}
 
 const errors = ref<{
     college?: string

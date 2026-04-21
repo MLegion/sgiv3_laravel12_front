@@ -29,7 +29,9 @@ export default {
             create: apiUrl('/shr/work-areas'),
             update: (id: string | number) => apiUrl(`/shr/work-areas/${id}`),
             delete: (id: string | number) => apiUrl(`/shr/work-areas/${id}`),
-        }
-
+        },
+        organizationChart: {
+            workAreas: apiUrl('/shr/organization-chart/work-areas'),
+        },
     },
 } satisfies ApiModule

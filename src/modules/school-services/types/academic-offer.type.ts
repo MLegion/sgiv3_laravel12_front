@@ -16,4 +16,5 @@ export interface AcademicOfferType {
     status: number
     createdAt: string
     updatedAt: string
+    studyPlansCount?: number | null
 }

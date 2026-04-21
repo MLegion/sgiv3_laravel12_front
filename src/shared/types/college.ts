@@ -2,8 +2,11 @@ export interface College {
     id: number
     name: string
     short_name: string
-    status: boolean
-    hash: string
-    created_at: string
-    updated_at: string
+    status?: boolean
+    hash?: string
+    created_at?: string
+    updated_at?: string
+    googleWorkspaceDomain?: string | null
+    googleClientId?: string | null
+    googleSecretConfigured?: boolean
 }

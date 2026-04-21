@@ -184,6 +184,7 @@ const columns: DataTableColumn<JobPosition>[] = [
         label: 'PUESTO',
         field: 'name',
         sortable: true,
+        searchable: true,
     },
     {
         key: 'role',

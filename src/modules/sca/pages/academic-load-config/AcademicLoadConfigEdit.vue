@@ -397,7 +397,7 @@ function showError(msg: string) {
     setTimeout(() => errorMsg.value = '', 4000)
 }
 
-const hasScheduleDates = computed(() => config.value?.scheduleDates !== null && config.value?.scheduleDates !== undefined)
+const hasScheduleDates = computed(() => Array.isArray(config.value?.scheduleDates) && config.value!.scheduleDates!.length > 0)
 
 const DAY_NAMES: Record<number, string> = {
     1: 'LUN', 2: 'MAR', 3: 'MIÉ', 4: 'JUE', 5: 'VIE', 6: 'SÁB', 7: 'DOM',
@@ -409,12 +409,14 @@ function formatDateShort(s: string): string {
 }
 
 function enabledCount(): number {
-    return config.value?.scheduleDates?.filter(d => d.enabled).length ?? 0
+    const sd = config.value?.scheduleDates
+    return Array.isArray(sd) ? sd.filter(d => d.enabled).length : 0
 }
 
 function toggleScheduleDate(index: number) {
-    if (!config.value?.scheduleDates) return
-    config.value.scheduleDates[index].enabled = !config.value.scheduleDates[index].enabled
+    const sd = config.value?.scheduleDates
+    if (!Array.isArray(sd)) return
+    sd[index].enabled = !sd[index].enabled
 }
 
 async function generateScheduleDates() {
@@ -431,12 +433,13 @@ async function generateScheduleDates() {
 }
 
 async function saveScheduleDates() {
-    if (!config.value?.scheduleDates) return
+    const sd = config.value?.scheduleDates
+    if (!Array.isArray(sd)) return
     savingDates.value = true
     errorMsg.value = ''
     try {
         await api.put(API.SCA_API.academicLoadConfigs.updateScheduleDates(id), {
-            schedule_dates: config.value.scheduleDates,
+            schedule_dates: sd,
         })
     } catch (e: any) {
         showError(e?.response?.data?.message ?? 'Error al guardar fechas.')

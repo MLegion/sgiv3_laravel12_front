@@ -10,6 +10,21 @@
             </button>
         </div>
 
+        <div class="bg-white rounded-lg shadow px-4 py-3 flex items-center gap-3">
+            <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    v-model="showArchived"
+                    @change="onToggleArchived"
+                />
+                <span class="text-sm text-slate-700">Incluir periodos archivados</span>
+            </label>
+            <span class="text-xs text-slate-400">
+                (ocultos por defecto para facilitar la búsqueda)
+            </span>
+        </div>
+
         <DataTable
             :columns="columns"
             :rows="rows"
@@ -69,6 +84,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
@@ -81,18 +97,29 @@ const router = useRouter()
 
 const columns: DataTableColumn<AcademicPeriod>[] = [
     { key: 'id',                 label: '#',             field: 'id',        sortable: true },
-    { key: 'name',               label: 'NOMBRE',        field: 'name',      sortable: true },
-    { key: 'shortName',          label: 'CLAVE',         field: 'shortName' },
+    { key: 'name',               label: 'NOMBRE',        field: 'name',      sortable: true, searchable: true },
+    { key: 'short_name',         label: 'CLAVE',         field: 'shortName',                 searchable: true },
     { key: 'suggestedStartDate', label: 'INICIO SUGER.', field: 'suggestedStartDate' },
     { key: 'suggestedEndDate',   label: 'FIN SUGER.',    field: 'suggestedEndDate' },
     { key: 'status',             label: 'ESTADO' },
     { key: 'opciones',           label: 'OPCIONES' },
 ]
 
+const showArchived = ref(false)
+const extraSearch = computed<Record<string, any>>(() =>
+    showArchived.value ? {} : { status_exclude: 'archived' }
+)
+
 const { rows, loading, pagination, handleChange, fetchData } =
     useDataTableFetch<AcademicPeriod>({
         endpoint: API.SUPERADMIN_API.academicPeriods.list,
+        extraSearch,
     })
+
+function onToggleArchived() {
+    pagination.value.page = 1
+    fetchData()
+}
 
 fetchData()
 </script>

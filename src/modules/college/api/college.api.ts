@@ -12,5 +12,6 @@ export default {
         },
         assignableRoles: apiUrl('/college/assignable-roles'),
         contextOptions:  (alias: string) => apiUrl(`/college/context-options/${alias}`),
+        googleWorkspace: apiUrl('/college/google-workspace'),
     },
 } satisfies ApiModule
