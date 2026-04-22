@@ -180,10 +180,12 @@
                     <button
                         v-if="canGenerate"
                         type="button"
-                        class="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border-2 transition uppercase
-                               border-slate-200 bg-white text-slate-700 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700"
-                        :disabled="eraserMode"
-                        title="Disparar generación automática para mi carrera"
+                        class="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border-2 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+                        :class="generatorDisabledReason || eraserMode
+                            ? 'border-slate-200 bg-slate-50 text-slate-400'
+                            : 'border-slate-200 bg-white text-slate-700 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700'"
+                        :disabled="eraserMode || !!generatorDisabledReason"
+                        :title="generatorDisabledReason || 'Disparar generación automática para la carrera'"
                         @click="openGenerationDrawer"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
@@ -3086,10 +3088,21 @@ const generationDrawer = reactive({
     careerId: null as number | null,
     careerLabel: '' as string,
 })
+const generatorStatus = ref<{ kind: string; canSolve: boolean; reason: string | null } | null>(null)
 
 const canGenerate = computed(() => {
-    // CAREER_MANAGER con al menos una carrera OR admin (SES_MANAGER/ACADEMIC_DIRECTOR)
+    // Botón visible: config activo + rol válido. La deshabilitación por
+    // "no hay proveedor configurado" se maneja en el botón (generatorDisabledReason).
     return resolvedConfigId.value !== null && (myCareerIds.value.length > 0 || isAdminCtx.value)
+})
+
+const generatorDisabledReason = computed<string | null>(() => {
+    if (!generatorStatus.value) return null
+    if (!generatorStatus.value.canSolve) {
+        return generatorStatus.value.reason
+            || 'Este college no tiene configurado un generador automático de horarios.'
+    }
+    return null
 })
 
 async function fetchMyCareers() {
@@ -3100,6 +3113,19 @@ async function fetchMyCareers() {
     } catch {
         myCareerIds.value = []
         isAdminCtx.value = false
+    }
+}
+
+async function fetchGeneratorStatus() {
+    try {
+        const { data } = await api.get(API.SCHEDULES_API.generation.providerStatus)
+        generatorStatus.value = {
+            kind: String(data?.kind ?? 'manual'),
+            canSolve: !!data?.canSolve,
+            reason: data?.reason ?? null,
+        }
+    } catch {
+        generatorStatus.value = { kind: 'manual', canSolve: false, reason: 'No se pudo consultar el estado del generador.' }
     }
 }
 
@@ -3150,6 +3176,7 @@ onMounted(() => {
     fetchComplementaryHourTypes()
     fetchScopedTeachers()
     fetchMyCareers()
+    fetchGeneratorStatus()
     window.addEventListener('keydown', onKeydownGlobal)
 })
 

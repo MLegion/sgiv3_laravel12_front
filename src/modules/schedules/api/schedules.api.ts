@@ -21,6 +21,7 @@ export default {
             delete: (id: string | number) => apiUrl(`/schedules/complementary/${id}`),
         },
         generation: {
+            providerStatus:   apiUrl('/schedules/generation/provider-status'),
             availableCareers: apiUrl('/schedules/generation/available-careers'),
             listRuns:  apiUrl('/schedules/generation/runs'),
             createRun: apiUrl('/schedules/generation/runs'),

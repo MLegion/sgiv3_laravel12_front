@@ -1,6 +1,6 @@
 <template>
     <teleport to="body">
-        <div v-if="open" class="fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div v-if="open" class="fixed inset-0 z-[130] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/40" @click="close"></div>
 
             <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-xl max-h-[85vh] overflow-hidden flex flex-col">

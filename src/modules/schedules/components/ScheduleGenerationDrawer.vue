@@ -1,6 +1,6 @@
 <template>
     <teleport to="body">
-        <div v-if="open" class="fixed inset-0 z-[60]">
+        <div v-if="open" class="fixed inset-0 z-[120]">
             <div class="absolute inset-0 bg-black/40" @click="close"></div>
 
             <aside class="absolute right-0 top-0 h-full w-full max-w-2xl bg-white shadow-2xl overflow-y-auto">
