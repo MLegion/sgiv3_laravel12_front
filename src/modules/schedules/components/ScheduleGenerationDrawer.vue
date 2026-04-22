@@ -117,7 +117,14 @@
                                         @click="promote(r.id)">
                                         Promover
                                     </button>
-                                    <button v-if="r.status !== 'promoted' && r.status !== 'discarded'"
+                                    <button v-if="!isTerminal(r.status)"
+                                        :disabled="busyRunId === r.id"
+                                        class="px-3 py-1.5 text-[10px] font-bold rounded border border-red-300 text-red-700 hover:bg-red-50 uppercase disabled:opacity-60"
+                                        @click="discard(r.id)"
+                                        title="Cancela el solver si está activo">
+                                        Cancelar
+                                    </button>
+                                    <button v-else-if="r.status !== 'promoted' && r.status !== 'discarded'"
                                         :disabled="busyRunId === r.id"
                                         class="px-3 py-1.5 text-[10px] font-bold rounded border border-slate-300 text-slate-700 hover:bg-slate-100 uppercase disabled:opacity-60"
                                         @click="discard(r.id)">
