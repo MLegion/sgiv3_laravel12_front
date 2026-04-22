@@ -74,4 +74,4 @@ async function confirmDelete() {
     deleting.value = false
   }
 }
-<\/script>
+</script>

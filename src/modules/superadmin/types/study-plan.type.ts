@@ -1,4 +1,4 @@
-import type { ApprovalStatusEnum } from '@/shared/enums/ApprovalStatus.enum'
+import type { ApprovalStatusEnum } from '@/shared/enums/approval-status.enum'
 import type { PeriodTypeEnum } from '@/shared/enums/period-type.enum'
 
 export interface StudyPlanType {

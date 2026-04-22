@@ -1,5 +1,5 @@
-import type { UserType } from '@/modules/user/types/user.type'
-import type { CollegeType } from '@/modules/college/types/college.type'
+import type { AuthUser } from '@/shared/types/user'
+import type { College } from '@/shared/types/college'
 
 export interface SubjectType {
     id: number
@@ -16,13 +16,13 @@ export interface SubjectType {
     optionalGroupId: number | null
 
     collegeId: number | null
-    college?: CollegeType | null
+    college?: College | null
 
     createdBy: number
-    creator?: UserType | null
+    creator?: AuthUser | null
 
     approvedBy: number | null
-    approver?: UserType | null
+    approver?: AuthUser | null
 
     approvedAt: string | null
     approvalStatus: string

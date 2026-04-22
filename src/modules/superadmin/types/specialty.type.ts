@@ -1,4 +1,4 @@
-import type { ApprovalStatusEnum } from '@/shared/enums/ApprovalStatus.enum'
+import type { ApprovalStatusEnum } from '@/shared/enums/approval-status.enum'
 
 export interface SpecialtyType {
     id: number
