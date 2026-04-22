@@ -350,7 +350,14 @@ async function generate() {
         flash(true, `Corridas encoladas: ${summary}. Procesándose…`)
         await loadRuns()
     } catch (e: any) {
-        flash(false, e?.response?.data?.message || 'Error al disparar la generación.')
+        const status = e?.response?.status
+        const serverMsg = e?.response?.data?.message
+        if (status === 429) {
+            // F7.e — rate limit del college
+            flash(false, serverMsg || 'Límite de corridas alcanzado para este college.')
+        } else {
+            flash(false, serverMsg || 'Error al disparar la generación.')
+        }
     } finally {
         saving.value = false
     }
