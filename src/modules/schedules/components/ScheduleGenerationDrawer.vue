@@ -97,9 +97,6 @@
                                             · {{ Math.round(r.solutionSummary.stats.durationMs / 1000) }}s
                                         </span>
                                     </p>
-                                    <p v-if="r.solutionSummary?.diagnostics?.reason" class="text-[10px] text-red-600 mt-1">
-                                        {{ r.solutionSummary.diagnostics.reason }}
-                                    </p>
                                 </div>
                                 <div class="flex gap-2 flex-shrink-0">
                                     <button v-if="r.status === 'ready'"
@@ -116,6 +113,36 @@
                                     </button>
                                 </div>
                             </header>
+
+                            <!-- Diagnóstico INFEASIBLE / timeout / error -->
+                            <div v-if="r.solutionSummary?.diagnostics?.reason"
+                                class="mt-3 rounded p-3 border"
+                                :class="r.status === 'infeasible'
+                                    ? 'bg-red-50 border-red-200'
+                                    : 'bg-amber-50 border-amber-200'">
+                                <p class="text-[11px] font-bold uppercase tracking-wide"
+                                    :class="r.status === 'infeasible' ? 'text-red-700' : 'text-amber-700'">
+                                    {{ diagnosticLabel(r.solutionSummary.diagnostics.reason) }}
+                                </p>
+                                <p v-if="r.solutionSummary.diagnostics.details?.message"
+                                    class="text-[11px] mt-1"
+                                    :class="r.status === 'infeasible' ? 'text-red-700' : 'text-amber-700'">
+                                    {{ r.solutionSummary.diagnostics.details.message }}
+                                </p>
+                                <dl v-if="hasDetailFields(r.solutionSummary.diagnostics.details)"
+                                    class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[10px]"
+                                    :class="r.status === 'infeasible' ? 'text-red-700' : 'text-amber-700'">
+                                    <template v-for="(v, k) in detailFields(r.solutionSummary.diagnostics.details)" :key="k">
+                                        <dt class="font-semibold">{{ formatFieldLabel(String(k)) }}</dt>
+                                        <dd class="font-mono">{{ formatFieldValue(v) }}</dd>
+                                    </template>
+                                </dl>
+                                <p v-if="r.solutionSummary.diagnostics.details?.hint"
+                                    class="text-[10px] mt-2 italic"
+                                    :class="r.status === 'infeasible' ? 'text-red-600' : 'text-amber-600'">
+                                    💡 {{ r.solutionSummary.diagnostics.details.hint }}
+                                </p>
+                            </div>
 
                             <!-- Conflictos si promoción falló -->
                             <div v-if="conflictsByRun[r.id]" class="mt-3 bg-red-50 border border-red-200 rounded p-3">
@@ -193,6 +220,55 @@ function close() { emit('close') }
 
 function isTerminal(status: RunStatus): boolean {
     return TERMINAL_STATUSES.includes(status)
+}
+
+/* ── Diagnóstico INFEASIBLE (F7.b) ─────────────────────────────── */
+const DIAGNOSTIC_LABELS: Record<string, string> = {
+    insufficient_places:         'Aulas insuficientes',
+    teacher_overloaded:          'Docente sobrecargado',
+    subject_restriction_conflict:'Restricciones bloquean la materia',
+    missing_allowed_place:       'Sin aula permitida',
+    modality_rule_conflict:      'Regla de modalidad violada',
+    capacity_overflow:           'Capacidad insuficiente',
+    empty_time_grid:             'Calendario vacío',
+    unknown:                     'Sin solución factible',
+    exception:                   'Error interno',
+}
+
+function diagnosticLabel(reason: string): string {
+    return DIAGNOSTIC_LABELS[reason] || reason
+}
+
+// Campos que NO mostrar como detalle estructurado (ya se renderizan aparte)
+const SKIP_FIELDS = new Set(['message', 'hint'])
+
+function detailFields(details: Record<string, unknown> | null | undefined): Record<string, unknown> {
+    if (!details || typeof details !== 'object') return {}
+    const out: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(details)) {
+        if (SKIP_FIELDS.has(k)) continue
+        if (v === null || v === undefined) continue
+        out[k] = v
+    }
+    return out
+}
+
+function hasDetailFields(details: Record<string, unknown> | null | undefined): boolean {
+    return Object.keys(detailFields(details)).length > 0
+}
+
+function formatFieldLabel(key: string): string {
+    // snake_case / camelCase → Capitalizado
+    return key
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
+        .replace(/_/g, ' ')
+        .replace(/^./, c => c.toUpperCase())
+}
+
+function formatFieldValue(v: unknown): string {
+    if (v === null || v === undefined) return '—'
+    if (typeof v === 'object') return JSON.stringify(v)
+    return String(v)
 }
 
 function formatDate(s: string | null) {
