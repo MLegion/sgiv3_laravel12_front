@@ -35,6 +35,18 @@
                         </label>
                     </div>
 
+                    <label class="flex items-start gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" v-model="form.decomposeBySemester"
+                            class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                        <div class="flex-1">
+                            <span class="text-xs font-semibold text-slate-700 block">Resolver semestre por semestre</span>
+                            <span class="text-[10px] text-slate-500 block mt-0.5">
+                                Recomendado para carreras grandes (50+ paquetes). El solver trabaja un semestre a la vez
+                                respetando las reservas colocadas. Más lento total pero mucho más estable.
+                            </span>
+                        </div>
+                    </label>
+
                     <div>
                         <span class="text-xs font-semibold text-slate-600 block mb-2">Pesos soft (0 = desactivado)</span>
                         <div class="space-y-2">
@@ -198,6 +210,7 @@ const statusClasses = STATUS_CLASSES
 const form = reactive({
     timeoutSeconds: 120,
     countDrafts: 1,
+    decomposeBySemester: false,
     weights: Object.fromEntries(WEIGHT_KEYS.map(k => [k, 0])) as Record<WeightKey, number>,
 })
 // Default: 2 pesos activos moderados
@@ -322,6 +335,7 @@ async function generate() {
             weights:                 filterNonZeroWeights(form.weights),
             count_drafts:            form.countDrafts,
             timeout_seconds:         form.timeoutSeconds,
+            decompose_by_semester:   form.decomposeBySemester,
         }
         const { data } = await api.post<GenerateRunResponse>(API.SCHEDULES_API.generation.createRun, payload)
 

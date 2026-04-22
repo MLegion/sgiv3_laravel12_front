@@ -80,6 +80,8 @@ export interface GenerateRunRequest {
     count_drafts?: number
     timeout_seconds?: number
     seed?: number | null
+    /** F7.c — resuelve la carrera semestre a semestre (instancias más chicas) */
+    decompose_by_semester?: boolean
 }
 
 export interface GenerateRunResponse {
