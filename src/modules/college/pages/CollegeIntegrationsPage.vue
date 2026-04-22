@@ -220,14 +220,21 @@ function flash(ok: boolean, message: string) {
     setTimeout(() => { banner.message = '' }, 4000)
 }
 
+// Lee/escribe la configuración vía AppConfig (app_id = auth.google, scope college).
+function isSecretPlaceholder(v: any): boolean {
+    return !!v && typeof v === 'object' && v.__secret__ === true
+}
+
 async function load() {
     loading.value = true
     try {
-        const { data } = await api.get(API.COLLEGE_API.googleWorkspace)
-        form.domain           = data.google_workspace_domain ?? ''
-        form.clientId         = data.google_client_id ?? ''
+        const { data } = await api.get(API.APPCONFIG_API.college.show('auth.google'))
+        const values = data?.values ?? {}
+        form.domain           = (values.workspace_domain as string) ?? ''
+        form.clientId         = (values.client_id as string) ?? ''
         form.clientSecret     = ''
-        form.secretConfigured = !!data.google_client_secret_configured
+        form.secretConfigured = isSecretPlaceholder(values.client_secret)
+            && !!(values.client_secret as any).has_value
     } catch (e: any) {
         flash(false, e?.response?.data?.message || 'Error al cargar la configuración.')
     } finally {
@@ -238,26 +245,31 @@ async function load() {
 async function save() {
     saving.value = true
     try {
-        const payload: Record<string, string | null> = {
-            google_workspace_domain: form.domain.trim() || null,
-            google_client_id:        form.clientId.trim() || null,
+        const values: Record<string, unknown> = {
+            workspace_domain: form.domain.trim() || null,
+            client_id:        form.clientId.trim() || null,
         }
         const secret = form.clientSecret.trim()
-        if (secret) payload.google_client_secret = secret
+        if (secret) {
+            values.client_secret = secret
+        } else {
+            // Conservar valor actual del secreto (no sobreescribir con vacío)
+            values.client_secret = { __keep__: true }
+        }
 
-        const { data } = await api.patch(API.COLLEGE_API.googleWorkspace, payload)
-        form.domain           = data.google_workspace_domain ?? ''
-        form.clientId         = data.google_client_id ?? ''
+        const { data } = await api.put(
+            API.APPCONFIG_API.college.update('auth.google'),
+            { values },
+        )
+        const next = data?.values ?? {}
+        form.domain           = (next.workspace_domain as string) ?? ''
+        form.clientId         = (next.client_id as string) ?? ''
         form.clientSecret     = ''
-        form.secretConfigured = !!data.google_client_secret_configured
+        form.secretConfigured = isSecretPlaceholder(next.client_secret)
+            && !!(next.client_secret as any).has_value
         flash(true, 'Configuración guardada.')
     } catch (e: any) {
-        const msg = e?.response?.data?.message
-            || e?.response?.data?.errors?.google_workspace_domain?.[0]
-            || e?.response?.data?.errors?.google_client_id?.[0]
-            || e?.response?.data?.errors?.google_client_secret?.[0]
-            || 'Error al guardar la configuración.'
-        flash(false, msg)
+        flash(false, e?.response?.data?.message || 'Error al guardar la configuración.')
     } finally {
         saving.value = false
     }
