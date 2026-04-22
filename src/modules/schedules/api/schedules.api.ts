@@ -20,5 +20,12 @@ export default {
             update: (id: string | number) => apiUrl(`/schedules/complementary/${id}`),
             delete: (id: string | number) => apiUrl(`/schedules/complementary/${id}`),
         },
+        generation: {
+            listRuns:  apiUrl('/schedules/generation/runs'),
+            createRun: apiUrl('/schedules/generation/runs'),
+            showRun:   (id: string | number) => apiUrl(`/schedules/generation/runs/${id}`),
+            promote:   (id: string | number) => apiUrl(`/schedules/generation/runs/${id}/promote`),
+            discard:   (id: string | number) => apiUrl(`/schedules/generation/runs/${id}`),
+        },
     },
 } satisfies ApiModule

@@ -175,6 +175,22 @@
                             <span v-if="hiddenDateKeys.size > 0" class="ml-1 text-[10px]">({{ visibleDatesCount }}/{{ allDatesCount }})</span>
                         </span>
                     </button>
+
+                    <!-- Generación automática (jefe de carrera) -->
+                    <button
+                        v-if="canGenerate"
+                        type="button"
+                        class="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border-2 transition uppercase
+                               border-slate-200 bg-white text-slate-700 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700"
+                        :disabled="eraserMode"
+                        title="Disparar generación automática para mi carrera"
+                        @click="openGenerationDrawer"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
+                        </svg>
+                        GENERAR AUTO.
+                    </button>
                 </div>
             </section>
 
@@ -1213,6 +1229,17 @@
                 {{ errorMsg }}
             </div>
         </Transition>
+
+        <!-- ═════ Drawer: Generación Automática (jefe de carrera) ═════ -->
+        <ScheduleGenerationDrawer
+            v-if="generationDrawer.open && resolvedConfigId && generationDrawer.careerId"
+            :open="generationDrawer.open"
+            :config-id="resolvedConfigId"
+            :career-id="generationDrawer.careerId"
+            :career-label="generationDrawer.careerLabel"
+            @close="generationDrawer.open = false"
+            @promoted="onPromotedFromGeneration"
+        />
     </div>
 </template>
 
@@ -1222,6 +1249,7 @@ import { XMarkIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/vue/24
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
+import ScheduleGenerationDrawer from '@/modules/schedules/components/ScheduleGenerationDrawer.vue'
 import type {
     AcademicSchedule,
     AssignableAssignment,
@@ -3037,6 +3065,68 @@ async function executeRemoveSelectedSlots() {
     }
 }
 
+/* ── Generación automática (F6) ────────────────────────────────── */
+const myCareerIds = ref<number[]>([])
+const isAdminCtx = ref(false)
+const careerNamesById = ref<Record<number, string>>({})
+const generationDrawer = reactive({
+    open: false,
+    careerId: null as number | null,
+    careerLabel: '' as string,
+})
+
+const canGenerate = computed(() => {
+    // CAREER_MANAGER con al menos una carrera OR admin (SES_MANAGER/ACADEMIC_DIRECTOR)
+    return resolvedConfigId.value !== null && (myCareerIds.value.length > 0 || isAdminCtx.value)
+})
+
+async function fetchMyCareers() {
+    try {
+        const { data } = await api.get(API.SCA_API.myContext)
+        isAdminCtx.value = !!data?.isAdmin
+        myCareerIds.value = Array.isArray(data?.careerIds) ? data.careerIds : []
+    } catch {
+        myCareerIds.value = []
+        isAdminCtx.value = false
+    }
+}
+
+async function openGenerationDrawer() {
+    // Si es admin sin career específica, pedir que elija una del config actual
+    if (!myCareerIds.value.length && !isAdminCtx.value) return
+
+    let careerId: number | null = null
+    if (myCareerIds.value.length === 1) {
+        careerId = myCareerIds.value[0]
+    } else if (myCareerIds.value.length > 1) {
+        const label = prompt(
+            'Tienes ' + myCareerIds.value.length + ' carreras. Ingresa el ID de la carrera a generar:\n' +
+            myCareerIds.value.map(id => `  ${id}${careerNamesById.value[id] ? ' — ' + careerNamesById.value[id] : ''}`).join('\n')
+        )
+        const parsed = Number(label)
+        if (!Number.isFinite(parsed) || !myCareerIds.value.includes(parsed)) return
+        careerId = parsed
+    } else {
+        // Admin sin career específica — por ahora pide manualmente
+        const input = prompt('Eres administrador. Ingresa el ID de la carrera para la que generar:')
+        const parsed = Number(input)
+        if (!Number.isFinite(parsed)) return
+        careerId = parsed
+    }
+
+    generationDrawer.careerId = careerId
+    generationDrawer.careerLabel = careerNamesById.value[careerId] || ''
+    generationDrawer.open = true
+}
+
+function onPromotedFromGeneration(_runId: number) {
+    // Re-cargar el horario tras promover bloques
+    if (resolvedConfigId.value) {
+        loadAssignments(resolvedConfigId.value)
+        loadSchedules(resolvedConfigId.value)
+    }
+}
+
 onMounted(() => {
     restorePeriodFromStorage()
     fetchCampuses()
@@ -3045,6 +3135,7 @@ onMounted(() => {
     fetchPlaces()
     fetchComplementaryHourTypes()
     fetchScopedTeachers()
+    fetchMyCareers()
     window.addEventListener('keydown', onKeydownGlobal)
 })
 
