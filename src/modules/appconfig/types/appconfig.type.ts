@@ -22,6 +22,8 @@ export interface ConfigSchemaDef {
     label: string
     description: string | null
     icon: string | null
+    icon_svg: string | null      // SVG inline (rendered con v-html)
+    instructions: string | null  // HTML rico para drawer de ayuda
     permission: string | null
     scopes: ConfigScope[]
     keys: Record<string, ConfigKeyDef>
@@ -32,6 +34,7 @@ export interface ConfigSchemaSummary {
     label: string
     description: string | null
     icon: string | null
+    icon_svg: string | null
     permission: string | null
 }
 

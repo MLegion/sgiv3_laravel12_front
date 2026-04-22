@@ -22,12 +22,15 @@
                 :to="{ name: 'appconfig.edit', params: { appId: s.app_id } }"
                 class="bg-white border rounded-xl p-5 hover:shadow-md transition-shadow block"
             >
-                <div class="flex items-start justify-between">
-                    <div>
-                        <h2 class="text-sm font-black uppercase tracking-wider text-slate-800">{{ s.label }}</h2>
-                        <p class="text-[10px] text-slate-400 font-mono mt-0.5">{{ s.app_id }}</p>
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-3 min-w-0">
+                        <div v-if="s.icon_svg" class="flex-shrink-0" v-html="s.icon_svg"></div>
+                        <div class="min-w-0">
+                            <h2 class="text-sm font-black uppercase tracking-wider text-slate-800">{{ s.label }}</h2>
+                            <p class="text-[10px] text-slate-400 font-mono mt-0.5 truncate">{{ s.app_id }}</p>
+                        </div>
                     </div>
-                    <span class="text-lg" v-if="s.icon">{{ s.icon }}</span>
+                    <span class="text-lg" v-if="s.icon && !s.icon_svg">{{ s.icon }}</span>
                 </div>
                 <p v-if="s.description" class="text-xs text-slate-500 mt-3">{{ s.description }}</p>
             </router-link>
