@@ -63,7 +63,7 @@
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="text-xs font-bold text-blue-600 uppercase tracking-[0.2em]">Borradores</h3>
                         <button type="button" class="text-[10px] text-slate-500 hover:text-slate-700 uppercase font-bold"
-                            @click="loadRuns">↻ Refrescar</button>
+                            @click="() => loadRuns()">↻ Refrescar</button>
                     </div>
 
                     <div v-if="loadingRuns" class="text-sm text-slate-400 italic">Cargando…</div>
@@ -80,8 +80,11 @@
                                 <div>
                                     <div class="flex items-center gap-2">
                                         <span class="text-sm font-bold text-slate-800">#{{ r.id }}</span>
-                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
-                                            :class="statusClasses[r.status]">{{ statusLabels[r.status] }}</span>
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase inline-flex items-center gap-1"
+                                            :class="statusClasses[r.status]">
+                                            <span v-if="!isTerminal(r.status)" class="w-1.5 h-1.5 bg-current rounded-full animate-pulse"></span>
+                                            {{ statusLabels[r.status] }}
+                                        </span>
                                         <span class="text-[10px] text-slate-400 font-mono">{{ r.providerKind }}</span>
                                     </div>
                                     <p class="text-[10px] text-slate-400 mt-1">
@@ -133,16 +136,21 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type {
     GenerateRunRequest, GenerateRunResponse, PromoteRunResponse,
-    RunListItem, WeightKey,
+    RunListItem, RunStatus, WeightKey,
 } from '@/modules/schedules/types/scheduleGeneration.type'
 import {
     WEIGHT_KEYS, WEIGHT_LABELS, STATUS_LABELS, STATUS_CLASSES,
 } from '@/modules/schedules/types/scheduleGeneration.type'
+
+const TERMINAL_STATUSES: RunStatus[] = [
+    'ready', 'infeasible', 'timeout', 'error', 'discarded', 'promoted',
+]
+const POLL_INTERVAL_MS = 3000
 
 const props = defineProps<{
     open: boolean
@@ -183,23 +191,49 @@ function flash(ok: boolean, message: string) {
 
 function close() { emit('close') }
 
+function isTerminal(status: RunStatus): boolean {
+    return TERMINAL_STATUSES.includes(status)
+}
+
 function formatDate(s: string | null) {
     if (!s) return '—'
     const d = new Date(s)
     return d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })
 }
 
-async function loadRuns() {
-    loadingRuns.value = true
+/* ── Polling async ─────────────────────────────────────────────── */
+let pollTimer: ReturnType<typeof setTimeout> | null = null
+
+const hasRunningRuns = computed(() =>
+    runs.value.some(r => !TERMINAL_STATUSES.includes(r.status))
+)
+
+async function loadRuns(silent = false) {
+    if (!silent) loadingRuns.value = true
     try {
         const { data } = await api.get(API.SCHEDULES_API.generation.listRuns, {
             params: { config_id: props.configId, career_id: props.careerId, limit: 20 },
         })
         runs.value = Array.isArray(data) ? data : []
     } catch (e: any) {
-        flash(false, e?.response?.data?.message || 'Error al listar borradores.')
+        if (!silent) flash(false, e?.response?.data?.message || 'Error al listar borradores.')
     } finally {
-        loadingRuns.value = false
+        if (!silent) loadingRuns.value = false
+    }
+    schedulePollIfNeeded()
+}
+
+function schedulePollIfNeeded() {
+    clearPoll()
+    if (!props.open) return
+    if (!hasRunningRuns.value) return
+    pollTimer = setTimeout(() => loadRuns(true), POLL_INTERVAL_MS)
+}
+
+function clearPoll() {
+    if (pollTimer !== null) {
+        clearTimeout(pollTimer)
+        pollTimer = null
     }
 }
 
@@ -216,7 +250,7 @@ async function generate() {
         const { data } = await api.post<GenerateRunResponse>(API.SCHEDULES_API.generation.createRun, payload)
 
         const summary = data.runs.map(r => `#${r.id}:${r.status}`).join(', ')
-        flash(true, `Corridas creadas: ${summary}`)
+        flash(true, `Corridas encoladas: ${summary}. Procesándose…`)
         await loadRuns()
     } catch (e: any) {
         flash(false, e?.response?.data?.message || 'Error al disparar la generación.')
@@ -265,6 +299,18 @@ async function discard(runId: number) {
 }
 
 watch(() => props.open, (isOpen) => {
-    if (isOpen) loadRuns()
+    if (isOpen) {
+        loadRuns()
+    } else {
+        clearPoll()
+    }
 })
+
+// Si cambia el config/career del drawer (ej: el director cierra y abre
+// con otra carrera), detenemos el polling anterior y recargamos.
+watch(() => [props.configId, props.careerId], () => {
+    if (props.open) loadRuns()
+})
+
+onBeforeUnmount(clearPoll)
 </script>
