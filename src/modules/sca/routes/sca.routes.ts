@@ -166,4 +166,24 @@ export default [
         component: () => import('@/modules/sca/pages/ScheduleAdjustmentPage.vue'),
         meta: { title: 'Reajuste de Fechas' },
     },
+
+    // ── Reglas de Horario ──────────────────────────────────────────────
+    {
+        path: 'sca/schedule-rules/modality',
+        name: 'sca.schedule-rules.modality',
+        component: () => import('@/modules/sca/pages/schedule-rules/ModalityRulesPage.vue'),
+        meta: { title: 'Reglas de Horario por Modalidad' },
+    },
+    {
+        path: 'sca/schedule-rules/teacher-availabilities',
+        name: 'sca.schedule-rules.teacher-availabilities',
+        component: () => import('@/modules/sca/pages/schedule-rules/TeacherAvailabilitiesPage.vue'),
+        meta: { title: 'Disponibilidad Docente' },
+    },
+    {
+        path: 'sca/schedule-rules/subject-restrictions',
+        name: 'sca.schedule-rules.subject-restrictions',
+        component: () => import('@/modules/sca/pages/schedule-rules/SubjectScheduleRestrictionsPage.vue'),
+        meta: { title: 'Restricciones por Materia' },
+    },
 ]

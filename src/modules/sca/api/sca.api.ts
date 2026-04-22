@@ -65,6 +65,23 @@ export default {
             create: apiUrl('/sca/school-calendar-holidays'),
             delete: (id: string | number) => apiUrl(`/sca/school-calendar-holidays/${id}`),
         },
+        scheduleRules: {
+            modality: {
+                list:   apiUrl('/sca/schedule-rules/modality'),
+                upsert: (modalityTypeId: string | number) => apiUrl(`/sca/schedule-rules/modality/${modalityTypeId}`),
+            },
+            teacherAvailability: {
+                teachers: apiUrl('/sca/schedule-rules/teacher-availabilities/teachers'),
+                list:     (teacherId: string | number) => apiUrl(`/sca/schedule-rules/teacher-availabilities/${teacherId}`),
+                create:   apiUrl('/sca/schedule-rules/teacher-availabilities'),
+                delete:   (id: string | number) => apiUrl(`/sca/schedule-rules/teacher-availabilities/${id}`),
+            },
+            subjectRestriction: {
+                list:   apiUrl('/sca/schedule-rules/subject-restrictions'),
+                create: apiUrl('/sca/schedule-rules/subject-restrictions'),
+                delete: (id: string | number) => apiUrl(`/sca/schedule-rules/subject-restrictions/${id}`),
+            },
+        },
         subjectPackages: {
             canApprove:            apiUrl('/sca/subject-packages/can-approve'),
             allowedAcademicOffers: apiUrl('/sca/subject-packages/allowed-academic-offers'),

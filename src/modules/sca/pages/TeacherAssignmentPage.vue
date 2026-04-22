@@ -167,7 +167,7 @@
                                 <!-- Docente -->
                                 <td class="px-3 py-2">
                                     <template v-if="row.teacherName">
-                                        <div class="flex items-center gap-1.5">
+                                        <div class="flex items-center gap-1.5 flex-wrap">
                                             <span
                                                 class="text-xs font-bold uppercase cursor-pointer hover:text-blue-600 hover:underline"
                                                 :class="[row.saved ? 'text-slate-800' : 'text-blue-700', isRowBusy(row.key) ? 'opacity-50' : '']"
@@ -177,6 +177,33 @@
                                                 {{ row.teacherName }}
                                             </span>
                                             <span v-if="row.isVacancy" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">VAC</span>
+                                            <!-- Auxiliares chip -->
+                                            <button
+                                                v-if="row.saved && row.assignmentId"
+                                                type="button"
+                                                class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border transition"
+                                                :class="rowAdditionalTeachers(pkg, row).length > 0
+                                                    ? 'bg-teal-50 border-teal-400 text-teal-700 hover:bg-teal-100'
+                                                    : 'bg-white border-slate-300 text-slate-500 hover:bg-slate-50'"
+                                                :title="rowAdditionalTeachers(pkg, row).length > 0
+                                                    ? 'Ver auxiliares (' + rowAdditionalTeachers(pkg, row).length + ')'
+                                                    : 'Agregar docente auxiliar'"
+                                                @click="openAuxModal(pkg, row)"
+                                            >
+                                                + AUX ({{ rowAdditionalTeachers(pkg, row).length }})
+                                            </button>
+                                        </div>
+                                        <!-- Lista compacta de auxiliares bajo el titular -->
+                                        <div v-if="row.saved && rowAdditionalTeachers(pkg, row).length > 0" class="mt-0.5 flex flex-wrap gap-1">
+                                            <span
+                                                v-for="at in rowAdditionalTeachers(pkg, row)"
+                                                :key="'at-' + row.assignmentId + '-' + at.teacherId"
+                                                class="text-[9px] uppercase font-semibold px-1 rounded bg-teal-50 text-teal-800 border border-teal-200"
+                                                :title="at.role === 'auxiliary' ? 'Auxiliar' : 'Soporte'"
+                                            >
+                                                {{ at.teacherName }}
+                                                <span class="opacity-60">· {{ at.role === 'auxiliary' ? 'AUX' : 'SOP' }}</span>
+                                            </span>
                                         </div>
                                     </template>
                                     <span v-else class="text-xs text-slate-400">VACIO</span>
@@ -298,6 +325,99 @@
                 </div>
                 <div class="flex justify-end pt-2 border-t">
                     <button @click="searchModal.open = false" class="px-4 py-2 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 uppercase">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de docentes auxiliares / soporte -->
+        <div v-if="auxModal.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="closeAuxModal">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-5 space-y-3 max-h-[75vh] flex flex-col">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-700 uppercase">Docentes auxiliares</h3>
+                        <p class="text-[10px] text-slate-500 mt-0.5">
+                            Titular: <b class="text-slate-700">{{ auxModal.mainTeacherName }}</b>
+                            <span class="block">{{ auxModal.subjectName }} · {{ auxModal.groupName }}</span>
+                        </p>
+                    </div>
+                    <button @click="closeAuxModal" class="text-slate-400 hover:text-slate-700">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <!-- Lista actual -->
+                <div class="space-y-1">
+                    <h4 class="text-[10px] font-black text-teal-700 uppercase">Auxiliares actuales</h4>
+                    <div v-if="auxModal.current.length === 0" class="text-[10px] text-slate-400 italic px-2 py-1">
+                        Sin auxiliares asignados
+                    </div>
+                    <div
+                        v-for="(at, idx) in auxModal.current"
+                        :key="'am-' + at.teacherId"
+                        class="flex items-center justify-between rounded-lg px-3 py-2 border bg-teal-50 border-teal-200"
+                    >
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-bold uppercase text-teal-800">{{ at.teacherName }}</span>
+                            <select
+                                v-model="at.role"
+                                class="text-[10px] font-bold uppercase border border-teal-300 rounded px-1 py-0.5 bg-white"
+                            >
+                                <option value="auxiliary">AUXILIAR</option>
+                                <option value="support">SOPORTE</option>
+                            </select>
+                        </div>
+                        <button
+                            type="button"
+                            class="text-red-500 hover:text-red-700"
+                            title="Quitar"
+                            @click="auxModal.current.splice(idx, 1)"
+                        >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Agregar -->
+                <div class="space-y-2 pt-2 border-t">
+                    <h4 class="text-[10px] font-black text-slate-500 uppercase">Agregar docente</h4>
+                    <div class="relative">
+                        <input
+                            type="text"
+                            v-model="auxModal.query"
+                            placeholder="Buscar por nombre..."
+                            class="w-full border-2 rounded-lg pl-8 pr-3 py-2 text-xs focus:border-teal-500 outline-none"
+                        />
+                        <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                    <div class="flex-1 overflow-y-auto space-y-1 max-h-40">
+                        <div v-if="auxModal.loading" class="flex justify-center py-4">
+                            <div class="w-5 h-5 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                        <template v-else>
+                            <div v-for="t in filteredAuxResults" :key="'ao-' + t.teacherId"
+                                class="flex items-center justify-between rounded px-2 py-1 cursor-pointer hover:bg-teal-50 border border-transparent hover:border-teal-200"
+                                @click="addAuxTeacher(t)"
+                            >
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold uppercase text-slate-700">{{ t.teacherName }}</span>
+                                    <span v-if="t.isVacancy" class="text-[9px] font-bold uppercase px-1 rounded bg-amber-100 text-amber-700">VAC</span>
+                                </div>
+                                <svg class="w-4 h-4 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            </div>
+                            <div v-if="filteredAuxResults.length === 0" class="text-[10px] text-slate-400 italic text-center py-2 uppercase">
+                                {{ auxModal.query ? 'Sin resultados' : 'No hay docentes disponibles' }}
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t">
+                    <button @click="closeAuxModal" :disabled="auxModal.saving" class="px-4 py-2 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 uppercase disabled:opacity-50">
+                        Cancelar
+                    </button>
+                    <button @click="saveAuxModal" :disabled="auxModal.saving" class="px-4 py-2 text-xs font-bold rounded-lg bg-teal-600 text-white hover:bg-teal-700 uppercase disabled:opacity-50">
+                        {{ auxModal.saving ? 'Guardando...' : 'Guardar' }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -819,6 +939,109 @@ async function selectTeacher(teacher: any) {
         rowState.value.delete(searchModal.rowKey)
         await fetchPackages(true)
     } catch (e: any) { alert(e?.response?.data?.message ?? 'Error al agregar solicitud') }
+}
+
+/* ── Modal Auxiliares (docente auxiliar / soporte) ──────────────── */
+interface AuxEntry { teacherId: number; teacherName: string; role: 'auxiliary' | 'support'; isVacancy?: boolean; notes?: string | null }
+const auxModal = reactive({
+    open: false,
+    assignmentId: null as number | null,
+    pkgId: null as number | null,
+    mainTeacherId: null as number | null,
+    mainTeacherName: '',
+    subjectName: '',
+    groupName: '',
+    current: [] as AuxEntry[],
+    query: '',
+    candidates: [] as AuxEntry[],
+    loading: false,
+    saving: false,
+})
+
+const filteredAuxResults = computed(() => {
+    const q = auxModal.query.toLowerCase().trim()
+    const takenIds = new Set<number>([...auxModal.current.map(a => a.teacherId), auxModal.mainTeacherId ?? 0])
+    return auxModal.candidates.filter((t: any) => {
+        if (takenIds.has(t.teacherId)) return false
+        if (!q) return true
+        return (t.teacherName ?? '').toLowerCase().includes(q)
+    })
+})
+
+function rowAdditionalTeachers(pkg: any, row: RowData): AuxEntry[] {
+    if (!row.saved || !row.assignmentId) return []
+    const assign = (pkg.assignments ?? []).find((a: any) => a.id === row.assignmentId)
+    return assign?.additionalTeachers ?? []
+}
+
+async function openAuxModal(pkg: any, row: RowData) {
+    if (!row.saved || !row.assignmentId || !row.teacherId) return
+    auxModal.assignmentId = row.assignmentId
+    auxModal.pkgId = pkg.id
+    auxModal.mainTeacherId = row.teacherId
+    auxModal.mainTeacherName = row.teacherName ?? ''
+    auxModal.subjectName = pkg.subjectName ?? ''
+    auxModal.groupName = row.savedGroupName ?? ''
+    auxModal.current = rowAdditionalTeachers(pkg, row).map(at => ({ ...at }))
+    auxModal.query = ''
+    auxModal.candidates = []
+    auxModal.loading = true
+    auxModal.open = true
+    try {
+        const { data } = await api.get(API.SCA_API.teacherAssignments.availableTeachers(pkg.id))
+        // El endpoint devuelve { requesting, others }; para auxiliares permitimos cualquier docente
+        const all = [...(data?.requesting ?? []), ...(data?.others ?? [])]
+        // Deduplicar por teacherId
+        const seen = new Set<number>()
+        auxModal.candidates = all.filter((t: any) => {
+            if (seen.has(t.teacherId)) return false
+            seen.add(t.teacherId)
+            return true
+        })
+    } catch {
+        auxModal.candidates = []
+    } finally {
+        auxModal.loading = false
+    }
+}
+
+function closeAuxModal() {
+    auxModal.open = false
+    auxModal.assignmentId = null
+    auxModal.current = []
+    auxModal.candidates = []
+}
+
+function addAuxTeacher(t: any) {
+    auxModal.current.push({
+        teacherId: t.teacherId,
+        teacherName: t.teacherName,
+        role: 'auxiliary',
+        isVacancy: !!t.isVacancy,
+        notes: null,
+    })
+    auxModal.query = ''
+}
+
+async function saveAuxModal() {
+    if (!auxModal.assignmentId) return
+    auxModal.saving = true
+    try {
+        await api.put(API.SCA_API.teacherAssignments.update(auxModal.assignmentId), {
+            additional_teachers: auxModal.current.map(at => ({
+                teacher_id: at.teacherId,
+                role: at.role,
+                notes: at.notes ?? null,
+            })),
+        })
+        auxModal.open = false
+        await fetchPackages(true)
+        showToast('Auxiliares actualizados')
+    } catch (e: any) {
+        showToast(e?.response?.data?.message ?? 'Error al guardar auxiliares', 'error')
+    } finally {
+        auxModal.saving = false
+    }
 }
 
 /* ── Computed ────────────────────────────────────────────────────── */

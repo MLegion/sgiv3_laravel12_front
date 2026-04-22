@@ -12,6 +12,13 @@ export interface ScheduleTeacher {
     isVacancy: boolean
 }
 
+export interface ScheduleAdditionalTeacher {
+    id: number
+    name: string | null
+    isVacancy: boolean
+    role: 'auxiliary' | 'support'
+}
+
 export interface ScheduleSubject {
     id: number
     name: string
@@ -37,6 +44,7 @@ export interface ScheduleCareer {
 export interface ScheduleTeacherAssignment {
     id: number
     teacher: ScheduleTeacher
+    additionalTeachers?: ScheduleAdditionalTeacher[]
     subject: ScheduleSubject | null
     group: ScheduleGroup | null
 }
@@ -60,6 +68,7 @@ export interface AcademicSchedule {
 export interface AssignableAssignment {
     id: number
     teacher: ScheduleTeacher
+    additionalTeachers?: ScheduleAdditionalTeacher[]
     subject: ScheduleSubject | null
     group: ScheduleGroup | null
     career: ScheduleCareer | null

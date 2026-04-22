@@ -14,5 +14,11 @@ export default {
             checkConflicts:  apiUrl('/schedules/academic/check-conflicts'),
             availablePlaces: apiUrl('/schedules/academic/available-places'),
         },
+        complementary: {
+            list:   apiUrl('/schedules/complementary'),
+            create: apiUrl('/schedules/complementary'),
+            update: (id: string | number) => apiUrl(`/schedules/complementary/${id}`),
+            delete: (id: string | number) => apiUrl(`/schedules/complementary/${id}`),
+        },
     },
 } satisfies ApiModule

@@ -227,6 +227,13 @@
                                 </div>
                                 <div class="px-2 py-1 text-center">
                                     <p class="text-[10px] text-slate-700 uppercase truncate">{{ a.teacher.name || '—' }}</p>
+                                    <p
+                                        v-if="a.additionalTeachers && a.additionalTeachers.length"
+                                        class="text-[9px] text-teal-700 uppercase truncate"
+                                        :title="a.additionalTeachers.map(x => x.name).join(', ')"
+                                    >
+                                        +{{ a.additionalTeachers.length }} {{ a.additionalTeachers[0].role === 'support' ? 'SOP' : 'AUX' }}: {{ a.additionalTeachers[0].name }}
+                                    </p>
                                     <div class="flex items-center justify-between mt-1 text-[10px]">
                                         <span class="font-bold text-slate-600">{{ a.group?.name || '' }}</span>
                                         <span class="font-black" :class="a.isComplete ? 'text-green-700' : 'text-orange-700'">
@@ -239,6 +246,34 @@
                             <div v-if="!loadingAssignable && filteredAssignments.length === 0" class="text-center py-8 text-[10px] text-slate-400 uppercase">
                                 Sin asignaciones
                             </div>
+
+                            <!-- ── DESCARGAS (solo filtro por DOCENTE) ── -->
+                            <template v-if="filterType === 'teacher' && filterValue && complementaryHourTypes.length">
+                                <div class="mt-4 pt-3 border-t-2 border-dashed border-teal-300">
+                                    <div class="text-[10px] font-black text-teal-700 uppercase tracking-widest text-center mb-2">
+                                        DESCARGAS
+                                    </div>
+                                    <div
+                                        v-for="t in complementaryHourTypes"
+                                        :key="'ct-' + t.id"
+                                        class="border-2 rounded transition cursor-move select-none overflow-hidden bg-teal-50 border-teal-400 hover:border-teal-700 hover:shadow touch-none mb-2"
+                                        :class="[draggedComplementaryTypeId === t.id ? 'ring-2 ring-teal-500' : '']"
+                                        @pointerdown="onComplementaryPointerDown(t, $event)"
+                                    >
+                                        <div class="px-2 py-1.5 bg-teal-100 border-b border-teal-300 text-center">
+                                            <span
+                                                class="text-[11px] font-black text-teal-800 uppercase leading-tight block truncate"
+                                                :title="t.name"
+                                            >
+                                                {{ t.shortName || t.name }}
+                                            </span>
+                                        </div>
+                                        <div class="px-2 py-1 text-center">
+                                            <p class="text-[9px] text-teal-700 uppercase truncate">Arrastra al grid</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
 
@@ -348,6 +383,22 @@
                                     <div class="text-[10px] text-slate-700 truncate w-full mt-0.5">
                                         {{ placeShortLabel(block) }}
                                     </div>
+                                    <!-- Docentes: titular (siempre visible cuando hay auxiliares;
+                                         en bloques de un solo docente ya se intuye por el filtro) -->
+                                    <template v-if="block.teacherAssignment?.additionalTeachers && block.teacherAssignment.additionalTeachers.length">
+                                        <div
+                                            class="text-[9px] text-slate-700 uppercase truncate w-full mt-0.5"
+                                            :title="block.teacherAssignment?.teacher?.name || ''"
+                                        >
+                                            {{ block.teacherAssignment?.teacher?.name || '—' }}
+                                        </div>
+                                        <div
+                                            class="text-[9px] text-teal-700 uppercase truncate w-full"
+                                            :title="block.teacherAssignment.additionalTeachers.map(x => x.name).join(', ')"
+                                        >
+                                            + {{ block.teacherAssignment.additionalTeachers[0].name }}<span v-if="block.teacherAssignment.additionalTeachers.length > 1"> +{{ block.teacherAssignment.additionalTeachers.length - 1 }}</span>
+                                        </div>
+                                    </template>
                                     <div class="flex items-center justify-between w-full mt-0.5 px-0.5">
                                         <span class="text-[10px] font-bold text-slate-600 truncate">{{ block.teacherAssignment?.group?.name || '' }}</span>
                                         <button
@@ -413,6 +464,42 @@
                                         {{ slot.from }} - {{ slot.to }}
                                     </button>
                                 </div>
+                                </div>
+                            </template>
+
+                            <!-- ── Bloques de descarga (solo filtro docente) ── -->
+                            <template v-if="!eraserMode">
+                                <div
+                                    v-for="c in visibleComplementary"
+                                    :key="'cx-' + c.id"
+                                    class="border-2 m-1 px-1.5 py-1 overflow-hidden flex flex-col justify-center items-center text-center bg-teal-100 border-teal-500 pointer-events-auto z-10 touch-none"
+                                    :class="[
+                                        phaseActive ? 'cursor-move' : '',
+                                        draggedComplementaryBlockId === c.id ? 'opacity-50 ring-2 ring-teal-600' : '',
+                                    ]"
+                                    :style="complementaryGridStyle(c)"
+                                    @pointerdown="onComplementaryBlockPointerDown(c, $event)"
+                                >
+                                    <div
+                                        class="text-[11px] font-black uppercase text-teal-800 truncate w-full leading-tight"
+                                        :title="c.complementaryHourType?.name || ''"
+                                    >
+                                        {{ c.complementaryHourType?.shortName || c.complementaryHourType?.name || 'DESCARGA' }}
+                                    </div>
+                                    <div class="text-[10px] text-teal-700 truncate w-full mt-0.5">
+                                        {{ complementaryPlaceShort(c) }}
+                                    </div>
+                                    <div class="flex items-center justify-end w-full mt-0.5 px-0.5">
+                                        <button
+                                            v-if="phaseActive"
+                                            class="text-red-600 hover:text-red-800 flex-shrink-0"
+                                            title="Eliminar descarga"
+                                            @pointerdown.stop
+                                            @click.stop="deleteComplementaryBlock(c)"
+                                        >
+                                            <TrashIcon class="w-3 h-3" />
+                                        </button>
+                                    </div>
                                 </div>
                             </template>
 
@@ -741,6 +828,92 @@
             </div>
         </Teleport>
 
+        <!-- ═════ Modal de descarga (crear / mover) ═════ -->
+        <Teleport to="body">
+            <div v-if="compDropModal.open" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40" @click.self="closeComplementaryDropModal">
+                <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+                    <div class="px-5 py-3 bg-teal-50 border-b border-teal-200 flex items-center justify-between">
+                        <h3 class="text-sm font-black uppercase text-teal-800">
+                            {{ compDropModal.mode === 'move' ? 'Mover Descarga' : 'Asignar Descarga' }}
+                        </h3>
+                        <button class="text-slate-400 hover:text-slate-600" @click="closeComplementaryDropModal">
+                            <XMarkIcon class="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    <div class="p-5 space-y-4">
+                        <div class="text-xs space-y-1">
+                            <p><strong class="text-slate-500 uppercase text-[10px]">Tipo:</strong> {{ compDropModal.typeName }}</p>
+                            <p><strong class="text-slate-500 uppercase text-[10px]">Docente:</strong> {{ compDropModal.teacherName }}</p>
+                            <p><strong class="text-slate-500 uppercase text-[10px]">Slot:</strong> {{ compDropModal.slotLabel }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">AULA</label>
+                            <select
+                                v-model="compDropModal.placeId"
+                                class="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-xs focus:border-teal-500 outline-none"
+                            >
+                                <option :value="null">-- SELECCIONA --</option>
+                                <option v-for="p in places" :key="'cp-' + p.id" :value="p.id">
+                                    {{ p.name }}{{ p.shortName ? ' (' + p.shortName + ')' : '' }}{{ !p.isValidable ? ' [LIBRE]' : '' }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">HORA INICIO</label>
+                                <select
+                                    v-model="compDropModal.startTime"
+                                    class="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:border-teal-500 outline-none"
+                                >
+                                    <option v-for="opt in startTimeOptions" :key="'cs-' + opt" :value="opt">{{ opt }}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">HORA TÉRMINO</label>
+                                <select
+                                    v-model="compDropModal.endTime"
+                                    class="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:border-teal-500 outline-none"
+                                >
+                                    <option v-for="opt in endTimeOptions" :key="'ce-' + opt" :value="opt">{{ opt }}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">NOTAS (OPCIONAL)</label>
+                            <textarea
+                                v-model="compDropModal.notes"
+                                rows="2"
+                                maxlength="500"
+                                class="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-xs focus:border-teal-500 outline-none"
+                            ></textarea>
+                        </div>
+
+                        <div v-if="compDropModal.conflicts.length" class="p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p class="text-[10px] font-black text-red-700 uppercase mb-1">⚠ No se puede guardar:</p>
+                            <ul class="text-[11px] text-red-700 space-y-0.5">
+                                <li v-for="(err, i) in compDropModal.conflicts" :key="i">• {{ err }}</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="px-5 py-3 bg-slate-50 border-t flex justify-end gap-2">
+                        <button class="px-4 py-2 text-xs font-bold rounded-lg border hover:bg-white uppercase" @click="closeComplementaryDropModal">CANCELAR</button>
+                        <button
+                            class="px-4 py-2 text-xs font-bold rounded-lg bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50 uppercase"
+                            :disabled="!compDropModal.placeId || compDropModal.saving"
+                            @click="saveComplementaryDrop"
+                        >
+                            {{ compDropModal.saving ? 'GUARDANDO...' : (compDropModal.mode === 'move' ? 'MOVER' : 'GUARDAR') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
         <!-- ═════ Modal de eliminar bloque ═════ -->
         <Teleport to="body">
             <div v-if="deleteModal.open" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40" @click.self="closeDeleteModal">
@@ -1055,6 +1228,10 @@ import type {
     SchedulePlace,
 } from '@/modules/schedules/types/academicSchedule.type'
 import { DAY_LABELS_FULL } from '@/modules/schedules/types/academicSchedule.type'
+import type {
+    ComplementaryHourTypeRef,
+    ComplementarySchedule,
+} from '@/modules/schedules/types/complementarySchedule.type'
 
 const STORAGE_KEY = 'schedules_academic_period'
 
@@ -1091,6 +1268,12 @@ const loadingSchedules = ref(false)
 // Filtro vista
 const filterType = ref<'teacher' | 'group' | 'place'>('teacher')
 const filterValue = ref<number | null>(null)
+
+// ═══ Descargas (horas complementarias) ═══
+const complementaryHourTypes = ref<ComplementaryHourTypeRef[]>([])
+const complementarySchedules = ref<ComplementarySchedule[]>([])
+const scopedTeachers = ref<{ id: number; name: string; isVacancy?: boolean }[]>([])
+const loadingComplementary = ref(false)
 
 // ══════════════════════ COMPUTED ═══════════════════════════
 const modalityTypeConfig = computed(() => selectedConfig.value?.modality?.modalityType?.config ?? null)
@@ -1302,13 +1485,15 @@ function slotRowIndex(startMinutes: number): number {
 }
 
 const filteredAssignments = computed(() => {
+    // Siempre ocultamos las asignaciones ya completas (remainingMinutes===0).
+    const base = assignableAssignments.value.filter(a => !a.isComplete)
     if (filterType.value === 'teacher' && filterValue.value) {
-        return assignableAssignments.value.filter(a => a.teacher.id === filterValue.value)
+        return base.filter(a => a.teacher.id === filterValue.value)
     }
     if (filterType.value === 'group' && filterValue.value) {
-        return assignableAssignments.value.filter(a => a.group?.id === filterValue.value)
+        return base.filter(a => a.group?.id === filterValue.value)
     }
-    return assignableAssignments.value.filter(a => !a.isComplete)
+    return base
 })
 
 const filterOptions = computed(() => {
@@ -1317,6 +1502,13 @@ const filterOptions = computed(() => {
         for (const a of assignableAssignments.value) {
             if (a.teacher.id && !map.has(a.teacher.id)) {
                 map.set(a.teacher.id, { id: a.teacher.id, label: a.teacher.name || '—' })
+            }
+        }
+        // Para poder asignar descargas, añadimos también los docentes dentro del
+        // scope del usuario aunque no tengan asignaciones de clase.
+        for (const t of scopedTeachers.value) {
+            if (t.id && !map.has(t.id)) {
+                map.set(t.id, { id: t.id, label: t.name || '—' })
             }
         }
         return [...map.values()].sort((x, y) => x.label.localeCompare(y.label))
@@ -1453,6 +1645,37 @@ const dragPreviewGridStyle = computed(() => {
 // Lista plana de todos los bloques visibles (se renderizan como overlay del grid)
 const allBlocks = computed(() => visibleSchedules.value)
 
+// Descargas visibles del docente seleccionado
+const visibleComplementary = computed<ComplementarySchedule[]>(() => {
+    if (filterType.value !== 'teacher' || !filterValue.value) return []
+    return complementarySchedules.value.filter(c => c.teacherId === filterValue.value)
+})
+
+function colMatchesComplementary(col: any, c: ComplementarySchedule): boolean {
+    if (col.date) return c.date === col.date
+    return c.dayOfWeek === col.dayOfWeek && !c.date
+}
+
+function complementaryGridStyle(c: ComplementarySchedule) {
+    const colKey = c.date ? 'date-' + c.date : 'dow-' + c.dayOfWeek
+    const colIndex = findColIndex(colKey)
+    if (colIndex < 2) return { display: 'none' }
+    const startMin = parseTime(c.startTime)
+    const rowIdx = slotRowIndex(startMin)
+    if (rowIdx < 0) return { display: 'none' }
+    const et = parseTime(c.endTime)
+    const rowspan = Math.max(1, Math.ceil((et - startMin) / blockDuration.value))
+    return {
+        gridColumn: `${colIndex} / span 1`,
+        gridRow: `${rowIdx + 2} / ${rowIdx + 2 + rowspan}`,
+    }
+}
+
+function complementaryPlaceShort(c: ComplementarySchedule): string {
+    if (!c.place) return ''
+    return c.place.shortName || c.place.name
+}
+
 function showError(msg: string) {
     errorMsg.value = msg
     setTimeout(() => { errorMsg.value = '' }, 4000)
@@ -1507,6 +1730,55 @@ async function fetchModalities() {
         modalities.value = data?.items ?? data?.data ?? data ?? []
     } catch { modalities.value = [] }
 }
+
+async function fetchComplementaryHourTypes() {
+    try {
+        const { data } = await api.get(API.SCA_API.complementaryHourTypes.list)
+        const rows = data?.items ?? data?.data ?? data ?? []
+        complementaryHourTypes.value = (Array.isArray(rows) ? rows : []).map((t: any) => ({
+            id: t.id,
+            name: t.name ?? `#${t.id}`,
+            shortName: t.shortName ?? t.short_name ?? null,
+        }))
+    } catch {
+        complementaryHourTypes.value = []
+    }
+}
+
+async function fetchScopedTeachers() {
+    try {
+        const { data } = await api.get(API.SCA_API.scheduleRules.teacherAvailability.teachers)
+        scopedTeachers.value = Array.isArray(data) ? data : []
+    } catch {
+        scopedTeachers.value = []
+    }
+}
+
+async function loadComplementarySchedulesForTeacher() {
+    if (filterType.value !== 'teacher' || !filterValue.value || !selectedPeriodId.value) {
+        complementarySchedules.value = []
+        return
+    }
+    loadingComplementary.value = true
+    try {
+        const { data } = await api.get(API.SCHEDULES_API.complementary.list, {
+            params: {
+                college_academic_period_id: selectedPeriodId.value,
+                teacher_id: filterValue.value,
+            },
+        })
+        complementarySchedules.value = Array.isArray(data) ? data : []
+    } catch {
+        complementarySchedules.value = []
+    } finally {
+        loadingComplementary.value = false
+    }
+}
+
+watch(
+    () => [filterType.value, filterValue.value, selectedPeriodId.value],
+    () => { loadComplementarySchedulesForTeacher() },
+)
 
 async function fetchPlaces() {
     try {
@@ -1627,6 +1899,10 @@ const draggedAssignmentId = ref<number | null>(null)
 const draggedAssignment = ref<AssignableAssignment | null>(null)
 const draggedBlockId = ref<number | null>(null)
 const draggedBlock = ref<AcademicSchedule | null>(null)
+const draggedComplementaryTypeId = ref<number | null>(null)
+const draggedComplementaryType = ref<ComplementaryHourTypeRef | null>(null)
+const draggedComplementaryBlockId = ref<number | null>(null)
+const draggedComplementaryBlock = ref<ComplementarySchedule | null>(null)
 
 interface DragPreview { colKey: string; slotKey: string; rowspan: number }
 const dragPreview = ref<DragPreview | null>(null)
@@ -1702,6 +1978,52 @@ function onBlockPointerDown(block: AcademicSchedule, e: PointerEvent) {
 
     ghost.title = block.teacherAssignment?.subject?.shortName || block.teacherAssignment?.subject?.name || '—'
     ghost.subtitle = (block.teacherAssignment?.teacher?.name || '') + (block.teacherAssignment?.group ? ' · ' + block.teacherAssignment.group.name : '')
+
+    startPointerDrag(e)
+}
+
+// ─── Inicio drag: tipo de descarga del sidebar ───
+function onComplementaryPointerDown(type: ComplementaryHourTypeRef, e: PointerEvent) {
+    if (!phaseActive.value) return
+    if (eraserMode.value) return
+    if (e.button !== 0 && e.pointerType === 'mouse') return
+
+    draggedComplementaryType.value = type
+    draggedComplementaryTypeId.value = type.id
+    draggedAssignment.value = null
+    draggedAssignmentId.value = null
+    draggedBlock.value = null
+    draggedBlockId.value = null
+    draggedComplementaryBlock.value = null
+    draggedComplementaryBlockId.value = null
+
+    ghost.title = type.shortName || type.name
+    ghost.subtitle = 'DESCARGA'
+
+    startPointerDrag(e)
+}
+
+// ─── Inicio drag: bloque de descarga existente en el grid ───
+function onComplementaryBlockPointerDown(block: ComplementarySchedule, e: PointerEvent) {
+    if (!phaseActive.value) return
+    if (eraserMode.value) return
+    if (e.button !== 0 && e.pointerType === 'mouse') return
+
+    const target = e.target as HTMLElement
+    if (target.closest('button, a, input, select')) return
+
+    draggedComplementaryBlock.value = block
+    draggedComplementaryBlockId.value = block.id
+    draggedAssignment.value = null
+    draggedAssignmentId.value = null
+    draggedBlock.value = null
+    draggedBlockId.value = null
+    draggedComplementaryType.value = null
+    draggedComplementaryTypeId.value = null
+
+    const t = block.complementaryHourType
+    ghost.title = t?.shortName || t?.name || 'DESCARGA'
+    ghost.subtitle = block.teacher?.name || ''
 
     startPointerDrag(e)
 }
@@ -1806,6 +2128,12 @@ function updateDragPreview(colKey: string, slotKey: string) {
         const st = parseTime(draggedBlock.value.startTime)
         const et = parseTime(draggedBlock.value.endTime)
         rowspan = Math.max(1, Math.ceil((et - st) / blockDuration.value))
+    } else if (draggedComplementaryBlock.value) {
+        const st = parseTime(draggedComplementaryBlock.value.startTime)
+        const et = parseTime(draggedComplementaryBlock.value.endTime)
+        rowspan = Math.max(1, Math.ceil((et - st) / blockDuration.value))
+    } else if (draggedComplementaryType.value) {
+        rowspan = 1
     } else {
         rowspan = Math.max(1, Math.ceil(defaultDurationMinutes(draggedAssignment.value) / blockDuration.value))
     }
@@ -1826,6 +2154,10 @@ function onGlobalPointerUp(e: PointerEvent) {
                     openDropModal(draggedAssignment.value, col, slot)
                 } else if (draggedBlock.value) {
                     openMoveModal(draggedBlock.value, col, slot)
+                } else if (draggedComplementaryType.value) {
+                    openComplementaryCreateModal(draggedComplementaryType.value, col, slot)
+                } else if (draggedComplementaryBlock.value) {
+                    openComplementaryMoveModal(draggedComplementaryBlock.value, col, slot)
                 }
             }
         }
@@ -1853,6 +2185,10 @@ function cleanupPointerDrag() {
     draggedAssignment.value = null
     draggedBlockId.value = null
     draggedBlock.value = null
+    draggedComplementaryTypeId.value = null
+    draggedComplementaryType.value = null
+    draggedComplementaryBlockId.value = null
+    draggedComplementaryBlock.value = null
     dragPreview.value = null
 }
 
@@ -2083,6 +2419,144 @@ async function saveDrop() {
         dropModal.conflicts = [extractErrorMessage(e)]
     } finally {
         dropModal.saving = false
+    }
+}
+
+// ══════════════════════ COMPLEMENTARY DROP MODAL ═══════════════════════════
+interface ComplementaryDropModalState {
+    open: boolean
+    mode: 'create' | 'move'
+    id: number | null
+    teacherId: number | null
+    teacherName: string
+    typeId: number | null
+    typeName: string
+    col: any
+    slot: HourSlot | null
+    slotLabel: string
+    placeId: number | null
+    startTime: string
+    endTime: string
+    notes: string
+    conflicts: string[]
+    saving: boolean
+}
+
+const compDropModal = reactive<ComplementaryDropModalState>({
+    open: false,
+    mode: 'create',
+    id: null,
+    teacherId: null,
+    teacherName: '',
+    typeId: null,
+    typeName: '',
+    col: null,
+    slot: null,
+    slotLabel: '',
+    placeId: null,
+    startTime: '',
+    endTime: '',
+    notes: '',
+    conflicts: [],
+    saving: false,
+})
+
+function openComplementaryCreateModal(type: ComplementaryHourTypeRef, col: any, slot: HourSlot) {
+    if (filterType.value !== 'teacher' || !filterValue.value) return
+    const teacher = scopedTeachers.value.find(t => t.id === filterValue.value)
+        ?? assignableAssignments.value.find(a => a.teacher.id === filterValue.value)?.teacher
+    const startMin = slot.startMinutes
+    const endMin = Math.min(startMin + blockDuration.value, dayEndHour.value)
+
+    compDropModal.open = true
+    compDropModal.mode = 'create'
+    compDropModal.id = null
+    compDropModal.teacherId = filterValue.value
+    compDropModal.teacherName = teacher?.name ?? ''
+    compDropModal.typeId = type.id
+    compDropModal.typeName = type.name
+    compDropModal.col = col
+    compDropModal.slot = slot
+    compDropModal.slotLabel = slotLabel(col, startMin, endMin)
+    compDropModal.startTime = minutesToLabel(startMin)
+    compDropModal.endTime = minutesToLabel(endMin)
+    compDropModal.notes = ''
+    compDropModal.conflicts = []
+    compDropModal.saving = false
+    compDropModal.placeId = pinnedPlaceId.value
+        ?? (filterType.value === 'place' && filterValue.value ? filterValue.value : null)
+}
+
+function openComplementaryMoveModal(block: ComplementarySchedule, col: any, slot: HourSlot) {
+    const originalStart = parseTime(block.startTime)
+    const originalEnd = parseTime(block.endTime)
+    const duration = originalEnd - originalStart
+    const startMin = slot.startMinutes
+    const endMin = Math.min(startMin + duration, dayEndHour.value)
+
+    compDropModal.open = true
+    compDropModal.mode = 'move'
+    compDropModal.id = block.id
+    compDropModal.teacherId = block.teacherId
+    compDropModal.teacherName = block.teacher?.name ?? ''
+    compDropModal.typeId = block.complementaryHourTypeId
+    compDropModal.typeName = block.complementaryHourType?.name ?? ''
+    compDropModal.col = col
+    compDropModal.slot = slot
+    compDropModal.slotLabel = slotLabel(col, startMin, endMin)
+    compDropModal.startTime = minutesToLabel(startMin)
+    compDropModal.endTime = minutesToLabel(endMin)
+    compDropModal.notes = block.notes ?? ''
+    compDropModal.conflicts = []
+    compDropModal.saving = false
+    compDropModal.placeId = block.placeId
+}
+
+function closeComplementaryDropModal() {
+    compDropModal.open = false
+    compDropModal.id = null
+    compDropModal.col = null
+    compDropModal.slot = null
+    compDropModal.conflicts = []
+}
+
+async function saveComplementaryDrop() {
+    if (!compDropModal.col || !compDropModal.placeId || !compDropModal.teacherId || !compDropModal.typeId) return
+    if (!selectedPeriodId.value) return
+    compDropModal.saving = true
+    compDropModal.conflicts = []
+    try {
+        const payload = {
+            college_academic_period_id: selectedPeriodId.value,
+            teacher_id:                 compDropModal.teacherId,
+            complementary_hour_type_id: compDropModal.typeId,
+            place_id:                   compDropModal.placeId,
+            day_of_week:                compDropModal.col.dayOfWeek,
+            date:                       compDropModal.col.date,
+            start_time:                 compDropModal.startTime,
+            end_time:                   compDropModal.endTime,
+            notes:                      compDropModal.notes || null,
+        }
+        if (compDropModal.mode === 'move' && compDropModal.id) {
+            await api.put(API.SCHEDULES_API.complementary.update(compDropModal.id), payload)
+        } else {
+            await api.post(API.SCHEDULES_API.complementary.create, payload)
+        }
+        closeComplementaryDropModal()
+        await loadComplementarySchedulesForTeacher()
+    } catch (e: any) {
+        compDropModal.conflicts = [extractErrorMessage(e)]
+    } finally {
+        compDropModal.saving = false
+    }
+}
+
+async function deleteComplementaryBlock(block: ComplementarySchedule) {
+    try {
+        await api.delete(API.SCHEDULES_API.complementary.delete(block.id))
+        await loadComplementarySchedulesForTeacher()
+    } catch (e: any) {
+        showError(extractErrorMessage(e))
     }
 }
 
@@ -2569,6 +3043,8 @@ onMounted(() => {
     fetchModalityTypes()
     fetchModalities()
     fetchPlaces()
+    fetchComplementaryHourTypes()
+    fetchScopedTeachers()
     window.addEventListener('keydown', onKeydownGlobal)
 })
 
