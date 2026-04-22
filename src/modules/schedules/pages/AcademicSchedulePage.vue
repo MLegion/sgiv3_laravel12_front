@@ -1240,6 +1240,15 @@
             @close="generationDrawer.open = false"
             @promoted="onPromotedFromGeneration"
         />
+
+        <!-- ═════ Modal: Elegir carrera (COLLEGE_ADMIN / ACADEMIC_DIRECTOR / CAREER_MANAGER con varias) ═════ -->
+        <ScheduleCareerPickerModal
+            :open="careerPickerOpen"
+            :config-id="resolvedConfigId"
+            :allowed-career-ids="careerPickerAllowed"
+            @close="careerPickerOpen = false"
+            @pick="onCareerPicked"
+        />
     </div>
 </template>
 
@@ -1250,6 +1259,9 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
 import ScheduleGenerationDrawer from '@/modules/schedules/components/ScheduleGenerationDrawer.vue'
+import ScheduleCareerPickerModal, {
+    type AvailableCareer,
+} from '@/modules/schedules/components/ScheduleCareerPickerModal.vue'
 import type {
     AcademicSchedule,
     AssignableAssignment,
@@ -3091,31 +3103,33 @@ async function fetchMyCareers() {
     }
 }
 
+/* ── Career picker (admin o CAREER_MANAGER con varias carreras) ── */
+const careerPickerOpen = ref(false)
+const careerPickerAllowed = ref<number[] | null>(null)
+
 async function openGenerationDrawer() {
-    // Si es admin sin career específica, pedir que elija una del config actual
     if (!myCareerIds.value.length && !isAdminCtx.value) return
 
-    let careerId: number | null = null
+    // Caso fácil: CAREER_MANAGER con exactamente 1 carrera → abre drawer directo
     if (myCareerIds.value.length === 1) {
-        careerId = myCareerIds.value[0]
-    } else if (myCareerIds.value.length > 1) {
-        const label = prompt(
-            'Tienes ' + myCareerIds.value.length + ' carreras. Ingresa el ID de la carrera a generar:\n' +
-            myCareerIds.value.map(id => `  ${id}${careerNamesById.value[id] ? ' — ' + careerNamesById.value[id] : ''}`).join('\n')
-        )
-        const parsed = Number(label)
-        if (!Number.isFinite(parsed) || !myCareerIds.value.includes(parsed)) return
-        careerId = parsed
-    } else {
-        // Admin sin career específica — por ahora pide manualmente
-        const input = prompt('Eres administrador. Ingresa el ID de la carrera para la que generar:')
-        const parsed = Number(input)
-        if (!Number.isFinite(parsed)) return
-        careerId = parsed
+        const id = myCareerIds.value[0]
+        generationDrawer.careerId = id
+        generationDrawer.careerLabel = careerNamesById.value[id] || ''
+        generationDrawer.open = true
+        return
     }
 
-    generationDrawer.careerId = careerId
-    generationDrawer.careerLabel = careerNamesById.value[careerId] || ''
+    // Caso CAREER_MANAGER con varias → modal restringido a sus carreras.
+    // Caso ADMIN (COLLEGE_ADMIN/ACADEMIC_DIRECTOR) → modal con TODAS las del config.
+    careerPickerAllowed.value = isAdminCtx.value ? null : [...myCareerIds.value]
+    careerPickerOpen.value = true
+}
+
+function onCareerPicked(c: AvailableCareer) {
+    careerPickerOpen.value = false
+    generationDrawer.careerId = c.id
+    generationDrawer.careerLabel = c.name
+    careerNamesById.value[c.id] = c.name
     generationDrawer.open = true
 }
 
