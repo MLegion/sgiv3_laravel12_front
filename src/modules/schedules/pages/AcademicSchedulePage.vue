@@ -1540,20 +1540,33 @@ const filteredAssignments = computed(() => {
 
 const filterOptions = computed(() => {
     if (filterType.value === 'teacher') {
-        const map = new Map<number, { id: number; label: string }>()
+        // Contar asignaciones por docente dentro del scope del ALC
+        const countByTeacher = new Map<number, number>()
+        const nameByTeacher = new Map<number, string>()
         for (const a of assignableAssignments.value) {
-            if (a.teacher.id && !map.has(a.teacher.id)) {
-                map.set(a.teacher.id, { id: a.teacher.id, label: a.teacher.name || '—' })
-            }
+            if (!a.teacher?.id) continue
+            countByTeacher.set(a.teacher.id, (countByTeacher.get(a.teacher.id) ?? 0) + 1)
+            nameByTeacher.set(a.teacher.id, a.teacher.name || '—')
         }
-        // Para poder asignar descargas, añadimos también los docentes dentro del
-        // scope del usuario aunque no tengan asignaciones de clase.
+        // Completar con docentes del scope del usuario aunque no tengan asignaciones
         for (const t of scopedTeachers.value) {
-            if (t.id && !map.has(t.id)) {
-                map.set(t.id, { id: t.id, label: t.name || '—' })
-            }
+            if (!t.id) continue
+            if (!countByTeacher.has(t.id)) countByTeacher.set(t.id, 0)
+            if (!nameByTeacher.has(t.id)) nameByTeacher.set(t.id, t.name || '—')
         }
-        return [...map.values()].sort((x, y) => x.label.localeCompare(y.label))
+        const rows = [...countByTeacher.entries()].map(([id, count]) => ({
+            id,
+            count,
+            name: nameByTeacher.get(id) ?? '—',
+            label: `${nameByTeacher.get(id) ?? '—'} (${count})`,
+        }))
+        // Primero con asignaciones (alfabético); luego sin asignaciones (alfabético)
+        return rows.sort((x, y) => {
+            const xHas = x.count > 0 ? 0 : 1
+            const yHas = y.count > 0 ? 0 : 1
+            if (xHas !== yHas) return xHas - yHas
+            return x.name.localeCompare(y.name)
+        })
     }
     if (filterType.value === 'group') {
         const map = new Map<number, { id: number; label: string }>()
