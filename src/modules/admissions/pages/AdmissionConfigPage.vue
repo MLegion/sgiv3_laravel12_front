@@ -132,6 +132,22 @@
                         </span>
                     </button>
                 </div>
+
+                <!-- Cantidad de opciones de oferta -->
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-medium text-slate-700">Opciones de oferta en la preficha</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Cuántas ofertas académicas debe seleccionar el aspirante al obtener su preficha, en orden de preferencia.</p>
+                    </div>
+                    <select
+                        v-model.number="form.max_offer_options"
+                        class="shrink-0 w-24 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                        <option :value="1">1</option>
+                        <option :value="2">2</option>
+                        <option :value="3">3</option>
+                    </select>
+                </div>
             </div>
 
             <!-- FEEDBACK + GUARDAR -->
@@ -177,6 +193,7 @@ const form = ref({
     auto_accept_documents:      false,
     portal_enabled:             true,
     require_email_verification: false,
+    max_offer_options:          1,
 })
 
 async function fetchData() {
@@ -192,6 +209,7 @@ async function fetchData() {
             auto_accept_documents:      data?.autoAcceptDocuments          ?? false,
             portal_enabled:             data?.portalEnabled                ?? true,
             require_email_verification: data?.requireEmailVerification     ?? false,
+            max_offer_options:          data?.maxOfferOptions               ?? 1,
         }
     } finally {
         loading.value = false
@@ -212,6 +230,7 @@ async function submit() {
             auto_accept_documents:      form.value.auto_accept_documents,
             portal_enabled:             form.value.portal_enabled,
             require_email_verification: form.value.require_email_verification,
+            max_offer_options:          form.value.max_offer_options,
         })
         saved.value = true
     } catch (e: any) {

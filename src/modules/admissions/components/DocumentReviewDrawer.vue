@@ -150,8 +150,9 @@
 
                                     <div class="flex items-center justify-between gap-2">
                                         <div class="flex gap-2">
-                                            <!-- Approve -->
+                                            <!-- Approve: oculto si ya está aprobado -->
                                             <button
+                                                v-if="selected.status !== 'approved' && !showRejectInput"
                                                 class="flex items-center gap-1.5 px-4 py-2 text-sm rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                                                 :disabled="submitting"
                                                 @click="submitReview('approved')"
@@ -162,9 +163,9 @@
                                                 APROBAR
                                             </button>
 
-                                            <!-- Reject toggle / confirm -->
+                                            <!-- Reject toggle / confirm: oculto si ya está rechazado -->
                                             <button
-                                                v-if="!showRejectInput"
+                                                v-if="selected.status !== 'rejected' && !showRejectInput"
                                                 class="flex items-center gap-1.5 px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                                                 :disabled="submitting"
                                                 @click="showRejectInput = true"
@@ -174,7 +175,7 @@
                                                 </svg>
                                                 RECHAZAR
                                             </button>
-                                            <template v-else>
+                                            <template v-if="showRejectInput">
                                                 <button
                                                     class="flex items-center gap-1.5 px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                                                     :disabled="submitting || !rejectionReason.trim()"
@@ -189,6 +190,19 @@
                                                     CANCELAR
                                                 </button>
                                             </template>
+
+                                            <!-- Revertir a pendiente: solo visible cuando ya hay decisión -->
+                                            <button
+                                                v-if="(selected.status === 'approved' || selected.status === 'rejected') && !showRejectInput"
+                                                class="flex items-center gap-1.5 px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                                :disabled="submitting"
+                                                @click="submitReview('pending')"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a5 5 0 110 10H9m-6-10l4-4m-4 4l4 4" />
+                                                </svg>
+                                                REVERTIR A PENDIENTE
+                                            </button>
                                         </div>
 
                                         <!-- Nav prev/next -->
@@ -369,7 +383,7 @@ async function downloadSelected() {
     }
 }
 
-async function submitReview(status: 'approved' | 'rejected') {
+async function submitReview(status: 'approved' | 'rejected' | 'pending') {
     if (!selected.value || !props.applicantId) return
     submitting.value = true
     try {
@@ -390,11 +404,14 @@ async function submitReview(status: 'approved' | 'rejected') {
         cancelReject()
         emit('reviewed')
 
-        // Auto-advance to next pending
-        const nextPending = documents.value.findIndex(
-            (d, i) => i > selectedIndex.value && d.status === 'pending'
-        )
-        if (nextPending !== -1) navigateTo(nextPending)
+        // Auto-advance to next pending solo cuando se aprueba/rechaza;
+        // al revertir a pendiente el usuario suele querer quedarse en el doc.
+        if (status !== 'pending') {
+            const nextPending = documents.value.findIndex(
+                (d, i) => i > selectedIndex.value && d.status === 'pending'
+            )
+            if (nextPending !== -1) navigateTo(nextPending)
+        }
     } catch (e) {
         console.error('[DocumentReviewDrawer] Error enviando revisión:', e)
     } finally {

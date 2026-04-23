@@ -1,6 +1,7 @@
 <template>
-    <div class="max-w-4xl space-y-6">
-        <h1 class="text-xl font-semibold text-slate-800">CARGA DE DOCUMENTOS</h1>
+    <div>
+        <div class="max-w-4xl space-y-6">
+            <h1 class="text-xl font-semibold text-slate-800">CARGA DE DOCUMENTOS</h1>
 
         <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
 
@@ -248,6 +249,7 @@
             </div>
         </Transition>
     </Teleport>
+    </div>
 </template>
 
 <script setup lang="ts">

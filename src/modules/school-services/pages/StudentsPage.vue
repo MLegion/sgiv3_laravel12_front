@@ -62,7 +62,12 @@
                         <td class="px-4 py-3 font-mono text-xs">{{ s.curp ?? '—' }}</td>
                         <td class="px-4 py-3 text-xs text-slate-600">
                             <template v-if="activeAffiliation(s)">
-                                {{ activeAffiliation(s)?.academicOfferStudyPlan?.studyPlan?.name ?? '—' }}
+                                <div class="font-semibold text-slate-700">
+                                    {{ activeAffiliation(s)?.studyPlan?.careerName ?? activeAffiliation(s)?.studyPlan?.name ?? '—' }}
+                                </div>
+                                <div v-if="activeAffiliation(s)?.studyPlan?.officialCode" class="font-mono text-[10px] text-slate-400">
+                                    {{ activeAffiliation(s)?.studyPlan?.officialCode }}
+                                </div>
                             </template>
                             <span v-else class="text-slate-400">—</span>
                         </td>
