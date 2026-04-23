@@ -1860,6 +1860,20 @@ watch(
     () => { loadComplementarySchedulesForTeacher() },
 )
 
+// Auto-apply del aula preferida del grupo al cambiar el filtro. Solo
+// toca el pin si estaba vacío o si venía de un auto previo — nunca
+// sobrescribe una elección manual del jefe.
+watch(
+    () => [filterType.value, filterValue.value] as const,
+    ([type, value]) => {
+        if (type === 'group' && typeof value === 'number') {
+            autoApplyPreferredPlaceForGroup(value)
+        } else {
+            autoApplyPreferredPlaceForGroup(null)
+        }
+    },
+)
+
 async function fetchPlaces() {
     try {
         const { data } = await api.get(API.SCHOOL_SERVICES_API.places.list, { params: { per_page: 500 } })
@@ -2734,6 +2748,10 @@ const pinnedPlaceId = ref<number | null>(null)
 const pinnedPlaceLabel = ref<string | null>(null)
 const pinnedPlaceModalOpen = ref(false)
 const pinnedPlaceSearch = ref('')
+// True cuando el pin vino de group_preferred_places (auto al filtrar por
+// grupo); false cuando el usuario lo puso explícito. Si el jefe eligió
+// manualmente, no sobrescribimos al cambiar de grupo.
+const pinnedPlaceAutoApplied = ref(false)
 
 const filteredPlacesList = computed(() => {
     const q = pinnedPlaceSearch.value.toLowerCase().trim()
@@ -2757,12 +2775,41 @@ function closePinnedPlaceModal() {
 function selectPinnedPlace(p: SchedulePlace) {
     pinnedPlaceId.value = p.id
     pinnedPlaceLabel.value = p.shortName || p.name
+    pinnedPlaceAutoApplied.value = false
     pinnedPlaceModalOpen.value = false
 }
 
 function clearPinnedPlace() {
     pinnedPlaceId.value = null
     pinnedPlaceLabel.value = null
+    pinnedPlaceAutoApplied.value = false
+}
+
+async function autoApplyPreferredPlaceForGroup(groupId: number | null) {
+    // Si el jefe ya tiene un pin manual, respetarlo: no sobrescribir.
+    if (pinnedPlaceId.value && !pinnedPlaceAutoApplied.value) return
+
+    if (!groupId) {
+        // Sin grupo seleccionado: limpiar solo si el pin venía de auto.
+        if (pinnedPlaceAutoApplied.value) clearPinnedPlace()
+        return
+    }
+
+    try {
+        const { data } = await api.get(API.SCHEDULES_API.groupPreferredPlaces.byGroup(groupId))
+        if (data && data.placeId) {
+            const place = places.value.find(p => p.id === data.placeId)
+            pinnedPlaceId.value = data.placeId
+            pinnedPlaceLabel.value = place?.shortName || place?.name || `Aula #${data.placeId}`
+            pinnedPlaceAutoApplied.value = true
+        } else if (pinnedPlaceAutoApplied.value) {
+            // No hay preferred para este grupo — si el pin activo vino de
+            // auto (otro grupo), limpiar para no arrastrarlo.
+            clearPinnedPlace()
+        }
+    } catch {
+        // Endpoint puede fallar silenciosamente — no es crítico.
+    }
 }
 
 function clearPinnedPlaceAndClose() {

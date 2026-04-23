@@ -29,5 +29,12 @@ export default {
             promote:   (id: string | number) => apiUrl(`/schedules/generation/runs/${id}/promote`),
             discard:   (id: string | number) => apiUrl(`/schedules/generation/runs/${id}`),
         },
+        groupPreferredPlaces: {
+            list:    apiUrl('/schedules/group-preferred-places'),
+            byGroup: (groupId: string | number) => apiUrl(`/schedules/group-preferred-places/by-group/${groupId}`),
+            create:  apiUrl('/schedules/group-preferred-places'),
+            update:  (id: string | number) => apiUrl(`/schedules/group-preferred-places/${id}`),
+            delete:  (id: string | number) => apiUrl(`/schedules/group-preferred-places/${id}`),
+        },
     },
 } satisfies ApiModule
