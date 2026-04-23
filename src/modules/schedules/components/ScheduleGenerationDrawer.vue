@@ -130,14 +130,32 @@
                                         title="Cancela el solver si está activo">
                                         Cancelar
                                     </button>
-                                    <button v-else-if="r.status !== 'promoted' && r.status !== 'discarded'"
+                                    <button v-else
                                         :disabled="busyRunId === r.id"
-                                        class="px-3 py-1.5 text-[10px] font-bold rounded border border-slate-300 text-slate-700 hover:bg-slate-100 uppercase disabled:opacity-60"
-                                        @click="discard(r.id)">
-                                        Descartar
+                                        class="p-1.5 rounded border border-slate-300 text-slate-500 hover:text-red-600 hover:border-red-300 hover:bg-red-50 disabled:opacity-60 transition"
+                                        :title="r.status === 'promoted' ? 'Borrar registro del historial (el horario promovido no se ve afectado)' : 'Borrar'"
+                                        @click="deleteRun(r)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 7.5h12m-10.5 0v10.125A1.875 1.875 0 009.375 19.5h5.25A1.875 1.875 0 0016.5 17.625V7.5M9.75 4.875A1.875 1.875 0 0111.625 3h.75A1.875 1.875 0 0114.25 4.875L15 7.5h-6l.75-2.625z" />
+                                        </svg>
                                     </button>
                                 </div>
                             </header>
+
+                            <!-- Progreso por tiempo -->
+                            <div v-if="r.startedAt && r.timeoutSeconds" class="mt-3">
+                                <div class="flex items-center justify-between text-[10px] font-mono text-slate-500 mb-1">
+                                    <span>{{ elapsedLabel(r) }} / {{ r.timeoutSeconds }}s</span>
+                                    <span>{{ Math.round(progressPct(r)) }}%</span>
+                                </div>
+                                <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                    <div
+                                        class="h-full rounded-full transition-all duration-500 ease-out"
+                                        :class="progressBarClass(r)"
+                                        :style="{ width: progressPct(r) + '%' }"
+                                    ></div>
+                                </div>
+                            </div>
 
                             <!-- Diagnóstico INFEASIBLE / timeout / error -->
                             <div v-if="r.solutionSummary?.diagnostics?.reason"
@@ -514,6 +532,86 @@ function formatDate(s: string | null) {
     return d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })
 }
 
+/* ── Reloj para contador + barra de progreso ────────────────────── */
+const nowTick = ref(Date.now())
+let clockTimer: ReturnType<typeof setInterval> | null = null
+
+function ensureClock() {
+    if (hasRunningRuns.value && clockTimer === null) {
+        clockTimer = setInterval(() => { nowTick.value = Date.now() }, 1000)
+    } else if (!hasRunningRuns.value && clockTimer !== null) {
+        clearInterval(clockTimer); clockTimer = null
+    }
+}
+
+function elapsedSecondsFor(r: RunListItem): number {
+    if (!r.startedAt) return 0
+    const start = new Date(r.startedAt).getTime()
+    const end   = r.finishedAt ? new Date(r.finishedAt).getTime() : nowTick.value
+    return Math.max(0, Math.floor((end - start) / 1000))
+}
+
+function elapsedLabel(r: RunListItem): string {
+    return elapsedSecondsFor(r) + 's'
+}
+
+function progressPct(r: RunListItem): number {
+    if (!r.startedAt) return 0
+    if (isTerminal(r.status)) return 100
+    const timeout = r.timeoutSeconds ?? 0
+    if (timeout <= 0) return 0
+    const pct = (elapsedSecondsFor(r) / timeout) * 100
+    return Math.max(2, Math.min(100, pct))
+}
+
+function progressBarClass(r: RunListItem): string {
+    if (r.status === 'ready')     return 'bg-emerald-500'
+    if (r.status === 'promoted')  return 'bg-emerald-600'
+    if (r.status === 'infeasible' || r.status === 'error') return 'bg-red-500'
+    if (r.status === 'timeout')   return 'bg-amber-500'
+    if (r.status === 'discarded') return 'bg-slate-400'
+    return 'bg-blue-500'
+}
+
+/* ── Sonido al terminar un run ──────────────────────────────────── */
+let audioCtx: AudioContext | null = null
+function playDoneSound(success: boolean) {
+    try {
+        if (!audioCtx) {
+            const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext
+            if (!Ctx) return
+            audioCtx = new Ctx() as AudioContext
+        }
+        const ctx = audioCtx
+        const now = ctx.currentTime
+        const freqs = success ? [784, 1175] : [440, 330] // sol/re para ok, la/mi descendente para fallo
+        freqs.forEach((f, i) => {
+            const t = now + i * 0.14
+            const osc = ctx.createOscillator()
+            const gain = ctx.createGain()
+            osc.type = 'sine'
+            osc.frequency.value = f
+            osc.connect(gain); gain.connect(ctx.destination)
+            gain.gain.setValueAtTime(0.0001, t)
+            gain.gain.exponentialRampToValueAtTime(0.18, t + 0.02)
+            gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.25)
+            osc.start(t); osc.stop(t + 0.3)
+        })
+    } catch { /* audio no disponible, silencio */ }
+}
+
+const prevStatuses = new Map<number, RunStatus>()
+watch(runs, (newRuns) => {
+    for (const r of newRuns) {
+        const prev = prevStatuses.get(r.id)
+        if (prev !== undefined && !TERMINAL_STATUSES.includes(prev) && TERMINAL_STATUSES.includes(r.status)) {
+            playDoneSound(r.status === 'ready')
+        }
+        prevStatuses.set(r.id, r.status)
+    }
+    ensureClock()
+}, { deep: true })
+
 /* ── Polling async ─────────────────────────────────────────────── */
 let pollTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -619,13 +717,30 @@ async function discard(runId: number) {
     }
 }
 
+async function deleteRun(r: RunListItem) {
+    // Para runs promoted el usuario pierde el historial de qué run generó
+    // los bloques activos, aunque el horario en sí no se toque. Pedimos
+    // confirmación explícita; para los demás estados terminales no.
+    if (r.status === 'promoted') {
+        const ok = window.confirm(
+            `El borrador #${r.id} ya fue promovido. Borrarlo solo elimina el registro histórico; los bloques en el horario activo permanecen sin cambios.\n\n¿Continuar?`,
+        )
+        if (!ok) return
+    }
+    await discard(r.id)
+}
+
+// immediate: true → el drawer se monta con v-if y al montar props.open ya
+// es true; sin immediate el watch no dispararía hasta el siguiente cambio,
+// dejando al usuario sin ver un run activo existente hasta refrescar.
 watch(() => props.open, (isOpen) => {
     if (isOpen) {
         loadRuns()
     } else {
         clearPoll()
+        if (clockTimer !== null) { clearInterval(clockTimer); clockTimer = null }
     }
-})
+}, { immediate: true })
 
 // Si cambia el config/career del drawer (ej: el director cierra y abre
 // con otra carrera), detenemos el polling anterior y recargamos.
@@ -633,5 +748,8 @@ watch(() => [props.configId, props.careerId], () => {
     if (props.open) loadRuns()
 })
 
-onBeforeUnmount(clearPoll)
+onBeforeUnmount(() => {
+    clearPoll()
+    if (clockTimer !== null) { clearInterval(clockTimer); clockTimer = null }
+})
 </script>

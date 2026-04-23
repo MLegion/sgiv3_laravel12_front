@@ -31,6 +31,7 @@ export interface RunListItem {
     blocksCount: number
     parentRunId: number | null
     createdBy: number | null
+    timeoutSeconds: number | null
     startedAt: string | null
     finishedAt: string | null
     createdAt: string | null
