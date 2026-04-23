@@ -113,6 +113,12 @@
                                 <div class="flex gap-2 flex-shrink-0">
                                     <button v-if="r.status === 'ready'"
                                         :disabled="busyRunId === r.id"
+                                        class="px-3 py-1.5 text-[10px] font-bold rounded border border-blue-400 text-blue-700 hover:bg-blue-50 uppercase disabled:opacity-60"
+                                        @click="openPreview(r.id)">
+                                        Ver borrador
+                                    </button>
+                                    <button v-if="r.status === 'ready'"
+                                        :disabled="busyRunId === r.id"
                                         class="px-3 py-1.5 text-[10px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700 uppercase disabled:opacity-60"
                                         @click="promote(r.id)">
                                         Promover
@@ -179,6 +185,111 @@
             </aside>
         </div>
     </teleport>
+
+    <!-- ═════ Modal: Preview del borrador ═════ -->
+    <teleport to="body">
+        <div v-if="preview.runId !== null" class="fixed inset-0 z-[130]">
+            <div class="absolute inset-0 bg-black/50" @click="closePreview"></div>
+            <div class="absolute inset-4 bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+                <header class="flex items-center justify-between px-5 py-3 border-b bg-slate-50">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800">
+                            Borrador #{{ preview.runId }}
+                            <span v-if="preview.data" class="text-slate-400 font-normal ml-2">
+                                — {{ preview.data.drafts.length }} bloques
+                                <span v-if="preview.data.solutionSummary?.stats?.softScore != null">
+                                    · score {{ preview.data.solutionSummary.stats.softScore }}
+                                </span>
+                            </span>
+                        </h3>
+                        <p class="text-[10px] text-slate-400 mt-0.5">
+                            Agrupación por <b>{{ preview.groupBy === 'group' ? 'grupo' : preview.groupBy === 'teacher' ? 'docente' : 'aula' }}</b>
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select v-model="preview.groupBy" class="text-xs border rounded px-2 py-1 h-8">
+                            <option value="group">Por grupo</option>
+                            <option value="teacher">Por docente</option>
+                            <option value="place">Por aula</option>
+                        </select>
+                        <button type="button" class="text-slate-400 hover:text-slate-700" @click="closePreview">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </header>
+
+                <div v-if="preview.loading" class="flex-1 flex items-center justify-center text-sm text-slate-400 italic">
+                    Cargando borrador…
+                </div>
+
+                <div v-else-if="!preview.data || !preview.data.drafts.length" class="flex-1 flex items-center justify-center text-sm text-slate-400 italic">
+                    Sin bloques en el borrador.
+                </div>
+
+                <div v-else class="flex-1 overflow-auto p-4 space-y-4 bg-slate-50">
+                    <section v-for="g in previewGroups" :key="g.key" class="bg-white border rounded-lg overflow-hidden">
+                        <div class="px-3 py-2 bg-slate-100 border-b">
+                            <span class="text-xs font-bold text-slate-700 uppercase">{{ g.label }}</span>
+                            <span class="text-[10px] text-slate-400 ml-2">{{ g.blocks.length }} bloques</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <div class="grid min-w-[800px]" :style="previewGridStyle">
+                                <!-- Header -->
+                                <div class="bg-slate-50 border-b border-r p-1.5 text-[10px] font-bold text-slate-500 text-center">Hora</div>
+                                <div v-for="d in DAYS" :key="'h-' + d.value"
+                                     class="bg-slate-50 border-b border-r p-1.5 text-[10px] font-bold text-slate-500 text-center">
+                                    {{ d.label }}
+                                </div>
+                                <!-- Slots -->
+                                <template v-for="slot in previewSlots" :key="'s-' + slot.label">
+                                    <div class="border-b border-r p-1 text-[10px] font-mono text-slate-500 text-center">
+                                        {{ slot.label }}
+                                    </div>
+                                    <div v-for="d in DAYS" :key="'c-' + d.value + '-' + slot.label"
+                                         class="border-b border-r p-0.5 min-h-[38px] relative">
+                                        <div v-for="b in blocksAt(g.blocks, d.value, slot.value)" :key="b.id"
+                                             class="bg-orange-100 border border-orange-300 rounded px-1 py-0.5 text-[9px] leading-tight"
+                                             :title="blockTooltip(b)">
+                                            <div class="font-bold text-slate-800 truncate">
+                                                {{ b.subject?.shortName || b.subject?.name || '—' }}
+                                            </div>
+                                            <div class="text-slate-600 truncate">
+                                                {{ preview.groupBy === 'teacher'
+                                                    ? (b.group?.name || '—')
+                                                    : preview.groupBy === 'place'
+                                                    ? (b.teachers?.[0]?.name || '—')
+                                                    : (b.teachers?.[0]?.name || '—') }}
+                                            </div>
+                                            <div class="text-slate-400 truncate font-mono">
+                                                {{ preview.groupBy === 'place' ? b.group?.name : b.placeShortName || b.placeName }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <footer class="px-5 py-3 border-t bg-slate-50 flex items-center justify-end gap-2">
+                    <button type="button"
+                            class="px-4 py-2 text-xs font-bold rounded border border-slate-300 text-slate-700 hover:bg-slate-100 uppercase"
+                            @click="closePreview">
+                        Cerrar
+                    </button>
+                    <button v-if="preview.data?.status === 'ready'"
+                            type="button"
+                            :disabled="busyRunId === preview.runId"
+                            class="px-4 py-2 text-xs font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700 uppercase disabled:opacity-60"
+                            @click="promote(preview.runId!); closePreview()">
+                        Promover este borrador
+                    </button>
+                </footer>
+            </div>
+        </div>
+    </teleport>
 </template>
 
 <script setup lang="ts">
@@ -230,6 +341,112 @@ const runs        = ref<RunListItem[]>([])
 const busyRunId   = ref<number | null>(null)
 const conflictsByRun = reactive<Record<number, Record<number, Record<string, string>>>>({})
 const msg         = reactive<{ ok: boolean; message: string }>({ ok: true, message: '' })
+
+/* ── Preview de borrador ──────────────────────────────────────── */
+interface DraftBlock {
+    id: number
+    teacherAssignmentId: number
+    placeId: number
+    placeName: string | null
+    placeShortName: string | null
+    dayOfWeek: number | null
+    date: string | null
+    startTime: string
+    endTime: string
+    subject: { name: string; shortName: string | null } | null
+    group: { name: string; shift: string | null } | null
+    teachers: Array<{ id: number; name: string; role: string; isVacancy: boolean }>
+}
+
+const preview = reactive<{
+    runId: number | null
+    loading: boolean
+    data: { status: RunStatus; drafts: DraftBlock[]; solutionSummary: any } | null
+    groupBy: 'group' | 'teacher' | 'place'
+}>({ runId: null, loading: false, data: null, groupBy: 'group' })
+
+const DAYS = [
+    { value: 1, label: 'LUN' },
+    { value: 2, label: 'MAR' },
+    { value: 3, label: 'MIÉ' },
+    { value: 4, label: 'JUE' },
+    { value: 5, label: 'VIE' },
+]
+
+async function openPreview(runId: number) {
+    preview.runId = runId
+    preview.loading = true
+    preview.data = null
+    try {
+        const { data } = await api.get(API.SCHEDULES_API.generation.showRun(runId))
+        preview.data = {
+            status: data.status,
+            drafts: (data.drafts ?? []) as DraftBlock[],
+            solutionSummary: data.solutionSummary,
+        }
+    } catch (e: any) {
+        flash(false, e?.response?.data?.message || 'Error al cargar el borrador.')
+        preview.runId = null
+    } finally {
+        preview.loading = false
+    }
+}
+
+function closePreview() {
+    preview.runId = null
+    preview.data = null
+}
+
+const previewSlots = computed(() => {
+    if (!preview.data?.drafts.length) return []
+    const starts = new Set<string>()
+    for (const b of preview.data.drafts) starts.add(b.startTime)
+    const sorted = [...starts].sort()
+    const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m }
+    return sorted.map(t => ({ label: t, value: toMin(t) }))
+})
+
+const previewGridStyle = computed(() => ({
+    gridTemplateColumns: `80px repeat(${DAYS.length}, 1fr)`,
+}))
+
+const previewGroups = computed(() => {
+    if (!preview.data) return []
+    const map = new Map<string, { key: string; label: string; sortOrder: number; blocks: DraftBlock[] }>()
+    for (const b of preview.data.drafts) {
+        let key = ''
+        let label = ''
+        if (preview.groupBy === 'group') {
+            key = `g-${b.group?.name ?? 'sin-grupo'}`
+            label = b.group?.name ?? 'Sin grupo'
+        } else if (preview.groupBy === 'teacher') {
+            const main = b.teachers?.[0]
+            key = `t-${main?.id ?? 'x'}`
+            label = main?.name ?? 'Sin docente'
+        } else {
+            key = `p-${b.placeId}`
+            label = b.placeName ?? `Aula #${b.placeId}`
+        }
+        if (!map.has(key)) {
+            map.set(key, { key, label, sortOrder: 0, blocks: [] })
+        }
+        map.get(key)!.blocks.push(b)
+    }
+    return [...map.values()].sort((a, b) => a.label.localeCompare(b.label))
+})
+
+function blocksAt(blocks: DraftBlock[], dow: number, slotMin: number): DraftBlock[] {
+    const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m }
+    return blocks.filter(b => b.dayOfWeek === dow && toMin(b.startTime) === slotMin)
+}
+
+function blockTooltip(b: DraftBlock): string {
+    const subj = b.subject?.name ?? ''
+    const teacher = b.teachers?.map(t => t.name).join(', ') ?? ''
+    const group = b.group?.name ?? ''
+    const place = b.placeName ?? ''
+    return `${subj}\n${teacher}\n${group} · ${place}\n${b.startTime} - ${b.endTime}`
+}
 
 function flash(ok: boolean, message: string) {
     msg.ok = ok; msg.message = message

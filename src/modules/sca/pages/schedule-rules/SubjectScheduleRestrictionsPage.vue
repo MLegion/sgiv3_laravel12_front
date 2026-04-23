@@ -21,10 +21,10 @@
                     v-model="selectedSubjectId"
                     :endpoint="API.SUPERADMIN_API.subjects.list"
                     :endpoint-by-id="API.SUPERADMIN_API.subjects.byId"
-                    item-label="name"
+                    :item-label="subjectLabel"
                     item-value="id"
                     :item-searchs="['name', 'short_name', 'official_code']"
-                    placeholder="Buscar materia…"
+                    placeholder="Buscar materia (por clave o nombre)…"
                 />
             </label>
         </section>
@@ -238,6 +238,12 @@ function flash(ok: boolean, message: string) {
 function dayLabel(d: number | null): string {
     if (!d) return 'TODOS'
     return DAYS.find(x => x.value === d)?.label ?? String(d)
+}
+
+function subjectLabel(item: any): string {
+    const code = item?.official_code ?? item?.officialCode ?? ''
+    const name = item?.name ?? ''
+    return code ? `${code} — ${name}` : name
 }
 
 async function loadModalityTypes() {

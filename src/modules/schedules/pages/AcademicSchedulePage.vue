@@ -242,6 +242,12 @@
                                     >
                                         {{ a.subject?.shortName || a.subject?.name || '—' }}
                                     </span>
+                                    <span
+                                        v-if="a.subject?.officialCode"
+                                        class="text-[9px] font-mono text-slate-500 leading-none block truncate"
+                                    >
+                                        {{ a.subject.officialCode }}
+                                    </span>
                                 </div>
                                 <div class="px-2 py-1 text-center">
                                     <p class="text-[10px] text-slate-700 uppercase truncate">{{ a.teacher.name || '—' }}</p>
@@ -398,6 +404,12 @@
                                     >
                                         {{ block.teacherAssignment?.subject?.shortName || block.teacherAssignment?.subject?.name || '—' }}
                                     </div>
+                                    <div
+                                        v-if="block.teacherAssignment?.subject?.officialCode"
+                                        class="text-[8px] font-mono text-slate-500 truncate w-full leading-none"
+                                    >
+                                        {{ block.teacherAssignment.subject.officialCode }}
+                                    </div>
                                     <div class="text-[10px] text-slate-700 truncate w-full mt-0.5">
                                         {{ placeShortLabel(block) }}
                                     </div>
@@ -447,6 +459,12 @@
                                         :title="block.teacherAssignment?.subject?.name || block.teacherAssignment?.subject?.shortName || ''"
                                     >
                                         {{ block.teacherAssignment?.subject?.shortName || block.teacherAssignment?.subject?.name || '—' }}
+                                    </div>
+                                    <div
+                                        v-if="block.teacherAssignment?.subject?.officialCode"
+                                        class="text-[8px] font-mono opacity-80 truncate leading-none"
+                                    >
+                                        {{ block.teacherAssignment.subject.officialCode }}
                                     </div>
                                     <div class="text-[8px] opacity-75 uppercase truncate leading-tight">
                                         {{ block.teacherAssignment?.teacher?.name || '' }}
@@ -715,6 +733,13 @@
                             >
                                 <div class="text-[10px] font-black uppercase truncate w-full leading-tight px-1" :style="{ color: getComparisonBlockTextColor(block) }">
                                     {{ block.teacherAssignment?.subject?.shortName || block.teacherAssignment?.subject?.name || '—' }}
+                                </div>
+                                <div
+                                    v-if="block.teacherAssignment?.subject?.officialCode"
+                                    class="text-[8px] font-mono truncate w-full leading-none px-1 opacity-70"
+                                    :style="{ color: getComparisonBlockTextColor(block) }"
+                                >
+                                    {{ block.teacherAssignment.subject.officialCode }}
                                 </div>
                                 <div class="text-[9px] truncate w-full leading-tight px-1 opacity-80" :style="{ color: getComparisonBlockTextColor(block) }">
                                     {{ comparisonBlockLabel(block) }}

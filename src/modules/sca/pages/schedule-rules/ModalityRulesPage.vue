@@ -37,14 +37,17 @@
 
                 <div class="p-5 space-y-4">
                     <label class="block">
-                        <span class="text-xs font-semibold text-slate-600">Máx. bloques consecutivos</span>
+                        <span class="text-xs font-semibold text-slate-600">Máx. bloques consecutivos de una misma materia</span>
                         <input
                             type="number" min="1" max="20"
                             v-model.number="forms[mt.id].maxConsecutiveBlocks"
                             placeholder="(sin límite)"
                             class="mt-1 w-full h-9 border rounded-md px-3 text-sm"
                         />
-                        <span class="text-[10px] text-slate-400">Cuántos bloques pueden encadenarse seguidos sin hueco.</span>
+                        <span class="text-[10px] text-slate-400">
+                            Cuántos bloques seguidos puede durar una asignación (docente × materia × grupo) antes de partirse.
+                            Entre materias distintas del mismo docente no aplica.
+                        </span>
                     </label>
 
                     <label class="block">
@@ -74,10 +77,11 @@
                             class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                             v-model="forms[mt.id].allowGapsSameDay"
                         />
-                        <span class="text-xs text-slate-700">Permitir huecos en el mismo día</span>
+                        <span class="text-xs text-slate-700">Permitir huecos entre sesiones de la misma materia</span>
                     </label>
                     <p class="text-[10px] text-slate-400 -mt-2">
-                        Si está apagado, los bloques del docente en el mismo día deben ser totalmente consecutivos.
+                        Si está apagado y una materia se reparte en el mismo día, sus bloques deben ir pegados.
+                        Entre materias distintas del mismo docente siempre puede haber pausa.
                     </p>
 
                     <div class="flex items-center justify-end gap-2 pt-2 border-t">
