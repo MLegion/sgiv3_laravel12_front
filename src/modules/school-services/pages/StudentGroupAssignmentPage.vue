@@ -1,14 +1,14 @@
 <template>
     <div class="space-y-4">
         <div>
-            <h1 class="text-xl font-semibold text-slate-800 uppercase">Asignación de Grupos</h1>
+            <h1 class="text-xl font-semibold text-slate-800 uppercase">Asignación de Nuevo Ingreso</h1>
             <p class="text-sm text-slate-500 mt-1">
-                Asigna los estudiantes de nuevo ingreso a los grupos de su primer semestre.
+                Asigna los estudiantes de nuevo ingreso a los grupos de su primer semestre. Para reinscripción usa la pantalla correspondiente.
             </p>
         </div>
 
-        <!-- Filtros de cohorte -->
-        <div class="bg-white rounded-xl border border-slate-200 p-4 grid grid-cols-1 md:grid-cols-5 gap-3">
+        <!-- Filtros de cohorte (nuevo ingreso = siempre semestre 1) -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
             <div>
                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Periodo</label>
                 <select v-model="filters.collegeAcademicPeriodId" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
@@ -34,12 +34,6 @@
                     </option>
                 </select>
             </div>
-            <div>
-                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Semestre</label>
-                <select v-model.number="filters.semester" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
-                    <option v-for="n in 9" :key="n" :value="n">{{ n }}</option>
-                </select>
-            </div>
             <div class="flex items-end">
                 <button
                     :disabled="!canLoad || loading"
@@ -54,6 +48,29 @@
             {{ banner.message }}
         </div>
 
+        <!-- Buscador global: filtra pendientes + estudiantes dentro de cada grupo -->
+        <div v-if="cohortLoaded" class="bg-white rounded-xl border border-slate-200 p-3 flex items-center gap-3">
+            <div class="relative flex-1">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input
+                    v-model="searchTerm"
+                    type="search"
+                    placeholder="Buscar por número de control o nombre…"
+                    class="w-full border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm outline-none focus:border-indigo-400"
+                />
+            </div>
+            <button
+                type="button"
+                class="text-xs font-semibold text-slate-600 hover:text-slate-900 px-2 py-1 rounded"
+                @click="expandAllGroups"
+            >Expandir todos</button>
+            <button
+                type="button"
+                class="text-xs font-semibold text-slate-600 hover:text-slate-900 px-2 py-1 rounded"
+                @click="collapseAllGroups"
+            >Colapsar todos</button>
+        </div>
+
         <!-- Contenido principal cuando hay cohorte cargada -->
         <div v-if="cohortLoaded" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <!-- Estudiantes pendientes -->
@@ -61,7 +78,11 @@
                 <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                     <div>
                         <h2 class="text-sm font-black text-slate-600 uppercase tracking-widest">Estudiantes Pendientes</h2>
-                        <p class="text-xs text-slate-500 mt-0.5">{{ students.length }} total · {{ selectedIds.length }} seleccionados</p>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            <span v-if="searchTerm">{{ filteredPending.length }} de {{ students.length }}</span>
+                            <span v-else>{{ students.length }} total</span>
+                            · {{ selectedIds.length }} seleccionados
+                        </p>
                     </div>
                     <label class="inline-flex items-center gap-2 text-xs text-slate-600">
                         <input type="checkbox" v-model="onlyUnassigned" @change="loadCohort" class="rounded border-slate-300" />
@@ -81,7 +102,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="s in students" :key="s.id"
+                            <tr v-for="s in filteredPending" :key="s.id"
                                 class="border-t border-slate-100 hover:bg-slate-50/60"
                                 :class="{ 'bg-indigo-50/40': selectedIds.includes(s.id) }">
                                 <td class="px-3 py-2">
@@ -96,9 +117,10 @@
                                     </span>
                                 </td>
                             </tr>
-                            <tr v-if="!students.length">
+                            <tr v-if="!filteredPending.length">
                                 <td colspan="4" class="px-3 py-8 text-center text-sm text-slate-400 italic">
-                                    Sin estudiantes pendientes para esta cohorte.
+                                    <template v-if="searchTerm">Sin coincidencias para "{{ searchTerm }}".</template>
+                                    <template v-else>Sin estudiantes pendientes para esta cohorte.</template>
                                 </td>
                             </tr>
                         </tbody>
@@ -110,7 +132,7 @@
             <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
                 <div class="px-4 py-3 bg-slate-50 border-b border-slate-200">
                     <h2 class="text-sm font-black text-slate-600 uppercase tracking-widest">Grupos de la Cohorte</h2>
-                    <p class="text-xs text-slate-500 mt-0.5">Semestre {{ filters.semester }} · {{ groups.length }} grupos</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Primer semestre · {{ groups.length }} grupos</p>
                 </div>
 
                 <!-- Aviso cuando la carga no está finalizada -->
@@ -166,10 +188,10 @@
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                                     class="w-3.5 h-3.5 transition-transform"
-                                    :class="{ 'rotate-180': expandedGroupId === g.id }">
+                                    :class="{ 'rotate-180': expandedGroupIds.has(g.id) }">
                                     <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
                                 </svg>
-                                {{ expandedGroupId === g.id ? 'Ocultar estudiantes' : 'Ver estudiantes asignados' }}
+                                {{ expandedGroupIds.has(g.id) ? 'Ocultar estudiantes' : 'Ver estudiantes asignados' }}
                             </button>
                             <button
                                 :disabled="!selectedIds.length || g.is_full || assigning === g.id"
@@ -181,14 +203,17 @@
                         </div>
 
                         <!-- Lista expandible de estudiantes en este grupo -->
-                        <div v-if="expandedGroupId === g.id" class="mt-3 pt-3 border-t border-slate-100">
-                            <div v-if="loadingStudentsOfGroup" class="text-xs text-slate-400 italic py-2">Cargando...</div>
+                        <div v-if="expandedGroupIds.has(g.id)" class="mt-3 pt-3 border-t border-slate-100">
+                            <div v-if="loadingStudentsOfGroup && !groupStudents[g.id]" class="text-xs text-slate-400 italic py-2">Cargando...</div>
                             <div v-else-if="!groupStudents[g.id]?.length" class="text-xs text-slate-400 italic py-2">
                                 Aún no hay estudiantes asignados a este grupo.
                             </div>
+                            <div v-else-if="!filteredGroupStudents(g.id).length" class="text-xs text-slate-400 italic py-2">
+                                Sin coincidencias para "{{ searchTerm }}" en este grupo.
+                            </div>
                             <ul v-else class="space-y-1">
                                 <li
-                                    v-for="s in groupStudents[g.id]"
+                                    v-for="s in filteredGroupStudents(g.id)"
                                     :key="s.id"
                                     class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50"
                                 >
@@ -269,10 +294,11 @@ const loading = ref(false)
 const assigning = ref<number | null>(null)
 const banner = reactive({ ok: false, message: '' })
 
-const expandedGroupId = ref<number | null>(null)
+const expandedGroupIds = ref<Set<number>>(new Set())
 const groupStudents = reactive<Record<number, Array<{ id: number, num_control: string | null, full_name: string, source: string }>>>({})
 const loadingStudentsOfGroup = ref(false)
 const removingStudentId = ref<number | null>(null)
+const searchTerm = ref('')
 
 const loadState = reactive({ exists: false, finalized: false })
 
@@ -280,8 +306,18 @@ const canLoad = computed(() =>
     !!filters.collegeAcademicPeriodId && !!filters.studyPlanId && !!filters.modalityId
 )
 
+function matchesSearch(s: { num_control: string | null, full_name: string }): boolean {
+    const q = searchTerm.value.trim().toLowerCase()
+    if (!q) return true
+    return (s.num_control ?? '').toLowerCase().includes(q)
+        || (s.full_name  ?? '').toLowerCase().includes(q)
+}
+
+const filteredPending = computed(() => students.value.filter(matchesSearch))
+
 const allSelected = computed(() =>
-    students.value.length > 0 && selectedIds.value.length === students.value.length
+    filteredPending.value.length > 0
+    && filteredPending.value.every(s => selectedIds.value.includes(s.id))
 )
 
 onMounted(async () => {
@@ -290,9 +326,15 @@ onMounted(async () => {
         api.get(API.SUPERADMIN_API.studyPlans.list, { params: { per_page: 200 } }).catch(() => ({ data: { items: [] } })),
         api.get(API.SCHOOL_SERVICES_API.modalities.list, { params: { per_page: 100 } }).catch(() => ({ data: { items: [] } })),
     ])
-    periods.value    = pRes.data.items ?? pRes.data.data ?? []
-    studyPlans.value = spRes.data.items ?? spRes.data.data ?? []
-    modalities.value = mRes.data.items ?? mRes.data.data ?? []
+
+    // Excluir periodos archivados, planes inactivos y modalidades/campus sin status.
+    const rawPeriods    = pRes.data.items ?? pRes.data.data ?? []
+    const rawStudyPlans = spRes.data.items ?? spRes.data.data ?? []
+    const rawModalities = mRes.data.items ?? mRes.data.data ?? []
+
+    periods.value    = rawPeriods.filter((p: any) => p.status !== 'archived')
+    studyPlans.value = rawStudyPlans.filter((sp: any) => (sp.isActive ?? sp.is_active) !== false)
+    modalities.value = rawModalities.filter((m: any) => !!m.status && !!m.campus?.status)
 })
 
 async function loadCohort() {
@@ -310,7 +352,7 @@ async function loadCohort() {
                     entry_period_id:  entryPeriodId,
                     study_plan_id:    filters.studyPlanId,
                     modality_id:      filters.modalityId,
-                    only_unassigned:  onlyUnassigned.value,
+                    only_unassigned:  onlyUnassigned.value ? 1 : 0,
                 },
             }),
             api.get(API.SCHOOL_SERVICES_API.studentGroups.cohortGroups, {
@@ -339,7 +381,15 @@ async function loadCohort() {
 }
 
 function toggleAllSelection() {
-    selectedIds.value = allSelected.value ? [] : students.value.map(s => s.id)
+    // Selecciona/deselecciona sólo los visibles (filteredPending), no los ocultos por búsqueda.
+    const visibleIds = filteredPending.value.map(s => s.id)
+    if (allSelected.value) {
+        selectedIds.value = selectedIds.value.filter(id => !visibleIds.includes(id))
+    } else {
+        const set = new Set(selectedIds.value)
+        visibleIds.forEach(id => set.add(id))
+        selectedIds.value = [...set]
+    }
 }
 
 async function assignSelection(g: CohortGroup) {
@@ -366,12 +416,30 @@ async function assignSelection(g: CohortGroup) {
 }
 
 async function toggleGroupDetails(groupId: number) {
-    if (expandedGroupId.value === groupId) {
-        expandedGroupId.value = null
+    const next = new Set(expandedGroupIds.value)
+    if (next.has(groupId)) {
+        next.delete(groupId)
+        expandedGroupIds.value = next
         return
     }
-    expandedGroupId.value = groupId
-    await loadStudentsOfGroup(groupId)
+    next.add(groupId)
+    expandedGroupIds.value = next
+    if (!groupStudents[groupId]) await loadStudentsOfGroup(groupId)
+}
+
+async function expandAllGroups() {
+    const ids = groups.value.map(g => g.id)
+    expandedGroupIds.value = new Set(ids)
+    const toLoad = ids.filter(id => !groupStudents[id])
+    await Promise.all(toLoad.map(id => loadStudentsOfGroup(id)))
+}
+
+function collapseAllGroups() {
+    expandedGroupIds.value = new Set()
+}
+
+function filteredGroupStudents(groupId: number) {
+    return (groupStudents[groupId] ?? []).filter(matchesSearch)
 }
 
 async function loadStudentsOfGroup(groupId: number) {
