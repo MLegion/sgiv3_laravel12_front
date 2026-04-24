@@ -370,6 +370,8 @@ const InfoGrid = defineComponent({
 })
 
 // OfferSelector
+type OfferSel = { offerStudyPlanId: number; studyPlanId: number | null; modalityId: number | null } | null
+
 const OfferSelector = defineComponent({
     props: { applicant: Object as () => any },
     emits: ['change'],
@@ -378,31 +380,41 @@ const OfferSelector = defineComponent({
 
         // Construir opciones disponibles
         const options = computed(() => {
-            const opts: { label: string; studyPlanId: number | null; offerStudyPlanId: number | null }[] = []
+            const opts: { label: string; studyPlanId: number | null; offerStudyPlanId: number | null; modalityId: number | null }[] = []
             for (const n of [1, 2, 3]) {
                 const offer = props.applicant[`offerOption${n}`]
                 if (!offer) continue
                 const career = offer.career?.name ?? 'Sin carrera'
+                const modalityId = offer.modality?.id ?? null
                 if (offer.studyPlans?.length) {
                     for (const sp of offer.studyPlans) {
                         opts.push({
                             label: `Opción ${n}: ${career} — ${sp.studyPlan?.name ?? 'Plan'}`,
                             studyPlanId: sp.studyPlan?.id ?? null,
                             offerStudyPlanId: sp.id,
+                            modalityId,
                         })
                     }
                 } else {
-                    opts.push({ label: `Opción ${n}: ${career} (sin plan)`, studyPlanId: null, offerStudyPlanId: null })
+                    opts.push({ label: `Opción ${n}: ${career} (sin plan)`, studyPlanId: null, offerStudyPlanId: null, modalityId: null })
                 }
             }
             return opts
         })
 
+        function emitByOfferId(offerStudyPlanId: number | null) {
+            const opt = options.value.find(o => o.offerStudyPlanId === offerStudyPlanId)
+            const payload: OfferSel = opt && opt.offerStudyPlanId !== null
+                ? { offerStudyPlanId: opt.offerStudyPlanId, studyPlanId: opt.studyPlanId, modalityId: opt.modalityId }
+                : null
+            emit('change', payload)
+        }
+
         // Default: primera opción con plan
         watch(() => props.applicant?.id, () => {
             const first = options.value.find(o => o.offerStudyPlanId !== null)
             selected.value = first?.offerStudyPlanId ?? null
-            emit('change', selected.value)
+            emitByOfferId(selected.value)
         }, { immediate: true })
 
         return () => h('select', {
@@ -411,7 +423,7 @@ const OfferSelector = defineComponent({
             onChange: (e: Event) => {
                 const val = (e.target as HTMLSelectElement).value
                 selected.value = val ? Number(val) : null
-                emit('change', selected.value)
+                emitByOfferId(selected.value)
             }
         }, options.value.map(opt =>
             h('option', { value: opt.offerStudyPlanId ?? '', disabled: !opt.offerStudyPlanId }, opt.label)
@@ -484,7 +496,7 @@ const visiblePages   = computed(() => {
 
 // Selección y mapa de offerStudyPlanId por aspirante
 const selected          = ref<Set<number>>(new Set())
-const offerSelections   = ref<Map<number, number | null>>(new Map())   // applicantId → offerStudyPlanId
+const offerSelections   = ref<Map<number, OfferSel>>(new Map())   // applicantId → { offerStudyPlanId, studyPlanId, modalityId }
 const allSelected       = computed(() => items.value.length > 0 && items.value.every(i => selected.value.has(i.id)))
 const someSelected      = computed(() => items.value.some(i => selected.value.has(i.id)))
 
@@ -566,8 +578,8 @@ function toggleAll() {
     }
 }
 
-function onOfferChange(applicantId: number, offerStudyPlanId: number | null) {
-    offerSelections.value.set(applicantId, offerStudyPlanId)
+function onOfferChange(applicantId: number, sel: OfferSel) {
+    offerSelections.value.set(applicantId, sel)
 }
 
 // ── Drawer ─────────────────────────────────────────────────────────────────
@@ -595,16 +607,21 @@ async function doEnroll() {
     const results: typeof enrollResults.value = []
 
     for (const item of selectedItems) {
-        const offerStudyPlanId = offerSelections.value.get(item.id) ?? null
-        if (!offerStudyPlanId) {
+        const sel = offerSelections.value.get(item.id) ?? null
+        if (!sel || !sel.studyPlanId) {
             results.push({ applicantId: item.id, name: fullName(item), ok: false, error: 'Sin plan de estudio seleccionado' })
+            continue
+        }
+        if (!sel.modalityId) {
+            results.push({ applicantId: item.id, name: fullName(item), ok: false, error: 'La oferta no tiene modalidad definida' })
             continue
         }
         try {
             await api.post(API.SCHOOL_SERVICES_API.students.enroll(item.id), {
-                academic_offer_study_plan_id: offerStudyPlanId,
-                entry_period_id:              enrollPeriodId.value,
-                current_period_number:        1,
+                study_plan_id:         sel.studyPlanId,
+                modality_id:           sel.modalityId,
+                entry_period_id:       enrollPeriodId.value,
+                current_period_number: 1,
             })
             results.push({ applicantId: item.id, name: fullName(item), ok: true })
         } catch (e: any) {
