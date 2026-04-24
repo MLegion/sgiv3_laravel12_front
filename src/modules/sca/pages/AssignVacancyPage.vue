@@ -212,7 +212,20 @@ async function fetchCareers() {
     } catch { careers.value = [] }
 }
 async function fetchTeachers() {
-    try { const { data } = await api.get(API.SCA_API.teachers.list, { params: { per_page: 500 } }); const items = data?.items ?? data?.data ?? data ?? []; realTeachers.value = items.filter((t: any) => (t.employeeId ?? t.employee_id) !== null).map((t: any) => ({ id: t.id, name: t.employeeName ?? t.employee_name ?? t.name })) } catch { realTeachers.value = [] }
+    try {
+        const { data } = await api.get(API.SCA_API.teachers.list, { params: { per_page: 500 } })
+        const items = data?.items ?? data?.data ?? data ?? []
+        realTeachers.value = items
+            .filter((t: any) => !t.isVacancy && (t.employeeId ?? t.employee_id))
+            .map((t: any) => ({
+                id: t.id,
+                name: t.displayName
+                    ?? [t.employee?.names, t.employee?.firstSurname, t.employee?.secondSurname].filter(Boolean).join(' ')
+                    ?? t.name,
+            }))
+    } catch {
+        realTeachers.value = []
+    }
 }
 
 async function resolveConfig() {

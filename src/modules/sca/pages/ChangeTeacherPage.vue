@@ -191,7 +191,14 @@ const filteredAssignments = computed(() => {
 /* ── Cascading ──────────────────────────────────────────────────── */
 function onCampusChange() { modalityTypeId.value = null; careerId.value = null; careers.value = []; resetData() }
 function onModalityTypeChange() { careerId.value = null; careers.value = []; resetData(); if (resolvedModalityId.value) { fetchCareers(); resolveConfig() } }
-function onCareerChange() { resetData(); if (configId.value) fetchAssigned() }
+function onCareerChange() {
+    // No nuke configId — la carrera es sólo un filtro del listado, no cambia la config.
+    assignments.value = []
+    actionError.value = null
+    actionSuccess.value = null
+    Object.keys(selectedTeachers).forEach(k => delete selectedTeachers[Number(k)])
+    if (configId.value) fetchAssigned()
+}
 function resetFilters() { campusId.value = null; modalityTypeId.value = null; careerId.value = null; careers.value = []; resetData() }
 function resetAll() { resetFilters() }
 function resetData() { assignments.value = []; configId.value = null; configError.value = null; actionError.value = null; actionSuccess.value = null; Object.keys(selectedTeachers).forEach(k => delete selectedTeachers[Number(k)]) }
@@ -213,7 +220,20 @@ async function fetchCareers() {
     } catch { careers.value = [] }
 }
 async function fetchTeachers() {
-    try { const { data } = await api.get(API.SCA_API.teachers.list, { params: { per_page: 500 } }); const items = data?.items ?? data?.data ?? data ?? []; realTeachers.value = items.filter((t: any) => (t.employeeId ?? t.employee_id) !== null).map((t: any) => ({ id: t.id, name: t.employeeName ?? t.employee_name ?? t.name })) } catch { realTeachers.value = [] }
+    try {
+        const { data } = await api.get(API.SCA_API.teachers.list, { params: { per_page: 500 } })
+        const items = data?.items ?? data?.data ?? data ?? []
+        realTeachers.value = items
+            .filter((t: any) => !t.isVacancy && (t.employeeId ?? t.employee_id))
+            .map((t: any) => ({
+                id: t.id,
+                name: t.displayName
+                    ?? [t.employee?.names, t.employee?.firstSurname, t.employee?.secondSurname].filter(Boolean).join(' ')
+                    ?? t.name,
+            }))
+    } catch {
+        realTeachers.value = []
+    }
 }
 
 async function resolveConfig() {
@@ -233,7 +253,9 @@ async function fetchAssigned() {
     if (!configId.value) return
     loadingAssigned.value = true
     try {
-        const { data } = await api.get(API.SCA_API.teacherAssignments.assigned(configId.value))
+        const params: Record<string, any> = {}
+        if (careerId.value) params.career_id = careerId.value
+        const { data } = await api.get(API.SCA_API.teacherAssignments.assigned(configId.value), { params })
         assignments.value = Array.isArray(data) ? data : []
     } catch { assignments.value = [] }
     finally { loadingAssigned.value = false }
