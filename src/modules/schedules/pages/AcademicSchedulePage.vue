@@ -24,10 +24,20 @@
 
             <!-- ═════ Sección: Filtros ═════ -->
             <section class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <header class="px-4 py-2 bg-slate-50 border-b">
+                <header class="px-4 py-2 bg-slate-50 border-b flex items-center justify-between gap-2">
                     <h2 class="text-[11px] font-black text-slate-600 uppercase tracking-widest">Filtros</h2>
+                    <button v-if="selectedCareerFilter && resolvedConfigId && phaseActive"
+                        type="button"
+                        class="px-3 py-1.5 text-[10px] font-bold rounded border border-red-300 text-red-700 hover:bg-red-50 uppercase flex items-center gap-1.5"
+                        :title="'Vaciar los horarios de la carrera ' + (selectedCareerObj?.shortName ?? selectedCareerObj?.name ?? '')"
+                        @click="openPurgeModal">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                        </svg>
+                        Vaciar horarios de la carrera
+                    </button>
                 </header>
-                <div class="p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="p-4 grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CAMPUS</label>
                         <select v-model="selectedCampusId" @change="onCampusOrTypeChange"
@@ -42,6 +52,16 @@
                             class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                             <option :value="null">-- SELECCIONAR --</option>
                             <option v-for="mt in modalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CARRERA</label>
+                        <select v-model.number="selectedCareerFilter" :disabled="!resolvedConfigId" @change="onCareerFilterChange"
+                            class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase disabled:bg-slate-100 disabled:text-slate-400">
+                            <option :value="0">TODAS LAS CARRERAS</option>
+                            <option v-for="c in availableCareersList" :key="c.id" :value="c.id">
+                                {{ c.shortName || c.name }}<span v-if="c.officialCode"> · {{ c.officialCode }}</span>
+                            </option>
                         </select>
                     </div>
                     <div>
@@ -1268,6 +1288,98 @@
             @promoted="onPromotedFromGeneration"
         />
 
+        <!-- ═════ Modal PURGE: 1ª advertencia (resumen) ═════ -->
+        <Teleport to="body">
+            <div v-if="purgeModal.step === 1" class="fixed inset-0 z-[140]">
+                <div class="absolute inset-0 bg-black/50" @click="closePurgeModal"></div>
+                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
+                    <header class="px-5 py-4 bg-red-50 border-b border-red-200 flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                        </svg>
+                        <div>
+                            <h3 class="text-sm font-bold text-red-700 uppercase">Acción destructiva</h3>
+                            <p class="text-[11px] text-red-600">Esta acción NO se puede deshacer fácilmente.</p>
+                        </div>
+                    </header>
+                    <div class="px-5 py-4 space-y-3 text-sm text-slate-700">
+                        <p>Vas a eliminar <b>todos</b> los bloques de horario de la carrera:</p>
+                        <div class="bg-slate-50 border rounded-lg px-3 py-2">
+                            <p class="font-bold uppercase text-slate-800">{{ selectedCareerObj?.name ?? '—' }}</p>
+                            <p v-if="selectedCareerObj?.officialCode" class="font-mono text-xs text-slate-500">
+                                Código: {{ selectedCareerObj.officialCode }}
+                            </p>
+                        </div>
+                        <p v-if="purgeModal.loading" class="text-xs text-slate-400 italic">Calculando impacto…</p>
+                        <p v-else-if="purgeModal.count === 0" class="text-xs text-slate-500 italic">
+                            No hay bloques asignados para esta carrera en este período. No hay nada que vaciar.
+                        </p>
+                        <p v-else class="text-xs text-slate-600">
+                            En este período se eliminarán <b class="text-red-700">{{ purgeModal.count }}</b> {{ purgeModal.count === 1 ? 'bloque' : 'bloques' }}.
+                            Los bloques del horario activo quedarán eliminados y el jefe deberá reasignar todo.
+                        </p>
+                    </div>
+                    <footer class="px-5 py-3 border-t bg-slate-50 flex justify-end gap-2">
+                        <button type="button"
+                            class="px-4 py-2 text-xs font-bold rounded border border-slate-300 text-slate-700 hover:bg-slate-100 uppercase"
+                            @click="closePurgeModal">
+                            Cancelar
+                        </button>
+                        <button type="button"
+                            :disabled="purgeModal.loading || purgeModal.count === 0"
+                            class="px-4 py-2 text-xs font-bold rounded bg-red-600 text-white hover:bg-red-700 uppercase disabled:opacity-50"
+                            @click="purgeModal.step = 2">
+                            Continuar
+                        </button>
+                    </footer>
+                </div>
+            </div>
+        </Teleport>
+
+        <!-- ═════ Modal PURGE: 2ª advertencia (confirmación por texto) ═════ -->
+        <Teleport to="body">
+            <div v-if="purgeModal.step === 2" class="fixed inset-0 z-[140]">
+                <div class="absolute inset-0 bg-black/50" @click="closePurgeModal"></div>
+                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
+                    <header class="px-5 py-4 bg-red-100 border-b border-red-300">
+                        <h3 class="text-sm font-bold text-red-800 uppercase">Confirmación final</h3>
+                        <p class="text-[11px] text-red-700 mt-1">Escribe el código oficial de la carrera para confirmar.</p>
+                    </header>
+                    <div class="px-5 py-4 space-y-3 text-sm text-slate-700">
+                        <p>Para borrar <b class="text-red-700">{{ purgeModal.count }}</b> {{ purgeModal.count === 1 ? 'bloque' : 'bloques' }} de
+                            <b class="uppercase">{{ selectedCareerObj?.name ?? '' }}</b>,
+                            escribe exactamente su código oficial:
+                        </p>
+                        <div class="bg-slate-50 border rounded-lg px-3 py-2 text-center font-mono font-bold text-slate-800 text-lg tracking-wider">
+                            {{ purgeExpectedText }}
+                        </div>
+                        <input
+                            v-model="purgeModal.input"
+                            type="text"
+                            autocomplete="off"
+                            :placeholder="purgeExpectedText"
+                            class="w-full border-2 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2"
+                            :class="purgeInputMatches ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-slate-200'"
+                        />
+                        <p v-if="purgeModal.error" class="text-xs text-red-600">{{ purgeModal.error }}</p>
+                    </div>
+                    <footer class="px-5 py-3 border-t bg-slate-50 flex justify-end gap-2">
+                        <button type="button"
+                            class="px-4 py-2 text-xs font-bold rounded border border-slate-300 text-slate-700 hover:bg-slate-100 uppercase"
+                            @click="closePurgeModal">
+                            Cancelar
+                        </button>
+                        <button type="button"
+                            :disabled="!purgeInputMatches || purgeModal.submitting"
+                            class="px-4 py-2 text-xs font-bold rounded bg-red-700 text-white hover:bg-red-800 uppercase disabled:opacity-50"
+                            @click="confirmPurge">
+                            {{ purgeModal.submitting ? 'Eliminando…' : 'Eliminar definitivamente' }}
+                        </button>
+                    </footer>
+                </div>
+            </div>
+        </Teleport>
+
         <!-- ═════ Modal: Elegir carrera (COLLEGE_ADMIN / ACADEMIC_DIRECTOR / CAREER_MANAGER con varias) ═════ -->
         <ScheduleCareerPickerModal
             :open="careerPickerOpen"
@@ -1335,6 +1447,82 @@ const loadingSchedules = ref(false)
 // Filtro vista
 const filterType = ref<'teacher' | 'group' | 'place'>('teacher')
 const filterValue = ref<number | null>(null)
+
+// Filtro por carrera: 0 = TODAS; ids = carrera concreta. Reduce los
+// docentes/grupos del dropdown de valor y restringe las aulas a las
+// registradas para (carrera, modalidad) en place_academic_offers.
+const selectedCareerFilter = ref<number>(0)
+const availableCareersList = ref<Array<{ id: number; name: string; shortName: string | null; officialCode: string | null }>>([])
+const allowedPlacesForCareer = ref<number[] | null>(null)  // null = sin filtro
+
+const selectedCareerObj = computed(() =>
+    availableCareersList.value.find(c => c.id === selectedCareerFilter.value) ?? null,
+)
+
+// ══════════════════════ PURGE (vaciar horarios de carrera) ═══════════
+const purgeModal = reactive({
+    step: 0 as 0 | 1 | 2,
+    loading: false,
+    submitting: false,
+    count: 0,
+    input: '',
+    error: '' as string,
+})
+
+const purgeExpectedText = computed(() => selectedCareerObj.value?.officialCode ?? '')
+const purgeInputMatches = computed(() =>
+    !!purgeExpectedText.value && purgeModal.input.trim() === purgeExpectedText.value,
+)
+
+async function openPurgeModal() {
+    if (!selectedCareerFilter.value || !resolvedConfigId.value) return
+    purgeModal.step = 1
+    purgeModal.loading = true
+    purgeModal.count = 0
+    purgeModal.input = ''
+    purgeModal.error = ''
+    try {
+        const { data } = await api.get(API.SCHEDULES_API.academic.purgePreview, {
+            params: {
+                academic_load_config_id: resolvedConfigId.value,
+                career_id:               selectedCareerFilter.value,
+            },
+        })
+        purgeModal.count = Number(data?.count ?? 0)
+    } catch (e: any) {
+        purgeModal.error = e?.response?.data?.message ?? 'Error al calcular el impacto.'
+    } finally {
+        purgeModal.loading = false
+    }
+}
+
+function closePurgeModal() {
+    purgeModal.step = 0
+    purgeModal.input = ''
+    purgeModal.error = ''
+    purgeModal.submitting = false
+}
+
+async function confirmPurge() {
+    if (!purgeInputMatches.value || !resolvedConfigId.value || !selectedCareerFilter.value) return
+    purgeModal.submitting = true
+    purgeModal.error = ''
+    try {
+        const { data } = await api.post(API.SCHEDULES_API.academic.purge, {
+            academic_load_config_id: resolvedConfigId.value,
+            career_id:               selectedCareerFilter.value,
+        })
+        const deleted = Number(data?.deleted ?? 0)
+        closePurgeModal()
+        // Recargar horarios para reflejar el borrado
+        if (resolvedConfigId.value) await loadSchedules(resolvedConfigId.value)
+        filterValue.value = null
+        showError(`Se eliminaron ${deleted} ${deleted === 1 ? 'bloque' : 'bloques'} de la carrera.`)
+    } catch (e: any) {
+        purgeModal.error = e?.response?.data?.message ?? 'Error al vaciar los horarios.'
+        purgeModal.submitting = false
+    }
+}
 
 // ═══ Descargas (horas complementarias) ═══
 const complementaryHourTypes = ref<ComplementaryHourTypeRef[]>([])
@@ -1564,20 +1752,32 @@ const filteredAssignments = computed(() => {
 })
 
 const filterOptions = computed(() => {
+    // Si hay carrera seleccionada (≠ 0), usamos sólo assignments de
+    // esa carrera para poblar los dropdowns de docente/grupo y
+    // aplicamos allowedPlacesForCareer al de aulas.
+    const careerId = selectedCareerFilter.value || 0
+    const scopedAssignments = careerId
+        ? assignableAssignments.value.filter(a => a.career?.id === careerId)
+        : assignableAssignments.value
+
     if (filterType.value === 'teacher') {
-        // Contar asignaciones por docente dentro del scope del ALC
+        // Contar asignaciones por docente dentro del scope del ALC (y carrera)
         const countByTeacher = new Map<number, number>()
         const nameByTeacher = new Map<number, string>()
-        for (const a of assignableAssignments.value) {
+        for (const a of scopedAssignments) {
             if (!a.teacher?.id) continue
             countByTeacher.set(a.teacher.id, (countByTeacher.get(a.teacher.id) ?? 0) + 1)
             nameByTeacher.set(a.teacher.id, a.teacher.name || '—')
         }
-        // Completar con docentes del scope del usuario aunque no tengan asignaciones
-        for (const t of scopedTeachers.value) {
-            if (!t.id) continue
-            if (!countByTeacher.has(t.id)) countByTeacher.set(t.id, 0)
-            if (!nameByTeacher.has(t.id)) nameByTeacher.set(t.id, t.name || '—')
+        // Docentes del scope del usuario sin asignaciones: sólo cuando
+        // no hay filtro de carrera (si filtras carrera, no tiene sentido
+        // mostrar docentes sin nada en esa carrera).
+        if (!careerId) {
+            for (const t of scopedTeachers.value) {
+                if (!t.id) continue
+                if (!countByTeacher.has(t.id)) countByTeacher.set(t.id, 0)
+                if (!nameByTeacher.has(t.id)) nameByTeacher.set(t.id, t.name || '—')
+            }
         }
         const rows = [...countByTeacher.entries()].map(([id, count]) => ({
             id,
@@ -1585,7 +1785,6 @@ const filterOptions = computed(() => {
             name: nameByTeacher.get(id) ?? '—',
             label: `${nameByTeacher.get(id) ?? '—'} (${count})`,
         }))
-        // Primero con asignaciones (alfabético); luego sin asignaciones (alfabético)
         return rows.sort((x, y) => {
             const xHas = x.count > 0 ? 0 : 1
             const yHas = y.count > 0 ? 0 : 1
@@ -1595,14 +1794,21 @@ const filterOptions = computed(() => {
     }
     if (filterType.value === 'group') {
         const map = new Map<number, { id: number; label: string }>()
-        for (const a of assignableAssignments.value) {
+        for (const a of scopedAssignments) {
             if (a.group && !map.has(a.group.id)) {
                 map.set(a.group.id, { id: a.group.id, label: a.group.name })
             }
         }
         return [...map.values()].sort((x, y) => x.label.localeCompare(y.label))
     }
-    return places.value.map(p => ({ id: p.id, label: p.name + (p.shortName ? ' (' + p.shortName + ')' : '') })).sort((x, y) => x.label.localeCompare(y.label))
+    // filterType === 'place'. Si hay carrera, restringir al conjunto de
+    // place_academic_offers (mismo origen que "Aulas por Carrera").
+    const allowed = careerId ? (allowedPlacesForCareer.value ?? []) : null
+    const rows = allowed !== null
+        ? places.value.filter(p => allowed.includes(p.id))
+        : places.value
+    return rows.map(p => ({ id: p.id, label: p.name + (p.shortName ? ' (' + p.shortName + ')' : '') }))
+        .sort((x, y) => x.label.localeCompare(y.label))
 })
 
 const visibleSchedules = computed(() => {
@@ -1929,10 +2135,12 @@ async function resolveConfig() {
         selectedConfig.value = detail.data
         phaseActive.value = !!(detail.data?.phaseSchedule ?? detail.data?.phase_schedule)
 
-        // Cargar asignaciones y horarios
+        // Cargar asignaciones, horarios y carreras disponibles (para el
+        // filtro de carrera del panel de filtros).
         await Promise.all([
             loadAssignments(resolvedConfigId.value),
             loadSchedules(resolvedConfigId.value),
+            loadAvailableCareersForFilter(resolvedConfigId.value),
         ])
     } catch {
         configError.value = 'Error al buscar la configuración.'
@@ -1948,6 +2156,53 @@ async function loadAssignments(id: number) {
         showError('No se pudieron cargar las asignaciones.')
         assignableAssignments.value = []
     } finally { loadingAssignable.value = false }
+}
+
+async function loadAvailableCareersForFilter(configId: number) {
+    // Reusa /schedules/generation/available-careers: devuelve todas para
+    // admins y sólo las asignadas para CAREER_MANAGER. Si sólo hay 1
+    // carrera, no tiene sentido mostrar el filtro — el valor default
+    // (0 = TODAS) se comporta igual.
+    selectedCareerFilter.value = 0
+    allowedPlacesForCareer.value = null
+    try {
+        const { data } = await api.get(API.SCHEDULES_API.generation.availableCareers, {
+            params: { config_id: configId },
+        })
+        availableCareersList.value = Array.isArray(data) ? data.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            shortName: c.shortName ?? null,
+            officialCode: c.officialCode ?? null,
+        })) : []
+    } catch {
+        availableCareersList.value = []
+    }
+}
+
+async function onCareerFilterChange() {
+    // Al cambiar la carrera: si el filtro activo es "aula", recargar la
+    // lista de aulas permitidas para esa (carrera, modalidad) desde
+    // place_academic_offers. El valor actual del filtro puede dejar de
+    // ser válido tras el cambio — lo limpiamos.
+    filterValue.value = null
+    const careerId = selectedCareerFilter.value || 0
+    if (!careerId || !resolvedConfigId.value) {
+        allowedPlacesForCareer.value = null
+        return
+    }
+    try {
+        const { data } = await api.get(API.SCHEDULES_API.groupPreferredPlaces.groupsForCareer, {
+            params: {
+                academic_load_config_id: resolvedConfigId.value,
+                career_id:               careerId,
+            },
+        })
+        const ids: number[] = (data?.allowedPlaces ?? []).map((p: any) => p.id)
+        allowedPlacesForCareer.value = ids
+    } catch {
+        allowedPlacesForCareer.value = []
+    }
 }
 
 async function loadSchedules(id: number) {

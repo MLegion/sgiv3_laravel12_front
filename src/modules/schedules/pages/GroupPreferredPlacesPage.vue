@@ -33,18 +33,47 @@
             </div>
         </section>
 
+        <!-- ═════ Carrera ═════ -->
+        <section v-if="resolvedConfigId && availableCareers.length > 0" class="bg-white border rounded-xl shadow-sm p-4">
+            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">Carrera</label>
+            <!-- 1 carrera: info readonly -->
+            <div v-if="availableCareers.length === 1"
+                class="px-4 py-2.5 border-2 border-slate-200 rounded-xl bg-slate-50 text-sm font-bold uppercase text-slate-700">
+                {{ availableCareers[0].name }}
+                <span v-if="availableCareers[0].officialCode" class="font-mono text-xs text-slate-400 ml-2">
+                    {{ availableCareers[0].officialCode }}
+                </span>
+            </div>
+            <!-- más carreras: selector -->
+            <select v-else v-model="selectedCareerId" @change="loadGroups"
+                class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
+                <option :value="null">-- SELECCIONE UNA CARRERA --</option>
+                <option v-for="c in availableCareers" :key="c.id" :value="c.id">
+                    {{ c.name }}<template v-if="c.officialCode"> · {{ c.officialCode }}</template>
+                </option>
+            </select>
+        </section>
+
         <div v-if="configError" class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-xs text-amber-700">
             {{ configError }}
         </div>
 
+        <div v-if="resolvedConfigId && availableCareers.length === 0 && !loading"
+             class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-xs text-amber-700">
+            No tienes carreras asignadas con asignaciones en este periodo y modalidad.
+        </div>
+
         <!-- ═════ Tabla grupos ═════ -->
-        <section v-if="resolvedConfigId && !loading" class="bg-white border rounded-xl shadow-sm overflow-hidden">
+        <section v-if="resolvedConfigId && selectedCareerId && !loading" class="bg-white border rounded-xl shadow-sm overflow-hidden">
             <header class="px-4 py-3 bg-slate-50 border-b flex items-center justify-between gap-3">
                 <div>
                     <h2 class="text-[11px] font-black text-slate-600 uppercase tracking-widest">
-                        Grupos · {{ groups.length }}
+                        Grupos aperturados · {{ groups.length }}
                     </h2>
-                    <p class="text-[10px] text-slate-400">Filtra por carrera o nombre si hay muchos grupos.</p>
+                    <p class="text-[10px] text-slate-400">
+                        Sólo grupos con asignaciones en este período para la carrera.
+                        Aulas permitidas: {{ places.length }} (según <em>Aulas por Carrera</em>).
+                    </p>
                 </div>
                 <input v-model="search" placeholder="Buscar grupo..." type="search"
                     class="border rounded-lg px-3 py-1.5 text-xs w-64 focus:outline-none focus:ring-2 focus:ring-blue-400" />
@@ -58,6 +87,7 @@
                 <thead class="bg-slate-50 border-b text-[10px] uppercase text-slate-500 font-semibold tracking-wide">
                     <tr>
                         <th class="px-3 py-2 text-left w-32">Grupo</th>
+                        <th class="px-3 py-2 text-center w-16">Sem.</th>
                         <th class="px-3 py-2 text-left w-20 text-center">Turno</th>
                         <th class="px-3 py-2 text-left">Aula preferida</th>
                         <th class="px-3 py-2 text-left w-28 text-center">Desde</th>
@@ -68,6 +98,9 @@
                 <tbody class="divide-y divide-slate-100">
                     <tr v-for="row in filteredGroups" :key="row.groupId" class="hover:bg-slate-50 transition">
                         <td class="px-3 py-2 font-mono font-bold text-slate-700">{{ row.groupName }}</td>
+                        <td class="px-3 py-2 text-center font-mono text-xs text-slate-500">
+                            {{ row.targetSemester ?? '—' }}
+                        </td>
                         <td class="px-3 py-2 text-center">
                             <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                                   :class="shiftClass(row.groupShift)">{{ shiftLabel(row.groupShift) }}</span>
@@ -139,6 +172,7 @@ interface GroupRow {
     groupId: number
     groupName: string
     groupShift: string | null
+    targetSemester: number | null
     id: number | null          // id de la fila group_preferred_places si existe
     placeId: number | null
     startTime: string | null
@@ -151,18 +185,28 @@ interface GroupRow {
     error: string | null
 }
 
+interface CareerOption {
+    id: number
+    name: string
+    shortName: string | null
+    officialCode: string | null
+    packageCount: number
+}
+
 const selectedPeriodId        = ref<number | null>(null)
 const selectedCampusId        = ref<number | null>(null)
 const selectedModalityTypeId  = ref<number | null>(null)
+const selectedCareerId        = ref<number | null>(null)
 const resolvedModalityId      = ref<number | null>(null)
 const resolvedConfigId        = ref<number | null>(null)
 const configError             = ref<string | null>(null)
 
-const campuses      = ref<any[]>([])
-const modalityTypes = ref<any[]>([])
-const modalities    = ref<any[]>([])
-const places        = ref<any[]>([])
-const groups        = ref<GroupRow[]>([])
+const campuses         = ref<any[]>([])
+const modalityTypes    = ref<any[]>([])
+const modalities       = ref<any[]>([])
+const places           = ref<any[]>([])
+const availableCareers = ref<CareerOption[]>([])
+const groups           = ref<GroupRow[]>([])
 
 const search  = ref('')
 const loading = ref(false)
@@ -199,16 +243,16 @@ const filteredGroups = computed(() => {
 })
 
 async function fetchCatalogs() {
-    const [camp, mt, mod, pls] = await Promise.all([
+    // No cargamos places aquí: las aulas permitidas vienen del endpoint
+    // groupsForCareer filtradas por place_academic_offers (carrera+modalidad).
+    const [camp, mt, mod] = await Promise.all([
         api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 100, status: 1 } }).catch(() => ({ data: [] })),
         api.get(API.SUPERADMIN_API.modalityTypes.list, { params: { per_page: 100 } }).catch(() => ({ data: [] })),
         api.get(API.SCHOOL_SERVICES_API.modalities.list, { params: { per_page: 200 } }).catch(() => ({ data: [] })),
-        api.get(API.SCHOOL_SERVICES_API.places.list, { params: { per_page: 500, status: 1 } }).catch(() => ({ data: [] })),
     ])
     campuses.value      = (camp.data?.items ?? camp.data?.data ?? camp.data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName ?? `#${c.id}` }))
     modalityTypes.value = (mt.data?.items ?? mt.data?.data ?? mt.data ?? []).map((m: any) => ({ id: m.id, name: m.name ?? `#${m.id}` }))
     modalities.value    = (mod.data?.items ?? mod.data?.data ?? mod.data ?? [])
-    places.value        = (pls.data?.items ?? pls.data?.data ?? pls.data ?? []).filter((p: any) => p.isValidable !== false)
 }
 
 function onPeriodChange() {
@@ -219,6 +263,8 @@ async function resolveConfig() {
     resolvedConfigId.value = null
     resolvedModalityId.value = null
     configError.value = null
+    availableCareers.value = []
+    selectedCareerId.value = null
     groups.value = []
     if (!selectedPeriodId.value || !selectedCampusId.value || !selectedModalityTypeId.value) return
 
@@ -250,46 +296,77 @@ async function resolveConfig() {
             return
         }
         resolvedConfigId.value = items[0].id
-        await loadGroups()
+        await loadAvailableCareers()
     } catch (e: any) {
         configError.value = e?.response?.data?.message ?? 'Error al resolver configuración.'
     }
 }
 
-async function loadGroups() {
+async function loadAvailableCareers() {
     if (!resolvedConfigId.value) return
+    try {
+        // Reutilizamos el endpoint del módulo de generación: devuelve
+        // todas las carreras del config para admins, o sólo las carreras
+        // asignadas al CAREER_MANAGER.
+        const { data } = await api.get(API.SCHEDULES_API.generation.availableCareers, {
+            params: { config_id: resolvedConfigId.value },
+        })
+        availableCareers.value = Array.isArray(data) ? data : []
+        // Auto-seleccionar si sólo hay una carrera
+        if (availableCareers.value.length === 1) {
+            selectedCareerId.value = availableCareers.value[0].id
+            await loadGroups()
+        }
+    } catch (e: any) {
+        availableCareers.value = []
+        configError.value = e?.response?.data?.message ?? 'Error al cargar carreras.'
+    }
+}
+
+async function loadGroups() {
+    if (!resolvedConfigId.value || !selectedCareerId.value) {
+        groups.value = []
+        places.value = []
+        return
+    }
     loading.value = true
     try {
-        const [groupsRes, prefRes] = await Promise.all([
-            api.get(API.SCA_API.groups.list(resolvedConfigId.value)),
-            api.get(API.SCHEDULES_API.groupPreferredPlaces.list, {
-                params: { academic_load_config_id: resolvedConfigId.value },
-            }),
-        ])
-        const rawGroups = groupsRes.data?.items ?? groupsRes.data?.data ?? groupsRes.data ?? []
-        const prefs = prefRes.data ?? []
-        const prefByGroup = new Map<number, any>()
-        for (const p of prefs) prefByGroup.set(p.groupId, p)
-
-        groups.value = rawGroups
-            .map((g: any) => {
-                const pref = prefByGroup.get(g.id)
-                return {
-                    groupId:    g.id,
-                    groupName:  g.name,
-                    groupShift: g.shift ?? null,
-                    id:              pref?.id ?? null,
-                    placeId:         pref?.placeId ?? null,
-                    startTime:       pref?.startTime ?? null,
-                    endTime:         pref?.endTime ?? null,
-                    baselinePlaceId: pref?.placeId ?? null,
-                    baselineStart:   pref?.startTime ?? null,
-                    baselineEnd:     pref?.endTime ?? null,
-                    saving: false,
-                    error:  null,
-                } as GroupRow
-            })
-            .sort((a: GroupRow, b: GroupRow) => a.groupName.localeCompare(b.groupName))
+        const { data } = await api.get(API.SCHEDULES_API.groupPreferredPlaces.groupsForCareer, {
+            params: {
+                academic_load_config_id: resolvedConfigId.value,
+                career_id:               selectedCareerId.value,
+            },
+        })
+        // Respuesta: { groups: [...], allowedPlaces: [...] }
+        // allowedPlaces viene filtrado por place_academic_offers
+        // (misma tabla que usa "Aulas por Carrera" en el menú).
+        const rawGroups = Array.isArray(data?.groups) ? data.groups : []
+        const rawPlaces = Array.isArray(data?.allowedPlaces) ? data.allowedPlaces : []
+        places.value = rawPlaces.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            shortName: p.shortName ?? null,
+            capacity: p.capacity ?? 0,
+            isValidable: true,
+        }))
+        groups.value = rawGroups.map((g: any) => {
+            const pref = g.preferred
+            return {
+                groupId:        g.groupId,
+                groupName:      g.groupName,
+                groupShift:     g.groupShift ?? null,
+                targetSemester: g.targetSemester ?? null,
+                id:              pref?.id ?? null,
+                placeId:         pref?.placeId ?? null,
+                startTime:       pref?.startTime ?? null,
+                endTime:         pref?.endTime ?? null,
+                baselinePlaceId: pref?.placeId ?? null,
+                baselineStart:   pref?.startTime ?? null,
+                baselineEnd:     pref?.endTime ?? null,
+                saving: false,
+                error:  null,
+            } as GroupRow
+        })
     } catch (e: any) {
         flash(false, e?.response?.data?.message ?? 'Error al cargar grupos.')
     } finally {

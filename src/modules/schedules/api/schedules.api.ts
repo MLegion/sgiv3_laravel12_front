@@ -13,6 +13,8 @@ export default {
             removeSlots:     (id: string | number) => apiUrl(`/schedules/academic/${id}/remove-slots`),
             checkConflicts:  apiUrl('/schedules/academic/check-conflicts'),
             availablePlaces: apiUrl('/schedules/academic/available-places'),
+            purgePreview:    apiUrl('/schedules/academic/purge-preview'),
+            purge:           apiUrl('/schedules/academic/purge'),
         },
         complementary: {
             list:   apiUrl('/schedules/complementary'),
@@ -30,11 +32,12 @@ export default {
             discard:   (id: string | number) => apiUrl(`/schedules/generation/runs/${id}`),
         },
         groupPreferredPlaces: {
-            list:    apiUrl('/schedules/group-preferred-places'),
-            byGroup: (groupId: string | number) => apiUrl(`/schedules/group-preferred-places/by-group/${groupId}`),
-            create:  apiUrl('/schedules/group-preferred-places'),
-            update:  (id: string | number) => apiUrl(`/schedules/group-preferred-places/${id}`),
-            delete:  (id: string | number) => apiUrl(`/schedules/group-preferred-places/${id}`),
+            list:            apiUrl('/schedules/group-preferred-places'),
+            groupsForCareer: apiUrl('/schedules/group-preferred-places/groups'),
+            byGroup:         (groupId: string | number) => apiUrl(`/schedules/group-preferred-places/by-group/${groupId}`),
+            create:          apiUrl('/schedules/group-preferred-places'),
+            update:          (id: string | number) => apiUrl(`/schedules/group-preferred-places/${id}`),
+            delete:          (id: string | number) => apiUrl(`/schedules/group-preferred-places/${id}`),
         },
     },
 } satisfies ApiModule
