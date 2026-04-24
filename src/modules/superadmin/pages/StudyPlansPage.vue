@@ -39,6 +39,18 @@
                 <ApprovalStatusBadge :status="row.approvalStatus" />
             </template>
 
+            <!-- Activo -->
+            <template #cell-active="{ row }">
+                <span
+                    class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest"
+                    :class="row.isActive
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-slate-200 text-slate-500'"
+                >
+                    {{ row.isActive ? 'Activo' : 'Inactivo' }}
+                </span>
+            </template>
+
             <!-- Opciones -->
             <template #cell-opciones="{ row }">
                 <div class="flex justify-center gap-2">
@@ -112,6 +124,20 @@
                         </svg>
                     </button>
 
+                    <button
+                        class="border p-1.5 rounded-md cursor-pointer"
+                        :class="row.isActive
+                            ? 'hover:bg-amber-50 text-amber-700'
+                            : 'hover:bg-emerald-50 text-emerald-700'"
+                        :title="row.isActive ? 'Desactivar' : 'Activar'"
+                        :disabled="togglingId === row.id"
+                        @click="toggleActive(row)"
+                    >
+                        <!-- Heroicon Power -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" />
+                        </svg>
+                    </button>
 
                     <button
                         class="border p-1.5 rounded-md hover:bg-red-50 cursor-pointer"
@@ -137,16 +163,30 @@
                 </div>
             </template>
         </DataTable>
+
+        <ConfirmModal
+            v-model="toggleModalOpen"
+            :title="toggleTarget?.isActive ? 'Desactivar plan de estudio' : 'Activar plan de estudio'"
+            :message="toggleTarget
+                ? (toggleTarget.isActive
+                    ? `El plan «${toggleTarget.officialCode}» ya no aparecerá en los selectores de plan activo. ¿Desactivar?`
+                    : `El plan «${toggleTarget.officialCode}» volverá a aparecer en los selectores. ¿Activar?`)
+                : ''"
+            @confirm="doToggleActive"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { API } from '@/shared/api'
+import { api } from '@/shared/services/api'
 import ApprovalStatusBadge from '@/app/components/ui/ApprovalStatusBadge.vue'
+import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 import { ApprovalStatusEnum } from '@/shared/enums/approval-status.enum.ts'
 import type { StudyPlanType } from '@/modules/superadmin/types/study-plan.type'
 
@@ -160,8 +200,13 @@ const columns: DataTableColumn<StudyPlanType>[] = [
     { key: 'periods', label: 'PERIODOS', field: 'periods' },
     { key: 'startYear', label: 'AÑO INICIO', field:'startYear',  sortable: true },
     { key: 'status', label: 'APROBACIÓN' },
+    { key: 'active', label: 'ACTIVO' },
     { key: 'opciones', label: 'OPCIONES' },
 ]
+
+const togglingId       = ref<number | null>(null)
+const toggleModalOpen  = ref(false)
+const toggleTarget     = ref<StudyPlanType | null>(null)
 
 const {
     rows,
@@ -217,5 +262,25 @@ function canApprove(row: StudyPlanType): boolean {
         ApprovalStatusEnum.APPROVED,
         ApprovalStatusEnum.REJECTED,
     ].includes(row.approvalStatus)
+}
+
+function toggleActive(row: StudyPlanType) {
+    toggleTarget.value    = row
+    toggleModalOpen.value = true
+}
+
+async function doToggleActive() {
+    const row = toggleTarget.value
+    if (!row) return
+    togglingId.value = row.id
+    try {
+        await api.post(API.SUPERADMIN_API.studyPlans.toggleActive(row.id))
+        await fetchData()
+    } catch (e: any) {
+        alert(e?.response?.data?.message ?? 'No se pudo cambiar el estado.')
+    } finally {
+        togglingId.value  = null
+        toggleTarget.value = null
+    }
 }
 </script>

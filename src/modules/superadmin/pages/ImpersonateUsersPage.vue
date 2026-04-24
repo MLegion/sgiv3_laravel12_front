@@ -121,6 +121,15 @@
                 </div>
             </template>
         </DataTable>
+
+        <ConfirmModal
+            v-model="revokeModalOpen"
+            title="Revocar simulación activa"
+            :message="revokeTarget
+                ? `La sesión simulada de ${revokeTarget.name} se cerrará de inmediato. ¿Continuar?`
+                : ''"
+            @confirm="doRevoke"
+        />
     </div>
 </template>
 
@@ -133,6 +142,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { EyeIcon, XMarkIcon, ClipboardDocumentListIcon } from '@heroicons/vue/24/outline'
+import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 
 interface UserRow {
     id: number
@@ -148,15 +158,19 @@ const auth = useAuthStore()
 const busyUserId = ref<number | null>(null)
 const banner = reactive({ message: '', ok: false })
 const activeUserIds = ref<Set<number>>(new Set())
+const activeItems   = ref<UserRow[]>([])
 const onlyActive = ref(false)
+const revokeModalOpen = ref(false)
+const revokeTarget    = ref<UserRow | null>(null)
 
 async function loadActiveImpersonations() {
     try {
         const { data } = await api.get(API.SUPERADMIN_API.impersonation.active)
-        activeUserIds.value = new Set<number>(
-            (data.items ?? []).map((i: any) => i.impersonated_user_id)
-        )
+        const items = (data.items ?? []) as UserRow[]
+        activeItems.value   = items
+        activeUserIds.value = new Set<number>(items.map(i => i.id))
     } catch {
+        activeItems.value   = []
         activeUserIds.value = new Set()
     }
 }
@@ -203,10 +217,11 @@ const {
 
 fetchData()
 
-const filteredRows = computed(() =>
-    onlyActive.value
-        ? rows.value.filter(r => activeUserIds.value.has(r.id))
-        : rows.value
+// Con "Solo activas" encendido renderizamos directo del endpoint /active
+// (ya trae nombre, email, tipo y college), para no depender de la página
+// actual del paginado — antes se perdían los que cayeran en otra página.
+const filteredRows = computed<UserRow[]>(() =>
+    onlyActive.value ? activeItems.value : rows.value
 )
 
 async function handleImpersonate(row: UserRow) {
@@ -223,22 +238,30 @@ async function handleImpersonate(row: UserRow) {
     }
 }
 
-async function handleRevoke(row: UserRow) {
+function handleRevoke(row: UserRow) {
     if (busyUserId.value !== null) return
-    if (!confirm(`¿Revocar la simulación activa de ${row.name}?`)) return
+    revokeTarget.value    = row
+    revokeModalOpen.value = true
+}
+
+async function doRevoke() {
+    const row = revokeTarget.value
+    if (!row || busyUserId.value !== null) return
     busyUserId.value = row.id
     banner.message = ''
     try {
         await api.delete(API.SUPERADMIN_API.impersonation.revoke(row.id))
         activeUserIds.value.delete(row.id)
         activeUserIds.value = new Set(activeUserIds.value)  // trigger reactivity
+        activeItems.value   = activeItems.value.filter(i => i.id !== row.id)
         banner.ok = true
         banner.message = `Simulación de ${row.name} revocada.`
     } catch (e: any) {
         banner.ok = false
         banner.message = e.response?.data?.message || 'No se pudo revocar la simulación.'
     } finally {
-        busyUserId.value = null
+        busyUserId.value  = null
+        revokeTarget.value = null
     }
 }
 </script>

@@ -51,6 +51,7 @@ export default {
             delete: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}`),
             approve: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/approve`),
             reject: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/reject`),
+            toggleActive: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/toggle-active`),
         },
         curriculum: {
             list: (id: string | number) => apiUrl(`/superadmin/study-plans/${id}/curriculum`),
