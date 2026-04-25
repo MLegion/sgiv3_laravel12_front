@@ -291,8 +291,8 @@
                                 Sin asignaciones
                             </div>
 
-                            <!-- ── DESCARGAS (solo filtro por DOCENTE) ── -->
-                            <template v-if="filterType === 'teacher' && filterValue && complementaryHourTypes.length">
+                            <!-- ── DESCARGAS (solo filtro por DOCENTE + modalidad con additional_hours) ── -->
+                            <template v-if="filterType === 'teacher' && filterValue && complementaryHourTypes.length && currentModalityAllowsComplementary">
                                 <div class="mt-4 pt-3 border-t-2 border-dashed border-teal-300">
                                     <div class="text-[10px] font-black text-teal-700 uppercase tracking-widest text-center mb-2">
                                         DESCARGAS
@@ -1284,6 +1284,9 @@
             :config-id="resolvedConfigId"
             :career-id="generationDrawer.careerId"
             :career-label="generationDrawer.careerLabel"
+            :campus-label="selectedCampusLabel"
+            :modality-type-label="selectedModalityTypeLabel"
+            :day-slots="currentModalityDaySlots"
             @close="generationDrawer.open = false"
             @promoted="onPromotedFromGeneration"
         />
@@ -2006,7 +2009,16 @@ async function fetchCampuses() {
 async function fetchModalityTypes() {
     try {
         const { data } = await api.get(API.SUPERADMIN_API.modalityTypes.list, { params: { per_page: 100 } })
-        modalityTypes.value = (data?.items ?? data?.data ?? data ?? []).map((mt: any) => ({ id: mt.id, name: mt.name ?? `#${mt.id}` }))
+        modalityTypes.value = (data?.items ?? data?.data ?? data ?? []).map((mt: any) => {
+            const rawConfig = mt.config ?? mt.rawConfig ?? null
+            const cfg = typeof rawConfig === 'string' ? (() => { try { return JSON.parse(rawConfig) } catch { return null } })() : rawConfig
+            return {
+                id: mt.id,
+                name: mt.name ?? `#${mt.id}`,
+                config: cfg,
+                allowsComplementary: !!cfg?.additional_hours?.enabled,
+            }
+        })
     } catch { modalityTypes.value = [] }
 }
 
@@ -3427,6 +3439,60 @@ const generationDrawer = reactive({
     open: false,
     careerId: null as number | null,
     careerLabel: '' as string,
+})
+
+const selectedCampusLabel = computed<string>(() =>
+    campuses.value.find((c: any) => c.id === selectedCampusId.value)?.name ?? ''
+)
+const selectedModalityTypeLabel = computed<string>(() =>
+    modalityTypes.value.find((m: any) => m.id === selectedModalityTypeId.value)?.name ?? ''
+)
+const currentModalityAllowsComplementary = computed<boolean>(() =>
+    !!modalityTypes.value.find((m: any) => m.id === selectedModalityTypeId.value)?.allowsComplementary
+)
+
+/**
+ * Slots de inicio posibles en un día de esta modalidad, según daily_schedule
+ * y class_blocks.duration_minutes. Si hay break habilitado, se modela una
+ * ventana centrada en el mediodía del rango: [mid - breakMin/2, mid + breakMin/2]
+ * y los bloques que intersecten esa ventana se empujan al fin del break.
+ * Formato "HH:mm". Ej: SEMI con daily 08-17, bloque 240min, break 60min → ["08:00","13:00"].
+ */
+const currentModalityDaySlots = computed<string[]>(() => {
+    const cfg: any = modalityTypes.value.find((m: any) => m.id === selectedModalityTypeId.value)?.config
+    if (!cfg) return []
+    const start = cfg.daily_schedule?.start
+    const end   = cfg.daily_schedule?.end
+    const blockMin = Number(cfg.class_blocks?.duration_minutes ?? 60)
+    const breakEnabled = !!cfg.daily_schedule?.break?.enabled
+    const breakMin = Number(cfg.daily_schedule?.break?.duration_minutes ?? 0)
+    if (!start || !end || !blockMin) return []
+
+    const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m }
+    const fromMin = (n: number) => `${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`
+
+    const startMin = toMin(start), endMin = toMin(end)
+    const midMin = Math.floor((startMin + endMin) / 2)
+    const breakStart = breakEnabled ? midMin - Math.floor(breakMin / 2) : -1
+    const breakEnd   = breakEnabled ? breakStart + breakMin : -1
+
+    const slots: string[] = []
+    let cursor = startMin
+    while (cursor + blockMin <= endMin) {
+        // Si el cursor cae dentro de la ventana del break, salta al fin del break.
+        if (breakEnabled && cursor >= breakStart && cursor < breakEnd) {
+            cursor = breakEnd
+            continue
+        }
+        // Si el bloque cruzaría el break, salta al fin del break antes de colocar.
+        if (breakEnabled && cursor < breakStart && cursor + blockMin > breakStart) {
+            cursor = breakEnd
+            continue
+        }
+        slots.push(fromMin(cursor))
+        cursor += blockMin
+    }
+    return slots
 })
 const generatorStatus = ref<{ kind: string; canSolve: boolean; reason: string | null } | null>(null)
 

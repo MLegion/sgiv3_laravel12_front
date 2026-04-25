@@ -4,12 +4,17 @@
             <div class="absolute inset-0 bg-black/40" @click="close"></div>
 
             <aside class="absolute right-0 top-0 h-full w-full max-w-2xl bg-white shadow-2xl overflow-y-auto">
-                <header class="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
-                    <div>
+                <header class="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-start justify-between gap-3">
+                    <div class="min-w-0">
                         <h2 class="text-lg font-semibold text-slate-800 uppercase tracking-wide">Generación Automática</h2>
                         <p class="text-xs text-slate-500 mt-0.5">Carrera: <b>{{ careerLabel || `#${careerId}` }}</b></p>
+                        <p v-if="campusLabel || modalityTypeLabel" class="text-xs text-slate-500 mt-0.5">
+                            <span v-if="campusLabel">Campus: <b>{{ campusLabel }}</b></span>
+                            <span v-if="campusLabel && modalityTypeLabel"> · </span>
+                            <span v-if="modalityTypeLabel">Modalidad: <b>{{ modalityTypeLabel }}</b></span>
+                        </p>
                     </div>
-                    <button type="button" class="text-slate-400 hover:text-slate-700 text-xl" @click="close">×</button>
+                    <button type="button" class="text-slate-400 hover:text-slate-700 text-xl shrink-0" @click="close">×</button>
                 </header>
 
                 <!-- Estado global -->
@@ -257,8 +262,9 @@
                                 <!-- Header -->
                                 <div class="bg-slate-50 border-b border-r p-1.5 text-[10px] font-bold text-slate-500 text-center">Hora</div>
                                 <div v-for="d in DAYS" :key="'h-' + d.value"
-                                     class="bg-slate-50 border-b border-r p-1.5 text-[10px] font-bold text-slate-500 text-center">
-                                    {{ d.label }}
+                                     class="bg-slate-50 border-b border-r p-1.5 text-[10px] font-bold text-slate-500 text-center leading-tight">
+                                    <div>{{ d.label }}</div>
+                                    <div v-if="d.sublabel" class="text-[9px] font-normal text-slate-400 font-mono">{{ d.sublabel }}</div>
                                 </div>
                                 <!-- Slots -->
                                 <template v-for="slot in previewSlots" :key="'s-' + slot.label">
@@ -268,7 +274,8 @@
                                     <div v-for="d in DAYS" :key="'c-' + d.value + '-' + slot.label"
                                          class="border-b border-r p-0.5 min-h-[38px] relative">
                                         <div v-for="b in blocksAt(g.blocks, d.value, slot.value)" :key="b.id"
-                                             class="bg-orange-100 border border-orange-300 rounded px-1 py-0.5 text-[9px] leading-tight"
+                                             class="border rounded px-1 py-0.5 text-[9px] leading-tight"
+                                             :class="subjectColorClasses(b)"
                                              :title="blockTooltip(b)">
                                             <div class="font-bold text-slate-800 truncate">
                                                 {{ b.subject?.shortName || b.subject?.name || '—' }}
@@ -332,6 +339,11 @@ const props = defineProps<{
     configId: number
     careerId: number
     careerLabel?: string
+    campusLabel?: string
+    modalityTypeLabel?: string
+    /** Slots posibles del día según modalidad (HH:mm). Si se pasan, el grid los
+     *  muestra siempre, aunque el solver no haya puesto nada en alguno. */
+    daySlots?: string[]
 }>()
 const emit = defineEmits<{
     (e: 'close'): void
@@ -383,13 +395,62 @@ const preview = reactive<{
     groupBy: 'group' | 'teacher' | 'place'
 }>({ runId: null, loading: false, data: null, groupBy: 'group' })
 
-const DAYS = [
-    { value: 1, label: 'LUN' },
-    { value: 2, label: 'MAR' },
-    { value: 3, label: 'MIÉ' },
-    { value: 4, label: 'JUE' },
-    { value: 5, label: 'VIE' },
-]
+// Catálogo ISO-8601: Monday=1..Sunday=7.
+const DOW_LABELS: Record<number, string> = { 1: 'LUN', 2: 'MAR', 3: 'MIÉ', 4: 'JUE', 5: 'VIE', 6: 'SÁB', 7: 'DOM' }
+
+interface PreviewColumn {
+    /** Valor a matchear contra cada bloque. dayOfWeek (int) en modo dow, date (string YYYY-MM-DD) en modo date. */
+    value: number | string
+    label: string
+    sublabel?: string
+}
+
+/**
+ * Modo del eje X del grid:
+ * - 'date' cuando los bloques traen fecha concreta (modalidades por fecha:
+ *   sabatino, dominical, maestrías). Cada fecha ocupa su propia columna.
+ * - 'dow' cuando sólo traen dayOfWeek (modalidad escolarizada semanal).
+ */
+const previewAxisMode = computed<'date' | 'dow'>(() => {
+    const drafts = preview.data?.drafts ?? []
+    const anyDate = drafts.some(b => !!b.date)
+    return anyDate ? 'date' : 'dow'
+})
+
+/**
+ * Columnas del grid.
+ * - Modo 'date': columnas ordenadas por fecha ascendente, con label "SÁB 07/FEB".
+ * - Modo 'dow': columnas de la semana laboral o sólo los días usados si hay sab/dom.
+ */
+const DAYS = computed<PreviewColumn[]>(() => {
+    const drafts = preview.data?.drafts ?? []
+    if (!drafts.length) {
+        return [1, 2, 3, 4, 5].map(v => ({ value: v, label: DOW_LABELS[v] }))
+    }
+
+    if (previewAxisMode.value === 'date') {
+        const uniqueDates = Array.from(new Set(drafts.map(b => b.date).filter((d): d is string => !!d))).sort()
+        return uniqueDates.map(dateStr => {
+            const d = new Date(dateStr + 'T00:00:00')
+            const dow = ((d.getDay() + 6) % 7) + 1  // JS getDay(): 0=Sun..6=Sat → ISO 1..7
+            const dd = String(d.getDate()).padStart(2, '0')
+            const mm = d.toLocaleDateString('es-MX', { month: 'short' }).toUpperCase().replace('.', '')
+            return {
+                value: dateStr,
+                label: DOW_LABELS[dow] ?? '',
+                sublabel: `${dd}/${mm}`,
+            }
+        })
+    }
+
+    const used = new Set<number>()
+    for (const b of drafts) {
+        if (b.dayOfWeek != null) used.add(b.dayOfWeek)
+    }
+    const hasWeekend = used.has(6) || used.has(7)
+    const pool = hasWeekend ? [1, 2, 3, 4, 5, 6, 7].filter(v => used.has(v)) : [1, 2, 3, 4, 5]
+    return pool.map(v => ({ value: v, label: DOW_LABELS[v] }))
+})
 
 async function openPreview(runId: number) {
     preview.runId = runId
@@ -416,16 +477,25 @@ function closePreview() {
 }
 
 const previewSlots = computed(() => {
-    if (!preview.data?.drafts.length) return []
-    const starts = new Set<string>()
-    for (const b of preview.data.drafts) starts.add(b.startTime)
-    const sorted = [...starts].sort()
     const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m }
+    const starts = new Set<string>()
+    // Primero, los slots posibles del día (si el padre los pasó).
+    // Asegura filas vacías visibles cuando el solver no puso nada en uno.
+    for (const t of props.daySlots ?? []) starts.add(normalizeTime(t))
+    // Luego los startTime reales de los drafts (por si el solver produjo
+    // slots fuera del grid configurado, que igual deben verse).
+    for (const b of preview.data?.drafts ?? []) starts.add(normalizeTime(b.startTime))
+    const sorted = [...starts].sort()
     return sorted.map(t => ({ label: t, value: toMin(t) }))
 })
 
+function normalizeTime(t: string): string {
+    // Backend manda "08:00:00" (DB TIME), el prop viene "08:00". Unificamos a HH:mm.
+    return t.length >= 5 ? t.slice(0, 5) : t
+}
+
 const previewGridStyle = computed(() => ({
-    gridTemplateColumns: `80px repeat(${DAYS.length}, 1fr)`,
+    gridTemplateColumns: `80px repeat(${DAYS.value.length}, 1fr)`,
 }))
 
 const previewGroups = computed(() => {
@@ -453,9 +523,38 @@ const previewGroups = computed(() => {
     return [...map.values()].sort((a, b) => a.label.localeCompare(b.label))
 })
 
-function blocksAt(blocks: DraftBlock[], dow: number, slotMin: number): DraftBlock[] {
+function blocksAt(blocks: DraftBlock[], colValue: number | string, slotMin: number): DraftBlock[] {
     const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m }
-    return blocks.filter(b => b.dayOfWeek === dow && toMin(b.startTime) === slotMin)
+    if (previewAxisMode.value === 'date') {
+        return blocks.filter(b => b.date === colValue && toMin(b.startTime) === slotMin)
+    }
+    return blocks.filter(b => b.dayOfWeek === colValue && toMin(b.startTime) === slotMin)
+}
+
+// Paleta fija de pares (bg + border) para diferenciar materias. Tailwind JIT
+// escanea strings literales; por eso las clases están escritas completas.
+const SUBJECT_PALETTE = [
+    'bg-amber-100 border-amber-300',
+    'bg-emerald-100 border-emerald-300',
+    'bg-sky-100 border-sky-300',
+    'bg-rose-100 border-rose-300',
+    'bg-violet-100 border-violet-300',
+    'bg-orange-100 border-orange-300',
+    'bg-teal-100 border-teal-300',
+    'bg-fuchsia-100 border-fuchsia-300',
+    'bg-lime-100 border-lime-300',
+    'bg-indigo-100 border-indigo-300',
+    'bg-cyan-100 border-cyan-300',
+    'bg-pink-100 border-pink-300',
+]
+
+function subjectColorClasses(b: DraftBlock): string {
+    const key = b.subject?.name ?? b.subject?.shortName ?? ''
+    if (!key) return SUBJECT_PALETTE[0]
+    // Hash determinístico simple (djb2) → índice estable por materia
+    let h = 5381
+    for (let i = 0; i < key.length; i++) h = ((h << 5) + h) + key.charCodeAt(i)
+    return SUBJECT_PALETTE[Math.abs(h) % SUBJECT_PALETTE.length]
 }
 
 function blockTooltip(b: DraftBlock): string {
