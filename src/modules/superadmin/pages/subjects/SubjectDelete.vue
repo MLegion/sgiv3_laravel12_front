@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import api from '@/shared/api/axios'
+import { api } from '@/shared/services/api'
 import API from '@/modules/superadmin/api/superadmin.api'
 import type { SubjectType } from '@/modules/superadmin/types/subject.type'
 
