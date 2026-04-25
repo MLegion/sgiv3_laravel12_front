@@ -36,7 +36,7 @@
                         <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Carrera</label>
                         <select v-model="careerId" @change="onCareerChange" :disabled="!resolvedModalityId" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                             <option :value="null">-- TODAS --</option>
-                            <option v-for="c in careers" :key="c.id" :value="c.id">{{ c.name }}</option>
+                            <option v-for="c in careers" :key="c.careerId" :value="c.careerId">{{ c.name }}</option>
                         </select>
                     </div>
                 </div>
@@ -150,7 +150,14 @@ function assignmentsOf(teacherId: number) { return assignments.value.filter(a =>
 /* ── Cascading ──────────────────────────────────────────────────── */
 function onCampusChange() { modalityTypeId.value = null; careerId.value = null; careers.value = []; resetData() }
 function onModalityTypeChange() { careerId.value = null; careers.value = []; resetData(); if (resolvedModalityId.value) { fetchCareers(); resolveConfig() } }
-function onCareerChange() { resetData(); if (configId.value) fetchAssigned() }
+function onCareerChange() {
+    // La carrera es sólo un filtro del listado — no nuke el configId.
+    assignments.value = []; teachers.value = []
+    teacherAId.value = null; teacherBId.value = null
+    selectedA.value = null; selectedB.value = null
+    actionError.value = null; actionSuccess.value = null
+    if (configId.value) fetchAssigned()
+}
 function resetFilters() { campusId.value = null; modalityTypeId.value = null; careerId.value = null; careers.value = []; resetData() }
 function resetAll() { resetFilters() }
 function resetData() { assignments.value = []; teachers.value = []; teacherAId.value = null; teacherBId.value = null; selectedA.value = null; selectedB.value = null; configId.value = null; configError.value = null; actionError.value = null; actionSuccess.value = null }
@@ -184,7 +191,11 @@ async function resolveConfig() {
 async function fetchAssigned() {
     if (!configId.value) return
     loading.value = true
-    try { const { data } = await api.get(API.SCA_API.teacherAssignments.assigned(configId.value)); assignments.value = Array.isArray(data) ? data : []
+    try {
+        const params: Record<string, any> = {}
+        if (careerId.value) params.career_id = careerId.value
+        const { data } = await api.get(API.SCA_API.teacherAssignments.assigned(configId.value), { params })
+        assignments.value = Array.isArray(data) ? data : []
         const seen = new Map<number, string>()
         for (const a of assignments.value) { if (!seen.has(a.teacherId)) seen.set(a.teacherId, a.teacherName) }
         teachers.value = Array.from(seen.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name))

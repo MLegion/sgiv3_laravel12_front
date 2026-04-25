@@ -37,7 +37,7 @@
                         <select v-model="careerId" @change="onCareerChange" :disabled="!resolvedModalityId"
                             class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                             <option :value="null">-- TODAS --</option>
-                            <option v-for="c in careers" :key="c.id" :value="c.id">{{ c.name }}</option>
+                            <option v-for="c in careers" :key="c.careerId" :value="c.careerId">{{ c.name }}</option>
                         </select>
                     </div>
                 </div>
@@ -77,7 +77,10 @@
                     <div v-for="a in filteredAssignments" :key="a.id" class="px-4 py-3 hover:bg-slate-50 transition">
                         <div class="grid grid-cols-1 lg:grid-cols-[1fr_80px_100px_1fr_1fr_140px] gap-2 items-center">
                             <div>
-                                <div class="text-sm font-bold text-slate-800 uppercase">{{ a.subjectName }}</div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span v-if="a.semester" class="inline-flex items-center justify-center text-[10px] font-black px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100">{{ a.semester }}°</span>
+                                    <span class="text-sm font-bold text-slate-800 uppercase">{{ a.subjectName }}</span>
+                                </div>
                                 <div class="text-[10px] text-slate-400 font-semibold">{{ a.subjectCode }}</div>
                             </div>
                             <div class="text-center text-sm font-bold text-slate-600">{{ a.credits ?? '—' }}</div>

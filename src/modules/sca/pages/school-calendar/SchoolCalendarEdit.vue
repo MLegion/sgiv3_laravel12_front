@@ -93,7 +93,7 @@
                     >
                         <component v-if="getIcon(et.image)" :is="getIcon(et.image)" class="w-5 h-5 flex-shrink-0" :style="{ color: et.color }" />
                         <span v-else class="w-4 h-4 rounded-full flex-shrink-0" :style="{ backgroundColor: et.color }"></span>
-                        <span class="text-xs font-bold text-slate-700 uppercase truncate flex-1">{{ et.name }}</span>
+                        <span class="text-xs font-bold text-slate-700 uppercase flex-1 break-words leading-tight">{{ et.name }}</span>
                         <span v-if="et.isHoliday" class="text-[8px] px-1 py-0.5 bg-red-100 text-red-500 rounded font-bold">F</span>
                         <span v-if="et.maxOccurrences === 1" class="text-[8px] px-1 py-0.5 bg-blue-100 text-blue-500 rounded font-bold">1x</span>
                         <span v-if="et.excludesClasses && !et.isHoliday" class="text-[8px] px-1 py-0.5 bg-orange-100 text-orange-500 rounded font-bold">EC</span>
@@ -118,7 +118,7 @@
                         >
                             <component v-if="getIcon(et.image)" :is="getIcon(et.image)" class="w-4 h-4 flex-shrink-0" :style="{ color: et.color }" />
                             <span v-else class="w-3 h-3 rounded-full flex-shrink-0" :style="{ backgroundColor: et.color }"></span>
-                            <span class="text-[10px] font-bold text-slate-500 uppercase truncate flex-1">{{ et.name }}</span>
+                            <span class="text-[10px] font-bold text-slate-500 uppercase flex-1 break-words leading-tight">{{ et.name }}</span>
                             <span v-if="et.maxOccurrences === 1" class="text-[7px] px-1 py-0.5 bg-blue-50 text-blue-400 rounded font-bold">1x</span>
                         </div>
                     </template>
