@@ -896,15 +896,41 @@ async function resolveConfig() {
             return
         }
         const config = items[0]
-        if (!config.phasePackage && !config.phase_package) {
-            configError.value = 'La fase de Paquete de Materias no está habilitada en la configuración de carga.'
-            return
+        const phasePackageOpen = !!(config.phasePackage ?? config.phase_package)
+        if (!phasePackageOpen) {
+            // Si la fase está cerrada, el usuario aún puede entrar si tiene
+            // una solicitud de apertura tardía APROBADA y ACTIVA para este
+            // config. El backend ya valida igual, pero acá levantamos el
+            // bloqueo para que la pantalla cargue.
+            const hasLateOpening = await hasActiveLateOpeningForConfig(config.id)
+            if (!hasLateOpening) {
+                configError.value = 'La fase de Paquete de Materias no está habilitada y no cuenta con una apertura tardía aprobada.'
+                return
+            }
         }
         resolvedConfigId.value = config.id
         resolvedConfig.value = config
     } catch {
         configError.value = 'Error al buscar la configuración de carga académica.'
     }
+}
+
+/**
+ * Devuelve true si el usuario actual tiene una solicitud de apertura
+ * tardía APROBADA y ACTIVA (no expirada, no completada) para este
+ * configId. El endpoint /sca/late-opening filtra por usuario en backend
+ * cuando no es admin.
+ */
+async function hasActiveLateOpeningForConfig(configId: number): Promise<boolean> {
+    try {
+        const { data } = await api.get(API.SCA_API.lateOpening.list, { params: { status: 'approved' } })
+        const rows = Array.isArray(data) ? data : (data?.items ?? data?.data ?? [])
+        return rows.some((r: any) =>
+            (r.configId ?? r.config_id) === configId
+            && r.status === 'approved'
+            && (r.isActive ?? r.is_active)
+        )
+    } catch { return false }
 }
 
 async function fetchSpecialties() {
