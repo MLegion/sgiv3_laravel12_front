@@ -100,44 +100,64 @@
                                     </select>
                                 </div>
 
-                                <!-- Contextos dinámicos -->
-                                <template v-if="selectedRole">
-                                    <div v-for="ctx in selectedRole.required_contexts" :key="ctx.alias">
-                                        <label class="block text-xs font-semibold text-slate-500 mb-1">
-                                            {{ aliasLabel(ctx.alias) }}
-                                            <span v-if="ctx.is_required" class="text-red-500">*</span>
-                                            <span v-if="ctx.is_multiple" class="text-[10px] text-slate-400 ml-1">(múltiple)</span>
-                                        </label>
-                                        <select
-                                            v-if="!ctx.is_multiple"
-                                            v-model="contextSelections[ctx.alias]"
-                                            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                                        >
-                                            <option value="">-- Selecciona --</option>
-                                            <option
-                                                v-for="opt in contextOptions[ctx.alias] || []"
-                                                :key="opt.id"
-                                                :value="opt.id"
+                                <!-- Combinaciones de contexto (tuplas) -->
+                                <template v-if="selectedRole && selectedRole.required_contexts.length">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-2">
+                                            <label class="block text-xs font-semibold text-slate-500">
+                                                Combinaciones asignadas
+                                                <span class="text-red-500">*</span>
+                                            </label>
+                                            <button
+                                                type="button"
+                                                class="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 px-2 py-1 rounded hover:bg-indigo-50 transition"
+                                                @click="addContextRow"
+                                            >+ Agregar combinación</button>
+                                        </div>
+
+                                        <div class="space-y-2">
+                                            <div
+                                                v-for="(row, rIdx) in contextRows"
+                                                :key="rIdx"
+                                                class="grid gap-2 items-end p-2 rounded-lg bg-slate-50 border border-slate-200"
+                                                :style="{ gridTemplateColumns: `repeat(${selectedRole.required_contexts.length}, minmax(0, 1fr)) auto` }"
                                             >
-                                                {{ opt.label }}
-                                            </option>
-                                        </select>
-                                        <select
-                                            v-else
-                                            v-model="contextSelections[ctx.alias]"
-                                            multiple
-                                            class="w-full min-h-[110px] rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                                        >
-                                            <option
-                                                v-for="opt in contextOptions[ctx.alias] || []"
-                                                :key="opt.id"
-                                                :value="opt.id"
-                                            >
-                                                {{ opt.label }}
-                                            </option>
-                                        </select>
-                                        <p v-if="!(contextOptions[ctx.alias] || []).length && !loadingContexts[ctx.alias]" class="text-[11px] text-amber-600 mt-1">
-                                            No hay opciones disponibles en este college.
+                                                <div v-for="ctx in selectedRole.required_contexts" :key="ctx.alias">
+                                                    <label class="block text-[10px] font-semibold text-slate-500 mb-1 uppercase tracking-wide">
+                                                        {{ aliasLabel(ctx.alias) }}
+                                                    </label>
+                                                    <select
+                                                        v-model="row[ctx.alias]"
+                                                        class="w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white"
+                                                    >
+                                                        <option :value="null">-- Selecciona --</option>
+                                                        <option
+                                                            v-for="opt in contextOptions[ctx.alias] || []"
+                                                            :key="opt.id"
+                                                            :value="opt.id"
+                                                        >{{ opt.label }}</option>
+                                                    </select>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    class="p-1.5 text-slate-400 hover:text-red-600 rounded transition"
+                                                    :disabled="contextRows.length === 1"
+                                                    title="Quitar combinación"
+                                                    @click="removeContextRow(rIdx)"
+                                                >
+                                                    <TrashIcon class="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <p v-if="contextRows.length === 0" class="text-[11px] text-amber-600 mt-1">
+                                            Agregá al menos una combinación.
+                                        </p>
+                                        <p v-for="ctx in selectedRole.required_contexts"
+                                           :key="`empty-${ctx.alias}`"
+                                           v-if="!(contextOptions[ctx.alias] || []).length && !loadingContexts[ctx.alias]"
+                                           class="text-[11px] text-amber-600 mt-1">
+                                            No hay opciones de {{ aliasLabel(ctx.alias) }} en este college.
                                         </p>
                                     </div>
                                 </template>
@@ -221,7 +241,10 @@ const detail = ref<UserDetail | null>(null)
 const loadingDetail = ref(true)
 
 const selectedRoleCode = ref<string>('')
-const contextSelections = reactive<Record<string, number | number[] | ''>>({})
+// Filas de tuplas. Cada fila representa UN grupo (alias=>id). El usuario
+// agrega tantas filas como combinaciones específicas necesite.
+type ContextRow = Record<string, number | null>
+const contextRows = ref<ContextRow[]>([])
 const contextOptions = reactive<Record<string, ContextOption[]>>({})
 const loadingContexts = reactive<Record<string, boolean>>({})
 
@@ -261,18 +284,39 @@ watch(selectedRoleCode, () => {
 })
 
 async function onRoleChange() {
-    Object.keys(contextSelections).forEach(k => delete contextSelections[k])
+    contextRows.value = []
     formError.value = ''
 
     const role = selectedRole.value
     if (!role) return
 
-    for (const ctx of role.required_contexts) {
-        contextSelections[ctx.alias] = ctx.is_multiple ? [] : ''
-        if (!contextOptions[ctx.alias]) {
-            await loadContextOptions(ctx.alias)
-        }
+    // Cargar las opciones de cada alias requerido (en paralelo)
+    await Promise.all(
+        role.required_contexts.map(ctx =>
+            contextOptions[ctx.alias] ? Promise.resolve() : loadContextOptions(ctx.alias)
+        )
+    )
+
+    // Inicializar con UNA fila vacía si el rol requiere contextos
+    if (role.required_contexts.length) {
+        contextRows.value = [emptyRowForRole(role)]
     }
+}
+
+function emptyRowForRole(role: Role): ContextRow {
+    const row: ContextRow = {}
+    for (const ctx of role.required_contexts) row[ctx.alias] = null
+    return row
+}
+
+function addContextRow() {
+    if (!selectedRole.value) return
+    contextRows.value.push(emptyRowForRole(selectedRole.value))
+}
+
+function removeContextRow(idx: number) {
+    if (contextRows.value.length <= 1) return
+    contextRows.value.splice(idx, 1)
 }
 
 async function loadContextOptions(alias: string) {
@@ -289,8 +333,8 @@ async function loadContextOptions(alias: string) {
 
 function aliasLabel(alias: string): string {
     const labels: Record<string, string> = {
-        career:   'Carrera(s)',
-        modality: 'Modalidad(es)',
+        career:   'Carrera',
+        modality: 'Modalidad',
         campus:   'Campus',
         college:  'College',
     }
@@ -301,39 +345,49 @@ async function assign() {
     if (!selectedRole.value) return
     formError.value = ''
 
-    // Validar requeridos en frontend
-    for (const ctx of selectedRole.value.required_contexts) {
-        if (!ctx.is_required) continue
-        const v = contextSelections[ctx.alias]
-        if (ctx.is_multiple) {
-            if (!Array.isArray(v) || v.length === 0) {
-                formError.value = `Selecciona al menos un valor para ${aliasLabel(ctx.alias)}.`
-                return
-            }
-        } else {
-            if (v === '' || v === null || v === undefined) {
-                formError.value = `Selecciona ${aliasLabel(ctx.alias)}.`
-                return
+    const role = selectedRole.value
+    const requiredAliases = role.required_contexts
+        .filter(c => c.is_required)
+        .map(c => c.alias)
+
+    let contextGroups: Record<string, number>[] = []
+
+    if (role.required_contexts.length) {
+        if (!contextRows.value.length) {
+            formError.value = 'Agregá al menos una combinación.'
+            return
+        }
+        // Validar que cada fila tenga todos los aliases requeridos.
+        for (let i = 0; i < contextRows.value.length; i++) {
+            const row = contextRows.value[i]
+            for (const alias of requiredAliases) {
+                if (row[alias] === null || row[alias] === undefined) {
+                    formError.value = `Combinación #${i + 1}: falta ${aliasLabel(alias)}.`
+                    return
+                }
             }
         }
-    }
-
-    const contexts: Record<string, number[]> = {}
-    for (const ctx of selectedRole.value.required_contexts) {
-        const v = contextSelections[ctx.alias]
-        if (v === '' || v === null || v === undefined) continue
-        contexts[ctx.alias] = Array.isArray(v) ? v.map(Number) : [Number(v)]
+        // Construir payload: [{alias: id, ...}, ...]
+        contextGroups = contextRows.value.map(row => {
+            const out: Record<string, number> = {}
+            for (const alias of Object.keys(row)) {
+                if (row[alias] !== null && row[alias] !== undefined) {
+                    out[alias] = Number(row[alias])
+                }
+            }
+            return out
+        })
     }
 
     assigning.value = true
     try {
         const { data } = await api.post(API.COLLEGE_API.users.assign(props.user.id), {
-            role_code: selectedRoleCode.value,
-            contexts,
+            role_code:      selectedRoleCode.value,
+            context_groups: contextGroups,
         })
         emit('changed', { ok: true, message: data.message || 'Rol asignado.' })
         selectedRoleCode.value = ''
-        Object.keys(contextSelections).forEach(k => delete contextSelections[k])
+        contextRows.value = []
         await loadDetail()
     } catch (e: any) {
         formError.value = e.response?.data?.message || 'No se pudo asignar el rol.'
