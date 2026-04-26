@@ -221,6 +221,12 @@
                 <p class="text-xs text-slate-500 font-semibold uppercase">Fase de horarios no activa — modo solo lectura</p>
             </div>
 
+            <div v-if="resolvedConfigId && unlockedByLateOpening" class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
+                <p class="text-xs text-amber-700 font-semibold uppercase">
+                    Fase de horarios cerrada — operando bajo apertura tardía aprobada.
+                </p>
+            </div>
+
             <div v-if="configError" class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
                 <p class="text-sm text-amber-700 font-semibold uppercase">{{ configError }}</p>
             </div>
@@ -1439,6 +1445,26 @@ const resolvedConfigId = ref<number | null>(null)
 const selectedConfig = ref<any>(null)
 const configError = ref<string | null>(null)
 const phaseActive = ref(false)
+// True cuando phaseActive=true porque el usuario tiene apertura tardía
+// activa (no porque la fase esté abierta). Diferencia el banner de aviso.
+const unlockedByLateOpening = ref(false)
+
+/**
+ * Verifica si el usuario actual tiene una solicitud de apertura tardía
+ * APROBADA y ACTIVA para el config dado. El backend filtra /sca/late-opening
+ * por usuario cuando no es admin.
+ */
+async function hasActiveLateOpeningForConfig(configId: number): Promise<boolean> {
+    try {
+        const { data } = await api.get(API.SCA_API.lateOpening.list, { params: { status: 'approved' } })
+        const rows = Array.isArray(data) ? data : (data?.items ?? data?.data ?? [])
+        return rows.some((r: any) =>
+            (r.configId ?? r.config_id) === configId
+            && r.status === 'approved'
+            && (r.isActive ?? r.is_active)
+        )
+    } catch { return false }
+}
 
 // Datos del editor
 const assignableAssignments = ref<AssignableAssignment[]>([])
@@ -2157,7 +2183,18 @@ async function resolveConfig() {
         // Cargar detalle completo (para schedule_dates, modalityType.config, etc.)
         const detail = await api.get(API.SCA_API.academicLoadConfigs.byId(items[0].id))
         selectedConfig.value = detail.data
-        phaseActive.value = !!(detail.data?.phaseSchedule ?? detail.data?.phase_schedule)
+        const phaseScheduleOpen = !!(detail.data?.phaseSchedule ?? detail.data?.phase_schedule)
+        // Si la fase está cerrada, levantar el bloqueo si hay apertura
+        // tardía aprobada y activa para este config (mismo patrón que
+        // SubjectPackagePage). Si no, modo sólo lectura.
+        if (phaseScheduleOpen) {
+            phaseActive.value = true
+            unlockedByLateOpening.value = false
+        } else {
+            const hasLO = await hasActiveLateOpeningForConfig(items[0].id)
+            phaseActive.value = hasLO
+            unlockedByLateOpening.value = hasLO
+        }
 
         // Cargar asignaciones, horarios y carreras disponibles (para el
         // filtro de carrera del panel de filtros).
