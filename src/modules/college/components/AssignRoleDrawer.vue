@@ -153,12 +153,12 @@
                                         <p v-if="contextRows.length === 0" class="text-[11px] text-amber-600 mt-1">
                                             Agregá al menos una combinación.
                                         </p>
-                                        <p v-for="ctx in selectedRole.required_contexts"
-                                           :key="`empty-${ctx.alias}`"
-                                           v-if="!(contextOptions[ctx.alias] || []).length && !loadingContexts[ctx.alias]"
-                                           class="text-[11px] text-amber-600 mt-1">
-                                            No hay opciones de {{ aliasLabel(ctx.alias) }} en este college.
-                                        </p>
+                                        <template v-for="ctx in selectedRole.required_contexts" :key="`empty-${ctx.alias}`">
+                                            <p v-if="!(contextOptions[ctx.alias] || []).length && !loadingContexts[ctx.alias]"
+                                               class="text-[11px] text-amber-600 mt-1">
+                                                No hay opciones de {{ aliasLabel(ctx.alias) }} en este college.
+                                            </p>
+                                        </template>
                                     </div>
                                 </template>
 
