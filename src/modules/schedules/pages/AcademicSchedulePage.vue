@@ -2002,14 +2002,18 @@ function toggleLock() {
 async function fetchCampuses() {
     try {
         const { data } = await api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 100, status: 1 } })
-        campuses.value = (data?.items ?? data?.data ?? data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName ?? `#${c.id}` }))
+        let list = (data?.items ?? data?.data ?? data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName ?? `#${c.id}` }))
+        if (!isAdminCtx.value && myCampusIds.value) {
+            list = list.filter((c: any) => myCampusIds.value!.includes(c.id))
+        }
+        campuses.value = list
     } catch { campuses.value = [] }
 }
 
 async function fetchModalityTypes() {
     try {
         const { data } = await api.get(API.SUPERADMIN_API.modalityTypes.list, { params: { per_page: 100 } })
-        modalityTypes.value = (data?.items ?? data?.data ?? data ?? []).map((mt: any) => {
+        let list = (data?.items ?? data?.data ?? data ?? []).map((mt: any) => {
             const rawConfig = mt.config ?? mt.rawConfig ?? null
             const cfg = typeof rawConfig === 'string' ? (() => { try { return JSON.parse(rawConfig) } catch { return null } })() : rawConfig
             return {
@@ -2019,13 +2023,21 @@ async function fetchModalityTypes() {
                 allowsComplementary: !!cfg?.additional_hours?.enabled,
             }
         })
+        if (!isAdminCtx.value && myModalityTypeIds.value) {
+            list = list.filter((mt: any) => myModalityTypeIds.value!.includes(mt.id))
+        }
+        modalityTypes.value = list
     } catch { modalityTypes.value = [] }
 }
 
 async function fetchModalities() {
     try {
         const { data } = await api.get(API.SCHOOL_SERVICES_API.modalities.list, { params: { per_page: 200 } })
-        modalities.value = data?.items ?? data?.data ?? data ?? []
+        let list = data?.items ?? data?.data ?? data ?? []
+        if (!isAdminCtx.value && myModalityIds.value) {
+            list = list.filter((m: any) => myModalityIds.value!.includes(m.id))
+        }
+        modalities.value = list
     } catch { modalities.value = [] }
 }
 
@@ -3433,6 +3445,11 @@ async function executeRemoveSelectedSlots() {
 
 /* ── Generación automática (F6) ────────────────────────────────── */
 const myCareerIds = ref<number[]>([])
+// IDs scope del usuario para filtrar listas de campus/modalidad/tipo
+// según rol. null en admin (no aplica filtro).
+const myCampusIds = ref<number[] | null>(null)
+const myModalityIds = ref<number[] | null>(null)
+const myModalityTypeIds = ref<number[] | null>(null)
 const isAdminCtx = ref(false)
 const careerNamesById = ref<Record<number, string>>({})
 const generationDrawer = reactive({
@@ -3516,8 +3533,14 @@ async function fetchMyCareers() {
         const { data } = await api.get(API.SCA_API.myContext)
         isAdminCtx.value = !!data?.isAdmin
         myCareerIds.value = Array.isArray(data?.careerIds) ? data.careerIds : []
+        myCampusIds.value       = Array.isArray(data?.campusIds)       ? data.campusIds       : null
+        myModalityIds.value     = Array.isArray(data?.modalityIds)     ? data.modalityIds     : null
+        myModalityTypeIds.value = Array.isArray(data?.modalityTypeIds) ? data.modalityTypeIds : null
     } catch {
         myCareerIds.value = []
+        myCampusIds.value = null
+        myModalityIds.value = null
+        myModalityTypeIds.value = null
         isAdminCtx.value = false
     }
 }
@@ -3573,15 +3596,18 @@ function onPromotedFromGeneration(_runId: number) {
     }
 }
 
-onMounted(() => {
+onMounted(async () => {
     restorePeriodFromStorage()
+    // Cargar el contexto SCA primero — los fetch de campus/modalidad/tipo
+    // lo usan para filtrar por rol. Sin esto el CAREER_MANAGER ve los
+    // catálogos completos del college en vez de sus tuplas.
+    await fetchMyCareers()
     fetchCampuses()
     fetchModalityTypes()
     fetchModalities()
     fetchPlaces()
     fetchComplementaryHourTypes()
     fetchScopedTeachers()
-    fetchMyCareers()
     fetchGeneratorStatus()
     window.addEventListener('keydown', onKeydownGlobal)
 })
