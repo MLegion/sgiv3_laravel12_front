@@ -125,6 +125,69 @@
 
             <p v-if="actionError" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">{{ actionError }}</p>
         </template>
+
+        <!-- Modal: Aprobar solicitud -->
+        <div v-if="approveModal.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+                <h3 class="text-base font-bold text-slate-800 uppercase">Aprobar solicitud</h3>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Horas de vigencia</label>
+                    <input v-model.number="approveModal.hours" type="number" min="1" max="720"
+                        class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none">
+                    <p class="text-[11px] text-slate-400 mt-1">Después de este plazo el acceso se revoca automáticamente.</p>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Notas (opcional)</label>
+                    <textarea v-model="approveModal.notes" rows="3"
+                        placeholder="Indicaciones para el solicitante..."
+                        class="w-full border-2 rounded-xl px-4 py-2.5 text-sm border-slate-200 focus:border-blue-500 outline-none resize-y"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg uppercase"
+                        @click="approveModal.open = false">Cancelar</button>
+                    <button class="px-4 py-2 text-xs font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg uppercase disabled:opacity-50"
+                        :disabled="!approveModal.hours || approveModal.hours < 1 || acting === approveModal.requestId"
+                        @click="submitApprove">{{ acting === approveModal.requestId ? 'Aprobando...' : 'Aprobar' }}</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Rechazar solicitud -->
+        <div v-if="rejectModal.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+                <h3 class="text-base font-bold text-slate-800 uppercase">Rechazar solicitud</h3>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Motivo del rechazo (opcional)</label>
+                    <textarea v-model="rejectModal.notes" rows="4"
+                        placeholder="Razón por la cual se rechaza..."
+                        class="w-full border-2 rounded-xl px-4 py-2.5 text-sm border-slate-200 focus:border-red-500 outline-none resize-y"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg uppercase"
+                        @click="rejectModal.open = false">Cancelar</button>
+                    <button class="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg uppercase disabled:opacity-50"
+                        :disabled="acting === rejectModal.requestId"
+                        @click="submitReject">{{ acting === rejectModal.requestId ? 'Rechazando...' : 'Rechazar' }}</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Completar solicitud -->
+        <div v-if="completeModal.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+                <h3 class="text-base font-bold text-slate-800 uppercase">Completar solicitud</h3>
+                <p class="text-sm text-slate-600">
+                    ¿Marcar esta solicitud como <b>completada</b>? Se revocará el acceso temporal y no podrás continuar trabajando bajo esta apertura.
+                </p>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg uppercase"
+                        @click="completeModal.open = false">Cancelar</button>
+                    <button class="px-4 py-2 text-xs font-bold text-white bg-slate-700 hover:bg-slate-800 rounded-lg uppercase disabled:opacity-50"
+                        :disabled="acting === completeModal.requestId"
+                        @click="submitComplete">{{ acting === completeModal.requestId ? 'Completando...' : 'Completar' }}</button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -259,34 +322,61 @@ async function fetchRequests() {
     finally { loadingRequests.value = false }
 }
 
-async function approveRequest(id: number) {
-    const hours = prompt('Horas de vigencia (default: 72):', '72')
-    if (hours === null) return
-    const notes = prompt('Notas (opcional):')
+/* ── Modales (UX en vez de prompt/confirm nativos) ─────────────── */
+const approveModal  = reactive({ open: false, requestId: null as number | null, hours: 72, notes: '' })
+const rejectModal   = reactive({ open: false, requestId: null as number | null, notes: '' })
+const completeModal = reactive({ open: false, requestId: null as number | null })
+
+function approveRequest(id: number) {
+    approveModal.requestId = id
+    approveModal.hours = 72
+    approveModal.notes = ''
+    approveModal.open = true
+}
+function rejectRequest(id: number) {
+    rejectModal.requestId = id
+    rejectModal.notes = ''
+    rejectModal.open = true
+}
+function completeRequest(id: number) {
+    completeModal.requestId = id
+    completeModal.open = true
+}
+
+async function submitApprove() {
+    if (!approveModal.requestId) return
+    const id = approveModal.requestId
     acting.value = id; actionError.value = null
     try {
-        await api.put(API.SCA_API.lateOpening.approve(id), { expires_hours: parseInt(hours) || 72, notes })
+        await api.put(API.SCA_API.lateOpening.approve(id), {
+            expires_hours: approveModal.hours || 72,
+            notes: approveModal.notes || null,
+        })
+        approveModal.open = false
         fetchRequests()
     } catch (e: any) { actionError.value = e?.response?.data?.message ?? 'Error.' }
     finally { acting.value = null }
 }
 
-async function rejectRequest(id: number) {
-    const notes = prompt('Motivo del rechazo (opcional):')
-    if (notes === null) return
+async function submitReject() {
+    if (!rejectModal.requestId) return
+    const id = rejectModal.requestId
     acting.value = id; actionError.value = null
     try {
-        await api.put(API.SCA_API.lateOpening.reject(id), { notes })
+        await api.put(API.SCA_API.lateOpening.reject(id), { notes: rejectModal.notes || null })
+        rejectModal.open = false
         fetchRequests()
     } catch (e: any) { actionError.value = e?.response?.data?.message ?? 'Error.' }
     finally { acting.value = null }
 }
 
-async function completeRequest(id: number) {
-    if (!confirm('¿Marcar esta solicitud como completada? Se revocará el acceso temporal.')) return
+async function submitComplete() {
+    if (!completeModal.requestId) return
+    const id = completeModal.requestId
     acting.value = id; actionError.value = null
     try {
         await api.put(API.SCA_API.lateOpening.complete(id), {})
+        completeModal.open = false
         fetchRequests()
     } catch (e: any) { actionError.value = e?.response?.data?.message ?? 'Error.' }
     finally { acting.value = null }
