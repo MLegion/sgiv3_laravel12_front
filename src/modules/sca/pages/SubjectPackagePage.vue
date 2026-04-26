@@ -976,7 +976,10 @@ async function addSelectedToPackage() {
                 study_plan_id: selectedStudyPlanId.value,
                 subject_id: cs.subjectId,
                 curriculum_id: cs.curriculumId,
-                target_semester: cs.curriculumPeriod ?? 1,
+                // ?? cae solo en null/undefined; usamos || para tambien
+                // capturar 0 (materias sin semestre asignado en el curriculum).
+                // El backend exige target_semester >= 1.
+                target_semester: cs.curriculumPeriod || 1,
                 num_groups: 1,
                 is_repeat: false,
                 demand: cs.demand ?? 0,
