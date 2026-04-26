@@ -584,6 +584,17 @@ const selectedCampusId = ref<number | null>(null)
 const selectedModalityTypeId = ref<number | null>(null)
 const selectedAcademicOfferId = ref<number | null>(null)
 const selectedSemester = ref<number | null>(null)
+// Contexto del usuario para scopear campus/modalityType/modality según rol.
+// CAREER_MANAGER recibe sólo campusIds/modalityTypeIds derivados de sus
+// (career, modality) tuplas. Admin (isAdmin=true) ve todo.
+type ScaContext = {
+    isAdmin: boolean
+    careerIds: number[] | null
+    modalityIds: number[] | null
+    campusIds: number[] | null
+    modalityTypeIds: number[] | null
+}
+const ctx = ref<ScaContext | null>(null)
 const campuses = ref<any[]>([])
 const modalityTypes = ref<any[]>([])
 const modalities = ref<any[]>([])
@@ -1070,14 +1081,49 @@ function toggleLock() {
 }
 
 /* ── Fetch ───────────────────────────────────────────────────────── */
-async function fetchCampuses() { try { const { data } = await api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 100, status: 1 } }); campuses.value = (data?.items ?? data?.data ?? data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName ?? `#${c.id}` })) } catch { campuses.value = [] } }
-async function fetchModalityTypes() { try { const { data } = await api.get(API.SUPERADMIN_API.modalityTypes.list, { params: { per_page: 100 } }); modalityTypes.value = (data?.items ?? data?.data ?? data ?? []).map((mt: any) => ({ id: mt.id, name: mt.name ?? `#${mt.id}`, config: mt.config ?? null })) } catch { modalityTypes.value = [] } }
+async function fetchContext() {
+    try {
+        const { data } = await api.get(API.SCA_API.myContext)
+        ctx.value = data
+    } catch {
+        ctx.value = { isAdmin: false, careerIds: [], modalityIds: [], campusIds: [], modalityTypeIds: [] }
+    }
+}
+async function fetchCampuses() {
+    try {
+        const { data } = await api.get(API.SCHOOL_SERVICES_API.campuses.list, { params: { per_page: 100, status: 1 } })
+        let list = (data?.items ?? data?.data ?? data ?? []).map((c: any) => ({ id: c.id, name: c.name ?? c.shortName ?? `#${c.id}` }))
+        if (ctx.value && !ctx.value.isAdmin && ctx.value.campusIds) {
+            list = list.filter((c: any) => ctx.value!.campusIds!.includes(c.id))
+        }
+        campuses.value = list
+    } catch { campuses.value = [] }
+}
+async function fetchModalityTypes() {
+    try {
+        const { data } = await api.get(API.SUPERADMIN_API.modalityTypes.list, { params: { per_page: 100 } })
+        let list = (data?.items ?? data?.data ?? data ?? []).map((mt: any) => ({ id: mt.id, name: mt.name ?? `#${mt.id}`, config: mt.config ?? null }))
+        if (ctx.value && !ctx.value.isAdmin && ctx.value.modalityTypeIds) {
+            list = list.filter((mt: any) => ctx.value!.modalityTypeIds!.includes(mt.id))
+        }
+        modalityTypes.value = list
+    } catch { modalityTypes.value = [] }
+}
 
 const usesSpecificDates = computed(() => {
     const mt = modalityTypes.value.find(x => x.id === selectedModalityTypeId.value)
     return !!mt?.config?.schedule?.uses_specific_dates
 })
-async function fetchModalities() { try { const { data } = await api.get(API.SCHOOL_SERVICES_API.modalities.list, { params: { per_page: 200 } }); modalities.value = data?.items ?? data?.data ?? data ?? [] } catch { modalities.value = [] } }
+async function fetchModalities() {
+    try {
+        const { data } = await api.get(API.SCHOOL_SERVICES_API.modalities.list, { params: { per_page: 200 } })
+        let list = data?.items ?? data?.data ?? data ?? []
+        if (ctx.value && !ctx.value.isAdmin && ctx.value.modalityIds) {
+            list = list.filter((m: any) => ctx.value!.modalityIds!.includes(m.id))
+        }
+        modalities.value = list
+    } catch { modalities.value = [] }
+}
 async function fetchAcademicOffers() {
     if (!resolvedModalityId.value) { academicOffers.value = []; return }
     try { const { data } = await api.get(API.SCA_API.teacherAssignments.allowedAcademicOffers, { params: { modality_id: resolvedModalityId.value } }); academicOffers.value = data ?? [] } catch { academicOffers.value = [] }
@@ -1139,5 +1185,12 @@ function onPeriodChange() { resolvedConfigId.value = null; configError.value = n
 function onCampusOrTypeChange() { packageItems.value = []; selectedAcademicOfferId.value = null; selectedSemester.value = null; resolveModality() }
 function onCareerChange() { packageItems.value = []; selectedSemester.value = null; if (selectedAcademicOfferId.value) { fetchPackages(); fetchCareerSetting() } }
 
-onMounted(() => { restorePeriodFromStorage(); fetchCampuses(); fetchModalityTypes(); fetchModalities() })
+onMounted(async () => {
+    // Cargar context primero — los fetch de campus/modality/modalityType lo
+    // usan para filtrar según el rol del usuario. Sin esto el CAREER_MANAGER
+    // ve catálogos completos del college en vez de sólo sus tuplas.
+    await fetchContext()
+    restorePeriodFromStorage()
+    await Promise.all([fetchCampuses(), fetchModalityTypes(), fetchModalities()])
+})
 </script>
