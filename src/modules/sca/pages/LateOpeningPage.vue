@@ -37,16 +37,23 @@
                         </select>
                     </div>
                 </div>
+                <!-- Aviso: si la fase de Paquete sigue abierta, no aplica -->
+                <div v-if="formConfigId && formConfigPackageOpen"
+                     class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-800">
+                    La fase de <b>Paquete de Materias</b> está abierta para esta configuración.
+                    Puede operar normalmente; la apertura tardía aplica sólo cuando la fase ya esté cerrada.
+                </div>
+
                 <div>
                     <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Motivo de la solicitud</label>
-                    <textarea v-model="form.reason" rows="3" :disabled="!formConfigId"
+                    <textarea v-model="form.reason" rows="3" :disabled="!canSolicitar"
                         placeholder="Describa el motivo por el cual necesita apertura tardía (mínimo 10 caracteres)..."
                         class="w-full border-2 rounded-xl px-4 py-2.5 text-sm border-slate-200 focus:border-blue-500 outline-none resize-y disabled:bg-slate-50"></textarea>
                 </div>
                 <div class="flex items-center gap-3">
                     <button
                         class="px-5 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 uppercase disabled:opacity-40"
-                        :disabled="!formConfigId || form.reason.length < 10 || submitting"
+                        :disabled="!canSolicitar || form.reason.length < 10 || submitting"
                         @click="submitRequest"
                     >{{ submitting ? 'Enviando...' : 'Enviar solicitud' }}</button>
                     <p v-if="formError" class="text-xs text-red-600">{{ formError }}</p>
@@ -168,12 +175,17 @@ const filteredModalityTypes = computed(() => {
 /* ── Form (Career Manager) ──────────────────────────────────────── */
 const form = reactive({ campusId: null as number|null, modalityTypeId: null as number|null, reason: '' })
 const formConfigId = ref<number | null>(null)
+// Estado de la fase de Paquete del config seleccionado. Apertura tardía
+// sólo aplica si esta fase YA está cerrada — antes el jefe de carrera
+// puede operar normalmente.
+const formConfigPackageOpen = ref<boolean | null>(null)
+const canSolicitar = computed(() => formConfigId.value !== null && formConfigPackageOpen.value === false)
 const submitting   = ref(false)
 const formError    = ref<string | null>(null)
 const formSuccess  = ref<string | null>(null)
 
-function onFormCampusChange() { form.modalityTypeId = null; formConfigId.value = null }
-function onFormModalityTypeChange() { formConfigId.value = null; resolveFormConfig() }
+function onFormCampusChange() { form.modalityTypeId = null; formConfigId.value = null; formConfigPackageOpen.value = null }
+function onFormModalityTypeChange() { formConfigId.value = null; formConfigPackageOpen.value = null; resolveFormConfig() }
 
 async function resolveFormConfig() {
     if (!form.campusId || !form.modalityTypeId || !selectedPeriodId.value) return
@@ -182,8 +194,14 @@ async function resolveFormConfig() {
     try {
         const { data } = await api.get(API.SCA_API.academicLoadConfigs.list, { params: { per_page: 1, search: { college_academic_period_id: selectedPeriodId.value, modality_id: match.id } } })
         const items = data?.items ?? data?.data ?? []
-        formConfigId.value = items.length > 0 ? items[0].id : null
-    } catch { formConfigId.value = null }
+        if (items.length > 0) {
+            formConfigId.value = items[0].id
+            formConfigPackageOpen.value = !!(items[0].phasePackage ?? items[0].phase_package)
+        } else {
+            formConfigId.value = null
+            formConfigPackageOpen.value = null
+        }
+    } catch { formConfigId.value = null; formConfigPackageOpen.value = null }
 }
 
 async function submitRequest() {
