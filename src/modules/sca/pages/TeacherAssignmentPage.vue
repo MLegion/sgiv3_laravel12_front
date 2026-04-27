@@ -50,6 +50,12 @@
             <p class="text-xs text-slate-500 font-semibold uppercase">Fase de asignación no activa — modo solo lectura</p>
         </div>
 
+        <div v-if="resolvedConfigId && unlockedByLateOpening" class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
+            <p class="text-xs text-amber-700 font-semibold uppercase">
+                Fase de Asignación Docente cerrada — operando bajo apertura tardía aprobada.
+            </p>
+        </div>
+
         <div v-if="configError" class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
             <p class="text-sm text-amber-700 font-semibold uppercase">{{ configError }}</p>
         </div>
@@ -606,6 +612,7 @@ const resolvedModalityId = ref<number | null>(null)
 const resolvedConfigId = ref<number | null>(null)
 const configError = ref<string | null>(null)
 const phaseActive = ref(false)
+const unlockedByLateOpening = ref(false)
 const STORAGE_KEY = 'sca_period'
 
 /* ── Datos ───────────────────────────────────────────────────────── */
@@ -1136,15 +1143,35 @@ function resolveModality() {
     if (m) { resolvedModalityId.value = m.id; resolveConfig(); fetchAcademicOffers() }
 }
 async function resolveConfig() {
-    resolvedConfigId.value = null; configError.value = null; phaseActive.value = false
+    resolvedConfigId.value = null; configError.value = null; phaseActive.value = false; unlockedByLateOpening.value = false
     if (!selectedPeriodId.value || !resolvedModalityId.value) return
     try {
         const { data } = await api.get(API.SCA_API.academicLoadConfigs.list, { params: { per_page: 1, search: { college_academic_period_id: selectedPeriodId.value, modality_id: resolvedModalityId.value } } })
         const items = data?.items ?? data?.data ?? []
         if (!items.length) { configError.value = 'No existe configuraci\u00f3n de carga acad\u00e9mica para este periodo y modalidad.'; return }
         resolvedConfigId.value = items[0].id
-        phaseActive.value = !!(items[0].phaseAssignment ?? items[0].phase_assignment)
+        const phaseAssignmentOpen = !!(items[0].phaseAssignment ?? items[0].phase_assignment)
+        if (phaseAssignmentOpen) {
+            phaseActive.value = true
+            unlockedByLateOpening.value = false
+        } else {
+            const hasLO = await hasActiveLateOpeningForConfig(items[0].id)
+            phaseActive.value = hasLO
+            unlockedByLateOpening.value = hasLO
+        }
     } catch { configError.value = 'Error al buscar la configuraci\u00f3n.' }
+}
+
+async function hasActiveLateOpeningForConfig(configId: number): Promise<boolean> {
+    try {
+        const { data } = await api.get(API.SCA_API.lateOpening.list, { params: { status: 'approved' } })
+        const rows = Array.isArray(data) ? data : (data?.items ?? data?.data ?? [])
+        return rows.some((r: any) =>
+            (r.configId ?? r.config_id) === configId
+            && r.status === 'approved'
+            && (r.isActive ?? r.is_active)
+        )
+    } catch { return false }
 }
 async function fetchPackages(preserveScroll = false) {
     if (!resolvedConfigId.value || !selectedAcademicOfferId.value) return

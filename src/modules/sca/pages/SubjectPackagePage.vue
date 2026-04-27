@@ -72,6 +72,13 @@
             <p class="text-sm text-amber-700 font-semibold uppercase">{{ configError }}</p>
         </div>
 
+        <!-- Modo apertura tardía -->
+        <div v-if="resolvedConfigId && unlockedByLateOpening" class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
+            <p class="text-xs text-amber-700 font-semibold uppercase">
+                Fase de Paquete cerrada — operando bajo apertura tardía aprobada.
+            </p>
+        </div>
+
         <!-- Vista de selección de materias -->
         <template v-if="resolvedConfigId && selectedStudyPlanId && !configError">
 
@@ -640,6 +647,7 @@ const resolvedModalityId = ref<number | null>(null)
 const resolvedConfigId   = ref<number | null>(null)
 const resolvedConfig     = ref<any>(null)
 const configError        = ref<string | null>(null)
+const unlockedByLateOpening = ref(false)
 
 /* ── State: Curriculum & Package ─────────────────────────────────── */
 const view                = ref<'curriculum' | 'package' | 'validation'>('curriculum')
@@ -907,6 +915,9 @@ async function resolveConfig() {
                 configError.value = 'La fase de Paquete de Materias no está habilitada y no cuenta con una apertura tardía aprobada.'
                 return
             }
+            unlockedByLateOpening.value = true
+        } else {
+            unlockedByLateOpening.value = false
         }
         resolvedConfigId.value = config.id
         resolvedConfig.value = config

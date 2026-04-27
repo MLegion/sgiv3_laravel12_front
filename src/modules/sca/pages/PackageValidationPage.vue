@@ -63,6 +63,13 @@
             <p class="text-sm text-amber-700 font-semibold uppercase">{{ configError }}</p>
         </div>
 
+        <!-- Modo apertura tardía -->
+        <div v-if="resolvedConfigId && unlockedByLateOpening" class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
+            <p class="text-xs text-amber-700 font-semibold uppercase">
+                Fase de Validación de Paquete cerrada — operando bajo apertura tardía aprobada.
+            </p>
+        </div>
+
         <!-- Contenido principal -->
         <template v-if="resolvedConfigId && !configError">
 
@@ -342,6 +349,19 @@ const resolvedModalityId = ref<number | null>(null)
 const resolvedConfigId   = ref<number | null>(null)
 const resolvedConfig     = ref<any>(null)
 const configError        = ref<string | null>(null)
+const unlockedByLateOpening = ref(false)
+
+async function hasActiveLateOpeningForConfig(configId: number): Promise<boolean> {
+    try {
+        const { data } = await api.get(API.SCA_API.lateOpening.list, { params: { status: 'approved' } })
+        const rows = Array.isArray(data) ? data : (data?.items ?? data?.data ?? [])
+        return rows.some((r: any) =>
+            (r.configId ?? r.config_id) === configId
+            && r.status === 'approved'
+            && (r.isActive ?? r.is_active)
+        )
+    } catch { return false }
+}
 
 const STORAGE_KEY = 'sca_period'
 
@@ -596,10 +616,16 @@ async function resolveConfig() {
             return
         }
         const config = items[0]
-        const validationPhase = config.phasePackageValidation ?? config.phase_package_validation
+        const validationPhase = !!(config.phasePackageValidation ?? config.phase_package_validation)
         if (!validationPhase) {
-            configError.value = 'La fase de Validación de Paquete no está habilitada en la configuración de carga.'
-            return
+            const hasLateOpening = await hasActiveLateOpeningForConfig(config.id)
+            if (!hasLateOpening) {
+                configError.value = 'La fase de Validación de Paquete no está habilitada y no cuenta con una apertura tardía aprobada.'
+                return
+            }
+            unlockedByLateOpening.value = true
+        } else {
+            unlockedByLateOpening.value = false
         }
         resolvedConfigId.value = config.id
         resolvedConfig.value = config
