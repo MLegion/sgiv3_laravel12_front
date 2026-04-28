@@ -161,6 +161,7 @@ interface JobPosition {
     description?: string
     status: boolean
     max_holders: number | null
+    role_name?: string | null
 }
 
 /* -------------------------------------------------------------------------- */

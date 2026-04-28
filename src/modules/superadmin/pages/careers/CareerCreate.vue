@@ -64,14 +64,14 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormInput from "@/app/components/ui/form/FormInput.vue";
-import FormSwitch from "@/app/components/ui/form/FormSwitch.vue";
 
 const router = useRouter()
+const submitting = ref(false)
 
 const form = reactive({
     name: '',
@@ -80,8 +80,13 @@ const form = reactive({
 })
 
 async function submit() {
-    await api.post(API.SUPERADMIN_API.careers.create, form)
-    router.push({ name: 'superadmin.careers.page' })
+    submitting.value = true
+    try {
+        await api.post(API.SUPERADMIN_API.careers.create, form)
+        router.push({ name: 'superadmin.careers.page' })
+    } finally {
+        submitting.value = false
+    }
 }
 
 const goBack = () => router.back()

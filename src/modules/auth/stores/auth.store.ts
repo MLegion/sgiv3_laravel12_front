@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
 import router from '@/app/router'
 import type { AuthUser } from "@/shared/types/user";
-import type { DashboardType } from "@/shared/types/dashboard";
-import { loginRequest } from '@/modules/auth/services/auth.service'
+import { loginRequest, type LoginPayload } from '@/modules/auth/services/auth.service'
 import { api } from '@/shared/services/api'
 import { useMenuStore } from '@/app/stores/menu.store'
 
@@ -18,7 +17,7 @@ export const useAuthStore = defineStore('auth', {
     state: () => ({
         token: localStorage.getItem('token') as string | null,
         user: null as AuthUser | null,
-        dashboard: 'default' as DashboardType,
+        dashboard: 'default' as string,
         mustChangePassword: false,
         hydrated: false,
         emailVerified: null as boolean | null, // null = no consultado aún
@@ -47,7 +46,7 @@ export const useAuthStore = defineStore('auth', {
         /**
          * Login REAL contra backend
          */
-        async login(payload: { email: string; password: string, collegeId: number, rememberMe: boolean }) {
+        async login(payload: LoginPayload) {
             const response = await loginRequest(payload)
 
             this.token = response.access_token

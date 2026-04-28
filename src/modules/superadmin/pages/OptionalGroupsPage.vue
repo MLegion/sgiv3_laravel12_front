@@ -147,7 +147,7 @@ interface OptionalGroupRow {
     minSubjects: number
     maxSubjects: number
     minCredits: number
-    approvalStatus: string
+    approvalStatus: ApprovalStatusEnum
 }
 
 const router = useRouter()

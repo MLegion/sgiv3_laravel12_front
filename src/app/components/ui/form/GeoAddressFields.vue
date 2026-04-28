@@ -112,7 +112,7 @@ function onInput(e: Event) {
     if (val.length === 5) {
         lookup(val).then(() => {
             if (result.value && result.value.settlements.length === 1) {
-                selectedSettlementId.value = result.value.settlements[0].id
+                selectedSettlementId.value = result.value.settlements[0]!.id
                 emit('update:geoSettlementId', selectedSettlementId.value)
             } else {
                 selectedSettlementId.value = null

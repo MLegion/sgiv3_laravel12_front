@@ -359,7 +359,7 @@ async function assign() {
         }
         // Validar que cada fila tenga todos los aliases requeridos.
         for (let i = 0; i < contextRows.value.length; i++) {
-            const row = contextRows.value[i]
+            const row = contextRows.value[i]!
             for (const alias of requiredAliases) {
                 if (row[alias] === null || row[alias] === undefined) {
                     formError.value = `Combinación #${i + 1}: falta ${aliasLabel(alias)}.`

@@ -9,7 +9,7 @@ const VERIFY_EMAIL_ROUTE   = '/admissions/portal/verify-email'
 
 export async function authGuard(
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
+    _from: RouteLocationNormalized,
     next: NavigationGuardNext
 ) {
     const auth = useAuthStore()

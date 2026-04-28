@@ -1,5 +1,6 @@
 import type { AuthUser } from '@/shared/types/user'
 import type { College } from '@/shared/types/college'
+import type { ApprovalStatusEnum } from '@/shared/enums/approval-status.enum'
 
 export interface SubjectType {
     id: number
@@ -25,7 +26,7 @@ export interface SubjectType {
     approver?: AuthUser | null
 
     approvedAt: string | null
-    approvalStatus: string
+    approvalStatus: ApprovalStatusEnum
 
     isActive: boolean
 

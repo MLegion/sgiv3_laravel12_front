@@ -1885,10 +1885,6 @@ function colMatchesSchedule(col: any, sch: AcademicSchedule): boolean {
     return sch.dayOfWeek === col.dayOfWeek && !sch.date
 }
 
-function getBlocksStartingAt(col: any, slot: HourSlot) {
-    return visibleSchedules.value.filter(s => colMatchesSchedule(col, s) && parseTime(s.startTime) === slot.startMinutes)
-}
-
 function cellOccupied(col: any, slot: HourSlot): boolean {
     return visibleSchedules.value.some(s => {
         if (!colMatchesSchedule(col, s)) return false
@@ -1965,11 +1961,6 @@ const visibleComplementary = computed<ComplementarySchedule[]>(() => {
     if (filterType.value !== 'teacher' || !filterValue.value) return []
     return complementarySchedules.value.filter(c => c.teacherId === filterValue.value)
 })
-
-function colMatchesComplementary(col: any, c: ComplementarySchedule): boolean {
-    if (col.date) return c.date === col.date
-    return c.dayOfWeek === col.dayOfWeek && !c.date
-}
 
 function complementaryGridStyle(c: ComplementarySchedule) {
     const colKey = c.date ? 'date-' + c.date : 'dow-' + c.dayOfWeek
@@ -2199,9 +2190,9 @@ async function resolveConfig() {
         // Cargar asignaciones, horarios y carreras disponibles (para el
         // filtro de carrera del panel de filtros).
         await Promise.all([
-            loadAssignments(resolvedConfigId.value),
-            loadSchedules(resolvedConfigId.value),
-            loadAvailableCareersForFilter(resolvedConfigId.value),
+            loadAssignments(resolvedConfigId.value!),
+            loadSchedules(resolvedConfigId.value!),
+            loadAvailableCareersForFilter(resolvedConfigId.value!),
         ])
     } catch {
         configError.value = 'Error al buscar la configuración.'
@@ -2893,8 +2884,7 @@ function openComplementaryCreateModal(type: ComplementaryHourTypeRef, col: any, 
     compDropModal.notes = ''
     compDropModal.conflicts = []
     compDropModal.saving = false
-    compDropModal.placeId = pinnedPlaceId.value
-        ?? (filterType.value === 'place' && filterValue.value ? filterValue.value : null)
+    compDropModal.placeId = pinnedPlaceId.value ?? null
 }
 
 function openComplementaryMoveModal(block: ComplementarySchedule, col: any, slot: HourSlot) {
@@ -3269,7 +3259,7 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 function getComparisonBlockStyle(block: AcademicSchedule) {
-    const base = blockGridStyle(block) as Record<string, string>
+    const base = blockGridStyle(block) as unknown as Record<string, string>
     const itemId = getComparisonItemIdForBlock(block)
     const color = itemId !== null ? getComparisonColor(itemId) : '#94a3b8'
     return {

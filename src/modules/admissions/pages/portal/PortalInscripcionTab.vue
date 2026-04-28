@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { API } from '@/shared/api'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import ReadField from './ReadField.vue'

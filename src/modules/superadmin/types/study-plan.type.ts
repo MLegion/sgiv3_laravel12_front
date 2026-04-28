@@ -35,6 +35,10 @@ export interface StudyPlanType {
 
     isActive: boolean
 
+    creator?: { id: number; name?: string; email?: string } | null
+    approver?: { id: number; name?: string; email?: string } | null
+    studyPlan?: { id: number; name?: string; officialCode?: string } | null
+
     /* ---------------------------------------------------------------------- */
     /* TIMESTAMPS                                                              */
     /* ---------------------------------------------------------------------- */

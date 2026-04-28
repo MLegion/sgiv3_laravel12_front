@@ -5,7 +5,4 @@
 </template>
 
 <script setup lang="ts">
-const backgroundStyle = {
-    backgroundImage: "url('/img/background.png')",
-}
 </script>

@@ -461,7 +461,9 @@ const userId = ref<number | null>(null)
 const resetting = ref(false)
 const resetCredentials = ref<{ email: string; password: string } | null>(null)
 
-const tabs = [
+type TabKey = 'personal' | 'ext_personal' | 'contactos' | 'preventivos' | 'otros' | 'inscripcion' | 'documentos' | 'usuario'
+
+const tabs: { key: TabKey; label: string }[] = [
     { key: 'personal',     label: 'Datos Personales' },
     { key: 'ext_personal', label: 'Datos Ext.' },
     { key: 'contactos',    label: 'Contactos' },
@@ -543,7 +545,7 @@ const form = ref({
     indigenous_language_id: null as number | null,
 })
 
-watch(selectedCampusId, (newVal, oldVal) => {
+watch(selectedCampusId, (_newVal, oldVal) => {
     if (oldVal !== '') {
         form.value.offer_option_1_id = ''
         form.value.offer_option_2_id = ''

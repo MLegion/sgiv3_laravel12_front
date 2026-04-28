@@ -129,7 +129,7 @@ export function useReportGenerator() {
                     html2canvas: { scale: 2, useCORS: true, letterRendering: true },
                     jsPDF:       { unit: 'mm', format: 'letter', orientation: 'portrait' },
                     pagebreak:   { mode: ['css', 'legacy'] },
-                })
+                } as any)
                 .from(host)
                 .output('blob')
 

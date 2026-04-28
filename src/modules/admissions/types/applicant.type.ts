@@ -8,6 +8,7 @@ export interface Applicant {
     offerOption1: { id: number; careerId: number; career?: { name: string } } | null
     offerOption2: { id: number; careerId: number; career?: { name: string } } | null
     offerOption3: { id: number; careerId: number; career?: { name: string } } | null
+    academicOffer?: { id: number; careerId: number; career?: { name: string } } | null
     originSchoolId: number | null
     originSchool: { id: number; name: string } | null
     academicPeriodId: number

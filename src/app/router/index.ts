@@ -63,7 +63,7 @@ const router = createRouter({
         },
     ],
     // Mejora: Control de scroll automático al navegar
-    scrollBehavior(to, from, savedPosition) {
+    scrollBehavior(_to, _from, savedPosition) {
         if (savedPosition) return savedPosition
         return { top: 0 }
     }

@@ -1,6 +1,6 @@
 export function mapWorkAreaCreatePayload(form: {
     name: string
-    description?: string
+    description?: string | null
     status: boolean
 }) {
     return {
@@ -12,7 +12,7 @@ export function mapWorkAreaCreatePayload(form: {
 
 export function mapWorkAreaUpdatePayload(form: {
     name: string
-    description?: string
+    description?: string | null
     status: boolean
 }) {
     return {

@@ -229,11 +229,6 @@ async function fetchActiveWindow() {
     }
 }
 
-function formatDate(dateStr: string | null | undefined): string {
-    if (!dateStr) return '—'
-    return new Date(dateStr.replace(' ', 'T')).toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })
-}
-
 async function submitLogin() {
     errors.value = {}
     if (!collegeId.value)     { errors.value.college  = 'Selecciona una institución'; return }

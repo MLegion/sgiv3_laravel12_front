@@ -41,7 +41,7 @@
         <!-- Navegación Central -->
         <nav class="flex-1 overflow-y-auto py-4 custom-scrollbar bg-gradient-to-b from-white via-white to-slate-50/30">
             <div :class="['space-y-1', isExpanded ? 'px-3' : 'px-2']">
-                <template v-for="item in menuList" :key="item.path">
+                <template v-for="item in menuList" :key="item.code">
                     <SidebarItem
                         :item="item"
                         :collapsed="!isExpanded"

@@ -85,7 +85,6 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 
 import FormInput from '@/app/components/ui/form/FormInput.vue'
-import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
 
 const route = useRoute()
 const router = useRouter()

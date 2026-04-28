@@ -92,7 +92,7 @@ const props = defineProps<{
     placeholder?: string
     labelKey?: string
     valueKey?: string
-    error?: string
+    error?: string | null
 }>()
 
 const emit = defineEmits<{

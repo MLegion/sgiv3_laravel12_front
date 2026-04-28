@@ -403,7 +403,6 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { renderAsync } from 'docx-preview'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
-import ReportCard from '@/modules/sca/components/ReportCard.vue'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 
 /* ── Contexto del usuario ──────────────────────────────────────────── */
@@ -482,38 +481,6 @@ const tabs = [
     { key: 'horario',    label: 'Horario' },
 ]
 
-interface ReportDef { code: string; label: string; description: string }
-
-const reportsByTab: Record<string, ReportDef[]> = {
-    proyeccion: [
-        { code: 'F0003', label: 'Proyección Académica',             description: 'Proyección general de la carga académica del periodo.' },
-        { code: 'F0004', label: 'Proyección Académica por Carrera', description: 'Proyección desglosada por carrera.' },
-    ],
-    solicitud: [
-        { code: 'F0009', label: 'Solicitud de Materias', description: 'Reporte de solicitud de materias del docente.' },
-    ],
-    carga: [
-        { code: 'F0005', label: 'Concentrado de Carga — Docente', description: 'Carga académica asignada por docente.' },
-        { code: 'F0006', label: 'Concentrado de Carga — Grupo',   description: 'Carga académica asignada por grupo.' },
-    ],
-    oficio: [
-        { code: 'F0007', label: 'Oficio de Asignación de Carga', description: 'Oficio oficial de asignación de carga académica.' },
-    ],
-    horario: [
-        { code: 'F0001', label: 'Horario Escolarizado',              description: 'Horario individual del docente — modalidad escolarizada.' },
-        { code: 'F0002', label: 'Horario Semi Escolarizado',         description: 'Horario individual del docente — modalidad semi escolarizada.' },
-        { code: 'F0010', label: 'Horario Escolarizado — Grupo',      description: 'Horario por grupo.' },
-        { code: 'F0011', label: 'Horario Escolarizado — Aula',       description: 'Horario por aula.' },
-        { code: 'F0012', label: 'Horario — Alumno',                  description: 'Horario individual del alumno.' },
-    ],
-}
-
-const baseParams = computed(() => {
-    const p: Record<string, unknown> = {}
-    if (selectedPeriodId.value) p.period_id = selectedPeriodId.value
-    return p
-})
-
 /* ═══════════════════════════ Tab: Proyección ═══════════════════════ */
 
 const proy = reactive({
@@ -561,8 +528,6 @@ const proyCareers = computed(() => {
     }
     return careers
 })
-
-const proyReady = computed(() => !!(proy.campusId && proy.modalityTypeId && proy.careerId !== null))
 
 function onProyCampusChange() {
     proy.modalityTypeId = null

@@ -296,7 +296,7 @@ const duplicatedCurps = computed(() => {
         const curp = row.curp.trim().toUpperCase()
         if (curp) counts[curp] = (counts[curp] ?? 0) + 1
     }
-    return new Set(Object.keys(counts).filter(k => counts[k] > 1))
+    return new Set(Object.keys(counts).filter(k => (counts[k] ?? 0) > 1))
 })
 
 function isDuplicateCurp(curp: string): boolean {

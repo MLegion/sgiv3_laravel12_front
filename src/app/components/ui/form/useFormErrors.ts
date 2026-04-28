@@ -11,7 +11,7 @@ export function useFormErrors<T extends Record<string, any>>() {
     function setErrors(backendErrors: Record<string, string[]>) {
         clearErrors()
         for (const field in backendErrors) {
-            errors[field] = backendErrors[field][0]
+            errors[field] = backendErrors[field]?.[0] ?? null
         }
     }
 

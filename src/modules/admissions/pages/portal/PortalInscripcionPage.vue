@@ -172,7 +172,7 @@ const form = reactive({
 })
 
 // ── Campus / modalidad watchers ──────────────────────────────────────────────
-watch(selectedCampusId, (newVal, oldVal) => {
+watch(selectedCampusId, (_newVal, oldVal) => {
     if (oldVal !== '') {
         selectedModalityTypeId.value = ''
         form.offer_option_1_id = ''
@@ -180,7 +180,7 @@ watch(selectedCampusId, (newVal, oldVal) => {
         form.offer_option_3_id = ''
     }
 })
-watch(selectedModalityTypeId, (newVal, oldVal) => {
+watch(selectedModalityTypeId, (_newVal, oldVal) => {
     if (oldVal !== '') {
         form.offer_option_1_id = ''
         form.offer_option_2_id = ''

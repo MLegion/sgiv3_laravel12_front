@@ -169,10 +169,6 @@ function activePhasesCount(row: AcademicLoadConfig): number {
     ].filter(Boolean).length
 }
 
-function statusLabel(status: string): string {
-    return ({ draft: 'BORRADOR', active: 'ACTIVO', closed: 'CERRADO' } as Record<string, string>)[status] ?? status.toUpperCase()
-}
-
 function periodStatusLabel(status?: string | null): string {
     if (!status) return '—'
     return (PERIOD_LABEL_MAP[status] ?? status).toUpperCase()

@@ -252,6 +252,10 @@ function approve(row: StudyPlanType) {
     router.push({ name: 'superadmin.studyplans.approve', params: { id: row.id } })
 }
 
+function remove(row: StudyPlanType) {
+    router.push({ name: 'superadmin.studyplans.delete', params: { id: row.id } })
+}
+
 function openEditorCurriculum(row: StudyPlanType) {
     console.log("openEditorCurriculum", row)
     router.push({ name: 'superadmin.studyplans.editor', params: { id: row.id } })

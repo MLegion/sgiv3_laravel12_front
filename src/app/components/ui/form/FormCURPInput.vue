@@ -1,9 +1,13 @@
 <template>
     <FormInput
-        v-bind="$props"
-        uppercase
-        :error="error || internalError"
-        @update:modelValue="onUpdate"
+        :model-value="props.modelValue"
+        :label="props.label"
+        :placeholder="props.placeholder"
+        :required="props.required"
+        :disabled="props.disabled"
+        :uppercase="true"
+        :error="props.error || internalError"
+        @update:model-value="onUpdate"
         @validation-error="emit('validation-error', $event)"
     />
 </template>
@@ -12,14 +16,14 @@
 import { ref } from 'vue'
 import FormInput from './FormInput.vue'
 
-const props = defineProps({
-    modelValue: String,
-    label: String,
-    placeholder: String,
-    required: Boolean,
-    disabled: Boolean,
-    error: String,
-})
+const props = defineProps<{
+    modelValue?: string
+    label?: string
+    placeholder?: string
+    required?: boolean
+    disabled?: boolean
+    error?: string | null
+}>()
 
 const emit = defineEmits(['update:modelValue', 'validation-error'])
 

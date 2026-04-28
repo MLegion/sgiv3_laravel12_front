@@ -36,7 +36,6 @@ const showModal = ref(false)
 const showDeleteConfirm = ref(false)
 const showMoveModal = ref(false)
 const activePeriods = ref<number[]>([1]) // Para acordeones móviles
-const movingItem = ref<any>(null)
 
 // Formularios
 const targetCell = reactive({ period: 0, level: 0 })
@@ -82,6 +81,7 @@ const isOptionalGroupItem = (item: any) => {
     return String(item.optionalGroupId) === String(optionalGroupId) ||
         String(item.subject?.optionalGroupId) === String(optionalGroupId)
 }
+const isSpecialtyItem = isOptionalGroupItem
 
 const togglePeriod = (p: number) => {
     const index = activePeriods.value.indexOf(p)
@@ -98,7 +98,7 @@ const openAddModal = (p: number, l: number) => {
     showModal.value = true
 }
 
-const onMoveItem = (payload) => {
+const onMoveItem = (payload: any) => {
     if (!isOptionalGroupItem(payload)) return
     itemToMove.value = payload
     moveForm.period = payload.period

@@ -268,10 +268,6 @@ function onCollegeChange() {
     }
 }
 
-function clearError(field: keyof typeof errors.value) {
-    delete errors.value[field]
-}
-
 async function submit() {
     errors.value = {}
 

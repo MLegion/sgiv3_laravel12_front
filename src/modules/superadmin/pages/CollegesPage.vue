@@ -212,7 +212,7 @@ function deleteCollege(row: College) {
 /**
  * Definición de columnas
  */
-const columns: DataTableColumn<Employee>[] = [
+const columns: DataTableColumn<College>[] = [
     {
         key: 'id',
         label: '#',
@@ -246,7 +246,7 @@ const {
     pagination,
     fetchData,
     handleChange,
-} = useDataTableFetch<Employee>({
+} = useDataTableFetch<College>({
     endpoint: API.SUPERADMIN_API.colleges.list,
     initialPerPage: 15,
     mapResponse: data => ({

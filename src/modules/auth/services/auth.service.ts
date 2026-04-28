@@ -1,44 +1,25 @@
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { MenuItem } from '@/shared/types/menu'
-import type { LoginResponse, LoginPayload } from './types/types'
-export async function loginAdminRequest(
-    payload: LoginPayload
-): Promise<LoginResponse> {
-    const { data } = await api.post<LoginResponse>(
-        API.AUTH_API.superadminLogin,
-        payload,
-        {
-            headers: {
-                Accept: 'application/json',
-            },
-        }
-    )
+import type { AuthUser } from '@/shared/types/user'
 
-    return data
+export interface LoginPayload {
+    email: string
+    password: string
+    collegeId?: number | null
+    rememberMe?: boolean
 }
 
-export async function loginRequest(
-    payload: LoginPayload
-): Promise<LoginResponse> {
+export interface LoginResponse {
+    access_token: string
+    user: AuthUser
+    must_change_password: boolean
+}
+
+export async function loginRequest(payload: LoginPayload): Promise<LoginResponse> {
     const { data } = await api.post<LoginResponse>(
         API.AUTH_API.login,
         payload,
-        {
-            headers: {
-                Accept: 'application/json',
-            },
-        }
+        { headers: { Accept: 'application/json' } },
     )
-
     return data
 }
-
-export function getMenus() {
-    return api.get<MenuItem[]>(AUTH_API.menus)
-}
-
-
-
-
-

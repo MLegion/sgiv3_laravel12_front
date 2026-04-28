@@ -92,7 +92,6 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 
 import FormInput from '@/app/components/ui/form/FormInput.vue'
-import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 
 const router = useRouter()
@@ -111,14 +110,6 @@ const form = reactive({
     // Nota: created_by se suele manejar en el Backend (Auth::id())
     // approval_status se inicializa como 'draft' por defecto en DB
 })
-
-/* -------------------------------------------------------------------------- */
-/* OPTIONS */
-/* -------------------------------------------------------------------------- */
-const statusOptions = [
-    { label: 'ACTIVO', value: true },
-    { label: 'INACTIVO', value: false },
-]
 
 /* -------------------------------------------------------------------------- */
 /* ACTIONS */

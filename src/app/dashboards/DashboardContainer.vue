@@ -6,12 +6,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, shallowRef } from 'vue'
+import { onMounted, shallowRef, type Component } from 'vue'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { resolveDashboard } from '@/app/dashboards/DashboardResolver'
 
 const auth = useAuthStore()
-const activeDashboard = shallowRef(null)
+const activeDashboard = shallowRef<Component | null>(null)
 
 onMounted(async () => {
     // 1. Obtenemos el tipo desde la entidad user (ej. 'admin', 'seller')

@@ -22,7 +22,7 @@ for (const path in dashboardModules) {
         const mod = dashboardModules[path] as { default?: DashboardDefinition }
         const definition = mod.default
 
-        if (definition && definition.type && definition.component) {
+        if (definition && definition.type) {
             // Si hay duplicados, prevalece el de mayor prioridad
             const existing = registeredDashboards[definition.type]
             if (!existing || (definition.priority || 0) > (existing.priority || 0)) {

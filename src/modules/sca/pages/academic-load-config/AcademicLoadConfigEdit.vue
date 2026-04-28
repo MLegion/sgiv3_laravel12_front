@@ -305,7 +305,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { AcademicLoadConfig, AcademicLoadConfigHistory, PhaseKey, ScheduleDate } from '@/modules/sca/types/academicLoadConfig.type'
+import type { AcademicLoadConfig, AcademicLoadConfigHistory, PhaseKey } from '@/modules/sca/types/academicLoadConfig.type'
 import { PHASES, STATUS_OPTIONS } from '@/modules/sca/types/academicLoadConfig.type'
 
 const router = useRouter()
@@ -365,10 +365,6 @@ function phaseLabel(key: string): string {
     return PHASES.find(p => p.key === key)?.label ?? key
 }
 
-function statusLabel(status: string): string {
-    return ({ draft: 'BORRADOR', active: 'ACTIVO', closed: 'CERRADO' } as Record<string, string>)[status] ?? status.toUpperCase()
-}
-
 function configStatusClass(status: string): string {
     return ({
         draft:  'bg-slate-100 text-slate-600',
@@ -415,7 +411,7 @@ function enabledCount(): number {
 
 function toggleScheduleDate(index: number) {
     const sd = config.value?.scheduleDates
-    if (!Array.isArray(sd)) return
+    if (!Array.isArray(sd) || !sd[index]) return
     sd[index].enabled = !sd[index].enabled
 }
 

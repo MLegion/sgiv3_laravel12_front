@@ -31,7 +31,7 @@
                 class="absolute inset-0 flex items-center px-2 pointer-events-none"
             >
                 <span class="text-sm text-slate-700 font-medium truncate">
-                    {{ store.selectedPeriod.name ?? store.selectedPeriod.academicPeriod?.name ?? `Periodo #${store.selectedPeriod.academicPeriodId}` }}
+                    {{ store.selectedPeriod.academicPeriod?.name ?? `Periodo #${store.selectedPeriod.academicPeriodId}` }}
                 </span>
             </div>
 
@@ -84,7 +84,7 @@
                     @mousedown.prevent="selectPeriod(period)"
                 >
                     <span class="font-semibold text-slate-700 group-hover:text-blue-700 truncate">
-                        {{ period.name ?? period.academicPeriod?.name ?? `Periodo #${period.academicPeriodId}` }}
+                        {{ period.academicPeriod?.name ?? `Periodo #${period.academicPeriodId}` }}
                     </span>
                     <span
                         class="shrink-0 ml-2 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full"
@@ -123,7 +123,6 @@ const emit = defineEmits<{ change: [] }>()
 
 const store      = useAdmissionPeriodStore()
 const containerRef = ref<HTMLElement | null>(null)
-const inputRef   = ref<HTMLInputElement | null>(null)
 const open       = ref(false)
 const loading    = ref(false)
 const searchText = ref('')

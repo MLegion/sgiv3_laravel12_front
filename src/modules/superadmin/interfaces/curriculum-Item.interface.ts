@@ -1,3 +1,5 @@
+import type { SubjectType } from '@/modules/superadmin/types/subject.type'
+
 export interface CurriculumItemInterface {
     id?: number;
     subjectId: number;

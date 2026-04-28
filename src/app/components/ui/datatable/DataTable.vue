@@ -86,7 +86,7 @@ const triggerChange = () => {
     })
 }
 
-watch(search, (val) => {
+watch(search, () => {
     if (searchTimeout) clearTimeout(searchTimeout)
     searchTimeout = setTimeout(() => triggerChange(), 500)
 })

@@ -12,7 +12,7 @@ export function useFormErrors<T extends Record<string, any>>() {
         clearErrors()
 
         for (const field in backendErrors) {
-            errors[field] = backendErrors[field][0]
+            errors[field] = backendErrors[field]?.[0] ?? null
         }
     }
 

@@ -139,7 +139,7 @@ import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import { API } from '@/shared/api'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
-import type { CareerType } from '@/modules/superadmin/types/career.type'
+import type { CareerType as Career } from '@/modules/superadmin/types/career.type'
 import ApprovalStatusBadge from "@/app/components/ui/ApprovalStatusBadge.vue";
 import { ApprovalStatusEnum } from '@/shared/enums/approval-status.enum.ts'
 

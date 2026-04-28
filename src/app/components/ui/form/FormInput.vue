@@ -28,7 +28,7 @@
 import { ref, watch, computed } from 'vue'
 
 const props = defineProps<{
-    modelValue: string | number | null
+    modelValue: string | number | null | undefined
     label?: string
     type?: string
     placeholder?: string

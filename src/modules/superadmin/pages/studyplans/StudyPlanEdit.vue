@@ -105,7 +105,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -123,11 +123,6 @@ import type { StudyPlanType } from '@/modules/superadmin/types/study-plan.type'
 /* -------------------------------------------------------------------------- */
 const route = useRoute()
 const router = useRouter()
-
-/* -------------------------------------------------------------------------- */
-/* REFS */
-/* -------------------------------------------------------------------------- */
-const careerSelectRef = ref<InstanceType<typeof FormRemoteSelect> | null>(null)
 
 /* -------------------------------------------------------------------------- */
 /* STATE */

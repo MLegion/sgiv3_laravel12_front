@@ -194,6 +194,10 @@ function openEditorCurriculum(row: StudyPlanType) {
     router.push({ name: 'superadmin.specialties.editor', params: { id: row.id } })
 }
 
+function remove(row: StudyPlanType) {
+    router.push({ name: 'superadmin.specialties.delete', params: { id: row.id } })
+}
+
 function canApprove(row: StudyPlanType): boolean {
     return ![
         ApprovalStatusEnum.APPROVED,

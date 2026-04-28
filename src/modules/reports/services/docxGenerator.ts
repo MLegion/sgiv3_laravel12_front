@@ -40,7 +40,7 @@ function normalizeTemplateErrors(err: unknown): DocxTemplateError {
     })) ?? []
 
     const msg = details.length
-        ? 'La plantilla contiene errores: ' + details.map(d => d.explanation).join('; ')
+        ? 'La plantilla contiene errores: ' + details.map((d: { explanation: string }) => d.explanation).join('; ')
         : (e?.message ?? 'Error al procesar la plantilla')
 
     return new DocxTemplateError(msg, details)

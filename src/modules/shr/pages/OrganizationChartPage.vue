@@ -140,18 +140,18 @@ interface WorkAreaFlat {
     jobs: Job[]
 }
 
-interface TreeNode extends Omit<WorkAreaFlat, 'parent_work_area_id'> {
-    children: TreeNode[]
+interface PageTreeNode extends Omit<WorkAreaFlat, 'parent_work_area_id'> {
+    children: PageTreeNode[]
 }
 
-const roots = ref<TreeNode[]>([])
-const orphans = ref<TreeNode[]>([])
+const roots = ref<PageTreeNode[]>([])
+const orphans = ref<PageTreeNode[]>([])
 const flatAreas = ref<WorkAreaFlat[]>([])
 const unassigned = ref<Emp[]>([])
 const loading = ref(false)
 const editingArea = ref<WorkAreaFlat | null>(null)
 
-function openParentEditor(node: TreeNode) {
+function openParentEditor(node: { id: number }) {
     const found = flatAreas.value.find(a => a.id === node.id)
     if (found) editingArea.value = found
 }
@@ -161,17 +161,17 @@ async function onSaved() {
     await load()
 }
 
-function buildTree(flat: WorkAreaFlat[]): TreeNode[] {
+function buildTree(flat: WorkAreaFlat[]): PageTreeNode[] {
     // Excluye el área default del árbol visual
     const visible = flat.filter(w => ! w.is_default)
     const defaultId = flat.find(w => w.is_default)?.id ?? null
 
-    const byId = new Map<number, TreeNode>()
+    const byId = new Map<number, PageTreeNode>()
     visible.forEach(w => {
-        byId.set(w.id, { ...w, children: [] } as TreeNode)
+        byId.set(w.id, { ...w, children: [] } as PageTreeNode)
     })
 
-    const rootList: TreeNode[] = []
+    const rootList: PageTreeNode[] = []
     visible.forEach(w => {
         const node = byId.get(w.id)!
         const parent = w.parent_work_area_id
@@ -183,7 +183,7 @@ function buildTree(flat: WorkAreaFlat[]): TreeNode[] {
         }
     })
 
-    const sortRec = (nodes: TreeNode[]) => {
+    const sortRec = (nodes: PageTreeNode[]) => {
         nodes.sort((a, b) => a.name.localeCompare(b.name))
         nodes.forEach(n => sortRec(n.children))
     }
@@ -192,9 +192,9 @@ function buildTree(flat: WorkAreaFlat[]): TreeNode[] {
 }
 
 /** Separa orphans (root sin hijos) del árbol principal. */
-function splitOrphans(rootList: TreeNode[]): { tree: TreeNode[]; orphans: TreeNode[] } {
-    const orphansList: TreeNode[] = []
-    const tree: TreeNode[] = []
+function splitOrphans(rootList: PageTreeNode[]): { tree: PageTreeNode[]; orphans: PageTreeNode[] } {
+    const orphansList: PageTreeNode[] = []
+    const tree: PageTreeNode[] = []
     for (const r of rootList) {
         if (!r.children || r.children.length === 0) orphansList.push(r)
         else tree.push(r)

@@ -406,10 +406,6 @@ function isInPeriodRange(dateStr: string): boolean {
     return dateStr >= start && dateStr <= end
 }
 
-function isHoliday(year: number, month: number, day: number): boolean {
-    return holidayMap.value.has(formatDate(year, month, day))
-}
-
 function getDayEvents(year: number, month: number, day: number): SchoolCalendarEvent[] {
     return eventDateMap.value.get(formatDate(year, month, day)) || []
 }
