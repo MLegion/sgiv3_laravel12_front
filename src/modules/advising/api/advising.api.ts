@@ -28,6 +28,7 @@ const advisingApi: ApiModule = {
             curriculum:   (studentId: string | number) => apiUrl(`/advising/students/${studentId}/curriculum`),
         },
         phases: {
+            list:   apiUrl('/advising/phases'),
             toggle: apiUrl('/advising/phases/toggle'),
         },
     },

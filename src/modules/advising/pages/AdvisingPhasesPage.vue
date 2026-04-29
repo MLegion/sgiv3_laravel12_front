@@ -1,29 +1,22 @@
 <template>
-    <div class="space-y-6 max-w-3xl">
+    <div class="space-y-4">
         <div class="flex items-center justify-between">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Fases de Asesoría / Reinscripción</h1>
         </div>
 
-        <div class="bg-white border rounded-xl shadow-sm p-6 space-y-5">
-            <FormRemoteSelect
-                label="PERIODO ACADÉMICO"
-                v-model="periodId"
-                :endpoint="API.SCHOOL_SERVICES_API.collegeAcademicPeriods.list"
-                :endpoint-by-id="API.SCHOOL_SERVICES_API.collegeAcademicPeriods.byId"
-                :item-label="(cap: any) => cap.academicPeriod?.name || 'Periodo #' + cap.id"
-                item-value="id"
-                required
-            />
-
-            <FormRemoteSelect
-                label="MODALIDAD"
-                v-model="modalityId"
-                :endpoint="API.SCHOOL_SERVICES_API.modalities.list"
-                :endpoint-by-id="API.SCHOOL_SERVICES_API.modalities.byId"
-                :item-label="(m: any) => m.modalityType?.name || 'Modalidad #' + m.id"
-                item-value="id"
-                required
-            />
+        <div class="bg-white rounded-lg shadow px-4 py-3 flex items-center gap-3">
+            <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    v-model="includeArchived"
+                    @change="onToggleArchived"
+                />
+                <span class="text-sm text-slate-700">Incluir periodos archivados</span>
+            </label>
+            <span class="text-xs text-slate-400">
+                Asesoría sólo se puede abrir si los horarios están publicados en SCA. Reinscripción y Altas/Bajas son posteriores.
+            </span>
         </div>
 
         <div v-if="errorMsg" class="text-sm px-4 py-3 rounded-lg bg-red-50 text-red-700 border border-red-100">
@@ -33,134 +26,177 @@
             {{ okMsg }}
         </div>
 
-        <div v-if="periodId && modalityId" class="bg-white border rounded-xl shadow-sm p-6 space-y-4">
-            <h2 class="text-sm font-bold text-slate-700 uppercase">Switches de fase</h2>
-            <p class="text-xs text-slate-500">
-                <strong>Asesoría</strong> sólo se puede abrir si los <strong>horarios están publicados</strong> en SCA.
-                <strong>Reinscripción</strong> y <strong>Altas/Bajas</strong> son posteriores.
-            </p>
+        <DataTable
+            :columns="columns"
+            :rows="rows"
+            :loading="loading"
+            :pagination="pagination"
+            @change="handleChange"
+        >
+            <template #cell-period="{ row }">
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold text-slate-700">{{ row.period?.name ?? '—' }}</span>
+                    <span class="text-[10px] text-slate-400">{{ periodStatusLabel(row.period?.status) }}</span>
+                </div>
+            </template>
 
-            <PhaseToggleRow
-                phase="phase_advising"
-                label="ASESORÍA RETICULAR"
-                :value="state.phase_advising"
-                :saving="saving === 'phase_advising'"
-                @toggle="onToggle"
-            />
-            <PhaseToggleRow
-                phase="phase_enrollment"
-                label="REINSCRIPCIÓN"
-                :value="state.phase_enrollment"
-                :saving="saving === 'phase_enrollment'"
-                @toggle="onToggle"
-            />
-            <PhaseToggleRow
-                phase="phase_add_drop"
-                label="ALTAS Y BAJAS"
-                :value="state.phase_add_drop"
-                :saving="saving === 'phase_add_drop'"
-                @toggle="onToggle"
-            />
-        </div>
+            <template #cell-modality="{ row }">
+                <div class="flex flex-col">
+                    <span class="text-sm text-slate-700">{{ row.modality?.modalityType?.name ?? '—' }}</span>
+                    <span class="text-[10px] text-slate-400">{{ row.modality?.campus?.shortName ?? row.modality?.campus?.name ?? '' }}</span>
+                </div>
+            </template>
+
+            <template #cell-published="{ row }">
+                <span v-if="row.phaseSchedulePublished" class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                    Publicado
+                </span>
+                <span v-else class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                    Pendiente
+                </span>
+            </template>
+
+            <template #cell-advising="{ row }">
+                <PhaseSwitch
+                    :value="row.phaseAdvising"
+                    :disabled="!row.phaseSchedulePublished && !row.phaseAdvising"
+                    :saving="savingKey(row, 'phase_advising')"
+                    @toggle="(val: boolean) => toggle(row, 'phase_advising', val)"
+                />
+            </template>
+
+            <template #cell-enrollment="{ row }">
+                <PhaseSwitch
+                    :value="row.phaseEnrollment"
+                    :saving="savingKey(row, 'phase_enrollment')"
+                    @toggle="(val: boolean) => toggle(row, 'phase_enrollment', val)"
+                />
+            </template>
+
+            <template #cell-add_drop="{ row }">
+                <PhaseSwitch
+                    :value="row.phaseAddDrop"
+                    :saving="savingKey(row, 'phase_add_drop')"
+                    @toggle="(val: boolean) => toggle(row, 'phase_add_drop', val)"
+                />
+            </template>
+        </DataTable>
     </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch, h, defineComponent } from 'vue'
+import { computed, ref, h, defineComponent } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import type { AdvisingPhase } from '@/modules/advising/types/advising.type'
 
-const periodId   = ref<number | null>(null)
-const modalityId = ref<number | null>(null)
+interface Row {
+    id: number
+    collegeAcademicPeriodId: number
+    modalityId: number
+    period: { id: number; name: string; shortName: string; status: string } | null
+    modality: {
+        id: number
+        modalityType: { id: number; name: string; shortName: string } | null
+        campus: { id: number; name: string; shortName: string } | null
+    } | null
+    phaseSchedulePublished: boolean
+    phaseAdvising: boolean
+    phaseEnrollment: boolean
+    phaseAddDrop: boolean
+}
 
-const state = reactive<Record<AdvisingPhase, boolean>>({
-    phase_advising:   false,
-    phase_enrollment: false,
-    phase_add_drop:   false,
+const columns: DataTableColumn<Row>[] = [
+    { key: 'id',         label: '#', field: 'id', sortable: true },
+    { key: 'period',     label: 'PERIODO' },
+    { key: 'modality',   label: 'MODALIDAD' },
+    { key: 'published',  label: 'HORARIOS' },
+    { key: 'advising',   label: 'ASESORÍA' },
+    { key: 'enrollment', label: 'REINSCRIPCIÓN' },
+    { key: 'add_drop',   label: 'ALTAS Y BAJAS' },
+]
+
+const includeArchived = ref(false)
+const extraSearch = computed<Record<string, any>>(() =>
+    includeArchived.value ? { include_archived: 1 } : {},
+)
+
+const { rows, loading, pagination, handleChange, fetchData } = useDataTableFetch<Row>({
+    endpoint: API.ADVISING_API.phases.list,
+    extraSearch,
 })
+fetchData()
 
-const saving   = ref<AdvisingPhase | null>(null)
+function onToggleArchived() {
+    pagination.value.page = 1
+    fetchData()
+}
+
 const errorMsg = ref('')
 const okMsg    = ref('')
+/** rowId+phase => true mientras se está guardando ese toggle */
+const savingMap = ref<Record<string, boolean>>({})
 
-watch([periodId, modalityId], async ([p, m]) => {
-    errorMsg.value = ''
-    okMsg.value = ''
-    if (!p || !m) return
-    try {
-        const { data } = await api.get(API.SCA_API.academicLoadConfigs.list, {
-            params: {
-                page: 1,
-                per_page: 1,
-                search: { college_academic_period_id: p, modality_id: m },
-            },
-        })
-        const cfg = data?.items?.[0]
-        if (!cfg) {
-            errorMsg.value = 'No existe configuración de carga para ese periodo/modalidad.'
-            return
-        }
-        state.phase_advising   = !!cfg.phaseAdvising
-        state.phase_enrollment = !!cfg.phaseEnrollment
-        state.phase_add_drop   = !!cfg.phaseAddDrop
-    } catch (e: any) {
-        errorMsg.value = e?.response?.data?.message ?? 'Error al cargar configuración.'
-    }
-})
+function savingKey(row: Row, phase: AdvisingPhase): boolean {
+    return !!savingMap.value[`${row.id}:${phase}`]
+}
 
-async function onToggle(phase: AdvisingPhase, newValue: boolean) {
-    if (!periodId.value || !modalityId.value) return
+function periodStatusLabel(s?: string): string {
+    if (!s) return '—'
+    return ({
+        draft: 'BORRADOR', planned: 'PLANEADO', active: 'ACTIVO',
+        closed: 'CERRADO', archived: 'ARCHIVADO',
+    } as Record<string, string>)[s] ?? s.toUpperCase()
+}
+
+async function toggle(row: Row, phase: AdvisingPhase, newValue: boolean) {
+    const key = `${row.id}:${phase}`
+    savingMap.value[key] = true
     errorMsg.value = ''
-    okMsg.value = ''
-    saving.value = phase
+    okMsg.value    = ''
     try {
         await api.post(API.ADVISING_API.phases.toggle, {
-            college_academic_period_id: periodId.value,
-            modality_id:                modalityId.value,
+            college_academic_period_id: row.collegeAcademicPeriodId,
+            modality_id:                row.modalityId,
             phase,
             new_value:                  newValue,
         })
-        state[phase] = newValue
-        okMsg.value = `Fase actualizada.`
-        setTimeout(() => okMsg.value = '', 2000)
+        // Update inline para reflejar el cambio sin re-fetch.
+        if (phase === 'phase_advising')   row.phaseAdvising = newValue
+        if (phase === 'phase_enrollment') row.phaseEnrollment = newValue
+        if (phase === 'phase_add_drop')   row.phaseAddDrop = newValue
+        okMsg.value = 'Fase actualizada.'
+        setTimeout(() => okMsg.value = '', 1500)
     } catch (e: any) {
         const violations = e?.response?.data?.context?.violations
-        if (Array.isArray(violations) && violations.length > 0) {
-            errorMsg.value = violations[0].message
-        } else {
-            errorMsg.value = e?.response?.data?.message ?? 'Error al actualizar fase.'
-        }
+        errorMsg.value = Array.isArray(violations) && violations[0]?.message
+            ? violations[0].message
+            : (e?.response?.data?.message ?? 'Error al actualizar fase.')
     } finally {
-        saving.value = null
+        delete savingMap.value[key]
     }
 }
 
-const PhaseToggleRow = defineComponent({
+const PhaseSwitch = defineComponent({
     props: {
-        phase:  { type: String as () => AdvisingPhase, required: true },
-        label:  { type: String, required: true },
-        value:  { type: Boolean, required: true },
-        saving: { type: Boolean, default: false },
+        value:    { type: Boolean, required: true },
+        disabled: { type: Boolean, default: false },
+        saving:   { type: Boolean, default: false },
     },
     emits: ['toggle'],
     setup(props, { emit }) {
-        return () => h('div', {
-            class: 'flex items-center justify-between bg-slate-50 border rounded-lg px-4 py-3',
-        }, [
-            h('div', [
-                h('div', { class: 'text-sm font-bold text-slate-700' }, props.label),
-                h('div', { class: 'text-xs text-slate-400 font-mono' }, props.phase),
-            ]),
+        return () => h('div', { class: 'flex items-center gap-2' }, [
             h('button', {
                 type: 'button',
-                disabled: props.saving,
+                disabled: props.disabled || props.saving,
                 class: [
-                    'relative inline-flex h-6 w-11 items-center rounded-full transition disabled:opacity-50',
+                    'relative inline-flex h-6 w-11 items-center rounded-full transition disabled:opacity-40 disabled:cursor-not-allowed',
                     props.value ? 'bg-emerald-500' : 'bg-slate-300',
                 ],
-                onClick: () => emit('toggle', props.phase, !props.value),
+                onClick: () => emit('toggle', !props.value),
             }, [
                 h('span', {
                     class: [
@@ -169,6 +205,7 @@ const PhaseToggleRow = defineComponent({
                     ],
                 }),
             ]),
+            props.saving ? h('span', { class: 'text-[10px] text-slate-400' }, '…') : null,
         ])
     },
 })
