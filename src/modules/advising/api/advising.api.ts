@@ -5,6 +5,7 @@ const advisingApi: ApiModule = {
     name: 'ADVISING_API',
     api: {
         sessions: {
+            myActivePeriod:   apiUrl('/advising/my-active-period'),
             myCurrent:        apiUrl('/advising/my-current'),
             create:           apiUrl('/advising/sessions'),
             byId:             (id: string | number) => apiUrl(`/advising/sessions/${id}`),

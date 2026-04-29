@@ -7,22 +7,28 @@
             </span>
         </div>
 
-        <!-- Selector de periodo / inicializar sesión -->
-        <div v-if="!session" class="bg-white border rounded-xl shadow-sm p-6 space-y-4">
-            <FormRemoteSelect
-                label="PERIODO OBJETIVO"
-                v-model="periodId"
-                :endpoint="API.SCHOOL_SERVICES_API.collegeAcademicPeriods.list"
-                :endpoint-by-id="API.SCHOOL_SERVICES_API.collegeAcademicPeriods.byId"
-                :item-label="(cap: any) => cap.academicPeriod?.name || 'Periodo #' + cap.id"
-                item-value="id"
-                required
-            />
-            <button class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-                    :disabled="!periodId || loadingInit"
-                    @click="ensureSession">
-                {{ loadingInit ? 'Cargando…' : 'INICIAR ASESORÍA' }}
-            </button>
+        <!-- Periodo activo (badge informativo, no editable) -->
+        <div v-if="loadingPeriod" class="bg-white border rounded-xl shadow-sm p-6 text-center text-sm text-slate-400">
+            Buscando periodo abierto…
+        </div>
+        <div v-else-if="!activePeriod?.open" class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700">
+            <strong class="block mb-1">No hay periodo abierto para asesoría reticular.</strong>
+            {{ activePeriod?.message ?? 'Vuelve cuando tu coordinación habilite la fase.' }}
+        </div>
+        <div v-else-if="!session" class="bg-white border rounded-xl shadow-sm p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Periodo objetivo</div>
+                    <div class="text-sm font-bold text-slate-700 uppercase">
+                        {{ activePeriod.period?.name ?? 'Periodo #' + activePeriod.collegeAcademicPeriodId }}
+                    </div>
+                </div>
+                <button class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                        :disabled="loadingInit"
+                        @click="ensureSession">
+                    {{ loadingInit ? 'Cargando…' : 'INICIAR ASESORÍA' }}
+                </button>
+            </div>
         </div>
 
         <div v-if="errorMsg" class="text-sm px-4 py-3 rounded-lg bg-red-50 text-red-700 border border-red-100">
@@ -135,18 +141,28 @@
 import { computed, reactive, ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import type {
     AdvisingSession, AdvisingStatus, CurriculumStatus, CurriculumStatusEntry,
     SubjectAttempt, PolicyViolation, ProposedItemInput,
 } from '@/modules/advising/types/advising.type'
 
-const periodId      = ref<number | null>(null)
+interface ActivePeriod {
+    open: boolean
+    message?: string
+    collegeAcademicPeriodId?: number
+    modalityId?: number
+    period?: { id: number; name: string; shortName: string } | null
+    phaseSchedulePublished?: boolean
+    phaseAdvising?: boolean
+}
+
+const activePeriod  = ref<ActivePeriod | null>(null)
 const session       = ref<AdvisingSession | null>(null)
 const curriculum    = ref<CurriculumStatus | null>(null)
 const studentNotes  = ref('')
 const errorMsg      = ref('')
 const okMsg         = ref('')
+const loadingPeriod = ref(true)
 const loadingInit   = ref(false)
 const loadingCurriculum = ref(false)
 const saving        = ref(false)
@@ -181,18 +197,19 @@ const totalCredits = computed(() =>
 )
 
 async function ensureSession() {
-    if (!periodId.value) return
+    const periodId = activePeriod.value?.collegeAcademicPeriodId
+    if (!periodId) return
     loadingInit.value = true
     errorMsg.value = ''
     try {
         const { data: cur } = await api.get(API.ADVISING_API.sessions.myCurrent, {
-            params: { college_academic_period_id: periodId.value },
+            params: { college_academic_period_id: periodId },
         })
         if (cur && cur.id) {
             session.value = cur
         } else {
             const created = await api.post(API.ADVISING_API.sessions.create, {
-                college_academic_period_id: periodId.value,
+                college_academic_period_id: periodId,
             })
             session.value = created.data
         }
@@ -346,8 +363,28 @@ function statusClass(s: AdvisingStatus): string {
     } as Record<AdvisingStatus, string>)[s]
 }
 
-onMounted(() => {
-    // Si el alumno regresa y ya tenía periodo seleccionado, podríamos persistirlo.
-    // Por ahora exige seleccionar periodo cada vez.
-})
+async function loadActivePeriod() {
+    loadingPeriod.value = true
+    try {
+        const { data } = await api.get(API.ADVISING_API.sessions.myActivePeriod)
+        activePeriod.value = data
+        // Si hay periodo abierto y ya hay sesión, la cargamos automáticamente.
+        if (data?.open && data.collegeAcademicPeriodId) {
+            const { data: cur } = await api.get(API.ADVISING_API.sessions.myCurrent, {
+                params: { college_academic_period_id: data.collegeAcademicPeriodId },
+            })
+            if (cur && cur.id) {
+                session.value = cur
+                await loadCurriculum()
+                seedProposedFromSession()
+            }
+        }
+    } catch (e: any) {
+        errorMsg.value = extractMsg(e)
+    } finally {
+        loadingPeriod.value = false
+    }
+}
+
+onMounted(loadActivePeriod)
 </script>
