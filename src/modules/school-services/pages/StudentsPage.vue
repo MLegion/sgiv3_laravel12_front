@@ -48,6 +48,7 @@
                         <th class="px-4 py-3 text-left">Nombre</th>
                         <th class="px-4 py-3 text-left">CURP</th>
                         <th class="px-4 py-3 text-left">Carrera / Plan</th>
+                        <th class="px-4 py-3 text-left">Modalidad</th>
                         <th class="px-4 py-3 text-left">Estatus</th>
                         <th class="px-4 py-3 text-left">Semestre</th>
                         <th class="px-4 py-3"></th>
@@ -67,6 +68,17 @@
                                 </div>
                                 <div v-if="activeAffiliation(s)?.studyPlan?.officialCode" class="font-mono text-[10px] text-slate-400">
                                     {{ activeAffiliation(s)?.studyPlan?.officialCode }}
+                                </div>
+                            </template>
+                            <span v-else class="text-slate-400">—</span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-600">
+                            <template v-if="activeAffiliation(s)?.modality">
+                                <div class="font-semibold text-slate-700">
+                                    {{ activeAffiliation(s)?.modality?.modalityTypeName ?? '—' }}
+                                </div>
+                                <div class="text-[10px] text-slate-400">
+                                    {{ activeAffiliation(s)?.modality?.campusName ?? '' }}
                                 </div>
                             </template>
                             <span v-else class="text-slate-400">—</span>
