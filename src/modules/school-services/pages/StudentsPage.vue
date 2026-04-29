@@ -10,16 +10,61 @@
         </div>
 
         <!-- Filtros -->
-        <div class="flex flex-wrap gap-3 items-end">
-            <div class="flex-1 min-w-[220px]">
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar</label>
-                <input
-                    v-model="search"
-                    type="text"
-                    placeholder="Nombre, CURP, email, folio..."
-                    class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                    @input="debouncedSearch"
-                />
+        <div class="bg-white border rounded-xl shadow-sm p-4 space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+                <div class="xl:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar</label>
+                    <input
+                        v-model="search"
+                        type="text"
+                        placeholder="Nombre, CURP, email, num. control..."
+                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                        @input="debouncedFetch"
+                    />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Campus</label>
+                    <select v-model="filters.campusId" @change="onFilterChange"
+                            class="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm">
+                        <option :value="null">Todos</option>
+                        <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.shortName ?? c.name }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Modalidad</label>
+                    <select v-model="filters.modalityTypeId" @change="onFilterChange"
+                            class="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm">
+                        <option :value="null">Todas</option>
+                        <option v-for="m in modalityTypes" :key="m.id" :value="m.id">{{ m.shortName ?? m.name }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Carrera</label>
+                    <select v-model="filters.careerId" @change="onFilterChange"
+                            class="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm">
+                        <option :value="null">Todas</option>
+                        <option v-for="c in careers" :key="c.id" :value="c.id">{{ c.shortName ?? c.name }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Estatus</label>
+                    <select v-model="filters.studentStatusId" @change="onFilterChange"
+                            class="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm">
+                        <option :value="null">Todos</option>
+                        <option v-for="s in studentStatuses" :key="s.id" :value="s.id">{{ s.name }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Semestre</label>
+                    <select v-model.number="filters.semester" @change="onFilterChange"
+                            class="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm">
+                        <option :value="null">Todos</option>
+                        <option v-for="n in 12" :key="n" :value="n">{{ n }}°</option>
+                    </select>
+                </div>
+            </div>
+            <div v-if="hasActiveFilters" class="flex justify-end">
+                <button class="text-xs text-blue-600 hover:underline" @click="clearFilters">Limpiar filtros</button>
             </div>
         </div>
 
@@ -130,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, reactive, ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 
@@ -141,10 +186,65 @@ const page     = ref(1)
 const total    = ref(0)
 const lastPage = ref(1)
 
+interface Filters {
+    campusId: number | null
+    modalityTypeId: number | null
+    careerId: number | null
+    studentStatusId: number | null
+    semester: number | null
+}
+const filters = reactive<Filters>({
+    campusId: null, modalityTypeId: null, careerId: null,
+    studentStatusId: null, semester: null,
+})
+
+const campuses        = ref<any[]>([])
+const modalityTypes   = ref<any[]>([])
+const careers         = ref<any[]>([])
+const studentStatuses = ref<any[]>([])
+
+const hasActiveFilters = computed(() =>
+    filters.campusId || filters.modalityTypeId || filters.careerId ||
+    filters.studentStatusId || filters.semester || search.value.trim(),
+)
+
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
-function debouncedSearch() {
+function debouncedFetch() {
     if (debounceTimer) clearTimeout(debounceTimer)
     debounceTimer = setTimeout(() => { page.value = 1; fetchStudents() }, 350)
+}
+
+function onFilterChange() {
+    page.value = 1
+    fetchStudents()
+}
+
+function clearFilters() {
+    filters.campusId = null
+    filters.modalityTypeId = null
+    filters.careerId = null
+    filters.studentStatusId = null
+    filters.semester = null
+    search.value = ''
+    page.value = 1
+    fetchStudents()
+}
+
+async function loadCatalogs() {
+    try {
+        const [c, m, ca, ss] = await Promise.all([
+            api.get(API.SCHOOL_SERVICES_API.campuses.list,        { params: { per_page: 100 } }),
+            api.get(API.SUPERADMIN_API.modalityTypes.list,        { params: { per_page: 100 } }),
+            api.get(API.SUPERADMIN_API.careers.list,              { params: { per_page: 200 } }),
+            api.get(API.SCHOOL_SERVICES_API.studentStatuses.list, { params: { per_page: 100 } }),
+        ])
+        campuses.value        = c.data?.items ?? c.data ?? []
+        modalityTypes.value   = m.data?.items ?? m.data ?? []
+        careers.value         = ca.data?.items ?? ca.data ?? []
+        studentStatuses.value = ss.data?.items ?? ss.data ?? []
+    } catch (e) {
+        console.warn('Error cargando catalogos de filtros', e)
+    }
 }
 
 function activeAffiliation(s: any) {
@@ -165,16 +265,39 @@ async function fetchStudents() {
     loading.value = true
     try {
         const params: Record<string, any> = { page: page.value, per_page: 25 }
-        if (search.value.trim()) params.search = search.value.trim()
+        const searchObj: Record<string, any> = {}
+
+        const term = search.value.trim()
+        if (term) {
+            // Texto: backend agrupa string fields en OR.
+            searchObj.names          = term
+            searchObj.first_surname  = term
+            searchObj.second_surname = term
+            searchObj.email          = term
+            searchObj.curp           = term
+            searchObj.num_control    = term
+        }
+        if (filters.campusId)         searchObj.campus_id             = filters.campusId
+        if (filters.modalityTypeId)   searchObj.modality_type_id      = filters.modalityTypeId
+        if (filters.careerId)         searchObj.career_id             = filters.careerId
+        if (filters.studentStatusId)  searchObj.student_status_id     = filters.studentStatusId
+        if (filters.semester)         searchObj.current_period_number = filters.semester
+
+        if (Object.keys(searchObj).length > 0) params.search = searchObj
+
         const { data } = await api.get(API.SCHOOL_SERVICES_API.students.list, { params })
         items.value    = data.items ?? []
         total.value    = data.total ?? 0
         lastPage.value = data.lastPage ?? 1
     } finally {
-        loading.value = false }
+        loading.value = false
+    }
 }
 
 function changePage(p: number) { page.value = p; fetchStudents() }
 
-onMounted(fetchStudents)
+onMounted(async () => {
+    await loadCatalogs()
+    await fetchStudents()
+})
 </script>
