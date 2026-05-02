@@ -92,9 +92,12 @@ export const useAuthStore = defineStore('auth', {
 
             // Limpieza proactiva: si la simulación tenía expires_at en el pasado,
             // cae automáticamente al token del impersonador (antes de que un 401
-            // tenga que disparar el interceptor).
+            // tenga que disparar el interceptor). Si lo hacemos, debemos sacar
+            // al usuario de la ruta del impersonado — el navegador la conservó
+            // tras cerrar/reabrir y el superadmin no tiene permisos ahí.
             const expiresAt = localStorage.getItem('impersonation_expires_at')
-            if (expiresAt && new Date(expiresAt).getTime() < Date.now()) {
+            const impersonationFellBack = expiresAt && new Date(expiresAt).getTime() < Date.now()
+            if (impersonationFellBack) {
                 const impToken = localStorage.getItem('impersonator_token')
                 const impUser  = localStorage.getItem('impersonator_user')
                 if (impToken && impUser) {
@@ -135,6 +138,19 @@ export const useAuthStore = defineStore('auth', {
                 }
 
                 this.hydrated = true
+
+                // Si arriba caímos del impersonado al superadmin por expiración,
+                // la URL actual sigue siendo la del impersonado: lo sacamos al
+                // panel de simulación, recargamos menú/perfil del SA y NO
+                // hacemos el ping (sería sobre la ruta vieja).
+                if (impersonationFellBack) {
+                    const menu = useMenuStore()
+                    menu.reload().catch(() => {})
+                    this.profileType = null
+                    this.loadProfileType().catch(() => {})
+                    router.replace('/superadmin/impersonate')
+                    return
+                }
 
                 // Ping al backend para verificar que el token siga vivo.
                 // Si el token actual está revocado/expirado, el interceptor 401

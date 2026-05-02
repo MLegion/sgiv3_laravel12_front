@@ -18,11 +18,42 @@
                 <!-- Icon -->
                 <div class="flex items-center gap-3">
                     <div
-                        class="w-10 h-10 flex items-center justify-center
-                               rounded-full bg-amber-100 text-amber-600"
+                        class="w-10 h-10 flex items-center justify-center rounded-full"
+                        :class="iconWrapperClass"
                     >
-                        <!-- Warning icon -->
                         <svg
+                            v-if="variant === 'info'"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="w-6 h-6"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                            />
+                        </svg>
+                        <svg
+                            v-else-if="variant === 'success'"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="w-6 h-6"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                        </svg>
+                        <!-- warning (default) -->
+                        <svg
+                            v-else
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -47,26 +78,27 @@
                 </div>
 
                 <!-- Message -->
-                <p class="text-sm text-slate-600">
+                <p class="text-sm text-slate-600 whitespace-pre-line">
                     {{ message }}
                 </p>
 
                 <!-- Actions -->
                 <div class="flex justify-end gap-2 pt-4">
                     <button
+                        v-if="!hideCancel"
                         class="px-3 py-2 text-sm border rounded-lg
                                hover:bg-slate-100"
                         @click="cancel"
                     >
-                        Cancelar
+                        {{ cancelText ?? 'Cancelar' }}
                     </button>
 
                     <button
-                        class="px-4 py-2 text-sm rounded-lg
-                               bg-blue-600 text-white hover:bg-blue-700"
+                        class="px-4 py-2 text-sm rounded-lg text-white"
+                        :class="confirmBtnClass"
                         @click="confirm"
                     >
-                        Confirmar
+                        {{ confirmText ?? 'Confirmar' }}
                     </button>
                 </div>
             </div>
@@ -75,16 +107,43 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+import { computed } from 'vue'
+
+type Variant = 'warning' | 'info' | 'success'
+
+const props = withDefaults(defineProps<{
     modelValue: boolean
     title?: string
     message?: string
-}>()
+    confirmText?: string
+    cancelText?: string
+    hideCancel?: boolean
+    variant?: Variant
+}>(), {
+    variant: 'warning',
+    hideCancel: false,
+})
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
     (e: 'confirm'): void
 }>()
+
+const iconWrapperClass = computed(() => {
+    switch (props.variant) {
+        case 'info':    return 'bg-blue-100 text-blue-600'
+        case 'success': return 'bg-emerald-100 text-emerald-600'
+        default:        return 'bg-amber-100 text-amber-600'
+    }
+})
+
+const confirmBtnClass = computed(() => {
+    switch (props.variant) {
+        case 'success': return 'bg-emerald-600 hover:bg-emerald-700'
+        case 'info':    return 'bg-blue-600 hover:bg-blue-700'
+        default:        return 'bg-blue-600 hover:bg-blue-700'
+    }
+})
 
 function cancel() {
     emit('update:modelValue', false)

@@ -7,9 +7,12 @@ const advisingApi: ApiModule = {
         sessions: {
             myActivePeriod:   apiUrl('/advising/my-active-period'),
             myCurrent:        apiUrl('/advising/my-current'),
+            myContactInfo:    apiUrl('/advising/me/contact-info'),
             create:           apiUrl('/advising/sessions'),
             byId:             (id: string | number) => apiUrl(`/advising/sessions/${id}`),
             updateItems:      (id: string | number) => apiUrl(`/advising/sessions/${id}/items`),
+            upsertSingleItem: (id: string | number) => apiUrl(`/advising/sessions/${id}/items/single`),
+            removeSingleItem: (id: string | number) => apiUrl(`/advising/sessions/${id}/items/single`),
             submit:           (id: string | number) => apiUrl(`/advising/sessions/${id}/submit`),
             cancel:           (id: string | number) => apiUrl(`/advising/sessions/${id}/cancel`),
             reopen:           (id: string | number) => apiUrl(`/advising/sessions/${id}/reopen`),
@@ -20,7 +23,6 @@ const advisingApi: ApiModule = {
             approve:          (id: string | number) => apiUrl(`/advising/sessions/${id}/approve`),
             reject:           (id: string | number) => apiUrl(`/advising/sessions/${id}/reject`),
             override:         (id: string | number) => apiUrl(`/advising/sessions/${id}/override`),
-            auditLog:         (id: string | number) => apiUrl(`/advising/sessions/${id}/audit-log`),
             listAll:          apiUrl('/advising/sessions'),
         },
         students: {

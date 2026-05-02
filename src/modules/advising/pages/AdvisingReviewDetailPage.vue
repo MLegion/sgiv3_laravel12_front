@@ -49,6 +49,91 @@
             </span>
         </div>
 
+        <!-- Avance del estudiante (visión general antes de decidir) -->
+        <div v-if="session && curriculum" class="bg-white border rounded-xl shadow-sm">
+            <div class="border-b px-4 py-3 flex items-center justify-between">
+                <h2 class="text-sm font-bold text-slate-700 uppercase">Avance del estudiante</h2>
+                <span v-if="curriculum.studyPlan" class="text-xs text-slate-500 truncate max-w-[60%] text-right">
+                    {{ curriculum.studyPlan.careerName ?? curriculum.studyPlan.name }}
+                    <span v-if="curriculum.studyPlan.officialCode" class="text-slate-400 ml-1">({{ curriculum.studyPlan.officialCode }})</span>
+                </span>
+            </div>
+
+            <div class="p-4 space-y-3">
+                <!-- Asignación pendiente -->
+                <div v-if="curriculum.needsSpecialty || curriculum.needsOptionalGroup"
+                     class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 space-y-0.5">
+                    <strong class="block uppercase tracking-wider">Asignación pendiente</strong>
+                    <p v-if="curriculum.needsSpecialty">
+                        El alumno aún no tiene asignada una <strong>especialidad</strong>; las materias de
+                        especialidad no se cuentan en su avance.
+                    </p>
+                    <p v-if="curriculum.needsOptionalGroup">
+                        El alumno aún no tiene asignado <strong>grupo de optativas</strong>.
+                    </p>
+                </div>
+
+                <!-- Header de progreso -->
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Avance</div>
+                        <div class="text-2xl font-extrabold text-blue-700 mt-0.5">
+                            {{ curriculum.progressPercent ?? 0 }}<span class="text-sm text-blue-400">%</span>
+                        </div>
+                        <div class="mt-1 flex flex-wrap gap-1">
+                            <span v-if="curriculum.assignedSpecialty"
+                                  class="text-[10px] px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-700 font-semibold uppercase tracking-tight">
+                                Especialidad: {{ curriculum.assignedSpecialty.name }}
+                            </span>
+                            <span v-if="curriculum.assignedOptionalGroup"
+                                  class="text-[10px] px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-700 font-semibold uppercase tracking-tight">
+                                Optativas: {{ curriculum.assignedOptionalGroup.name }}
+                            </span>
+                            <span v-if="curriculum.studentCurrentPeriodNumber"
+                                  class="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold uppercase tracking-tight">
+                                {{ curriculum.studentCurrentPeriodNumber }}° semestre
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Créditos</div>
+                        <div class="text-xl font-bold text-slate-700 mt-0.5">
+                            {{ curriculum.creditsEarned ?? 0 }}<span class="text-slate-400 mx-1">/</span>{{ curriculum.totalCredits ?? 0 }}
+                        </div>
+                        <div class="text-[10px] text-slate-500">
+                            {{ (curriculum.totalCredits ?? 0) - (curriculum.creditsEarned ?? 0) }} cr. restantes
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barra de progreso -->
+                <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all"
+                         :style="{ width: (curriculum.progressPercent ?? 0) + '%' }" />
+                </div>
+
+                <!-- Conteos rápidos -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
+                        <div class="text-[10px] font-black text-emerald-600 uppercase tracking-wider">Aprobadas</div>
+                        <div class="text-base font-bold text-emerald-700">{{ counts.aprobadas }}</div>
+                    </div>
+                    <div class="bg-orange-50 border border-orange-200 rounded-md px-3 py-2">
+                        <div class="text-[10px] font-black text-orange-600 uppercase tracking-wider">Repite</div>
+                        <div class="text-base font-bold text-orange-700">{{ counts.repite }}</div>
+                    </div>
+                    <div class="bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                        <div class="text-[10px] font-black text-red-600 uppercase tracking-wider">Especial</div>
+                        <div class="text-base font-bold text-red-700">{{ counts.especial }}</div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-md px-3 py-2">
+                        <div class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Por cursar</div>
+                        <div class="text-base font-bold text-slate-700">{{ counts.normal }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Items con decisión -->
         <div v-if="session" class="bg-white border rounded-xl shadow-sm">
             <div class="border-b px-4 py-3 flex items-center justify-between">
@@ -63,7 +148,6 @@
                         <th class="px-4 py-2 text-left">TIPO</th>
                         <th class="px-4 py-2 text-left">DECISIÓN</th>
                         <th class="px-4 py-2 text-left">REEMPLAZO</th>
-                        <th class="px-4 py-2 text-left">NOTAS</th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>
@@ -104,13 +188,6 @@
                                 {{ item.replacementSubject.name }}
                             </span>
                         </td>
-                        <td class="px-4 py-2">
-                            <input v-if="decisions[item.id]"
-                                   v-model="decisions[item.id]!.advisor_notes"
-                                   placeholder="Notas..."
-                                   :disabled="!canDecide || savingItem === item.id"
-                                   class="text-[11px] border rounded-md px-2 py-1 w-full" />
-                        </td>
                         <td class="px-4 py-2 text-right">
                             <button v-if="canDecide"
                                     :disabled="savingItem === item.id"
@@ -124,40 +201,12 @@
             </table>
         </div>
 
-        <!-- Notas -->
-        <div v-if="session" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-white border rounded-xl shadow-sm p-4">
-                <h3 class="text-xs font-bold uppercase text-slate-500 mb-2">Notas del alumno</h3>
-                <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ session.studentNotes ?? '—' }}</p>
-            </div>
-            <div class="bg-white border rounded-xl shadow-sm p-4">
-                <h3 class="text-xs font-bold uppercase text-slate-500 mb-2">Notas del asesor</h3>
-                <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ session.advisorNotes ?? '—' }}</p>
-                <p v-if="session.rejectionReason" class="text-sm text-red-600 mt-3">
-                    <strong>Razón de rechazo:</strong> {{ session.rejectionReason }}
-                </p>
-            </div>
+        <!-- Razón de rechazo (si aplica) -->
+        <div v-if="session?.rejectionReason" class="bg-red-50 border border-red-200 rounded-xl p-4">
+            <h3 class="text-xs font-bold text-red-700 uppercase mb-1">Razón del rechazo</h3>
+            <p class="text-sm text-red-700 whitespace-pre-wrap">{{ session.rejectionReason }}</p>
         </div>
 
-        <!-- Audit log -->
-        <div v-if="session" class="bg-white border rounded-xl shadow-sm">
-            <div class="border-b px-4 py-3 flex items-center justify-between">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">Bitácora</h2>
-                <span class="text-xs text-slate-400">{{ auditLog.length }} eventos</span>
-            </div>
-            <div class="divide-y max-h-96 overflow-y-auto">
-                <div v-for="entry in auditLog" :key="entry.id" class="px-4 py-2 flex items-center justify-between">
-                    <div class="flex flex-col">
-                        <span class="text-xs font-bold text-slate-700">{{ entry.action }}</span>
-                        <span class="text-[10px] text-slate-400 font-mono">{{ entry.actor?.name ?? '—' }} · {{ entry.actorRole ?? '' }}</span>
-                    </div>
-                    <span class="text-[10px] text-slate-400">{{ formatDate(entry.createdAt) }}</span>
-                </div>
-                <div v-if="!auditLog.length" class="px-4 py-6 text-center text-xs text-slate-400">
-                    Sin eventos.
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -166,21 +215,20 @@ import { computed, reactive, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { AdvisingSession, AdvisingSessionItem, AdvisingAuditLogEntry, AdvisingStatus } from '@/modules/advising/types/advising.type'
+import type { AdvisingSession, AdvisingSessionItem, AdvisingStatus, CurriculumStatus } from '@/modules/advising/types/advising.type'
 
 const route  = useRoute()
 const router = useRouter()
 const sessionId = Number(route.params.id)
 
 const session   = ref<AdvisingSession | null>(null)
-const auditLog  = ref<AdvisingAuditLogEntry[]>([])
+const curriculum = ref<CurriculumStatus | null>(null)
 const errorMsg  = ref('')
 const okMsg     = ref('')
 const savingItem = ref<number | null>(null)
 
 interface ItemDecision {
     advisor_status: 'proposed' | 'accepted' | 'rejected' | 'replaced'
-    advisor_notes: string | null
     replacement_subject_id: number | null
 }
 
@@ -196,20 +244,35 @@ const currentUserId = computed(() => {
 const isMine    = computed(() => session.value?.reviewer?.id === currentUserId.value)
 const canDecide = computed(() => session.value?.status === 'submitted' && isMine.value)
 
+const counts = computed(() => {
+    const subs = curriculum.value?.subjects ?? []
+    const filtered = subs.filter(s => s.countsForStudent)
+    return {
+        aprobadas: filtered.filter(s => s.attempt === 'aprobada').length,
+        repite:    filtered.filter(s => s.attempt === 'repite').length,
+        especial:  filtered.filter(s => s.attempt === 'especial').length,
+        normal:    filtered.filter(s => s.attempt === 'normal').length,
+    }
+})
+
 async function load() {
     try {
-        const [s, log] = await Promise.all([
-            api.get(API.ADVISING_API.sessions.byId(sessionId)),
-            api.get(API.ADVISING_API.sessions.auditLog(sessionId)),
-        ])
-        session.value = s.data
-        auditLog.value = log.data ?? []
+        const { data } = await api.get(API.ADVISING_API.sessions.byId(sessionId))
+        session.value = data
         for (const item of session.value?.items ?? []) {
             decisions[item.id] = {
                 advisor_status:         item.advisorStatus,
-                advisor_notes:          item.advisorNotes,
                 replacement_subject_id: item.replacementSubjectId,
             }
+        }
+        // Avance del estudiante (carga en paralelo, no bloquea la UI principal).
+        const studentId = session.value?.student?.id ?? session.value?.studentId
+        const periodId  = session.value?.collegeAcademicPeriodId
+        if (studentId) {
+            api.get(API.ADVISING_API.students.curriculum(studentId), {
+                params: periodId ? { college_academic_period_id: periodId } : {},
+            }).then(r => { curriculum.value = r.data })
+              .catch(() => { /* informativo, no bloquea */ })
         }
     } catch (e: any) {
         errorMsg.value = e?.response?.data?.message ?? 'Error al cargar la asesoría.'
@@ -298,9 +361,5 @@ function attemptClass(item: AdvisingSessionItem): string {
     if (item.isSpecial) return 'bg-red-100 text-red-700'
     if (item.isRepeat)  return 'bg-orange-100 text-orange-700'
     return 'bg-slate-100 text-slate-600'
-}
-function formatDate(s: string | null): string {
-    if (!s) return '—'
-    return new Date(s).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 </script>
