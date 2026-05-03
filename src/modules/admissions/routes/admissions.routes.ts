@@ -9,7 +9,7 @@ export default [
     { path: 'admissions/portal/inscripcion',  name: 'admissions.portal.inscripcion',  component: () => import('@/modules/admissions/pages/portal/PortalInscripcionPage.vue'),  meta: { title: 'Preficha' } },
     { path: 'admissions/portal/documentos',   name: 'admissions.portal.documentos',   component: () => import('@/modules/admissions/pages/portal/PortalDocumentosPage.vue'),   meta: { title: 'Carga de Documentos' } },
     { path: 'admissions/portal/ficha',        name: 'admissions.portal.ficha',        component: () => import('@/modules/admissions/pages/portal/PortalFichaPage.vue'),        meta: { title: 'Ficha' } },
-    { path: 'admissions/portal/examen',       name: 'admissions.portal.examen',       component: () => import('@/modules/admissions/pages/portal/PortalExamenPage.vue'),       meta: { title: 'Examen de Admisión Online' } },
+    { path: 'admissions/portal/examen',       name: 'admissions.portal.examen',       component: () => import('@/modules/admissions/pages/portal/PortalExamenPage.vue'),       meta: { title: 'Examen de Admisión' } },
     { path: 'admissions/portal/password',     name: 'admissions.portal.password',     component: () => import('@/modules/admissions/pages/portal/PortalPasswordPage.vue'),     meta: { title: 'Cambiar Contraseña' } },
     // Ruta base del portal → redirige a personal
     {
@@ -284,5 +284,33 @@ export default [
         name: 'admissions.indigenous-languages',
         component: () => import('@/modules/admissions/pages/IndigenousLanguagesPage.vue'),
         meta: { title: 'Lenguas Indígenas' },
+    },
+
+    // Exam Sessions (logística presencial)
+    {
+        path: 'admissions/exam-sessions',
+        name: 'admissions.exam-sessions',
+        component: () => import('@/modules/admissions/pages/ExamSessionsPage.vue'),
+        meta: { title: 'Sesiones de Examen' },
+    },
+    {
+        path: 'admissions/exam-sessions/assign',
+        name: 'admissions.exam-sessions.assign',
+        component: () => import('@/modules/admissions/pages/ExamAssignmentManagerPage.vue'),
+        meta: { title: 'Distribuir Aspirantes' },
+    },
+    {
+        path: 'admissions/exam-sessions/:id',
+        name: 'admissions.exam-sessions.detail',
+        component: () => import('@/modules/admissions/pages/ExamSessionDetailPage.vue'),
+        meta: { title: 'Detalle - Sesión de Examen' },
+    },
+
+    // Bandeja CAREER_MANAGER: avisos de aulas afectadas por examen
+    {
+        path: 'admissions/exam-warnings',
+        name: 'admissions.exam-warnings',
+        component: () => import('@/modules/admissions/pages/ExamWarningsPage.vue'),
+        meta: { title: 'Aulas Afectadas por Examen' },
     },
 ]

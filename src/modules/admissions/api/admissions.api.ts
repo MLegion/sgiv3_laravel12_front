@@ -161,5 +161,39 @@ export default {
             register:     apiUrl('/admissions/register'),
             activeWindow: (collegeId: string | number) => apiUrl(`/admissions/active-window?college_id=${collegeId}`),
         },
+        examProctorCandidates: apiUrl('/admissions/exam-proctor-candidates'),
+        examSessions: {
+            list:             apiUrl('/admissions/exam-sessions'),
+            byId:             (id: string | number) => apiUrl(`/admissions/exam-sessions/${id}`),
+            create:           apiUrl('/admissions/exam-sessions'),
+            update:           (id: string | number) => apiUrl(`/admissions/exam-sessions/${id}`),
+            delete:           (id: string | number) => apiUrl(`/admissions/exam-sessions/${id}`),
+            reschedule:       (id: string | number) => apiUrl(`/admissions/exam-sessions/${id}/reschedule`),
+            cancel:           (id: string | number) => apiUrl(`/admissions/exam-sessions/${id}/cancel`),
+            previewConflicts: apiUrl('/admissions/exam-sessions/preview-conflicts'),
+
+            proctors: {
+                list:   (sessionId: string | number) => apiUrl(`/admissions/exam-sessions/${sessionId}/proctors`),
+                create: (sessionId: string | number) => apiUrl(`/admissions/exam-sessions/${sessionId}/proctors`),
+                delete: (sessionId: string | number, id: string | number) => apiUrl(`/admissions/exam-sessions/${sessionId}/proctors/${id}`),
+            },
+
+            assignments: {
+                list:   (sessionId: string | number) => apiUrl(`/admissions/exam-sessions/${sessionId}/assignments`),
+                create: (sessionId: string | number) => apiUrl(`/admissions/exam-sessions/${sessionId}/assignments`),
+                delete: (sessionId: string | number, id: string | number) => apiUrl(`/admissions/exam-sessions/${sessionId}/assignments/${id}`),
+            },
+
+            warnings: (sessionId: string | number) => apiUrl(`/admissions/exam-sessions/${sessionId}/warnings`),
+        },
+        examAssignments: {
+            autoDistribute: apiUrl('/admissions/exam-assignments/auto-distribute'),
+            bulkReassign:   apiUrl('/admissions/exam-assignments/bulk-reassign'),
+        },
+        examWarnings: {
+            myCareers:   apiUrl('/admissions/exam-warnings/my-careers'),
+            acknowledge: (id: string | number) => apiUrl(`/admissions/exam-warnings/${id}/acknowledge`),
+        },
+        portalExamPass: apiUrl('/admissions/portal/exam-pass'),
     },
 } satisfies ApiModule
