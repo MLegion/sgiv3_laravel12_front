@@ -236,12 +236,49 @@ function onPrint() {
 onMounted(load)
 </script>
 
-<style scoped>
+<style>
+/*
+ * Estilo NO scoped: se aplica globalmente sólo mientras esta página está
+ * montada. Esconde el chrome del layout (sidebar/navbar/breadcrumbs) y
+ * deja visible únicamente la tarjeta del pase, ocupando toda la página.
+ */
 @media print {
-    :deep(aside),
-    :deep(nav),
-    :deep(header) {
+    @page {
+        size: A4 portrait;
+        margin: 12mm;
+    }
+
+    /* Conservar los fondos/bordes de color en la impresión */
+    *, *::before, *::after {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Ocultar todo el chrome de la app */
+    body > *:not(#app),
+    aside,
+    nav,
+    header,
+    .print\:hidden {
         display: none !important;
+    }
+
+    /* Reset del layout: el contenedor scrolleable estorba al imprimir */
+    html, body, #app, main {
+        height: auto !important;
+        overflow: visible !important;
+        background: #fff !important;
+    }
+    main, main > div, main > div > div {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: none !important;
+        overflow: visible !important;
+    }
+
+    /* La tarjeta del pase a tamaño completo */
+    .max-w-3xl {
+        max-width: none !important;
     }
 }
 </style>
