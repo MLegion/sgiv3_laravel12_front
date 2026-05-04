@@ -1,8 +1,30 @@
 <template>
     <div class="max-w-3xl space-y-6">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between flex-wrap gap-2">
             <h1 class="text-xl font-semibold text-slate-800">DETALLE - ASPIRANTE</h1>
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-wrap">
+                <button
+                    class="flex items-center gap-1 px-3 py-2 text-sm border rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                    :disabled="!neighbors.prevId"
+                    title="Aspirante anterior (alfabético)"
+                    @click="goToNeighbor(neighbors.prevId)"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                    ANTERIOR
+                </button>
+                <button
+                    class="flex items-center gap-1 px-3 py-2 text-sm border rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                    :disabled="!neighbors.nextId"
+                    title="Aspirante siguiente (alfabético)"
+                    @click="goToNeighbor(neighbors.nextId)"
+                >
+                    SIGUIENTE
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                </button>
                 <button class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="router.back()">VOLVER</button>
                 <button
                     class="px-3 py-2 text-sm rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50"
@@ -173,7 +195,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -184,6 +206,7 @@ import type { Applicant } from '@/modules/admissions/types/applicant.type'
 import { STATUS_OPTIONS, STATUS_CLASSES } from '@/modules/admissions/types/applicant.type'
 import type { ApplicantDocument } from '@/modules/admissions/types/applicant-document.type'
 import { DOC_STATUS_OPTIONS, DOC_STATUS_CLASSES } from '@/modules/admissions/types/applicant-document.type'
+import { useAdmissionPeriodStore } from '@/modules/admissions/stores/admission-period.store'
 
 const route = useRoute()
 const router = useRouter()
@@ -193,6 +216,9 @@ const applicant = ref<Applicant>({} as Applicant)
 const documents = ref<ApplicantDocument[]>([])
 const resetting = ref(false)
 const resetCredentials = ref<{ email: string; password: string } | null>(null)
+
+const periodStore = useAdmissionPeriodStore()
+const neighbors = ref<{ prevId: number | null; nextId: number | null }>({ prevId: null, nextId: null })
 
 async function fetchData() {
     loading.value = true
@@ -212,6 +238,28 @@ async function fetchDocuments() {
     } finally {
         loadingDocs.value = false
     }
+}
+
+async function fetchNeighbors() {
+    try {
+        const params: Record<string, any> = {}
+        if (periodStore.selectedPeriodId !== null) params.academic_period_id = periodStore.selectedPeriodId
+        const { data } = await api.get(API.ADMISSIONS_API.applicants.neighbors(route.params.id as string), { params })
+        neighbors.value = { prevId: data.prevId ?? null, nextId: data.nextId ?? null }
+    } catch {
+        neighbors.value = { prevId: null, nextId: null }
+    }
+}
+
+function goToNeighbor(id: number | null) {
+    if (!id) return
+    router.push({ name: 'admissions.applicants.show', params: { id } })
+}
+
+function onKeyDown(e: KeyboardEvent) {
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+    if (e.key === 'ArrowLeft' && neighbors.value.prevId)  goToNeighbor(neighbors.value.prevId)
+    if (e.key === 'ArrowRight' && neighbors.value.nextId) goToNeighbor(neighbors.value.nextId)
 }
 
 function formatDate(value?: string | null) {
@@ -241,5 +289,20 @@ function formatSize(kb?: number | null) {
 onMounted(() => {
     fetchData()
     fetchDocuments()
+    fetchNeighbors()
+    window.addEventListener('keydown', onKeyDown)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', onKeyDown)
+})
+
+// Refrescar al navegar entre aspirantes (cambio de :id en la URL)
+watch(() => route.params.id, (newId, oldId) => {
+    if (newId && newId !== oldId) {
+        fetchData()
+        fetchDocuments()
+        fetchNeighbors()
+    }
 })
 </script>

@@ -41,6 +41,7 @@ export default {
             photo:         (id: string | number) => apiUrl(`/admissions/applicants/${id}/photo`),
             avatar:        (id: string | number, size: 'sm' | 'md' | 'lg' = 'md') => apiUrl(`/admissions/applicants/${id}/avatar?size=${size}`),
             resetPassword: (id: string | number) => apiUrl(`/admissions/applicants/${id}/reset-password`),
+            neighbors:     (id: string | number) => apiUrl(`/admissions/applicants/${id}/neighbors`),
         },
         config: {
             get:    apiUrl('/admissions/config'),

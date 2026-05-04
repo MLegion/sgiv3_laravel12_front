@@ -22,7 +22,7 @@
         >
             <template #cell-names="{ row }">
                 <span class="font-medium text-slate-700">
-                    {{ row.names }} {{ row.firstSurname }}
+                    {{ [row.firstSurname, row.secondSurname, row.names].filter(Boolean).join(' ') || '—' }}
                 </span>
             </template>
 
@@ -130,7 +130,7 @@ const periodFilter = computed(() =>
 
 const columns: DataTableColumn<Applicant>[] = [
     { key: 'id',       label: '#',       field: 'id',    sortable: true },
-    { key: 'names',    label: 'NOMBRE',  field: 'names', sortable: true },
+    { key: 'names',    label: 'NOMBRE COMPLETO',  field: 'first_surname', sortable: true },
     { key: 'applicationFolio', label: 'FOLIO', field: 'applicationFolio' },
     { key: 'email',    label: 'EMAIL',   field: 'email', sortable: true },
     { key: 'oferta',   label: 'OFERTA' },
