@@ -107,6 +107,7 @@ export interface PreviewConflictsPayload {
     start_time: string
     duration_minutes?: number | null
     exclude_session_id?: number | null
+    academic_period_id?: number | null
 }
 
 export interface PreviewConflictsResponse {

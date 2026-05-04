@@ -428,6 +428,7 @@ async function onSubmit() {
             start_time:         form.value.start_time,
             duration_minutes:   form.value.duration_minutes,
             exclude_session_id: editing.value?.id ?? null,
+            academic_period_id: filterPeriodId.value,
         })
 
         if (data.hasConflicts) {
