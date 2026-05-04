@@ -11,6 +11,7 @@ export interface ConfigKeyDef {
     placeholder: string | null
     group: string | null
     values: string[] | null       // para "enum" via values
+    value_labels: Record<string, string> | null  // map valor → etiqueta visible (i18n)
     min: number | null
     max: number | null
     requires: Record<string, unknown> | null

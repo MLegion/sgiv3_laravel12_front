@@ -23,7 +23,7 @@
                     @change="setValue(keyName, ($event.target as HTMLSelectElement).value)"
                     class="mt-1 w-full h-9 border rounded-md px-3 text-sm bg-white"
                 >
-                    <option v-for="opt in keyDef.values" :key="opt" :value="opt">{{ opt }}</option>
+                    <option v-for="opt in keyDef.values" :key="opt" :value="opt">{{ keyDef.value_labels?.[opt] ?? opt }}</option>
                 </select>
             </template>
 
