@@ -108,6 +108,17 @@
 
                     <hr class="border-slate-100" />
 
+                    <!-- Código QR para verificación de asistencia -->
+                    <div v-if="qrDataUrl" class="flex flex-col items-center gap-2 py-2">
+                        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Código de asistencia</p>
+                        <img :src="qrDataUrl" alt="QR de asistencia" class="w-44 h-44 border border-slate-200 rounded-md" />
+                        <p class="text-[10px] text-slate-400 italic text-center max-w-xs">
+                            Muéstralo al cuidador el día del examen para registrar tu asistencia.
+                        </p>
+                    </div>
+
+                    <hr class="border-slate-100" />
+
                     <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-1.5">
                         <p class="text-[11px] font-semibold text-slate-700 uppercase tracking-wide">Recordatorios</p>
                         <ul class="text-[11px] text-slate-600 space-y-1 list-disc list-inside">
@@ -132,6 +143,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { ClockIcon, PencilSquareIcon, PrinterIcon } from '@heroicons/vue/24/outline'
+import QRCode from 'qrcode'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 
@@ -160,6 +172,7 @@ const pass = ref<PassResponse | null>(null)
 const applicant = ref<any>(null)
 const loading = ref(true)
 const error   = ref<string | null>(null)
+const qrDataUrl = ref<string | null>(null)
 
 const fullName = computed(() => {
     const a = applicant.value
@@ -188,10 +201,31 @@ async function load() {
         ])
         pass.value      = passRes.data
         applicant.value = meRes.data
+
+        // Si hay sesión asignada, generar el QR de asistencia
+        if (passRes.data?.session) {
+            await loadQr()
+        }
     } catch (e: any) {
         error.value = e?.response?.data?.message ?? 'No se pudo cargar el pase de examen.'
     } finally {
         loading.value = false
+    }
+}
+
+async function loadQr() {
+    try {
+        const { data } = await api.get<{ token?: string }>(API.ADMISSIONS_API.portalExamPassToken)
+        if (data?.token) {
+            qrDataUrl.value = await QRCode.toDataURL(data.token, {
+                errorCorrectionLevel: 'M',
+                margin: 1,
+                width: 320,
+                color: { dark: '#000000', light: '#ffffff' },
+            })
+        }
+    } catch {
+        qrDataUrl.value = null
     }
 }
 

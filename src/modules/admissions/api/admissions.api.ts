@@ -195,6 +195,14 @@ export default {
             myCareers:   apiUrl('/admissions/exam-warnings/my-careers'),
             acknowledge: (id: string | number) => apiUrl(`/admissions/exam-warnings/${id}/acknowledge`),
         },
-        portalExamPass: apiUrl('/admissions/portal/exam-pass'),
+        portalExamPass:      apiUrl('/admissions/portal/exam-pass'),
+        portalExamPassToken: apiUrl('/admissions/portal/exam-pass/token'),
+        examAttendance: {
+            mySessions: apiUrl('/admissions/exam-attendance/my-sessions'),
+            start:      (sessionId: string | number) => apiUrl(`/admissions/exam-attendance/sessions/${sessionId}/start`),
+            close:      (sessionId: string | number) => apiUrl(`/admissions/exam-attendance/sessions/${sessionId}/close`),
+            checkIn:    (sessionId: string | number) => apiUrl(`/admissions/exam-attendance/sessions/${sessionId}/check-in`),
+            mark:       (assignmentId: string | number) => apiUrl(`/admissions/exam-attendance/assignments/${assignmentId}/status`),
+        },
     },
 } satisfies ApiModule

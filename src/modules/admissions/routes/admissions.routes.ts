@@ -313,4 +313,18 @@ export default [
         component: () => import('@/modules/admissions/pages/ExamWarningsPage.vue'),
         meta: { title: 'Aulas Afectadas por Examen' },
     },
+
+    // Cuidador: pase de lista
+    {
+        path: 'admissions/my-proctor-sessions',
+        name: 'admissions.proctor.my-sessions',
+        component: () => import('@/modules/admissions/pages/MyProctorSessionsPage.vue'),
+        meta: { title: 'Mis Sesiones de Examen' },
+    },
+    {
+        path: 'admissions/my-proctor-sessions/:id',
+        name: 'admissions.proctor.session',
+        component: () => import('@/modules/admissions/pages/ProctorExamSessionPage.vue'),
+        meta: { title: 'Pase de Lista' },
+    },
 ]

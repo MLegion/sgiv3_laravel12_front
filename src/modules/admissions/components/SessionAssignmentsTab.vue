@@ -71,6 +71,7 @@
                     <th class="px-2 py-1 text-left">Folio</th>
                     <th class="px-2 py-1 text-left">Asignación</th>
                     <th class="px-2 py-1 text-center">Asiento</th>
+                    <th class="px-2 py-1 text-center">Asistencia</th>
                     <th class="px-2 py-1 text-center">Acciones</th>
                 </tr>
             </thead>
@@ -90,6 +91,11 @@
                         </span>
                     </td>
                     <td class="px-2 py-1 text-center text-slate-600">{{ a.seatNumber ?? '—' }}</td>
+                    <td class="px-2 py-1 text-center">
+                        <span :class="attendanceClass(a.attendanceStatus || 'PENDING')" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded">
+                            {{ attendanceLabel(a.attendanceStatus || 'PENDING') }}
+                        </span>
+                    </td>
                     <td class="px-2 py-1 text-center">
                         <button
                             class="border p-1 rounded text-slate-500 hover:text-red-600 hover:bg-red-50"
@@ -199,6 +205,24 @@ async function unassign(a: ApplicantExamAssignment) {
     await api.delete(API.ADMISSIONS_API.examSessions.assignments.delete(props.session.id, a.id))
     await load()
     emit('changed')
+}
+
+function attendanceLabel(s: string): string {
+    return ({
+        PENDING: 'Pendiente',
+        PRESENT: 'Presente',
+        ABSENT:  'Ausente',
+        INCOMPLETE: 'No term.',
+    } as Record<string, string>)[s] ?? s
+}
+
+function attendanceClass(s: string): string {
+    return ({
+        PENDING: 'bg-slate-100 text-slate-600',
+        PRESENT: 'bg-emerald-100 text-emerald-700',
+        ABSENT:  'bg-red-100 text-red-700',
+        INCOMPLETE: 'bg-amber-100 text-amber-700',
+    } as Record<string, string>)[s] ?? 'bg-slate-100 text-slate-600'
 }
 
 onMounted(load)

@@ -13,6 +13,9 @@ export interface ApplicantExamAssignment {
     seatNumber: number | null
     assignedByUserId: number | null
     assignmentMethod: AssignmentMethod
+    attendanceStatus?: 'PENDING' | 'PRESENT' | 'ABSENT' | 'INCOMPLETE'
+    attendedAt?: string | null
+    attendedByUserId?: number | null
     createdAt: string | null
     updatedAt: string | null
     applicant: {
