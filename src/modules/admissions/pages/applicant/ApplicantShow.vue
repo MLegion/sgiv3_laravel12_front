@@ -25,7 +25,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                     </svg>
                 </button>
-                <button class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="router.back()">VOLVER</button>
+                <button class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="router.push({ name: 'admissions.applicants' })">VOLVER</button>
                 <button
                     class="px-3 py-2 text-sm rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50"
                     :disabled="loading"
