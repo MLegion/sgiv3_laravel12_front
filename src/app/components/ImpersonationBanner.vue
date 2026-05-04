@@ -1,7 +1,7 @@
 <template>
     <div
         v-if="auth.isImpersonating"
-        class="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-b-2 border-amber-700 shadow-md z-[90] relative"
+        class="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-b-2 border-amber-700 shadow-md z-[90] relative print:hidden"
     >
         <div class="px-4 md:px-6 py-2 flex items-center justify-between gap-4 max-w-[1920px] mx-auto">
             <div class="flex items-center gap-3 min-w-0">
