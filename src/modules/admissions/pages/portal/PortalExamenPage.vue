@@ -6,33 +6,117 @@
             Cargando...
         </div>
 
-        <!-- Modo ONLINE -->
-        <div
-            v-else-if="pass?.mode === 'online'"
-            class="bg-white border rounded-xl shadow-sm p-10 text-center space-y-2"
-        >
-            <PencilSquareIcon class="w-12 h-12 mx-auto text-slate-300" />
-            <p class="text-sm text-slate-700 font-semibold uppercase">Examen en línea</p>
-            <p class="text-sm text-slate-500">
-                El examen de admisión se aplica desde este portal. Próximamente verás aquí el botón para iniciar.
-            </p>
+        <!-- 1. Mixto sin elegir → tarjetas de elección -->
+        <div v-else-if="pass?.status === 'CHOOSE_MODE'" class="space-y-4 print:hidden">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 text-sm text-blue-800">
+                Tu plantel ofrece dos modalidades de examen. Elige cómo quieres presentar.
+                Podrás cambiar tu elección mientras no presentes el examen.
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                    type="button"
+                    :disabled="choosing"
+                    class="group bg-white border-2 border-slate-200 rounded-xl p-6 text-left hover:border-blue-500 hover:shadow-lg transition disabled:opacity-50"
+                    @click="onChoose('online')"
+                >
+                    <ComputerDesktopIcon class="w-10 h-10 text-blue-600 mb-3" />
+                    <h3 class="text-base font-bold text-slate-800 uppercase">En línea</h3>
+                    <p class="text-xs text-slate-600 mt-1">Presentas el examen desde tu computadora en el horario que elijas dentro del periodo.</p>
+                </button>
+                <button
+                    type="button"
+                    :disabled="choosing"
+                    class="group bg-white border-2 border-slate-200 rounded-xl p-6 text-left hover:border-purple-500 hover:shadow-lg transition disabled:opacity-50"
+                    @click="onChoose('presencial')"
+                >
+                    <BuildingLibraryIcon class="w-10 h-10 text-purple-600 mb-3" />
+                    <h3 class="text-base font-bold text-slate-800 uppercase">Presencial</h3>
+                    <p class="text-xs text-slate-600 mt-1">Asistes al plantel en la fecha y aula que se te asigne.</p>
+                </button>
+            </div>
+            <p v-if="chooseError" class="text-xs text-red-600">{{ chooseError }}</p>
         </div>
 
-        <!-- PRESENCIAL / MIXTO sin asignación -->
+        <!-- 2. ONLINE puro o mixto-online READY (no presentado) -->
+        <div
+            v-else-if="pass?.status === 'READY_ONLINE' || (pass?.effectiveMode === 'online' && pass?.status !== 'TAKEN' && pass?.mode === 'online')"
+            class="bg-white border rounded-xl shadow-sm p-8 text-center space-y-4 print:hidden"
+        >
+            <ComputerDesktopIcon class="w-12 h-12 mx-auto text-blue-500" />
+            <p class="text-base font-semibold text-slate-800 uppercase">Examen en línea</p>
+            <p class="text-sm text-slate-600 max-w-md mx-auto">
+                Presentarás el examen desde el sistema en línea. Asegúrate de tener buena conexión a internet
+                y un lugar tranquilo antes de iniciar.
+            </p>
+            <div v-if="pass?.examUrl">
+                <a
+                    :href="pass.examUrl"
+                    target="_blank"
+                    rel="noopener"
+                    class="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                >
+                    IR AL EXAMEN
+                    <ArrowTopRightOnSquareIcon class="w-4 h-4" />
+                </a>
+            </div>
+            <p v-else class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-3 max-w-sm mx-auto">
+                La URL del examen aún no está disponible. Vuelve más tarde.
+            </p>
+
+            <button
+                v-if="pass?.canChange"
+                type="button"
+                class="text-xs text-slate-500 hover:text-slate-700 underline mt-4"
+                @click="onChange('presencial')"
+            >
+                Cambiar a modalidad presencial
+            </button>
+        </div>
+
+        <!-- 3. TAKEN: ya presentó (online) → bloqueado -->
+        <div v-else-if="pass?.status === 'TAKEN'" class="bg-emerald-50 border border-emerald-200 rounded-xl p-8 text-center space-y-3 print:hidden">
+            <CheckCircleIcon class="w-12 h-12 mx-auto text-emerald-500" />
+            <p class="text-base font-bold text-emerald-800 uppercase">Examen presentado</p>
+            <div class="text-sm text-emerald-700 space-y-1">
+                <p v-if="pass.result?.takenAt">Fecha: <strong>{{ formatLongDate(pass.result.takenAt.slice(0,10)) }}</strong></p>
+                <p v-if="pass.result?.score !== null && pass.result?.score !== undefined">
+                    Calificación: <strong>{{ pass.result.score.toFixed(2) }}</strong>
+                </p>
+            </div>
+            <p class="text-xs text-emerald-600 italic">Tu resultado fue registrado.</p>
+        </div>
+
+        <!-- 4. PRESENCIAL/MIXTO sin asignación -->
         <div
             v-else-if="pass?.status === 'PENDING'"
             class="bg-amber-50 border border-amber-200 rounded-xl p-10 text-center space-y-3"
         >
-            <ClockIcon class="w-12 h-12 mx-auto text-amber-400" />
+            <ClockIcon class="w-12 h-12 mx-auto text-amber-400 print:hidden" />
             <p class="text-base font-bold text-amber-800 uppercase tracking-wide">Pendiente de asignar</p>
             <p class="text-sm text-amber-700 max-w-md mx-auto">
-                {{ pass?.message || 'Tu sesión se publicará próximamente. Vuelve a esta sección cuando se libere la logística del examen presencial.' }}
+                {{ pass?.message || 'Tu sesión se publicará próximamente.' }}
             </p>
+            <button
+                v-if="pass?.canChange"
+                type="button"
+                class="text-xs text-slate-500 hover:text-slate-700 underline mt-2 print:hidden"
+                @click="onChange('online')"
+            >
+                Cambiar a modalidad en línea
+            </button>
         </div>
 
-        <!-- PRESENCIAL / MIXTO con sesión asignada → Pase -->
+        <!-- 5. PRESENCIAL/MIXTO con sesión asignada → Pase + QR -->
         <div v-else-if="pass?.session" class="space-y-3 print:space-y-2">
-            <div class="flex justify-end print:hidden">
+            <div class="flex justify-end gap-2 print:hidden">
+                <button
+                    v-if="pass?.canChange"
+                    type="button"
+                    class="px-3 py-2 text-xs rounded-lg border hover:bg-slate-50"
+                    @click="onChange('online')"
+                >
+                    Cambiar a en línea
+                </button>
                 <button
                     class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-slate-800 text-white hover:bg-slate-900"
                     @click="onPrint"
@@ -43,7 +127,6 @@
             </div>
 
             <div class="bg-white border-2 border-slate-300 rounded-xl shadow-sm overflow-hidden print:shadow-none print:border-black">
-                <!-- Encabezado -->
                 <div class="bg-blue-600 text-white px-6 py-4 print:bg-black">
                     <p class="text-[10px] font-bold uppercase tracking-widest opacity-80">Pase de Examen de Admisión</p>
                     <h2 class="text-lg font-bold uppercase tracking-wide mt-0.5">
@@ -59,13 +142,10 @@
                         <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-0.5">Aspirante</p>
                         <p class="text-lg font-bold text-slate-800 uppercase">{{ fullName }}</p>
                         <p class="text-xs text-slate-500 mt-0.5">
-                            Folio:
-                            <span class="font-mono font-bold text-slate-800">{{ applicant?.preApplicationFolio || '—' }}</span>
+                            Folio: <span class="font-mono font-bold text-slate-800">{{ applicant?.preApplicationFolio || '—' }}</span>
                         </p>
                     </div>
-
                     <hr class="border-slate-100" />
-
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div>
                             <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-0.5">Fecha</p>
@@ -108,7 +188,6 @@
 
                     <hr class="border-slate-100" />
 
-                    <!-- Código QR para verificación de asistencia -->
                     <div v-if="qrDataUrl" class="flex flex-col items-center gap-2 py-2">
                         <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Código de asistencia</p>
                         <img :src="qrDataUrl" alt="QR de asistencia" class="w-44 h-44 border border-slate-200 rounded-md" />
@@ -142,15 +221,30 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { ClockIcon, PencilSquareIcon, PrinterIcon } from '@heroicons/vue/24/outline'
+import {
+    ArrowTopRightOnSquareIcon,
+    BuildingLibraryIcon,
+    CheckCircleIcon,
+    ClockIcon,
+    ComputerDesktopIcon,
+    PrinterIcon,
+} from '@heroicons/vue/24/outline'
 import QRCode from 'qrcode'
 import { api } from '@/shared/services/api'
+import { apiUrl } from '@/shared/api/config'
 import { API } from '@/shared/api'
 
 interface PassResponse {
-    status: 'PENDING' | 'CONFIRMED'
+    status: 'CHOOSE_MODE' | 'READY_ONLINE' | 'TAKEN' | 'PENDING' | 'CONFIRMED'
     mode:   'online' | 'presencial' | 'mixto'
+    globalMode: 'online' | 'presencial' | 'mixto'
+    chosenMode: 'online' | 'presencial' | null
+    effectiveMode: 'online' | 'presencial' | null
+    canChange: boolean
+    alreadyTaken: boolean
+    examUrl: string | null
     message?: string
+    result?: { score: number | null; takenAt: string | null } | null
     session?: {
         id:         number
         date:       string
@@ -158,6 +252,7 @@ interface PassResponse {
         endTime:    string
         status:     string
         seatNumber: number | null
+        attendanceStatus?: string | null
         place: {
             id:        number
             name:      string
@@ -173,6 +268,8 @@ const applicant = ref<any>(null)
 const loading = ref(true)
 const error   = ref<string | null>(null)
 const qrDataUrl = ref<string | null>(null)
+const choosing = ref(false)
+const chooseError = ref<string | null>(null)
 
 const fullName = computed(() => {
     const a = applicant.value
@@ -202,9 +299,10 @@ async function load() {
         pass.value      = passRes.data
         applicant.value = meRes.data
 
-        // Si hay sesión asignada, generar el QR de asistencia
         if (passRes.data?.session) {
             await loadQr()
+        } else {
+            qrDataUrl.value = null
         }
     } catch (e: any) {
         error.value = e?.response?.data?.message ?? 'No se pudo cargar el pase de examen.'
@@ -229,6 +327,24 @@ async function loadQr() {
     }
 }
 
+async function onChoose(mode: 'online' | 'presencial') {
+    chooseError.value = null
+    choosing.value = true
+    try {
+        await api.post(apiUrl('/admissions/portal/exam-mode/choose'), { mode })
+        await load()
+    } catch (e: any) {
+        chooseError.value = e?.response?.data?.message ?? 'No se pudo guardar la elección.'
+    } finally {
+        choosing.value = false
+    }
+}
+
+async function onChange(mode: 'online' | 'presencial') {
+    if (!confirm(`¿Cambiar a modalidad ${mode === 'online' ? 'EN LÍNEA' : 'PRESENCIAL'}?`)) return
+    await onChoose(mode)
+}
+
 function onPrint() {
     window.print()
 }
@@ -237,24 +353,15 @@ onMounted(load)
 </script>
 
 <style>
-/*
- * Estilo NO scoped: se aplica globalmente sólo mientras esta página está
- * montada. Esconde el chrome del layout (sidebar/navbar/breadcrumbs) y
- * deja visible únicamente la tarjeta del pase, ocupando toda la página.
- */
 @media print {
     @page {
         size: A4 portrait;
         margin: 12mm;
     }
-
-    /* Conservar los fondos/bordes de color en la impresión */
     *, *::before, *::after {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
-
-    /* Ocultar todo el chrome de la app */
     body > *:not(#app),
     aside,
     nav,
@@ -262,8 +369,6 @@ onMounted(load)
     .print\:hidden {
         display: none !important;
     }
-
-    /* Reset del layout: el contenedor scrolleable estorba al imprimir */
     html, body, #app, main {
         height: auto !important;
         overflow: visible !important;
@@ -275,8 +380,6 @@ onMounted(load)
         max-width: none !important;
         overflow: visible !important;
     }
-
-    /* La tarjeta del pase a tamaño completo */
     .max-w-3xl {
         max-width: none !important;
     }
