@@ -2,13 +2,50 @@
     <div class="space-y-6">
 
         <!-- Encabezado -->
-        <div>
-            <h1 class="text-xl font-semibold text-slate-800 uppercase">Cargar Resultados de Examen</h1>
-            <p class="mt-1 text-sm text-slate-500">
-                Carga las calificaciones del examen de admisión. Los aspirantes cambiarán al estado
-                <span class="font-semibold text-purple-700">Con Resultado</span>.
-            </p>
+        <div class="flex items-start justify-between gap-3 flex-wrap">
+            <div>
+                <h1 class="text-xl font-semibold text-slate-800 uppercase">Cargar Resultados de Examen</h1>
+                <p class="mt-1 text-sm text-slate-500">
+                    Carga las calificaciones del examen de admisión. Los aspirantes cambiarán al estado
+                    <span class="font-semibold text-purple-700">Con Resultado</span>.
+                </p>
+            </div>
+
+            <!-- Botón sincronizar (sólo si online + outbound configurado) -->
+            <button
+                v-if="syncStatus?.enabled"
+                :disabled="syncing"
+                class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+                @click="onSync"
+            >
+                <ArrowPathIcon class="w-4 h-4" :class="{ 'animate-spin': syncing }" />
+                {{ syncing ? 'SINCRONIZANDO...' : 'SINCRONIZAR DESDE SISTEMA EXTERNO' }}
+            </button>
         </div>
+
+        <!-- Resultado de la última sincronización -->
+        <div
+            v-if="syncResult"
+            :class="[
+                'border rounded-lg p-3 text-sm',
+                syncResult.failed > 0 ? 'border-amber-300 bg-amber-50' : 'border-emerald-300 bg-emerald-50',
+            ]"
+        >
+            <p class="font-semibold">
+                Procesados: {{ syncResult.processed }} ·
+                Éxito: <span class="text-emerald-700">{{ syncResult.success }}</span> ·
+                Fallidos: <span class="text-red-700">{{ syncResult.failed }}</span> ·
+                Omitidos: <span class="text-slate-600">{{ syncResult.skipped }}</span>
+            </p>
+            <details v-if="(syncResult.errors?.length ?? 0) > 0" class="mt-1 text-xs">
+                <summary class="cursor-pointer text-slate-600">Ver errores ({{ syncResult.errors?.length }})</summary>
+                <ul class="mt-1 list-disc list-inside text-slate-600 space-y-0.5">
+                    <li v-for="(e, i) in syncResult.errors?.slice(0, 20)" :key="i">{{ e }}</li>
+                    <li v-if="(syncResult.errors?.length ?? 0) > 20" class="italic">... y más</li>
+                </ul>
+            </details>
+        </div>
+        <p v-else-if="syncError" class="text-xs text-red-600">{{ syncError }}</p>
 
         <!-- Tabs -->
         <div class="flex gap-1 border-b border-slate-200">
@@ -226,7 +263,8 @@ EFGH789012MDFYYY01,72.0</pre>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { ArrowPathIcon } from '@heroicons/vue/24/outline'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -234,6 +272,52 @@ import { API } from '@/shared/api'
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 
 const tab = ref<'csv' | 'manual'>('csv')
+
+// ── Sincronización con sistema externo ────────────────────────────────────────
+
+interface SyncStatus {
+    mode: string
+    providerKind: string
+    configured: boolean
+    enabled: boolean
+}
+interface SyncResult {
+    processed: number
+    success: number
+    failed: number
+    skipped: number
+    errors?: string[]
+}
+
+const syncStatus = ref<SyncStatus | null>(null)
+const syncResult = ref<SyncResult | null>(null)
+const syncing    = ref(false)
+const syncError  = ref<string | null>(null)
+
+async function loadSyncStatus() {
+    try {
+        const { data } = await api.get<SyncStatus>(API.ADMISSIONS_API.examOnlineSync.status)
+        syncStatus.value = data
+    } catch {
+        syncStatus.value = null
+    }
+}
+
+async function onSync() {
+    syncing.value = true
+    syncError.value = null
+    try {
+        const { data } = await api.post<SyncResult>(API.ADMISSIONS_API.examOnlineSync.run)
+        syncResult.value = data
+    } catch (e: any) {
+        syncResult.value = null
+        syncError.value = e?.response?.data?.message ?? 'No se pudo sincronizar.'
+    } finally {
+        syncing.value = false
+    }
+}
+
+onMounted(loadSyncStatus)
 
 // ── Resultado compartido ──────────────────────────────────────────────────────
 

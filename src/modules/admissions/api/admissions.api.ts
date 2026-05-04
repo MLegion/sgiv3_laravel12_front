@@ -154,6 +154,10 @@ export default {
             json: apiUrl('/admissions/applicants/scores'),
             csv:  apiUrl('/admissions/applicants/scores/csv'),
         },
+        examOnlineSync: {
+            status: apiUrl('/admissions/exam-online/sync-status'),
+            run:    apiUrl('/admissions/exam-online/sync'),
+        },
         applicantRanking: {
             list:      (params: string) => apiUrl(`/admissions/applicants/ranking?${params}`),
             admitBulk: apiUrl('/admissions/applicants/admit-bulk'),
