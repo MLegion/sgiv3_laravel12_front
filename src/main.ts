@@ -6,6 +6,10 @@ import router from '@/app/router'
 // Importación de estilos globales (Tailwind CSS)
 import '@/assets/styles/main.css'
 
+// Inicialización de Laravel Echo (WebSocket via Reverb).
+// El módulo asigna `window.Echo` al cargarse — se importa side-effect.
+import '@/shared/services/echo'
+
 /**
  * Inicialización de la aplicación SGI v3.
  * * El orden de los plugins es importante:

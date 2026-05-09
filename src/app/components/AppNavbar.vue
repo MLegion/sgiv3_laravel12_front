@@ -24,6 +24,9 @@
         <!-- Lado Derecho: Usuario y Acciones -->
         <div class="flex items-center gap-2 md:gap-4">
 
+            <!-- Campana de notificaciones -->
+            <NotificationsBell />
+
             <!-- Información Usuario (Oculta en móviles muy pequeños) -->
             <div class="hidden md:block text-right">
                 <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-0.5">Usuario</p>
@@ -168,6 +171,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { Bars3BottomLeftIcon, UserCircleIcon, ArrowRightStartOnRectangleIcon } from '@heroicons/vue/24/outline'
+import NotificationsBell from '@/modules/notifications/components/NotificationsBell.vue'
 
 const auth = useAuthStore()
 defineEmits(['toggle-sidebar'])
