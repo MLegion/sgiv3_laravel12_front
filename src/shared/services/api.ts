@@ -1,7 +1,32 @@
 import axios from 'axios'
 
+// Resuelve la URL base del API. Si el hostname desde el que se cargó la página
+// difiere del hostname configurado en VITE_API_URL (ej: entras desde la IP LAN
+// en un celular en lugar del dominio local), usamos el hostname actual para que
+// las llamadas no apunten a un host inalcanzable.
+function resolveApiBaseUrl(): string {
+    const fromEnv = import.meta.env.VITE_API_URL as string | undefined
+    if (typeof window === 'undefined') return fromEnv ?? ''
+
+    // Página en HTTPS (ej: vite con basic-ssl en móvil) → URL relativa para
+    // que Vite haga proxy al backend HTTP y evitar mixed content.
+    if (window.location.protocol === 'https:') return ''
+
+    const pageHost = window.location.hostname
+    const apiPort  = '8080'
+    const fallback = `${window.location.protocol}//${pageHost}:${apiPort}`
+
+    if (!fromEnv) return fallback
+    try {
+        const envHost = new URL(fromEnv).hostname
+        return envHost === pageHost ? fromEnv : fallback
+    } catch {
+        return fallback
+    }
+}
+
 export const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: resolveApiBaseUrl(),
     headers: {
         Accept: 'application/json',
     },
