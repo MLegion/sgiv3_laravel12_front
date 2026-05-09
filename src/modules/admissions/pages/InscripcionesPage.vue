@@ -104,7 +104,7 @@
                                 <label class="flex items-center gap-2 text-gray-600">
                                     <input type="checkbox" v-model="rememberMe" /> Recordarme
                                 </label>
-                                <a href="#" class="text-blue-600 hover:underline">Recuperar contraseña</a>
+                                <RouterLink to="/auth/forgot-password" class="text-blue-600 hover:underline">Recuperar contraseña</RouterLink>
                             </div>
                             <button type="submit" :disabled="loginLoading" class="w-full h-12 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-lg transition shadow-md">
                                 {{ loginLoading ? 'INGRESANDO...' : 'INGRESAR' }}
@@ -158,6 +158,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { useCollegeStore } from '@/modules/auth/stores/college.store'
 import { api } from '@/shared/services/api'

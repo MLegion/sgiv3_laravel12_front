@@ -124,9 +124,9 @@
                             Recordarme
                         </label>
 
-                        <a href="#" class="text-blue-600 hover:underline">
+                        <RouterLink to="/auth/forgot-password" class="text-blue-600 hover:underline">
                             Recuperar contraseña
-                        </a>
+                        </RouterLink>
                     </div>
 
                     <!-- Button -->
@@ -185,6 +185,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { useCollegeStore } from '@/modules/auth/stores/college.store'

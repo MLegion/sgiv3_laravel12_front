@@ -28,4 +28,14 @@ export default [
         component: () => import('@/modules/auth/pages/VerifyEmailPage.vue'),
         meta: { title: 'Verificar correo' }
     },
+    {
+        path: 'forgot-password',
+        component: () => import('@/modules/auth/pages/ForgotPasswordPage.vue'),
+        meta: { title: 'Recuperar contraseña' }
+    },
+    {
+        path: 'reset-password',
+        component: () => import('@/modules/auth/pages/ResetPasswordPage.vue'),
+        meta: { title: 'Restablecer contraseña' }
+    },
 ]
