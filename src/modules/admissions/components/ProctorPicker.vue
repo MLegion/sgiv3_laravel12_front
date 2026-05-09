@@ -186,7 +186,7 @@ async function loadCandidates() {
                 per_page:          15,
             },
         })
-        candidates.value = data?.data ?? []
+        candidates.value = data?.items ?? data?.data ?? []
         searched.value = true
     } finally {
         loading.value = false

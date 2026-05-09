@@ -190,6 +190,7 @@ export default {
             },
 
             warnings: (sessionId: string | number) => apiUrl(`/admissions/exam-sessions/${sessionId}/warnings`),
+            regenerateWarnings: (sessionId: string | number) => apiUrl(`/admissions/exam-sessions/${sessionId}/regenerate-warnings`),
         },
         examAssignments: {
             autoDistribute: apiUrl('/admissions/exam-assignments/auto-distribute'),
@@ -205,6 +206,9 @@ export default {
             mySessions: apiUrl('/admissions/exam-attendance/my-sessions'),
             start:      (sessionId: string | number) => apiUrl(`/admissions/exam-attendance/sessions/${sessionId}/start`),
             close:      (sessionId: string | number) => apiUrl(`/admissions/exam-attendance/sessions/${sessionId}/close`),
+            pause:      (sessionId: string | number) => apiUrl(`/admissions/exam-attendance/sessions/${sessionId}/pause`),
+            resume:     (sessionId: string | number) => apiUrl(`/admissions/exam-attendance/sessions/${sessionId}/resume`),
+            suspend:    (sessionId: string | number) => apiUrl(`/admissions/exam-attendance/sessions/${sessionId}/suspend`),
             checkIn:    (sessionId: string | number) => apiUrl(`/admissions/exam-attendance/sessions/${sessionId}/check-in`),
             mark:       (assignmentId: string | number) => apiUrl(`/admissions/exam-attendance/assignments/${assignmentId}/status`),
         },

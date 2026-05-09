@@ -12,12 +12,16 @@ export interface ProctorSessionListItem {
     date: string
     startTime: string
     endTime: string
-    status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'RESCHEDULED'
+    status: 'SCHEDULED' | 'IN_PROGRESS' | 'PAUSED' | 'COMPLETED' | 'SUSPENDED' | 'CANCELLED' | 'RESCHEDULED'
     capacity: number
     place: { id: number; name: string; shortName: string | null } | null
     academicPeriod: { id: number; name: string; shortName: string } | null
     startedAt: string | null
     closedAt: string | null
+    pausedAt: string | null
+    pauseReason: string | null
+    suspendedAt: string | null
+    suspendReason: string | null
     assignedCount: number
     attendanceCounts: AttendanceCounts
 }
