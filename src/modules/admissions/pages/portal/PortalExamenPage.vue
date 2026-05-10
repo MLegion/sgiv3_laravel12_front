@@ -82,6 +82,10 @@
                 <p v-if="pass.result?.score !== null && pass.result?.score !== undefined">
                     Calificación: <strong>{{ pass.result.score.toFixed(2) }}</strong>
                 </p>
+                <p v-else-if="!pass.resultsReleased && pass.resultsReleaseAt" class="text-amber-700">
+                    Tu calificación estará disponible el
+                    <strong>{{ formatReleaseDateTime(pass.resultsReleaseAt) }}</strong>.
+                </p>
             </div>
             <p class="text-xs text-emerald-600 italic">Tu resultado fue registrado.</p>
         </div>
@@ -244,6 +248,8 @@ interface PassResponse {
     alreadyTaken: boolean
     examUrl: string | null
     message?: string
+    resultsReleased: boolean
+    resultsReleaseAt: string | null
     result?: { score: number | null; takenAt: string | null } | null
     session?: {
         id:         number
@@ -285,6 +291,14 @@ function formatLongDate(s: string): string {
     if (!s) return '—'
     return new Date(s).toLocaleDateString('es-MX', {
         weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
+    })
+}
+
+function formatReleaseDateTime(s: string): string {
+    if (!s) return '—'
+    return new Date(s.replace(' ', 'T')).toLocaleDateString('es-MX', {
+        weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
     })
 }
 

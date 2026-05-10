@@ -97,6 +97,8 @@
                         :active-period-label="activePeriodLabel"
                         :application-folio="applicant.applicationFolio ?? null"
                         :entrance-score="applicant.entranceScore ?? null"
+                        :results-released="applicant.resultsReleased ?? true"
+                        :results-release-at="applicant.resultsReleaseAt ?? null"
                         :applicant-status="applicant.status"
                         :all-offers="allOffers"
                         :campus-options="campusOptions"

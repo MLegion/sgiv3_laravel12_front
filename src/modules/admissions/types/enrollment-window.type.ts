@@ -6,6 +6,8 @@ export interface EnrollmentWindow {
     name: string
     startsAt: string
     endsAt: string
+    resultsReleaseAt: string | null
+    isResultsReleased: boolean
     isActive: boolean
     createdAt: string | null
     updatedAt: string | null

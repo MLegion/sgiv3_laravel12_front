@@ -16,6 +16,18 @@
             </div>
             <ReadField v-if="applicationFolio" label="FOLIO DE SOLICITUD" :value="applicationFolio" />
             <ReadField v-if="entranceScore" label="PUNTAJE DE INGRESO" :value="entranceScore" />
+            <div v-else-if="!resultsReleased && resultsReleaseAt" class="sm:col-span-2 space-y-1">
+                <p class="text-xs text-slate-400">PUNTAJE DE INGRESO</p>
+                <div class="px-3 py-2 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-sm flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>
+                        Tus resultados estarán disponibles el
+                        <span class="font-semibold">{{ formatReleaseDate(resultsReleaseAt) }}</span>.
+                    </span>
+                </div>
+            </div>
         </div>
 
         <hr class="border-slate-200" />
@@ -102,10 +114,20 @@ const props = defineProps<{
     activePeriodLabel: string | null
     applicationFolio: string | null
     entranceScore: string | null
+    resultsReleased: boolean
+    resultsReleaseAt: string | null
     applicantStatus: number
     allOffers: RawOffer[]
     campusOptions: { value: number; label: string }[]
 }>()
+
+function formatReleaseDate(dt: string): string {
+    const d = new Date(dt.replace(' ', 'T'))
+    return d.toLocaleDateString('es-MX', {
+        weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+    })
+}
 
 const selectedCampusId = ref<number | ''>('')
 

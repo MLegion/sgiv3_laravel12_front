@@ -141,6 +141,18 @@
                                 </div>
                             </div>
 
+                            <!-- Liberación de resultados -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">
+                                    Liberar resultados a partir de
+                                    <span class="font-normal normal-case text-slate-400">(opcional)</span>
+                                </label>
+                                <input v-model="form.results_release_at" type="datetime-local" class="field" />
+                                <p class="text-[11px] text-slate-500 mt-1">
+                                    Hasta esta fecha y hora el aspirante NO ve su puntaje en el portal. Vacío = siempre visible.
+                                </p>
+                            </div>
+
                             <p v-if="formError" class="text-xs text-red-600">{{ formError }}</p>
                         </div>
 
@@ -239,6 +251,12 @@ function toDateInput(dt: string): string {
     return dt.slice(0, 10)
 }
 
+function toDateTimeLocalInput(dt: string | null): string {
+    if (!dt) return ''
+    // Backend envía "YYYY-MM-DD HH:MM:SS"; datetime-local espera "YYYY-MM-DDTHH:MM"
+    return dt.slice(0, 16).replace(' ', 'T')
+}
+
 // ── Modal Crear / Editar ──────────────────────────────────────────────────────
 
 const modalOpen  = ref(false)
@@ -250,12 +268,19 @@ const form = ref({
     name:               '',
     starts_at:          '',
     ends_at:            '',
+    results_release_at: '',
     academic_period_id: null as number | null,
 })
 
 function openCreate() {
     editing.value   = null
-    form.value      = { name: '', starts_at: '', ends_at: '', academic_period_id: filterPeriodId.value }
+    form.value      = {
+        name: '',
+        starts_at: '',
+        ends_at: '',
+        results_release_at: '',
+        academic_period_id: filterPeriodId.value,
+    }
     formError.value = null
     modalOpen.value = true
 }
@@ -266,6 +291,7 @@ function openEdit(row: EnrollmentWindow) {
         name:               row.name,
         starts_at:          toDateInput(row.startsAt),
         ends_at:            toDateInput(row.endsAt),
+        results_release_at: toDateTimeLocalInput(row.resultsReleaseAt),
         academic_period_id: row.academicPeriodId ?? null,
     }
     formError.value = null
@@ -293,6 +319,9 @@ async function submitForm() {
             name:               form.value.name.toUpperCase(),
             starts_at:          form.value.starts_at + ' 00:00:00',
             ends_at:            form.value.ends_at   + ' 23:59:59',
+            results_release_at: form.value.results_release_at
+                ? form.value.results_release_at.replace('T', ' ') + ':00'
+                : null,
             academic_period_id: form.value.academic_period_id || null,
         }
 
