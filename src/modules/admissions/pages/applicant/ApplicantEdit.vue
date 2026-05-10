@@ -69,6 +69,14 @@
                         <FormInput label="RFC" v-model="form.rfc" uppercase :maxlength="13" />
                         <FormInput label="FECHA DE NACIMIENTO" v-model="form.birth_date" type="date" />
                         <div class="space-y-1">
+                            <label class="text-xs font-medium text-slate-600">SEXO</label>
+                            <select v-model="form.sex" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Seleccionar...</option>
+                                <option value="H">Hombre</option>
+                                <option value="M">Mujer</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
                             <label class="text-xs font-medium text-slate-600">ESTADO CIVIL</label>
                             <select v-model="form.marital_status" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="">Seleccionar...</option>
@@ -530,6 +538,7 @@ const form = ref({
     birth_state_id: null as number | null,
     birth_municipality_id: null as number | null,
     marital_status: '',
+    sex:            '',
     scholarship_id: null as number | null,
     company: '',
     graduation_year: '' as string | '',
@@ -619,6 +628,7 @@ async function fetchData() {
             entrance_score:    data.entranceScore ?? '',
             rfc:                     data.rfc ?? '',
             birth_date:              data.birthDate ?? '',
+            sex:                     data.sex ?? '',
             birth_state_id:          data.birthStateId ?? null,
             birth_municipality_id:   data.birthMunicipalityId ?? null,
             marital_status:          data.maritalStatus ?? '',
@@ -797,6 +807,7 @@ async function submit() {
             curp:                    form.value.curp || null,
             rfc:                     form.value.rfc || null,
             birth_date:              form.value.birth_date || null,
+            sex:                     form.value.sex || null,
             birth_state_id:          form.value.birth_state_id || null,
             birth_municipality_id:   form.value.birth_municipality_id || null,
             marital_status:          form.value.marital_status || null,

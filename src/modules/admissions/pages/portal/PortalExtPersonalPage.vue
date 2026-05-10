@@ -50,6 +50,15 @@
                     <FormInput label="FECHA DE NACIMIENTO" v-model="form.birth_date" type="date" highlight />
 
                     <div class="space-y-1">
+                        <label class="text-xs font-medium text-slate-600">SEXO <span class="text-red-500">*</span></label>
+                        <select v-model="form.sex" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">SELECCIONAR...</option>
+                            <option value="H">HOMBRE</option>
+                            <option value="M">MUJER</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-1">
                         <label class="text-xs font-medium text-slate-600">ESTADO CIVIL</label>
                         <select v-model="form.marital_status" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase">
                             <option value="">SELECCIONAR...</option>
@@ -91,6 +100,7 @@
                     <ReadField label="ESTADO DE NACIMIENTO" :value="stateName" />
                     <ReadField label="MUNICIPIO DE NACIMIENTO" :value="municipalityName" />
                     <ReadField label="FECHA DE NACIMIENTO" :value="form.birth_date" highlight />
+                    <ReadField label="SEXO" :value="SEX_LABELS[form.sex] ?? form.sex" highlight />
                     <ReadField label="ESTADO CIVIL" :value="MARITAL_LABELS[form.marital_status] ?? form.marital_status" />
                     <ReadField label="BECA" :value="scholarships.find(s => s.id === form.scholarship_id)?.name ?? '—'" />
                     <ReadField label="CURP" :value="form.curp" highlight />
@@ -117,6 +127,9 @@ const MARITAL_LABELS: Record<string, string> = {
     SOLTERO: 'SOLTERO/A', CASADO: 'CASADO/A', DIVORCIADO: 'DIVORCIADO/A',
     VIUDO: 'VIUDO/A', UNION_LIBRE: 'UNIÓN LIBRE', OTRO: 'OTRO',
 }
+const SEX_LABELS: Record<string, string> = {
+    H: 'HOMBRE', M: 'MUJER',
+}
 
 const loading               = ref(true)
 const editing               = ref(false)
@@ -142,6 +155,7 @@ const form = reactive({
     birth_municipality_id: null as number | null,
     birth_date:           '',
     marital_status:       '',
+    sex:                  '',
     scholarship_id:       null as number | null,
     rfc:                  '',
     curp:                 '',
@@ -182,6 +196,7 @@ function mapData(data: any) {
     form.birth_municipality_id = data.birthMunicipalityId ?? null
     form.birth_date            = data.birthDate ?? ''
     form.marital_status        = data.maritalStatus ?? ''
+    form.sex                   = data.sex ?? ''
     form.scholarship_id        = data.scholarshipId ?? null
     form.rfc                   = data.rfc ?? ''
     form.curp                  = data.curp ?? ''
@@ -250,6 +265,7 @@ async function save() {
             birth_municipality_id: form.birth_municipality_id || null,
             birth_date:            form.birth_date || null,
             marital_status:        form.marital_status || null,
+            sex:                   form.sex || null,
             scholarship_id:        form.scholarship_id || null,
             rfc:                   form.rfc || null,
             curp:                  form.curp || null,
