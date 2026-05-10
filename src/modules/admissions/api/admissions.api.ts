@@ -159,8 +159,19 @@ export default {
             run:    apiUrl('/admissions/exam-online/sync'),
         },
         applicantRanking: {
-            list:      (params: string) => apiUrl(`/admissions/applicants/ranking?${params}`),
-            admitBulk: apiUrl('/admissions/applicants/admit-bulk'),
+            list:              (params: string) => apiUrl(`/admissions/applicants/ranking?${params}`),
+            pendingEvaluation: (params: string) => apiUrl(`/admissions/applicants/pending-evaluation?${params}`),
+            admitBulk:         apiUrl('/admissions/applicants/admit-bulk'),
+        },
+        statistics: {
+            context:            apiUrl('/admissions/statistics/context'),
+            funnel:             (params: string) => apiUrl(`/admissions/statistics/funnel?${params}`),
+            scoreDistribution:  (params: string) => apiUrl(`/admissions/statistics/score-distribution?${params}`),
+            offerDemand:        (params: string) => apiUrl(`/admissions/statistics/offer-demand?${params}`),
+            examAttendance:     (params: string) => apiUrl(`/admissions/statistics/exam-attendance?${params}`),
+            ageAndMode:         (params: string) => apiUrl(`/admissions/statistics/age-and-mode?${params}`),
+            originDistribution: (params: string) => apiUrl(`/admissions/statistics/origin-distribution?${params}`),
+            inclusion:          (params: string) => apiUrl(`/admissions/statistics/inclusion?${params}`),
         },
         registration: {
             register:     apiUrl('/admissions/register'),

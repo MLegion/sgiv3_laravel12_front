@@ -186,6 +186,14 @@ export default [
         meta: { title: 'Cuadro de Resultados' },
     },
 
+    // Reportes estadísticos
+    {
+        path: 'admissions/reports/statistics',
+        name: 'admissions.reports.statistics',
+        component: () => import('@/modules/admissions/pages/StatisticsPage.vue'),
+        meta: { title: 'Reportes Estadísticos' },
+    },
+
     // Applicants
     {
         path: 'admissions/applicants',
