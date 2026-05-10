@@ -5,14 +5,19 @@
         <div class="flex items-start justify-between gap-4 flex-wrap">
             <div>
                 <h1 class="text-xl font-semibold text-slate-800 uppercase">Cuadro de Resultados</h1>
-                <p class="mt-1 text-sm text-slate-500">
+                <p v-if="tab === 'ranking'" class="mt-1 text-sm text-slate-500">
                     Aspirantes con resultado de examen ordenados por puntaje.
                     Activa o desactiva el switch <span class="font-semibold">¿Admitido?</span> y presiona
                     <span class="font-semibold text-blue-700">Confirmar Admisión</span> para aplicar los cambios.
                 </p>
+                <p v-else class="mt-1 text-sm text-slate-500">
+                    Aspirantes con ficha que aún <span class="font-semibold text-amber-700">no tienen calificación cargada</span>.
+                    Útil para identificar a quiénes les falta evaluación.
+                </p>
             </div>
 
             <button
+                v-if="tab === 'ranking'"
                 class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold uppercase tracking-wide hover:bg-blue-700 disabled:opacity-50 transition shadow-sm"
                 :disabled="confirming || !periodId || items.length === 0"
                 @click="openConfirm"
@@ -21,6 +26,32 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 Confirmar Admisión
+            </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex gap-1 border-b border-slate-200">
+            <button
+                type="button"
+                class="tab-btn"
+                :class="tab === 'ranking' ? 'tab-active' : 'tab-inactive'"
+                @click="onTabChange('ranking')"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9a9.75 9.75 0 010-19.5h9m-9 9.75h9M3.75 7.5l4.5-4.5m0 0l4.5 4.5m-4.5-4.5v15" />
+                </svg>
+                Con Resultado
+            </button>
+            <button
+                type="button"
+                class="tab-btn"
+                :class="tab === 'pending' ? 'tab-active' : 'tab-inactive'"
+                @click="onTabChange('pending')"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                Pendientes de Evaluar
             </button>
         </div>
 
@@ -60,14 +91,15 @@
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 opacity-40">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.182 16.318A4.486 4.486 0 0012.016 15a4.486 4.486 0 00-3.198 1.318M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
             </svg>
-            No hay aspirantes con resultado de examen en este período.
+            <template v-if="tab === 'ranking'">No hay aspirantes con resultado de examen en este período.</template>
+            <template v-else>No hay aspirantes pendientes de evaluar en este período.</template>
         </div>
 
         <!-- Tabla de resultados -->
         <div v-else class="space-y-4">
 
             <!-- Estadísticas rápidas -->
-            <div class="grid grid-cols-3 gap-3 max-w-sm">
+            <div v-if="tab === 'ranking'" class="grid grid-cols-3 gap-3 max-w-sm">
                 <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-center">
                     <p class="text-xl font-bold text-slate-800">{{ totalItems }}</p>
                     <p class="text-[11px] text-slate-500 uppercase mt-0.5">Total</p>
@@ -81,9 +113,15 @@
                     <p class="text-[11px] text-red-500 uppercase mt-0.5">Excluidos</p>
                 </div>
             </div>
+            <div v-else class="grid grid-cols-1 gap-3 max-w-[12rem]">
+                <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 text-center">
+                    <p class="text-xl font-bold text-amber-700">{{ totalItems }}</p>
+                    <p class="text-[11px] text-amber-600 uppercase mt-0.5">Pendientes</p>
+                </div>
+            </div>
 
-            <!-- Tabla -->
-            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+            <!-- Tabla ranking (con resultado) -->
+            <div v-if="tab === 'ranking'" class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                 <table class="w-full text-sm">
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
@@ -147,6 +185,41 @@
                 </table>
             </div>
 
+            <!-- Tabla pendientes (sin score) -->
+            <div v-else class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-100 border-b border-slate-200">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nombre Completo</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-44">CURP</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-36">Folio Preficha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            v-for="(item, idx) in items"
+                            :key="item.id"
+                            class="border-t border-slate-100 bg-white hover:bg-amber-50/40 transition-colors"
+                        >
+                            <td class="px-4 py-3 text-xs font-mono text-slate-400 font-semibold">
+                                {{ globalRank(idx) }}
+                            </td>
+                            <td class="px-4 py-3">
+                                <p class="font-medium text-slate-800">{{ fullName(item) }}</p>
+                                <p class="text-xs text-slate-400">{{ item.email }}</p>
+                            </td>
+                            <td class="px-4 py-3 font-mono text-xs text-slate-600 uppercase">
+                                {{ item.curp || '—' }}
+                            </td>
+                            <td class="px-4 py-3 font-mono text-xs text-slate-600">
+                                {{ item.preApplicationFolio || item.applicationFolio || '—' }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <!-- Paginación -->
             <div v-if="totalPages > 1" class="flex items-center justify-between text-xs text-slate-500">
                 <span>Página {{ currentPage }} de {{ totalPages }} — {{ totalItems }} aspirantes en total</span>
@@ -179,7 +252,7 @@
 
             <!-- Panel de excluidos -->
             <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0 -translate-y-2">
-                <div v-if="excludedIds.size > 0" class="border border-red-200 rounded-xl p-4 bg-red-50 space-y-2">
+                <div v-if="tab === 'ranking' && excludedIds.size > 0" class="border border-red-200 rounded-xl p-4 bg-red-50 space-y-2">
                     <p class="text-xs font-bold uppercase text-red-600 tracking-wide flex items-center gap-1.5">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
@@ -288,11 +361,16 @@ interface ApplicantRow {
     email: string
     curp: string | null
     entranceScore: string | null
+    preApplicationFolio: string | null
+    applicationFolio: string | null
     status: number
 }
 
+type Tab = 'ranking' | 'pending'
+
 // ── Estado ────────────────────────────────────────────────────────────────────
 
+const tab         = ref<Tab>('ranking')
 const periodId    = ref<number | null>(null)
 
 const loading     = ref(false)
@@ -365,7 +443,10 @@ async function loadPage(page: number) {
             per_page:           String(perPage),
             academic_period_id: String(periodId.value),
         })
-        const { data } = await api.get(API.ADMISSIONS_API.applicantRanking.list(params.toString()))
+        const url = tab.value === 'pending'
+            ? API.ADMISSIONS_API.applicantRanking.pendingEvaluation(params.toString())
+            : API.ADMISSIONS_API.applicantRanking.list(params.toString())
+        const { data } = await api.get(url)
         items.value      = data.data ?? data.items ?? []
         totalItems.value = data.meta?.total ?? data.total ?? 0
         currentPage.value = page
@@ -384,15 +465,24 @@ function goPage(page: number) {
     loadPage(page)
 }
 
-function onPeriodChange(val: number | null) {
-    // Resetear estado al cambiar período
+function resetListState() {
     excludedIds.value = new Set()
     allItems.value    = new Map()
     currentPage.value = 1
     totalItems.value  = 0
     items.value       = []
+}
 
+function onPeriodChange(val: number | null) {
+    resetListState()
     if (val) loadPage(1)
+}
+
+function onTabChange(next: Tab) {
+    if (tab.value === next) return
+    tab.value = next
+    resetListState()
+    if (periodId.value) loadPage(1)
 }
 
 // ── Switches ──────────────────────────────────────────────────────────────────
