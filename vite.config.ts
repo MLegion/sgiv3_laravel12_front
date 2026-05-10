@@ -1,11 +1,15 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
-import basicSsl from '@vitejs/plugin-basic-ssl'
+import mkcert from 'vite-plugin-mkcert'
 import path from 'path'
 
 export default defineConfig({
-  plugins: [vue(), tailwindcss(), basicSsl()],
+  // mkcert genera certificado local firmado por una CA confiable instalada
+  // automáticamente en el OS (necesario para que los Service Workers se
+  // registren — `@vitejs/plugin-basic-ssl` produce un cert auto-firmado que
+  // los SW rechazan, aunque el browser acepte la página).
+  plugins: [vue(), tailwindcss(), mkcert()],
 
   build: {
       outDir: path.resolve(__dirname, '../public/frontend'),
