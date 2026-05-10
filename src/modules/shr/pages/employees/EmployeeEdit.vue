@@ -92,6 +92,15 @@
                         @validation-error="setError('curp', $event)"
                     />
 
+                    <div class="space-y-1">
+                        <label class="text-xs font-medium text-slate-600">SEXO</label>
+                        <select v-model="form.sex" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Seleccionar...</option>
+                            <option value="H">Hombre</option>
+                            <option value="M">Mujer</option>
+                        </select>
+                    </div>
+
                     <FormRFCInput
                         label="RFC"
                         v-model="form.rfc"
@@ -173,6 +182,7 @@ const form = reactive({
     firstSurname: '',
     secondSurname: '',
     curp: '',
+    sex: '',
     rfc: '',
     phone: '',
     hireDate: '',
@@ -214,6 +224,7 @@ async function fetchEmployee() {
             firstSurname: data.firstSurname,
             secondSurname: data.secondSurname,
             curp: data.curp,
+            sex: data.sex ?? '',
             rfc: data.rfc,
             phone: data.phone,
             hireDate: data.hireDate,

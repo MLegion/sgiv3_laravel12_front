@@ -15,6 +15,7 @@ export function mapEmployeeUpdatePayload(form: any) {
         first_surname: form.firstSurname,
         second_surname: form.secondSurname,
         curp: form.curp,
+        sex: form.sex || null,
         rfc: form.rfc,
         phone: form.phone,
         hire_date: form.hireDate,
