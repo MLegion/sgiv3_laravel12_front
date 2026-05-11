@@ -74,11 +74,11 @@
 
             <button v-if="canDecide"
                     class="px-3 py-1.5 text-xs rounded-md bg-emerald-600 text-white hover:bg-emerald-700 ml-auto"
-                    @click="approve">APROBAR</button>
+                    @click="askApprove">APROBAR</button>
 
             <button v-if="canDecide"
                     class="px-3 py-1.5 text-xs rounded-md bg-red-600 text-white hover:bg-red-700"
-                    @click="rejectPrompt">RECHAZAR</button>
+                    @click="openRejectModal">RECHAZAR</button>
 
             <span v-if="!isMine && session.reviewer" class="text-xs text-slate-400 italic">
                 Está siendo revisada por {{ session.reviewer.name ?? 'otro asesor' }}.
@@ -231,7 +231,7 @@
                                     :disabled="removingSubject === item.subjectId"
                                     class="text-[11px] border px-2 py-1 rounded-md hover:bg-red-50 hover:border-red-300 text-red-600 disabled:opacity-50"
                                     title="Quitar de la sesión"
-                                    @click="removeItem(item.subjectId)">
+                                    @click="askRemoveItem(item.subjectId)">
                                 {{ removingSubject === item.subjectId ? '…' : 'QUITAR' }}
                             </button>
                         </td>
@@ -344,6 +344,68 @@
             </div>
         </Teleport>
 
+        <!-- Confirm aprobar -->
+        <ConfirmModal
+            v-model="approveModalOpen"
+            title="Aprobar asesoría"
+            message="Esta acción es irreversible. ¿Confirmas la aprobación?"
+            confirm-text="Aprobar"
+            variant="success"
+            @confirm="approve"
+        />
+
+        <!-- Confirm quitar materia -->
+        <ConfirmModal
+            v-model="removeModalOpen"
+            title="Quitar materia"
+            message="¿Quitar esta materia de la sesión del alumno?"
+            confirm-text="Quitar"
+            @confirm="onConfirmRemove"
+        />
+
+        <!-- Modal de razón de rechazo -->
+        <Teleport to="body">
+            <div v-if="rejectModalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
+                <div class="absolute inset-0 bg-black/40" @click="rejectModalOpen = false" />
+                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 space-y-4">
+                    <h3 class="text-base font-bold text-slate-800 uppercase">Rechazar asesoría</h3>
+                    <p class="text-sm text-slate-600">
+                        Indica al alumno por qué se rechaza esta propuesta. Verá el texto al reabrirla para corregir.
+                    </p>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">
+                            Razón (mínimo 5 caracteres)
+                        </label>
+                        <textarea
+                            v-model="rejectReason"
+                            rows="4"
+                            maxlength="500"
+                            placeholder="Ej. Te falta agregar la materia X, hay choque de horario en Y..."
+                            class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                            :disabled="rejectSubmitting"
+                            @keydown.enter.exact.prevent="submitReject"
+                        />
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-[11px] text-slate-400">{{ rejectReason.length }}/500</span>
+                            <p v-if="rejectError" class="text-[11px] text-red-600">{{ rejectError }}</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button class="px-4 py-2 text-sm rounded-md border hover:bg-slate-50"
+                                :disabled="rejectSubmitting"
+                                @click="rejectModalOpen = false">
+                            CANCELAR
+                        </button>
+                        <button class="px-4 py-2 text-sm rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                                :disabled="rejectSubmitting || rejectReason.trim().length < 5"
+                                @click="submitReject">
+                            {{ rejectSubmitting ? 'RECHAZANDO…' : 'RECHAZAR' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
     </div>
 </template>
 
@@ -352,6 +414,7 @@ import { computed, reactive, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 import type {
     AdvisingSession, AdvisingSessionItem, AdvisingStatus,
     CurriculumStatus, CurriculumStatusEntry,
@@ -382,6 +445,22 @@ interface OverrideModalState {
     messages: string[]
 }
 const overrideModal = ref<OverrideModalState | null>(null)
+
+// Modales (reemplazan prompt/confirm/alert)
+const approveModalOpen      = ref(false)
+const removeModalOpen       = ref(false)
+const removeTargetSubjectId = ref<number | null>(null)
+const rejectModalOpen       = ref(false)
+const rejectReason          = ref('')
+const rejectError           = ref('')
+const rejectSubmitting      = ref(false)
+
+function onConfirmRemove() {
+    if (removeTargetSubjectId.value !== null) {
+        removeItem(removeTargetSubjectId.value)
+        removeTargetSubjectId.value = null
+    }
+}
 
 const currentUserId = computed(() => {
     try {
@@ -536,9 +615,14 @@ function confirmOverride() {
     addItem(overrideModal.value.entry, overrideModal.value.assignmentId, true)
 }
 
+function askRemoveItem(subjectId: number) {
+    if (!canDecide.value) return
+    removeTargetSubjectId.value = subjectId
+    removeModalOpen.value = true
+}
+
 async function removeItem(subjectId: number) {
     if (!canDecide.value) return
-    if (!confirm('¿Quitar esta materia de la sesión?')) return
     removingSubject.value = subjectId
     errorMsg.value = ''
     try {
@@ -555,9 +639,13 @@ async function removeItem(subjectId: number) {
     }
 }
 
+function askApprove() {
+    if (!canDecide.value) return
+    approveModalOpen.value = true
+}
+
 async function approve() {
     if (!canDecide.value) return
-    if (!confirm('¿Aprobar esta asesoría? Esta acción es irreversible.')) return
     errorMsg.value = ''
     try {
         await api.post(API.ADVISING_API.sessions.approve(sessionId), {})
@@ -571,17 +659,31 @@ async function approve() {
     }
 }
 
-async function rejectPrompt() {
+function openRejectModal() {
     if (!canDecide.value) return
-    const reason = prompt('Razón del rechazo (mínimo 5 caracteres):')
-    if (!reason || reason.trim().length < 5) return
+    rejectReason.value = ''
+    rejectError.value = ''
+    rejectModalOpen.value = true
+}
+
+async function submitReject() {
+    const reason = rejectReason.value.trim()
+    if (reason.length < 5) {
+        rejectError.value = 'La razón debe tener al menos 5 caracteres.'
+        return
+    }
+    rejectSubmitting.value = true
+    rejectError.value = ''
     errorMsg.value = ''
     try {
-        await api.post(API.ADVISING_API.sessions.reject(sessionId), { reason: reason.trim() })
+        await api.post(API.ADVISING_API.sessions.reject(sessionId), { reason })
+        rejectModalOpen.value = false
         okMsg.value = 'Asesoría rechazada.'
         await load()
     } catch (e: any) {
-        errorMsg.value = e?.response?.data?.message ?? 'Error al rechazar.'
+        rejectError.value = e?.response?.data?.message ?? 'Error al rechazar.'
+    } finally {
+        rejectSubmitting.value = false
     }
 }
 
