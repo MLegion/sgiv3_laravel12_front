@@ -291,9 +291,17 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y">
-                    <tr v-for="entry in availableForAdd" :key="entry.subjectId">
+                    <tr v-for="entry in availableForAdd" :key="entry.subjectId"
+                        :class="proposedSubjectIds.has(entry.subjectId) ? 'bg-emerald-50/60' : ''">
                         <td class="px-4 py-2">
-                            <div class="font-bold text-slate-700">{{ entry.subject?.name ?? '—' }}</div>
+                            <div class="font-bold flex items-center gap-1.5"
+                                 :class="proposedSubjectIds.has(entry.subjectId) ? 'text-slate-500' : 'text-slate-700'">
+                                {{ entry.subject?.name ?? '—' }}
+                                <span v-if="proposedSubjectIds.has(entry.subjectId)"
+                                      class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-emerald-100 text-emerald-700">
+                                    ✓ Agregada
+                                </span>
+                            </div>
                             <div class="text-[10px] font-mono text-slate-400">
                                 {{ entry.subject?.officialCode ?? entry.subject?.code }} · {{ entry.subject?.credits ?? 0 }} cr.
                             </div>
@@ -306,26 +314,32 @@
                             </span>
                         </td>
                         <td class="px-4 py-2">
-                            <select v-model="selectedAssignment[entry.subjectId]"
+                            <select v-if="!proposedSubjectIds.has(entry.subjectId)"
+                                    v-model="selectedAssignment[entry.subjectId]"
                                     class="text-[11px] border rounded-md px-2 py-1 max-w-[260px]">
                                 <option :value="null">Selecciona grupo…</option>
                                 <option v-for="a in (entry.offer?.assignments ?? [])" :key="a.id" :value="a.id">
                                     {{ a.groupName }}<span v-if="a.shift"> · {{ shiftLabel(a.shift) }}</span> · {{ a.teacherName ?? 'Por asignar' }}
                                 </option>
                             </select>
+                            <span v-else class="text-[10px] text-slate-400 italic">
+                                {{ proposedGroupLabel(entry.subjectId) }}
+                            </span>
                         </td>
                         <td class="px-4 py-2 text-right">
-                            <button :disabled="!selectedAssignment[entry.subjectId] || addingSubject === entry.subjectId"
+                            <button v-if="!proposedSubjectIds.has(entry.subjectId)"
+                                    :disabled="!selectedAssignment[entry.subjectId] || addingSubject === entry.subjectId"
                                     class="text-[11px] border px-2 py-1 rounded-md hover:bg-emerald-50 hover:border-emerald-300 text-emerald-600 disabled:opacity-40"
                                     :title="!selectedAssignment[entry.subjectId] ? 'Elige un grupo del select de la izquierda' : ''"
                                     @click="addItem(entry, selectedAssignment[entry.subjectId]!)">
                                 {{ addingSubject === entry.subjectId ? '…' : 'AGREGAR' }}
                             </button>
+                            <span v-else class="text-[10px] text-emerald-600 italic">en sesión</span>
                         </td>
                     </tr>
                     <tr v-if="availableForAdd.length === 0">
                         <td colspan="5" class="px-4 py-8 text-center text-xs text-slate-400 italic">
-                            No hay materias disponibles para agregar (todas las ofertadas ya están propuestas o no aplican).
+                            No hay materias en la oferta para este alumno.
                         </td>
                     </tr>
                 </tbody>
@@ -577,9 +591,12 @@ const targetSemester     = computed(() => {
  * Materias aperturadas que el asesor PUEDE agregar a la sesión:
  *  - Tienen oferta abierta (isOffered) y al menos un grupo concreto.
  *  - El alumno NO las tiene aprobadas.
- *  - No están ya en la sesión (evita duplicados).
  *  - Son asignaturas regulares: skip period=0 (residencia, servicio social,
  *    actividades complementarias). Esos no se inscriben vía advising.
+ *
+ * Las que ya están propuestas se incluyen pero se renderizan con color tenue
+ * y badge "✓ Agregada" (para que el asesor vea la oferta completa sin perder
+ * de vista cuáles ya están).
  *
  * Las reglas dinámicas (repites, créditos máximos) se aplican al momento de
  * agregar, con posibilidad de aplicar excepción desde el modal.
@@ -588,7 +605,6 @@ const availableForAdd = computed<CurriculumStatusEntry[]>(() => {
     const subs = (curriculum.value?.subjects ?? []).filter(s => {
         if (!s.isOffered) return false
         if (s.attempt === 'aprobada') return false
-        if (proposedSubjectIds.value.has(s.subjectId)) return false
         // Skip residencia/servicio social/complementarias (period=0).
         if (!s.period || s.period <= 0) return false
         // Skip si la oferta no tiene grupos concretos para inscribir.
@@ -600,6 +616,16 @@ const availableForAdd = computed<CurriculumStatusEntry[]>(() => {
         (a.subject?.name ?? '').localeCompare(b.subject?.name ?? '')
     )
 })
+
+function proposedGroupLabel(subjectId: number): string {
+    const item = session.value?.items.find(i => i.subjectId === subjectId)
+    if (!item || !item.teacherAssignment) return 'agregada'
+    const g = item.teacherAssignment
+    const parts = [g.groupName ?? 'grupo']
+    if (g.shift) parts.push(shiftLabel(g.shift))
+    if (g.teacherName) parts.push(g.teacherName)
+    return parts.join(' · ')
+}
 
 // Auto-seleccionar el grupo si solo hay uno (evita que el asesor tenga que
 // abrir el select para una materia con un único grupo).
