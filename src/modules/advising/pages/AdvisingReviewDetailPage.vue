@@ -2,20 +2,56 @@
     <div class="space-y-4 max-w-6xl">
         <!-- Header -->
         <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-xl font-semibold text-slate-800 uppercase">
-                    Asesoría #{{ session?.id ?? '—' }}
-                </h1>
-                <p class="text-xs text-slate-500 mt-0.5">
-                    {{ session?.student?.fullName ?? '—' }}
-                    <span v-if="session?.student?.numControl" class="ml-2 font-mono">{{ session.student.numControl }}</span>
-                </p>
-            </div>
+            <h1 class="text-xl font-semibold text-slate-800 uppercase">Asesoría #{{ session?.id ?? '—' }}</h1>
             <div class="flex items-center gap-2">
                 <span v-if="session" class="px-3 py-1 text-xs font-semibold rounded-full" :class="statusClass(session.status)">
                     {{ statusLabel(session.status) }}
                 </span>
                 <button class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="router.back()">REGRESAR</button>
+            </div>
+        </div>
+
+        <!-- Tarjeta del estudiante -->
+        <div v-if="session" class="bg-white border rounded-xl shadow-sm p-4 flex items-start gap-4">
+            <div class="relative w-20 h-20 rounded-full overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300 flex-shrink-0">
+                <img v-if="!avatarFailed && studentId" :src="avatarUrl" alt="Foto del alumno" class="w-full h-full object-cover" @error="avatarFailed = true" />
+                <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+            </div>
+            <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm min-w-0">
+                <div class="sm:col-span-2">
+                    <div class="text-base font-bold text-slate-800 uppercase">{{ session.student?.fullName ?? '—' }}</div>
+                    <div class="text-xs text-slate-500 font-mono">N° control: {{ session.student?.numControl ?? '—' }}</div>
+                </div>
+                <div class="grid grid-cols-[110px_1fr] gap-x-2 text-xs">
+                    <span class="text-slate-400 uppercase">Plan</span>
+                    <span class="text-slate-700 truncate">{{ planLabel }}</span>
+                </div>
+                <div class="grid grid-cols-[110px_1fr] gap-x-2 text-xs">
+                    <span class="text-slate-400 uppercase">Modalidad</span>
+                    <span class="text-slate-700 truncate">{{ curriculum?.modality?.typeShort ?? curriculum?.modality?.typeName ?? '—' }}</span>
+                </div>
+                <div class="grid grid-cols-[110px_1fr] gap-x-2 text-xs">
+                    <span class="text-slate-400 uppercase">Campus</span>
+                    <span class="text-slate-700 truncate">{{ curriculum?.campus?.name ?? '—' }}</span>
+                </div>
+                <div class="grid grid-cols-[110px_1fr] gap-x-2 text-xs">
+                    <span class="text-slate-400 uppercase">Semestre</span>
+                    <span class="text-slate-700">{{ curriculum?.studentCurrentPeriodNumber ? curriculum.studentCurrentPeriodNumber + '°' : '—' }}</span>
+                </div>
+                <div class="grid grid-cols-[110px_1fr] gap-x-2 text-xs">
+                    <span class="text-slate-400 uppercase">Especialidad</span>
+                    <span :class="curriculum?.assignedSpecialty ? 'text-slate-700' : 'text-slate-400 italic'" class="truncate">
+                        {{ curriculum?.assignedSpecialty?.name ?? 'sin asignar' }}
+                    </span>
+                </div>
+                <div class="grid grid-cols-[110px_1fr] gap-x-2 text-xs">
+                    <span class="text-slate-400 uppercase">Optativas</span>
+                    <span :class="curriculum?.assignedOptionalGroup ? 'text-slate-700' : 'text-slate-400 italic'" class="truncate">
+                        {{ curriculum?.assignedOptionalGroup?.name ?? 'sin asignar' }}
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -356,6 +392,17 @@ const currentUserId = computed(() => {
 
 const isMine    = computed(() => session.value?.reviewer?.id === currentUserId.value)
 const canDecide = computed(() => session.value?.status === 'submitted' && isMine.value)
+
+// Tarjeta del estudiante: foto + plan
+const studentId    = computed<number | null>(() => session.value?.student?.id ?? session.value?.studentId ?? null)
+const avatarFailed = ref(false)
+const avatarUrl    = computed(() => studentId.value ? API.ADVISING_API.students.avatar(studentId.value) : '')
+const planLabel    = computed(() => {
+    const p = curriculum.value?.studyPlan
+    if (!p) return '—'
+    const name = p.careerName ?? p.name ?? 'Plan'
+    return p.officialCode ? `${name} (${p.officialCode})` : name
+})
 
 const counts = computed(() => {
     const subs = curriculum.value?.subjects ?? []

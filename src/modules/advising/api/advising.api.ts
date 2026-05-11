@@ -30,6 +30,7 @@ const advisingApi: ApiModule = {
         students: {
             kardex:       (studentId: string | number) => apiUrl(`/advising/students/${studentId}/kardex`),
             curriculum:   (studentId: string | number) => apiUrl(`/advising/students/${studentId}/curriculum`),
+            avatar:       (studentId: string | number) => apiUrl(`/advising/students/${studentId}/avatar`),
         },
         phases: {
             list:   apiUrl('/advising/phases'),
