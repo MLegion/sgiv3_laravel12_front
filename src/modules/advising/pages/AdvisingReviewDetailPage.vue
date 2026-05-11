@@ -179,7 +179,6 @@
                         <th class="px-4 py-2 text-left">SEM</th>
                         <th class="px-4 py-2 text-left">TIPO</th>
                         <th class="px-4 py-2 text-left">DECISIÓN</th>
-                        <th class="px-4 py-2 text-left">REEMPLAZO</th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>
@@ -206,19 +205,7 @@
                                 <option value="proposed">Pendiente</option>
                                 <option value="accepted">Aceptar</option>
                                 <option value="rejected">Rechazar</option>
-                                <option value="replaced">Reemplazar</option>
                             </select>
-                        </td>
-                        <td class="px-4 py-2">
-                            <input v-if="decisions[item.id] && decisions[item.id]!.advisor_status === 'replaced'"
-                                   type="number"
-                                   v-model.number="decisions[item.id]!.replacement_subject_id"
-                                   placeholder="ID materia"
-                                   :disabled="!canDecide || savingItem === item.id"
-                                   class="text-[11px] border rounded-md px-2 py-1 w-24" />
-                            <span v-else-if="item.replacementSubject" class="text-[11px] text-slate-500">
-                                {{ item.replacementSubject.name }}
-                            </span>
                         </td>
                         <td class="px-4 py-2 text-right space-x-1 whitespace-nowrap">
                             <button v-if="canDecide"
@@ -237,7 +224,7 @@
                         </td>
                     </tr>
                     <tr v-if="session.items.length === 0">
-                        <td colspan="6" class="px-4 py-8 text-center text-xs text-slate-400 italic">
+                        <td colspan="5" class="px-4 py-8 text-center text-xs text-slate-400 italic">
                             Sin materias propuestas. Agrégalas desde la sección de abajo.
                         </td>
                     </tr>
@@ -410,7 +397,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, onMounted } from 'vue'
+import { computed, reactive, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -506,20 +493,25 @@ const targetSemester     = computed(() => {
 })
 
 /**
- * Mismo filtro que MyAdvisingPage: lo que el alumno vería en "Materias
- * Aperturadas" — pero excluyendo las que ya están propuestas (para no
- * duplicar). El asesor puede ver todo lo ofertado para decidir; las que
- * caen fuera de la regla (repites bloqueado, etc.) las puede agregar
- * vía override.
+ * Materias aperturadas que el asesor PUEDE agregar a la sesión:
+ *  - Tienen oferta abierta (isOffered) y al menos un grupo concreto.
+ *  - El alumno NO las tiene aprobadas.
+ *  - No están ya en la sesión (evita duplicados).
+ *  - Son asignaturas regulares: skip period=0 (residencia, servicio social,
+ *    actividades complementarias). Esos no se inscriben vía advising.
+ *
+ * Las reglas dinámicas (repites, créditos máximos) se aplican al momento de
+ * agregar, con posibilidad de aplicar excepción desde el modal.
  */
 const availableForAdd = computed<CurriculumStatusEntry[]>(() => {
-    const tgt = targetSemester.value
     const subs = (curriculum.value?.subjects ?? []).filter(s => {
         if (!s.isOffered) return false
         if (s.attempt === 'aprobada') return false
         if (proposedSubjectIds.value.has(s.subjectId)) return false
-        // Para el asesor mostramos TODAS las ofertadas; las reglas se aplican
-        // en el momento de agregar (con posibilidad de override).
+        // Skip residencia/servicio social/complementarias (period=0).
+        if (!s.period || s.period <= 0) return false
+        // Skip si la oferta no tiene grupos concretos para inscribir.
+        if (!s.offer?.assignments || s.offer.assignments.length === 0) return false
         return true
     })
     return subs.sort((a, b) =>
@@ -527,6 +519,17 @@ const availableForAdd = computed<CurriculumStatusEntry[]>(() => {
         (a.subject?.name ?? '').localeCompare(b.subject?.name ?? '')
     )
 })
+
+// Auto-seleccionar el grupo si solo hay uno (evita que el asesor tenga que
+// abrir el select para una materia con un único grupo).
+watch(availableForAdd, (entries) => {
+    for (const e of entries) {
+        if (selectedAssignment[e.subjectId] === undefined) {
+            const assigns = e.offer?.assignments ?? []
+            selectedAssignment[e.subjectId] = assigns.length === 1 ? assigns[0].assignmentId : null
+        }
+    }
+}, { immediate: true })
 
 /* ── Cargas ────────────────────────────────────────────────────────── */
 async function load() {
