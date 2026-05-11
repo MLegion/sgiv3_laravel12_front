@@ -168,9 +168,23 @@
 
         <!-- Items con decisión -->
         <div v-if="session" class="bg-white border rounded-xl shadow-sm">
-            <div class="border-b px-4 py-3 flex items-center justify-between">
+            <div class="border-b px-4 py-3 flex items-center justify-between flex-wrap gap-2">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Materias Propuestas</h2>
-                <span class="text-xs text-slate-400">{{ session.items.length }}</span>
+
+                <!-- Contador de materias y créditos -->
+                <div class="flex items-center gap-3 text-xs">
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-2xl font-bold text-slate-800 tabular-nums">{{ session.items.length }}</span>
+                        <span class="text-[10px] uppercase text-slate-500">materias</span>
+                    </div>
+                    <div class="flex items-baseline gap-1" :class="creditsColor">
+                        <span class="text-2xl font-bold tabular-nums">{{ proposedCredits }}</span>
+                        <span class="text-[10px] uppercase">/ {{ creditBudget }} cr.</span>
+                    </div>
+                    <span v-if="overCredits" class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-bold uppercase">
+                        Excede {{ proposedCredits - creditBudget }} cr.
+                    </span>
+                </div>
             </div>
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
@@ -178,6 +192,7 @@
                         <th class="px-4 py-2 text-left">MATERIA</th>
                         <th class="px-4 py-2 text-left">SEM</th>
                         <th class="px-4 py-2 text-left">TIPO</th>
+                        <th class="px-4 py-2 text-left">GRUPO / TURNO</th>
                         <th class="px-4 py-2 text-left">DECISIÓN</th>
                         <th class="px-4 py-2"></th>
                     </tr>
@@ -185,7 +200,14 @@
                 <tbody class="divide-y">
                     <tr v-for="item in session.items" :key="item.id">
                         <td class="px-4 py-2">
-                            <div class="font-bold text-slate-700">{{ item.subject?.name ?? '—' }}</div>
+                            <div class="font-bold text-slate-700 flex items-center gap-1.5">
+                                {{ item.subject?.name ?? '—' }}
+                                <span v-if="item.hasOverrides"
+                                      class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-amber-100 text-amber-800 cursor-help"
+                                      :title="overrideTooltip(item)">
+                                    EXCEPCIÓN
+                                </span>
+                            </div>
                             <div class="text-[10px] font-mono text-slate-400">
                                 {{ item.subject?.code }} · {{ item.subject?.credits }} cr.
                             </div>
@@ -196,6 +218,18 @@
                                   :class="attemptClass(item)">
                                 {{ attemptLabel(item) }}
                             </span>
+                        </td>
+                        <td class="px-4 py-2 text-xs">
+                            <div v-if="item.teacherAssignment" class="text-slate-700">
+                                <span class="font-mono font-semibold">{{ item.teacherAssignment.groupName ?? '—' }}</span>
+                                <span v-if="item.teacherAssignment.shift" class="ml-1 text-[10px] text-slate-500 uppercase">
+                                    ({{ shiftLabel(item.teacherAssignment.shift) }})
+                                </span>
+                                <div v-if="item.teacherAssignment.teacherName" class="text-[10px] text-slate-400 mt-0.5">
+                                    {{ item.teacherAssignment.teacherName }}
+                                </div>
+                            </div>
+                            <span v-else class="text-slate-300 italic">sin grupo</span>
                         </td>
                         <td class="px-4 py-2">
                             <select v-if="decisions[item.id]"
@@ -224,7 +258,7 @@
                         </td>
                     </tr>
                     <tr v-if="session.items.length === 0">
-                        <td colspan="5" class="px-4 py-8 text-center text-xs text-slate-400 italic">
+                        <td colspan="6" class="px-4 py-8 text-center text-xs text-slate-400 italic">
                             Sin materias propuestas. Agrégalas desde la sección de abajo.
                         </td>
                     </tr>
@@ -469,6 +503,52 @@ const planLabel    = computed(() => {
     const name = p.careerName ?? p.name ?? 'Plan'
     return p.officialCode ? `${name} (${p.officialCode})` : name
 })
+
+// Contador de créditos propuestos vs límite del policy
+const proposedCredits = computed(() => {
+    return (session.value?.items ?? []).reduce((sum, it) => sum + (it.subject?.credits ?? 0), 0)
+})
+const repeatCountForBudget = computed(() => curriculum.value?.repeatCount ?? 0)
+const creditBudget = computed(() => {
+    // Regla legacy SGIv2: 1 repite → 20 cr, default → policy.maxTotalCredits.
+    if (repeatCountForBudget.value === 1) return curriculum.value?.policy?.maxCreditsWithOneRepeat ?? 20
+    return curriculum.value?.policy?.maxTotalCredits ?? 50
+})
+const overCredits   = computed(() => proposedCredits.value > creditBudget.value)
+const underCredits  = computed(() => {
+    const min = curriculum.value?.policy?.minTotalCredits ?? 12
+    return proposedCredits.value > 0 && proposedCredits.value < min
+})
+const creditsColor  = computed(() => {
+    if (overCredits.value)  return 'text-red-700'
+    if (underCredits.value) return 'text-amber-700'
+    return 'text-emerald-700'
+})
+
+// Label corto del turno + tooltip del badge EXCEPCIÓN
+function shiftLabel(shift: string | null | undefined): string {
+    if (!shift) return ''
+    const s = shift.toUpperCase()
+    if (s === 'MORNING' || s === 'MATUTINO') return 'Matutino'
+    if (s === 'AFTERNOON' || s === 'VESPERTINO') return 'Vespertino'
+    if (s === 'EVENING' || s === 'NOCTURNO')     return 'Nocturno'
+    return shift
+}
+
+function overrideTooltip(item: AdvisingSessionItem): string {
+    if (!item.hasOverrides) return ''
+    const codes = item.overrideCodes ?? []
+    const codeLabels: Record<string, string> = {
+        over_max_credits:      'excedió créditos máximos',
+        schedule_conflict:     'choque de horario',
+        too_many_repeats:      'demasiados repites',
+        repeats_only_specials: 'solo especiales',
+    }
+    const reasons = codes.map(c => codeLabels[c] ?? c).join(', ')
+    const who = item.overrideByName ?? `usuario #${item.overrideByUserId}`
+    const when = item.overrideAt ? new Date(item.overrideAt.replace(' ', 'T')).toLocaleString('es-MX') : 'fecha desconocida'
+    return `Excepción aplicada por ${who} (${when}) — ignoró: ${reasons}`
+}
 
 const counts = computed(() => {
     const subs = curriculum.value?.subjects ?? []

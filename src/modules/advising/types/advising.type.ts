@@ -32,6 +32,10 @@ export interface AdvisingSessionItem {
     advisorStatus: AdvisorItemStatus
     replacementSubjectId: number | null
     hasOverrides: boolean
+    overrideCodes: string[] | null
+    overrideByUserId: number | null
+    overrideByName: string | null
+    overrideAt: string | null
     subject: AdvisingSubjectRef | null
     replacementSubject: AdvisingSubjectRef | null
     teacherAssignment: AdvisingTeacherAssignmentRef | null
