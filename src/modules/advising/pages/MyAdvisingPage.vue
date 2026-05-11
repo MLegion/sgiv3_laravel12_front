@@ -811,16 +811,6 @@ const approvedCredits = computed(() =>
     (session.value?.items ?? []).reduce((sum, it) => sum + (it.subject?.credits ?? 0), 0),
 )
 
-// Label corto del turno usado tanto en aperturadas como en la vista aprobada.
-function shiftLabel(shift: string | null | undefined): string {
-    if (!shift) return ''
-    const s = shift.toUpperCase()
-    if (s === 'MORNING' || s === 'MATUTINO')   return 'Matutino'
-    if (s === 'AFTERNOON' || s === 'VESPERTINO') return 'Vespertino'
-    if (s === 'EVENING' || s === 'NOCTURNO')   return 'Nocturno'
-    return shift
-}
-
 /* ── Mi Kardex (grid layout) ───────────────────────────────────────── */
 // Convención del schema: `period` = semestre (columna), `level` = orden
 // dentro del semestre (fila). Se omiten las `period=0` (residencia,
