@@ -696,7 +696,14 @@ async function run(action: 'take' | 'release') {
         await api.post(fn(sessionId))
         await load()
     } catch (e: any) {
-        errorMsg.value = e?.response?.data?.message ?? `Error al ${action}.`
+        // El backend (AdvisingPolicyException) devuelve un message genérico
+        // y los detalles en context.violations[]. Preferimos el mensaje del
+        // primer violation porque suele explicar la causa real
+        // (ej. "Sólo asesorías enviadas pueden tomarse en revisión").
+        const violations = e?.response?.data?.context?.violations
+        errorMsg.value = Array.isArray(violations) && violations[0]?.message
+            ? violations[0].message
+            : (e?.response?.data?.message ?? `Error al ${action}.`)
     }
 }
 
