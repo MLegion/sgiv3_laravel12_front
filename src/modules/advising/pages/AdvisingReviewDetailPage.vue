@@ -309,14 +309,15 @@
                             <select v-model="selectedAssignment[entry.subjectId]"
                                     class="text-[11px] border rounded-md px-2 py-1 max-w-[260px]">
                                 <option :value="null">Selecciona grupo…</option>
-                                <option v-for="a in (entry.offer?.assignments ?? [])" :key="a.assignmentId" :value="a.assignmentId">
-                                    {{ a.groupName }} · {{ a.teacherName ?? 'Por asignar' }}
+                                <option v-for="a in (entry.offer?.assignments ?? [])" :key="a.id" :value="a.id">
+                                    {{ a.groupName }}<span v-if="a.shift"> · {{ shiftLabel(a.shift) }}</span> · {{ a.teacherName ?? 'Por asignar' }}
                                 </option>
                             </select>
                         </td>
                         <td class="px-4 py-2 text-right">
                             <button :disabled="!selectedAssignment[entry.subjectId] || addingSubject === entry.subjectId"
                                     class="text-[11px] border px-2 py-1 rounded-md hover:bg-emerald-50 hover:border-emerald-300 text-emerald-600 disabled:opacity-40"
+                                    :title="!selectedAssignment[entry.subjectId] ? 'Elige un grupo del select de la izquierda' : ''"
                                     @click="addItem(entry, selectedAssignment[entry.subjectId]!)">
                                 {{ addingSubject === entry.subjectId ? '…' : 'AGREGAR' }}
                             </button>
@@ -606,7 +607,7 @@ watch(availableForAdd, (entries) => {
     for (const e of entries) {
         if (selectedAssignment[e.subjectId] === undefined) {
             const assigns = e.offer?.assignments ?? []
-            selectedAssignment[e.subjectId] = assigns.length === 1 ? assigns[0].assignmentId : null
+            selectedAssignment[e.subjectId] = assigns.length === 1 ? assigns[0].id : null
         }
     }
 }, { immediate: true })
