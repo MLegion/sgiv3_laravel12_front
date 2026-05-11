@@ -200,8 +200,14 @@
                 <tbody class="divide-y">
                     <tr v-for="item in session.items" :key="item.id">
                         <td class="px-4 py-2">
-                            <div class="font-bold text-slate-700 flex items-center gap-1.5">
+                            <div class="font-bold text-slate-700 flex items-center gap-1.5 flex-wrap">
                                 {{ item.subject?.name ?? '—' }}
+                                <span v-if="item.addedByRole"
+                                      class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded cursor-help"
+                                      :class="addedByBadgeClass(item.addedByRole)"
+                                      :title="addedByTooltip(item)">
+                                    {{ addedByLabel(item.addedByRole) }}
+                                </span>
                                 <span v-if="item.hasOverrides"
                                       class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-amber-100 text-amber-800 cursor-help"
                                       :title="overrideTooltip(item)">
@@ -563,6 +569,33 @@ function overrideTooltip(item: AdvisingSessionItem): string {
     const who = item.overrideByName ?? `usuario #${item.overrideByUserId}`
     const when = item.overrideAt ? new Date(item.overrideAt.replace(' ', 'T')).toLocaleString('es-MX') : 'fecha desconocida'
     return `Excepción aplicada por ${who} (${when}) — ignoró: ${reasons}`
+}
+
+// Badge "Por alumno" / "Por asesor" según quien agregó el item
+const ADDED_BY_LABELS: Record<string, string> = {
+    STUDENT:           'Por alumno',
+    TEACHER:           'Por asesor',
+    CAREER_MANAGER:    'Por jefe de carrera',
+    ACADEMIC_DIRECTOR: 'Por dirección',
+}
+
+function addedByLabel(role: string | null | undefined): string {
+    if (!role) return ''
+    return ADDED_BY_LABELS[role] ?? role
+}
+
+function addedByBadgeClass(role: string | null | undefined): string {
+    if (role === 'STUDENT') return 'bg-blue-100 text-blue-700'
+    return 'bg-purple-100 text-purple-700' // cualquier rol asesor
+}
+
+function addedByTooltip(item: AdvisingSessionItem): string {
+    const role = addedByLabel(item.addedByRole)
+    const who  = item.addedByName ?? `usuario #${item.addedByUserId ?? '?'}`
+    const when = item.createdAt
+        ? new Date(item.createdAt.replace(' ', 'T')).toLocaleString('es-MX')
+        : ''
+    return when ? `${role} — ${who} (${when})` : `${role} — ${who}`
 }
 
 const counts = computed(() => {

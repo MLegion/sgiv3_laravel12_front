@@ -36,6 +36,9 @@ export interface AdvisingSessionItem {
     overrideByUserId: number | null
     overrideByName: string | null
     overrideAt: string | null
+    addedByUserId: number | null
+    addedByName: string | null
+    addedByRole: string | null
     subject: AdvisingSubjectRef | null
     replacementSubject: AdvisingSubjectRef | null
     teacherAssignment: AdvisingTeacherAssignmentRef | null
