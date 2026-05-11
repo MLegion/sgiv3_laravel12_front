@@ -572,16 +572,9 @@ function overrideTooltip(item: AdvisingSessionItem): string {
 }
 
 // Badge "Por alumno" / "Por asesor" según quien agregó el item
-const ADDED_BY_LABELS: Record<string, string> = {
-    STUDENT:           'Por alumno',
-    TEACHER:           'Por asesor',
-    CAREER_MANAGER:    'Por jefe de carrera',
-    ACADEMIC_DIRECTOR: 'Por dirección',
-}
-
 function addedByLabel(role: string | null | undefined): string {
     if (!role) return ''
-    return ADDED_BY_LABELS[role] ?? role
+    return role === 'STUDENT' ? 'Por alumno' : 'Por asesor'
 }
 
 function addedByBadgeClass(role: string | null | undefined): string {
