@@ -49,8 +49,75 @@
             </ul>
         </div>
 
-        <!-- Tabs -->
-        <div v-if="session" class="flex gap-1 border-b">
+        <!-- Vista alterna cuando la asesoría está APROBADA: sólo muestra la
+             carga aprobada + botón para descargar el formato. Sin tabs de
+             edición. -->
+        <div v-if="session && session.status === 'approved'" class="space-y-4">
+            <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-6 flex items-start gap-4">
+                <div class="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8 text-emerald-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-lg font-bold text-emerald-800 uppercase">Tu asesoría fue aprobada</h2>
+                    <p class="text-sm text-emerald-700 mt-0.5">
+                        El asesor confirmó tu carga del próximo período. Descarga el formato oficial para tu expediente.
+                    </p>
+                </div>
+                <button
+                    :disabled="generatingFormat"
+                    class="px-5 py-2.5 text-sm rounded-md bg-emerald-600 text-white font-bold hover:bg-emerald-700 disabled:opacity-50 self-center"
+                    @click="downloadFormat"
+                >
+                    {{ generatingFormat ? 'Generando…' : 'DESCARGAR FORMATO' }}
+                </button>
+            </div>
+
+            <div class="bg-white border rounded-xl shadow-sm">
+                <div class="border-b px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase">Carga aprobada</h3>
+                    <div class="text-xs text-slate-500">
+                        <span class="text-2xl font-bold text-slate-800 tabular-nums">{{ session.items.length }}</span>
+                        <span class="ml-1 text-[10px] uppercase">materias</span>
+                        <span class="mx-2 text-slate-300">·</span>
+                        <span class="text-2xl font-bold text-emerald-700 tabular-nums">{{ approvedCredits }}</span>
+                        <span class="ml-1 text-[10px] uppercase">créditos</span>
+                    </div>
+                </div>
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
+                        <tr>
+                            <th class="px-4 py-2 text-left">MATERIA</th>
+                            <th class="px-4 py-2 text-left">CR.</th>
+                            <th class="px-4 py-2 text-left">GRUPO / TURNO</th>
+                            <th class="px-4 py-2 text-left">DOCENTE</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr v-for="item in session.items" :key="item.id">
+                            <td class="px-4 py-2">
+                                <div class="font-bold text-slate-700">{{ item.subject?.name ?? '—' }}</div>
+                                <div class="text-[10px] font-mono text-slate-400">{{ item.subject?.code }}</div>
+                            </td>
+                            <td class="px-4 py-2 text-xs">{{ item.subject?.credits ?? 0 }}</td>
+                            <td class="px-4 py-2 text-xs">
+                                <span class="font-mono font-semibold text-slate-700">{{ item.teacherAssignment?.groupName ?? '—' }}</span>
+                                <span v-if="item.teacherAssignment?.shift" class="ml-1 text-[10px] text-slate-500 uppercase">
+                                    ({{ shiftLabel(item.teacherAssignment.shift) }})
+                                </span>
+                            </td>
+                            <td class="px-4 py-2 text-xs text-slate-600">
+                                {{ item.teacherAssignment?.teacherName ?? '— por asignar —' }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tabs (sólo si la asesoría NO está aprobada — el flujo de edición/revisión sigue activo) -->
+        <div v-else-if="session" class="flex gap-1 border-b">
             <button
                 class="px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 -mb-px transition"
                 :class="view === 'kardex' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'"
@@ -81,7 +148,7 @@
         </div>
 
         <!-- ─── TAB 1: MI KARDEX (retícula tipo SubjectPackage, sólo informativo) ─── -->
-        <div v-if="session && view === 'kardex'" class="bg-white border rounded-xl shadow-sm">
+        <div v-if="session && session.status !== 'approved' && view === 'kardex'" class="bg-white border rounded-xl shadow-sm">
             <div v-if="loadingCurriculum" class="px-4 py-12 text-center text-xs text-slate-400">Cargando retícula…</div>
             <div v-else class="p-6 overflow-x-auto">
                 <div class="grid gap-3 mx-auto" :style="{ gridTemplateColumns: `repeat(${maxSemester}, 160px)`, width: 'max-content' }">
@@ -139,7 +206,7 @@
         </div>
 
         <!-- ─── TAB 2: MI AVANCE ─── -->
-        <div v-if="session && view === 'avance'" class="space-y-4">
+        <div v-if="session && session.status !== 'approved' && view === 'avance'" class="space-y-4">
             <!-- Avance porcentual de la carrera -->
             <div class="bg-white border rounded-xl p-5">
                 <div class="flex items-center justify-between flex-wrap gap-2">
@@ -241,7 +308,7 @@
         </div>
 
         <!-- ─── TAB: MIS DATOS ─── -->
-        <div v-if="session && view === 'datos'" class="space-y-4">
+        <div v-if="session && session.status !== 'approved' && view === 'datos'" class="space-y-4">
             <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
                 <strong class="block mb-1">Confirma tus datos personales</strong>
                 Antes de enviar tu asesoría a revisión, verifica y actualiza tu dirección, teléfonos
@@ -388,7 +455,7 @@
         </div>
 
         <!-- ─── TAB 3: MATERIAS APERTURADAS ─── -->
-        <div v-if="session && view === 'apertura'" class="space-y-4">
+        <div v-if="session && session.status !== 'approved' && view === 'apertura'" class="space-y-4">
             <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm">
                 <div class="text-blue-800">
                     <strong>Estás cursando el {{ curriculum?.studentCurrentPeriodNumber ?? '—' }}° semestre</strong>;
@@ -587,9 +654,18 @@
                 </div>
             </div>
 
-            <div v-if="session?.rejectionReason" class="bg-red-50 border border-red-200 rounded-xl p-4">
-                <h3 class="text-xs font-bold text-red-700 uppercase mb-1">Tu asesoría fue rechazada</h3>
-                <p class="text-sm text-red-700">{{ session.rejectionReason }}</p>
+            <div v-if="session?.rejectionReason"
+                 id="rejection-reason"
+                 ref="rejectionReasonEl"
+                 class="border rounded-xl p-4 transition-all duration-500"
+                 :class="rejectionHighlighted ? 'bg-red-100 border-red-400 ring-4 ring-red-200' : 'bg-red-50 border-red-200'">
+                <h3 class="text-xs font-bold text-red-700 uppercase mb-1 flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                    </svg>
+                    Tu asesoría fue rechazada
+                </h3>
+                <p class="text-sm text-red-700 whitespace-pre-wrap">{{ session.rejectionReason }}</p>
             </div>
         </div>
 
@@ -729,6 +805,21 @@ function dayLabel(d: number | null): string {
 const canEdit = computed(() =>
     session.value && (session.value.status === 'draft' || session.value.status === 'rejected'),
 )
+
+// Total de créditos de las materias aprobadas (vista alterna cuando status='approved').
+const approvedCredits = computed(() =>
+    (session.value?.items ?? []).reduce((sum, it) => sum + (it.subject?.credits ?? 0), 0),
+)
+
+// Label corto del turno usado tanto en aperturadas como en la vista aprobada.
+function shiftLabel(shift: string | null | undefined): string {
+    if (!shift) return ''
+    const s = shift.toUpperCase()
+    if (s === 'MORNING' || s === 'MATUTINO')   return 'Matutino'
+    if (s === 'AFTERNOON' || s === 'VESPERTINO') return 'Vespertino'
+    if (s === 'EVENING' || s === 'NOCTURNO')   return 'Nocturno'
+    return shift
+}
 
 /* ── Mi Kardex (grid layout) ───────────────────────────────────────── */
 // Convención del schema: `period` = semestre (columna), `level` = orden
@@ -1323,5 +1414,31 @@ async function loadActivePeriod() {
     }
 }
 
-onMounted(loadActivePeriod)
+// Si la URL trae #rejection-reason (link recibido por notificación),
+// llevamos al usuario al tab de Aperturadas, hacemos scroll a la sección
+// del motivo y la resaltamos por unos segundos.
+const rejectionReasonEl   = ref<HTMLElement | null>(null)
+const rejectionHighlighted = ref(false)
+
+async function focusRejectionIfHashed() {
+    if (typeof window === 'undefined') return
+    if (window.location.hash !== '#rejection-reason') return
+    // Esperar a que la sesión cargue y la sección exista en el DOM.
+    let attempts = 0
+    while (attempts < 30 && !session.value?.rejectionReason) {
+        await new Promise(r => setTimeout(r, 100))
+        attempts++
+    }
+    if (!session.value?.rejectionReason) return
+    view.value = 'apertura' // el bloque de razón vive en este tab
+    await new Promise(r => setTimeout(r, 50))
+    rejectionReasonEl.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    rejectionHighlighted.value = true
+    setTimeout(() => { rejectionHighlighted.value = false }, 4000)
+}
+
+onMounted(async () => {
+    await loadActivePeriod()
+    await focusRejectionIfHashed()
+})
 </script>
