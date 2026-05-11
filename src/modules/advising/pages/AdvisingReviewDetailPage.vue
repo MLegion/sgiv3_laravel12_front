@@ -60,7 +60,6 @@
             </div>
 
             <div class="p-4 space-y-3">
-                <!-- Asignación pendiente -->
                 <div v-if="curriculum.needsSpecialty || curriculum.needsOptionalGroup"
                      class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 space-y-0.5">
                     <strong class="block uppercase tracking-wider">Asignación pendiente</strong>
@@ -73,7 +72,6 @@
                     </p>
                 </div>
 
-                <!-- Header de progreso -->
                 <div class="flex items-center justify-between flex-wrap gap-3">
                     <div>
                         <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Avance</div>
@@ -106,13 +104,11 @@
                     </div>
                 </div>
 
-                <!-- Barra de progreso -->
                 <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                     <div class="h-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all"
                          :style="{ width: (curriculum.progressPercent ?? 0) + '%' }" />
                 </div>
 
-                <!-- Conteos rápidos -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                     <div class="bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
                         <div class="text-[10px] font-black text-emerald-600 uppercase tracking-wider">Aprobadas</div>
@@ -188,13 +184,90 @@
                                 {{ item.replacementSubject.name }}
                             </span>
                         </td>
-                        <td class="px-4 py-2 text-right">
+                        <td class="px-4 py-2 text-right space-x-1 whitespace-nowrap">
                             <button v-if="canDecide"
                                     :disabled="savingItem === item.id"
                                     class="text-[11px] border px-2 py-1 rounded-md hover:bg-blue-50 hover:border-blue-300 text-blue-600 disabled:opacity-50"
                                     @click="saveDecision(item.id)">
                                 {{ savingItem === item.id ? '…' : 'GUARDAR' }}
                             </button>
+                            <button v-if="canDecide"
+                                    :disabled="removingSubject === item.subjectId"
+                                    class="text-[11px] border px-2 py-1 rounded-md hover:bg-red-50 hover:border-red-300 text-red-600 disabled:opacity-50"
+                                    title="Quitar de la sesión"
+                                    @click="removeItem(item.subjectId)">
+                                {{ removingSubject === item.subjectId ? '…' : 'QUITAR' }}
+                            </button>
+                        </td>
+                    </tr>
+                    <tr v-if="session.items.length === 0">
+                        <td colspan="6" class="px-4 py-8 text-center text-xs text-slate-400 italic">
+                            Sin materias propuestas. Agrégalas desde la sección de abajo.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Materias Aperturadas (agregar como asesor) -->
+        <div v-if="canDecide && curriculum" class="bg-white border rounded-xl shadow-sm">
+            <div class="border-b px-4 py-3 flex items-center justify-between">
+                <h2 class="text-sm font-bold text-slate-700 uppercase">Materias Aperturadas</h2>
+                <span class="text-xs text-slate-400">{{ availableForAdd.length }} disponibles</span>
+            </div>
+
+            <div v-if="blockedByRepeats" class="bg-red-50 border-b border-red-200 px-4 py-2 text-xs text-red-700">
+                <strong>{{ repeatCount }}+ repites</strong>: el alumno tiene bloqueo total. Agregar una materia requerirá aplicar excepción.
+            </div>
+            <div v-else-if="onlySpecials" class="bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-700">
+                <strong>2-4 repites</strong>: regla legacy permite sólo materias en especial. Agregar otras requerirá excepción.
+            </div>
+
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
+                    <tr>
+                        <th class="px-4 py-2 text-left">MATERIA</th>
+                        <th class="px-4 py-2 text-left">SEM</th>
+                        <th class="px-4 py-2 text-left">TIPO</th>
+                        <th class="px-4 py-2 text-left">GRUPO</th>
+                        <th class="px-4 py-2"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    <tr v-for="entry in availableForAdd" :key="entry.subjectId">
+                        <td class="px-4 py-2">
+                            <div class="font-bold text-slate-700">{{ entry.subject?.name ?? '—' }}</div>
+                            <div class="text-[10px] font-mono text-slate-400">
+                                {{ entry.subject?.officialCode ?? entry.subject?.code }} · {{ entry.subject?.credits ?? 0 }} cr.
+                            </div>
+                        </td>
+                        <td class="px-4 py-2 text-xs">{{ entry.period ?? '—' }}</td>
+                        <td class="px-4 py-2">
+                            <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full"
+                                  :class="attemptColorByEntry(entry)">
+                                {{ attemptLabelByEntry(entry) }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-2">
+                            <select v-model="selectedAssignment[entry.subjectId]"
+                                    class="text-[11px] border rounded-md px-2 py-1 max-w-[260px]">
+                                <option :value="null">Selecciona grupo…</option>
+                                <option v-for="a in (entry.offer?.assignments ?? [])" :key="a.assignmentId" :value="a.assignmentId">
+                                    {{ a.groupName }} · {{ a.teacherName ?? 'Por asignar' }}
+                                </option>
+                            </select>
+                        </td>
+                        <td class="px-4 py-2 text-right">
+                            <button :disabled="!selectedAssignment[entry.subjectId] || addingSubject === entry.subjectId"
+                                    class="text-[11px] border px-2 py-1 rounded-md hover:bg-emerald-50 hover:border-emerald-300 text-emerald-600 disabled:opacity-40"
+                                    @click="addItem(entry, selectedAssignment[entry.subjectId]!)">
+                                {{ addingSubject === entry.subjectId ? '…' : 'AGREGAR' }}
+                            </button>
+                        </td>
+                    </tr>
+                    <tr v-if="availableForAdd.length === 0">
+                        <td colspan="5" class="px-4 py-8 text-center text-xs text-slate-400 italic">
+                            No hay materias disponibles para agregar (todas las ofertadas ya están propuestas o no aplican).
                         </td>
                     </tr>
                 </tbody>
@@ -207,6 +280,34 @@
             <p class="text-sm text-red-700 whitespace-pre-wrap">{{ session.rejectionReason }}</p>
         </div>
 
+        <!-- Modal de excepción -->
+        <Teleport to="body">
+            <div v-if="overrideModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4">
+                    <h3 class="text-base font-bold text-slate-800 uppercase">Aplicar excepción</h3>
+                    <p class="text-sm text-slate-600">
+                        La inscripción de <strong>{{ overrideModal.entry.subject?.name }}</strong> tiene un problema:
+                    </p>
+                    <ul class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-3 space-y-1">
+                        <li v-for="(msg, i) in overrideModal.messages" :key="i">• {{ msg }}</li>
+                    </ul>
+                    <p class="text-xs text-slate-500">
+                        Como asesor activo puedes <strong>permitirla con excepción</strong>. Se ignorará la regla y la materia
+                        quedará agregada a la sesión.
+                    </p>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button class="px-4 py-2 text-sm rounded-md border hover:bg-slate-50" @click="overrideModal = null">
+                            CANCELAR
+                        </button>
+                        <button class="px-4 py-2 text-sm rounded-md bg-amber-600 text-white hover:bg-amber-700"
+                                @click="confirmOverride">
+                            APROBAR EXCEPCIÓN
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
     </div>
 </template>
 
@@ -215,24 +316,36 @@ import { computed, reactive, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { AdvisingSession, AdvisingSessionItem, AdvisingStatus, CurriculumStatus } from '@/modules/advising/types/advising.type'
+import type {
+    AdvisingSession, AdvisingSessionItem, AdvisingStatus,
+    CurriculumStatus, CurriculumStatusEntry,
+} from '@/modules/advising/types/advising.type'
 
 const route  = useRoute()
 const router = useRouter()
 const sessionId = Number(route.params.id)
 
-const session   = ref<AdvisingSession | null>(null)
+const session    = ref<AdvisingSession | null>(null)
 const curriculum = ref<CurriculumStatus | null>(null)
-const errorMsg  = ref('')
-const okMsg     = ref('')
+const errorMsg   = ref('')
+const okMsg      = ref('')
 const savingItem = ref<number | null>(null)
+const addingSubject   = ref<number | null>(null)
+const removingSubject = ref<number | null>(null)
+const selectedAssignment = reactive<Record<number, number | null>>({})
 
 interface ItemDecision {
     advisor_status: 'proposed' | 'accepted' | 'rejected' | 'replaced'
     replacement_subject_id: number | null
 }
-
 const decisions = reactive<Record<number, ItemDecision>>({})
+
+interface OverrideModalState {
+    entry: CurriculumStatusEntry
+    assignmentId: number
+    messages: string[]
+}
+const overrideModal = ref<OverrideModalState | null>(null)
 
 const currentUserId = computed(() => {
     try {
@@ -255,6 +368,41 @@ const counts = computed(() => {
     }
 })
 
+/* ── Materias aperturadas para agregar ────────────────────────────── */
+const proposedSubjectIds = computed(() => new Set((session.value?.items ?? []).map(i => i.subjectId)))
+const repeatCount        = computed(() => curriculum.value?.repeatCount ?? 0)
+const onlySpecials       = computed(() => repeatCount.value >= 2 && repeatCount.value <= 4)
+const blockedByRepeats   = computed(() => repeatCount.value >= 5)
+const showAllOffered     = computed(() => curriculum.value?.policy?.showOnlyEligible === false)
+const targetSemester     = computed(() => {
+    const cur = curriculum.value?.studentCurrentPeriodNumber
+    return cur != null ? cur + 1 : null
+})
+
+/**
+ * Mismo filtro que MyAdvisingPage: lo que el alumno vería en "Materias
+ * Aperturadas" — pero excluyendo las que ya están propuestas (para no
+ * duplicar). El asesor puede ver todo lo ofertado para decidir; las que
+ * caen fuera de la regla (repites bloqueado, etc.) las puede agregar
+ * vía override.
+ */
+const availableForAdd = computed<CurriculumStatusEntry[]>(() => {
+    const tgt = targetSemester.value
+    const subs = (curriculum.value?.subjects ?? []).filter(s => {
+        if (!s.isOffered) return false
+        if (s.attempt === 'aprobada') return false
+        if (proposedSubjectIds.value.has(s.subjectId)) return false
+        // Para el asesor mostramos TODAS las ofertadas; las reglas se aplican
+        // en el momento de agregar (con posibilidad de override).
+        return true
+    })
+    return subs.sort((a, b) =>
+        (a.period ?? 0) - (b.period ?? 0) ||
+        (a.subject?.name ?? '').localeCompare(b.subject?.name ?? '')
+    )
+})
+
+/* ── Cargas ────────────────────────────────────────────────────────── */
 async function load() {
     try {
         const { data } = await api.get(API.ADVISING_API.sessions.byId(sessionId))
@@ -265,14 +413,13 @@ async function load() {
                 replacement_subject_id: item.replacementSubjectId,
             }
         }
-        // Avance del estudiante (carga en paralelo, no bloquea la UI principal).
         const studentId = session.value?.student?.id ?? session.value?.studentId
         const periodId  = session.value?.collegeAcademicPeriodId
         if (studentId) {
             api.get(API.ADVISING_API.students.curriculum(studentId), {
                 params: periodId ? { college_academic_period_id: periodId } : {},
             }).then(r => { curriculum.value = r.data })
-              .catch(() => { /* informativo, no bloquea */ })
+              .catch(() => { /* informativo */ })
         }
     } catch (e: any) {
         errorMsg.value = e?.response?.data?.message ?? 'Error al cargar la asesoría.'
@@ -307,6 +454,60 @@ async function saveDecision(itemId: number) {
     }
 }
 
+async function addItem(entry: CurriculumStatusEntry, assignmentId: number, override = false) {
+    if (!canDecide.value) return
+    addingSubject.value = entry.subjectId
+    errorMsg.value = ''
+    try {
+        await api.post(API.ADVISING_API.sessions.upsertSingleItem(sessionId), {
+            subject_id:            entry.subjectId,
+            curriculum_id:         entry.curriculumId,
+            target_semester:       entry.period,
+            teacher_assignment_id: assignmentId,
+            override,
+        })
+        selectedAssignment[entry.subjectId] = null
+        overrideModal.value = null
+        okMsg.value = override ? 'Materia agregada con excepción.' : 'Materia agregada.'
+        setTimeout(() => okMsg.value = '', 2000)
+        await load()
+    } catch (e: any) {
+        const messages = extractOverridableMessages(e)
+        if (messages.length > 0) {
+            // Disparar modal de excepción
+            overrideModal.value = { entry, assignmentId, messages }
+        } else {
+            errorMsg.value = e?.response?.data?.message ?? 'No se pudo agregar la materia.'
+        }
+    } finally {
+        addingSubject.value = null
+    }
+}
+
+function confirmOverride() {
+    if (!overrideModal.value) return
+    addItem(overrideModal.value.entry, overrideModal.value.assignmentId, true)
+}
+
+async function removeItem(subjectId: number) {
+    if (!canDecide.value) return
+    if (!confirm('¿Quitar esta materia de la sesión?')) return
+    removingSubject.value = subjectId
+    errorMsg.value = ''
+    try {
+        await api.delete(API.ADVISING_API.sessions.removeSingleItem(sessionId), {
+            data: { subject_id: subjectId },
+        })
+        okMsg.value = 'Materia quitada.'
+        setTimeout(() => okMsg.value = '', 1500)
+        await load()
+    } catch (e: any) {
+        errorMsg.value = e?.response?.data?.message ?? 'No se pudo quitar.'
+    } finally {
+        removingSubject.value = null
+    }
+}
+
 async function approve() {
     if (!canDecide.value) return
     if (!confirm('¿Aprobar esta asesoría? Esta acción es irreversible.')) return
@@ -337,6 +538,33 @@ async function rejectPrompt() {
     }
 }
 
+/* ── Helpers ──────────────────────────────────────────────────────── */
+const OVERRIDABLE_CODES = new Set(['over_max_credits', 'too_many_repeats', 'repeats_only_specials', 'schedule_conflict'])
+
+function extractOverridableMessages(e: any): string[] {
+    const ctx = e?.response?.data?.context ?? {}
+    const out: string[] = []
+
+    // Schedule conflicts
+    if (Array.isArray(ctx.conflicts) && ctx.conflicts.length) {
+        for (const c of ctx.conflicts) {
+            const ms = (c?.itemA?.subject?.name && c?.itemB?.subject?.name)
+                ? `Choque de horario entre ${c.itemA.subject.name} y ${c.itemB.subject.name}`
+                : 'Choque de horario detectado.'
+            out.push(ms)
+        }
+    }
+
+    // Policy violations
+    if (Array.isArray(ctx.violations)) {
+        for (const v of ctx.violations) {
+            if (OVERRIDABLE_CODES.has(v.code)) out.push(v.message)
+        }
+    }
+
+    return out
+}
+
 function statusLabel(status: AdvisingStatus): string {
     return ({
         draft: 'BORRADOR', submitted: 'ENVIADA', approved: 'APROBADA',
@@ -360,6 +588,16 @@ function attemptLabel(item: AdvisingSessionItem): string {
 function attemptClass(item: AdvisingSessionItem): string {
     if (item.isSpecial) return 'bg-red-100 text-red-700'
     if (item.isRepeat)  return 'bg-orange-100 text-orange-700'
+    return 'bg-slate-100 text-slate-600'
+}
+function attemptLabelByEntry(e: CurriculumStatusEntry): string {
+    if (e.attempt === 'especial') return 'ESPECIAL'
+    if (e.attempt === 'repite')   return 'REPITE'
+    return 'NORMAL'
+}
+function attemptColorByEntry(e: CurriculumStatusEntry): string {
+    if (e.attempt === 'especial') return 'bg-red-100 text-red-700'
+    if (e.attempt === 'repite')   return 'bg-orange-100 text-orange-700'
     return 'bg-slate-100 text-slate-600'
 }
 </script>
