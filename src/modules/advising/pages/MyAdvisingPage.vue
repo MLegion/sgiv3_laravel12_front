@@ -248,6 +248,31 @@
                 y asegúrate que tu correo electrónico sea correcto. Al guardar quedará confirmado.
             </div>
 
+            <!-- Foto de perfil -->
+            <div class="bg-white border rounded-xl shadow-sm p-5 flex items-center gap-4">
+                <div class="relative w-20 h-20 rounded-full overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
+                    <img v-if="avatarUrl" :src="avatarUrl" alt="Foto" class="w-full h-full object-cover" />
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-slate-700">Foto de perfil</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">JPG o PNG, máximo 2 MB. Cuadrada de preferencia.</p>
+                    <p v-if="photoError" class="text-[11px] text-red-600 mt-1">{{ photoError }}</p>
+                    <p v-if="photoMessage" class="text-[11px] text-emerald-700 mt-1">{{ photoMessage }}</p>
+                </div>
+                <div>
+                    <input ref="photoInput" type="file" accept="image/jpeg,image/png" class="hidden" @change="onPhotoSelected" />
+                    <button type="button"
+                            :disabled="photoUploading"
+                            class="px-4 py-2 text-xs rounded-md border hover:bg-slate-50 disabled:opacity-50"
+                            @click="photoInput?.click()">
+                        {{ photoUploading ? 'Subiendo…' : 'CAMBIAR FOTO' }}
+                    </button>
+                </div>
+            </div>
+
             <div v-if="contactLoading" class="bg-white border rounded-xl shadow-sm px-4 py-12 text-center text-xs text-slate-400">
                 Cargando…
             </div>
@@ -643,6 +668,43 @@ const contact = reactive<ContactInfo>({
 const contactLoading = ref(false)
 const contactSaving = ref(false)
 const contactErrors = reactive<Record<string, string>>({})
+
+// Foto de perfil
+const photoInput     = ref<HTMLInputElement | null>(null)
+const photoUploading = ref(false)
+const photoVersion   = ref(Date.now())
+const photoError     = ref('')
+const photoMessage   = ref('')
+const avatarUrl      = computed(() => `${API.ADVISING_API.sessions.myAvatar}?v=${photoVersion.value}`)
+
+async function onPhotoSelected(e: Event) {
+    const input = e.target as HTMLInputElement
+    const file  = input.files?.[0]
+    if (!file) return
+    photoError.value = ''
+    photoMessage.value = ''
+    if (file.size > 2 * 1024 * 1024) {
+        photoError.value = 'La foto excede 2 MB.'
+        input.value = ''
+        return
+    }
+    const fd = new FormData()
+    fd.append('photo', file)
+    photoUploading.value = true
+    try {
+        await api.post(API.ADVISING_API.sessions.uploadMyPhoto, fd, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        photoVersion.value = Date.now() // bust cache del <img>
+        photoMessage.value = 'Foto actualizada.'
+        setTimeout(() => photoMessage.value = '', 2500)
+    } catch (e: any) {
+        photoError.value = e?.response?.data?.message ?? 'No se pudo subir la foto.'
+    } finally {
+        photoUploading.value = false
+        input.value = ''
+    }
+}
 const cpLookupSettlements = ref<GeoSettlement[]>([])
 const cpLookupCity = ref<{ state: string; municipality: string } | null>(null)
 const cpLookupLoading = ref(false)

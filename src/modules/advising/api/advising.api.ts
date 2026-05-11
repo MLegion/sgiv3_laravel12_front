@@ -8,6 +8,8 @@ const advisingApi: ApiModule = {
             myActivePeriod:   apiUrl('/advising/my-active-period'),
             myCurrent:        apiUrl('/advising/my-current'),
             myContactInfo:    apiUrl('/advising/me/contact-info'),
+            myAvatar:         apiUrl('/advising/me/avatar'),
+            uploadMyPhoto:    apiUrl('/advising/me/photo'),
             create:           apiUrl('/advising/sessions'),
             byId:             (id: string | number) => apiUrl(`/advising/sessions/${id}`),
             updateItems:      (id: string | number) => apiUrl(`/advising/sessions/${id}/items`),
