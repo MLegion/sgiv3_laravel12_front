@@ -530,7 +530,16 @@
                                     : 'hover:bg-slate-50'
                             ]">
                             <td class="px-3 py-2 font-mono text-xs pt-3">{{ entry.subject?.code ?? '—' }}</td>
-                            <td class="px-3 py-2 font-medium text-slate-800 pt-3">{{ entry.subject?.name ?? '—' }}</td>
+                            <td class="px-3 py-2 pt-3">
+                                <div class="font-medium text-slate-800 flex items-center gap-1.5 flex-wrap">
+                                    {{ entry.subject?.name ?? '—' }}
+                                    <span v-if="addedByAdvisor(entry.subjectId)"
+                                          class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-purple-100 text-purple-700 cursor-help"
+                                          :title="advisorAddedTooltip(entry.subjectId)">
+                                        Por asesor
+                                    </span>
+                                </div>
+                            </td>
                             <td class="px-3 py-2 text-center text-xs pt-3">{{ entry.period }}°</td>
                             <td class="px-3 py-2 text-center font-bold pt-3">{{ entry.subject?.credits ?? 0 }}</td>
                             <td class="px-3 py-2 text-center pt-3">
@@ -1288,6 +1297,29 @@ function seedProposedFromSession() {
             teacherAssignmentId: it.teacherAssignmentId,
         })
     }
+}
+
+// El alumno ve un badge "Por asesor" cuando una materia de su sesión la
+// agregó alguien con rol asesor (TEACHER/CAREER_MANAGER/ACADEMIC_DIRECTOR)
+// durante una revisión. Útil para que el alumno entienda por qué hay una
+// materia en su sesión que él no eligió.
+function getItemFor(subjectId: number) {
+    return session.value?.items.find(i => i.subjectId === subjectId) ?? null
+}
+
+function addedByAdvisor(subjectId: number): boolean {
+    const role = getItemFor(subjectId)?.addedByRole
+    return !!role && role !== 'STUDENT'
+}
+
+function advisorAddedTooltip(subjectId: number): string {
+    const item = getItemFor(subjectId)
+    if (!item) return ''
+    const who  = item.addedByName ?? 'asesor'
+    const when = item.createdAt
+        ? new Date(item.createdAt.replace(' ', 'T')).toLocaleString('es-MX')
+        : ''
+    return when ? `Agregada por ${who} (${when})` : `Agregada por ${who}`
 }
 
 /* ── Acciones ──────────────────────────────────────────────────────── */
