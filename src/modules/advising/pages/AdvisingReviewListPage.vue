@@ -1,7 +1,20 @@
 <template>
     <div class="space-y-4">
-        <div class="flex items-center justify-between">
-            <h1 class="text-xl font-semibold text-slate-800 uppercase">Asesorías por Revisar</h1>
+        <div class="flex items-center justify-between flex-wrap gap-3">
+            <h1 class="text-xl font-semibold text-slate-800 uppercase">{{ pageTitle }}</h1>
+
+            <div class="flex items-center gap-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Estado</label>
+                <select
+                    v-model="statusFilter"
+                    class="border rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    @change="onStatusChange">
+                    <option value="submitted">POR REVISAR</option>
+                    <option value="approved">APROBADAS</option>
+                    <option value="rejected">RECHAZADAS</option>
+                    <option value="all">TODAS</option>
+                </select>
+            </div>
         </div>
 
         <DataTable
@@ -16,6 +29,12 @@
                     <span class="text-sm font-bold text-slate-700">{{ row.student?.fullName ?? '—' }}</span>
                     <span class="text-[10px] font-mono text-slate-400">{{ row.student?.numControl ?? '' }}</span>
                 </div>
+            </template>
+
+            <template #cell-period="{ row }">
+                <span class="text-xs text-slate-600">
+                    {{ row.period?.shortName ?? row.period?.name ?? '—' }}
+                </span>
             </template>
 
             <template #cell-status="{ row }">
@@ -36,9 +55,11 @@
 
             <template #cell-opciones="{ row }">
                 <button type="button"
-                    class="border px-3 py-1.5 rounded-md text-xs text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition"
+                    class="border w-8 h-8 inline-flex items-center justify-center rounded-md hover:bg-slate-50 transition"
+                    :class="rowActionClass(row.status)"
+                    :title="rowActionLabel(row.status)"
                     @click="router.push({ name: 'advising.review.detail', params: { id: row.id } })">
-                    REVISAR
+                    <component :is="rowActionIcon(row.status)" class="w-4 h-4" />
                 </button>
             </template>
         </DataTable>
@@ -46,18 +67,26 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { API } from '@/shared/api'
+import {
+    PencilSquareIcon, ArrowPathIcon, EyeIcon,
+} from '@heroicons/vue/24/outline'
 import type { AdvisingSession, AdvisingStatus } from '@/modules/advising/types/advising.type'
 
 const router = useRouter()
 
+const statusFilter = ref<'submitted' | 'approved' | 'rejected' | 'all'>('submitted')
+const extraSearch  = computed(() => ({ status: statusFilter.value }))
+
 const columns: DataTableColumn<AdvisingSession>[] = [
     { key: 'id',          label: '#',          field: 'id', sortable: true },
     { key: 'student',     label: 'ALUMNO' },
+    { key: 'period',      label: 'PERIODO' },
     { key: 'status',      label: 'ESTADO' },
     { key: 'submittedAt', label: 'ENVIADA',     sortable: true, field: 'submitted_at' },
     { key: 'reviewer',    label: 'REVISA' },
@@ -66,9 +95,40 @@ const columns: DataTableColumn<AdvisingSession>[] = [
 
 const { rows, loading, pagination, handleChange, fetchData } = useDataTableFetch<AdvisingSession>({
     endpoint: API.ADVISING_API.sessions.pendingReview,
+    extraSearch,
 })
 
 fetchData()
+
+function onStatusChange() {
+    pagination.value.page = 1
+    fetchData()
+}
+
+const pageTitle = computed(() => {
+    switch (statusFilter.value) {
+        case 'approved': return 'Asesorías Aprobadas'
+        case 'rejected': return 'Asesorías Rechazadas'
+        case 'all':      return 'Asesorías de Mi Carrera'
+        default:         return 'Asesorías por Revisar'
+    }
+})
+
+function rowActionLabel(status: AdvisingStatus): string {
+    if (status === 'approved') return 'VER / REABRIR'
+    if (status === 'rejected') return 'VER'
+    return 'REVISAR'
+}
+function rowActionClass(status: AdvisingStatus): string {
+    if (status === 'approved') return 'text-amber-700 hover:border-amber-300 hover:bg-amber-50'
+    if (status === 'rejected') return 'text-slate-700 hover:border-slate-300'
+    return 'text-blue-600 hover:border-blue-300 hover:bg-blue-50'
+}
+function rowActionIcon(status: AdvisingStatus) {
+    if (status === 'approved') return ArrowPathIcon
+    if (status === 'rejected') return EyeIcon
+    return PencilSquareIcon
+}
 
 function statusLabel(status: AdvisingStatus): string {
     return ({

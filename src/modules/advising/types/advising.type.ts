@@ -63,6 +63,7 @@ export interface AdvisingSession {
     personalDataConfirmedAt: string | null
     student: { id: number; numControl?: string | null; fullName: string } | null
     reviewer: { id: number; name?: string | null; email?: string | null } | null
+    period?: { id: number; name: string | null; shortName: string | null } | null
     items: AdvisingSessionItem[]
     createdAt?: string | null
     updatedAt?: string | null
