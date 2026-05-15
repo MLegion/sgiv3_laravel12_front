@@ -404,6 +404,7 @@ import { API } from '@/shared/api'
 import { renderAsync } from 'docx-preview'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
+import { ReportCode } from '@/modules/reports/types/reportCodes'
 
 /* ── Contexto del usuario ──────────────────────────────────────────── */
 interface ScaContext {
@@ -542,7 +543,9 @@ function onProyModalityTypeChange() {
 function onProyCareerChange() {
     closeProyPreview()
     if (proy.careerId !== null) {
-        const code = proy.careerId === 'all' ? 'F0003' : 'F0004'
+        const code = proy.careerId === 'all'
+            ? ReportCode.ACADEMIC_PROJECTION_ALL_CAREERS
+            : ReportCode.ACADEMIC_PROJECTION_BY_CAREER
         void generateProyInline(code, 'pdf')
     }
 }
@@ -781,11 +784,11 @@ function isSemiEscolarizado(): boolean {
     return mt ? (mt.name ?? '').toLowerCase().includes('semi') : false
 }
 
-function horReportCode(): string {
-    if (hor.filterType === 'docente') return isSemiEscolarizado() ? 'F0002' : 'F0001'
-    if (hor.filterType === 'grupo')   return 'F0010'
-    if (hor.filterType === 'aula')    return 'F0011'
-    return 'F0001'
+function horReportCode(): ReportCode {
+    if (hor.filterType === 'docente') return isSemiEscolarizado() ? ReportCode.TEACHER_SCHEDULE_SEMI : ReportCode.TEACHER_SCHEDULE
+    if (hor.filterType === 'grupo')   return ReportCode.GROUP_SCHEDULE
+    if (hor.filterType === 'aula')    return ReportCode.PLACE_SCHEDULE
+    return ReportCode.TEACHER_SCHEDULE
 }
 
 function horParamKey(): string {
@@ -909,7 +912,9 @@ function onCargaCareerChange() {
 function onCargaCategoryChange() {
     closeCargaPreview()
     if (carga.category && carga.careerId !== null) {
-        const code = carga.category === 'docente' ? 'F0005' : 'F0006'
+        const code = carga.category === 'docente'
+            ? ReportCode.ACADEMIC_LOAD_BY_TEACHER
+            : ReportCode.ACADEMIC_LOAD_BY_GROUP
         void generateCargaInline(code)
     }
 }
@@ -1103,7 +1108,7 @@ async function generateOficioInline() {
 
     try {
         const { blob } = await generatePdf({
-            reportCode: 'F0007',
+            reportCode: ReportCode.ASSIGNMENT_OFFICIAL_LETTER,
             params: {
                 period_id:   selectedPeriodId.value,
                 modality_id: oficioResolvedModalityId.value,
@@ -1226,7 +1231,7 @@ async function generateSolInline() {
 
     try {
         const { blob } = await generatePdf({
-            reportCode: 'F0009',
+            reportCode: ReportCode.TEACHER_SUBJECT_REQUEST,
             params: {
                 period_id:   selectedPeriodId.value,
                 modality_id: solResolvedModalityId.value,
