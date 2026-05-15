@@ -24,6 +24,7 @@ const advisingApi: ApiModule = {
             updateItem:       (id: string | number, itemId: string | number) => apiUrl(`/advising/sessions/${id}/items/${itemId}`),
             approve:          (id: string | number) => apiUrl(`/advising/sessions/${id}/approve`),
             reject:           (id: string | number) => apiUrl(`/advising/sessions/${id}/reject`),
+            reopenApproved:   (id: string | number) => apiUrl(`/advising/sessions/${id}/reopen-approved`),
             override:         (id: string | number) => apiUrl(`/advising/sessions/${id}/override`),
             listAll:          apiUrl('/advising/sessions'),
         },

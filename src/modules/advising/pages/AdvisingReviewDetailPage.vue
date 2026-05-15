@@ -80,9 +80,28 @@
                     class="px-3 py-1.5 text-xs rounded-md bg-red-600 text-white hover:bg-red-700"
                     @click="openRejectModal">RECHAZAR</button>
 
+            <button v-if="canReopenApproved"
+                    class="px-3 py-1.5 text-xs rounded-md bg-amber-600 text-white hover:bg-amber-700 ml-auto"
+                    @click="openReopenModal"
+                    title="Reabrir como excepción una asesoría ya aprobada">
+                REABRIR (EXCEPCIÓN)
+            </button>
+
             <span v-if="!isMine && session.reviewer" class="text-xs text-slate-400 italic">
                 Está siendo revisada por {{ session.reviewer.name ?? 'otro asesor' }}.
             </span>
+        </div>
+
+        <!-- Aviso de re-apertura previa -->
+        <div v-if="session?.reopenReason"
+             class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <h3 class="text-xs font-bold text-amber-700 uppercase mb-1">
+                Reabierta por excepción
+                <span v-if="session.reopenedAt" class="text-amber-600 font-normal normal-case ml-1">
+                    el {{ formatDateTime(session.reopenedAt) }}
+                </span>
+            </h3>
+            <p class="text-sm text-amber-800 whitespace-pre-wrap">{{ session.reopenReason }}</p>
         </div>
 
         <!-- Avance del estudiante (visión general antes de decidir) -->
@@ -390,7 +409,7 @@
         <ConfirmModal
             v-model="approveModalOpen"
             title="Aprobar asesoría"
-            message="Esta acción es irreversible. ¿Confirmas la aprobación?"
+            message="¿Confirmas la aprobación? Si después detectas algún ajuste podrás reabrirla como excepción."
             confirm-text="Aprobar"
             variant="success"
             @confirm="approve"
@@ -448,6 +467,49 @@
             </div>
         </Teleport>
 
+        <!-- Modal de motivo de re-apertura como excepción -->
+        <Teleport to="body">
+            <div v-if="reopenModalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
+                <div class="absolute inset-0 bg-black/40" @click="reopenModalOpen = false" />
+                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 space-y-4">
+                    <h3 class="text-base font-bold text-slate-800 uppercase">Reabrir asesoría aprobada</h3>
+                    <p class="text-sm text-slate-600">
+                        Esta acción regresa la asesoría a <strong>ENVIADA</strong> para que la revises de nuevo y ajustes lo necesario.
+                        El alumno será notificado del motivo de la excepción.
+                    </p>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">
+                            Motivo de la excepción (mínimo 10 caracteres)
+                        </label>
+                        <textarea
+                            v-model="reopenReason"
+                            rows="4"
+                            maxlength="1000"
+                            placeholder="Ej. El docente cambió, hubo un error de captura en la materia X..."
+                            class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+                            :disabled="reopenSubmitting"
+                        />
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-[11px] text-slate-400">{{ reopenReason.length }}/1000</span>
+                            <p v-if="reopenError" class="text-[11px] text-red-600">{{ reopenError }}</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button class="px-4 py-2 text-sm rounded-md border hover:bg-slate-50"
+                                :disabled="reopenSubmitting"
+                                @click="reopenModalOpen = false">
+                            CANCELAR
+                        </button>
+                        <button class="px-4 py-2 text-sm rounded-md bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50"
+                                :disabled="reopenSubmitting || reopenReason.trim().length < 10"
+                                @click="submitReopenApproved">
+                            {{ reopenSubmitting ? 'REABRIENDO…' : 'REABRIR ASESORÍA' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
     </div>
 </template>
 
@@ -496,6 +558,10 @@ const rejectModalOpen       = ref(false)
 const rejectReason          = ref('')
 const rejectError           = ref('')
 const rejectSubmitting      = ref(false)
+const reopenModalOpen       = ref(false)
+const reopenReason          = ref('')
+const reopenError           = ref('')
+const reopenSubmitting      = ref(false)
 
 function onConfirmRemove() {
     if (removeTargetSubjectId.value !== null) {
@@ -513,6 +579,8 @@ const currentUserId = computed(() => {
 
 const isMine    = computed(() => session.value?.reviewer?.id === currentUserId.value)
 const canDecide = computed(() => session.value?.status === 'submitted' && isMine.value)
+// Sólo el asesor que aprobó puede reabrir como excepción.
+const canReopenApproved = computed(() => session.value?.status === 'approved' && isMine.value)
 
 // Tarjeta del estudiante: foto + plan
 const studentId    = computed<number | null>(() => session.value?.student?.id ?? session.value?.studentId ?? null)
@@ -828,6 +896,47 @@ async function submitReject() {
     } finally {
         rejectSubmitting.value = false
     }
+}
+
+function openReopenModal() {
+    if (!canReopenApproved.value) return
+    reopenReason.value = ''
+    reopenError.value = ''
+    reopenModalOpen.value = true
+}
+
+async function submitReopenApproved() {
+    const reason = reopenReason.value.trim()
+    if (reason.length < 10) {
+        reopenError.value = 'El motivo debe tener al menos 10 caracteres.'
+        return
+    }
+    reopenSubmitting.value = true
+    reopenError.value = ''
+    errorMsg.value = ''
+    try {
+        await api.post(API.ADVISING_API.sessions.reopenApproved(sessionId), { reason })
+        reopenModalOpen.value = false
+        okMsg.value = 'Asesoría reabierta como excepción.'
+        await load()
+    } catch (e: any) {
+        const violations = e?.response?.data?.context?.violations
+        reopenError.value = Array.isArray(violations) && violations[0]?.message
+            ? violations[0].message
+            : (e?.response?.data?.message ?? 'Error al reabrir la asesoría.')
+    } finally {
+        reopenSubmitting.value = false
+    }
+}
+
+function formatDateTime(iso: string | null | undefined): string {
+    if (!iso) return ''
+    const d = new Date(iso.replace(' ', 'T'))
+    if (Number.isNaN(d.getTime())) return iso
+    return d.toLocaleString('es-MX', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+    })
 }
 
 /* ── Helpers ──────────────────────────────────────────────────────── */

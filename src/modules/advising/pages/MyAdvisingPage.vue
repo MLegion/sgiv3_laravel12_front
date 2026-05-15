@@ -676,6 +676,20 @@
                 </h3>
                 <p class="text-sm text-red-700 whitespace-pre-wrap">{{ session.rejectionReason }}</p>
             </div>
+
+            <div v-if="session?.reopenReason"
+                 class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <h3 class="text-xs font-bold text-amber-700 uppercase mb-1 flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                    </svg>
+                    Tu asesoría fue reabierta por excepción
+                </h3>
+                <p class="text-sm text-amber-800 whitespace-pre-wrap">{{ session.reopenReason }}</p>
+                <p v-if="session.reopenedAt" class="text-[11px] text-amber-700 mt-2">
+                    Reabierta el {{ formatDateTime(session.reopenedAt) }}
+                </p>
+            </div>
         </div>
 
         <ConfirmModal
@@ -1320,6 +1334,16 @@ function advisorAddedTooltip(subjectId: number): string {
         ? new Date(item.createdAt.replace(' ', 'T')).toLocaleString('es-MX')
         : ''
     return when ? `Agregada por ${who} (${when})` : `Agregada por ${who}`
+}
+
+function formatDateTime(iso: string | null | undefined): string {
+    if (!iso) return ''
+    const d = new Date(iso.replace(' ', 'T'))
+    if (Number.isNaN(d.getTime())) return iso
+    return d.toLocaleString('es-MX', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+    })
 }
 
 /* ── Acciones ──────────────────────────────────────────────────────── */

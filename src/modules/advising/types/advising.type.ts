@@ -57,6 +57,9 @@ export interface AdvisingSession {
     reviewedAt: string | null
     reviewedBy: number | null
     rejectionReason: string | null
+    reopenReason: string | null
+    reopenedAt: string | null
+    reopenedByUserId: number | null
     personalDataConfirmedAt: string | null
     student: { id: number; numControl?: string | null; fullName: string } | null
     reviewer: { id: number; name?: string | null; email?: string | null } | null
