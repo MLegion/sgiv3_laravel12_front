@@ -142,7 +142,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import EmailRichEditor from '@/modules/notifications/components/EmailRichEditor.vue'
@@ -168,7 +168,6 @@ interface TemplateDetail {
 }
 
 const route   = useRoute()
-const router  = useRouter()
 const tplKey  = computed(() => String(route.params.key))
 const channel = computed(() => String(route.params.channel))
 

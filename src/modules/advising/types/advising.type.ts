@@ -174,6 +174,15 @@ export interface CurriculumStatus {
         periods?: number | null
     } | null
     studentCurrentPeriodNumber?: number | null
+    modality?: {
+        id: number
+        typeName: string | null
+        typeShort: string | null
+    } | null
+    campus?: {
+        id: number
+        name: string | null
+    } | null
     repeatCount?: number
     hasMandatorySpecials?: boolean
     policy?: CurriculumPolicy

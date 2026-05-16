@@ -328,7 +328,7 @@
                                 </span>
                             </div>
                             <div class="text-[10px] font-mono text-slate-400">
-                                {{ entry.subject?.officialCode ?? entry.subject?.code }} · {{ entry.subject?.credits ?? 0 }} cr.
+                                {{ entry.subject?.code ?? '—' }} · {{ entry.subject?.credits ?? 0 }} cr.
                             </div>
                         </td>
                         <td class="px-4 py-2 text-xs">{{ entry.period ?? '—' }}</td>
@@ -675,11 +675,6 @@ const proposedSubjectIds = computed(() => new Set((session.value?.items ?? []).m
 const repeatCount        = computed(() => curriculum.value?.repeatCount ?? 0)
 const onlySpecials       = computed(() => repeatCount.value >= 2 && repeatCount.value <= 4)
 const blockedByRepeats   = computed(() => repeatCount.value >= 5)
-const showAllOffered     = computed(() => curriculum.value?.policy?.showOnlyEligible === false)
-const targetSemester     = computed(() => {
-    const cur = curriculum.value?.studentCurrentPeriodNumber
-    return cur != null ? cur + 1 : null
-})
 
 /**
  * Materias aperturadas que el asesor PUEDE agregar a la sesión:

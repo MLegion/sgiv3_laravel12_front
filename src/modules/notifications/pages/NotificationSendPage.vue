@@ -11,7 +11,7 @@
                     <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Plantilla</label>
                     <select v-model="selectedKey" class="w-full border rounded-md px-2 py-1.5 text-sm" @change="onTemplateChange">
                         <option value="">— Selecciona —</option>
-                        <option v-for="(opts, key) in groupedTemplates" :key="key" :value="key">{{ key }}</option>
+                        <option v-for="(_opts, key) in groupedTemplates" :key="key" :value="key">{{ key }}</option>
                     </select>
                 </div>
                 <div>
