@@ -394,6 +394,12 @@
                 </div>
             </div>
         </template>
+
+        <FormatUnavailableModal
+            v-model="unavailableModalOpen"
+            :code="unavailableInfo.code"
+            :reason="unavailableInfo.reason"
+        />
     </div>
 </template>
 
@@ -403,8 +409,10 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { renderAsync } from 'docx-preview'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
-import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
+import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
+import FormatUnavailableModal from '@/modules/reports/components/FormatUnavailableModal.vue'
 import { ReportCode } from '@/modules/reports/types/reportCodes'
+import type { Ref } from 'vue'
 
 /* ── Contexto del usuario ──────────────────────────────────────────── */
 interface ScaContext {
@@ -552,6 +560,20 @@ function onProyCareerChange() {
 
 /* ── Generación inline ──────────────────────────────────────────── */
 const { generate, generatePdf } = useReportGenerator()
+
+/* ── Modal "Formato no disponible" compartido entre todos los tabs ── */
+const unavailableModalOpen = ref(false)
+const unavailableInfo      = ref<{ code: string; reason: 'missing' | 'inactive' }>({ code: '', reason: 'missing' })
+
+function handleReportError(e: any, errRef: Ref<string | null>, fallback: string) {
+    if (e instanceof ReportFormatUnavailableError) {
+        unavailableInfo.value = { code: e.code, reason: e.reason }
+        unavailableModalOpen.value = true
+        errRef.value = null
+        return
+    }
+    errRef.value = e?.message ?? fallback
+}
 const proyGenerating     = ref(false)
 const proyPreviewVisible = ref(false)
 const proyBlob           = ref<Blob | null>(null)
@@ -595,7 +617,7 @@ async function generateProyInline(code: string, format: 'pdf' | 'docx') {
             }
         }
     } catch (e: any) {
-        proyError.value = e?.message ?? 'Error al generar el reporte.'
+        handleReportError(e, proyError, 'Error al generar el reporte.')
     } finally {
         proyGenerating.value = false
     }
@@ -785,9 +807,10 @@ function isSemiEscolarizado(): boolean {
 }
 
 function horReportCode(): ReportCode {
-    if (hor.filterType === 'docente') return isSemiEscolarizado() ? ReportCode.TEACHER_SCHEDULE_SEMI : ReportCode.TEACHER_SCHEDULE
-    if (hor.filterType === 'grupo')   return ReportCode.GROUP_SCHEDULE
-    if (hor.filterType === 'aula')    return ReportCode.PLACE_SCHEDULE
+    const semi = isSemiEscolarizado()
+    if (hor.filterType === 'docente') return semi ? ReportCode.TEACHER_SCHEDULE_BY_DATE : ReportCode.TEACHER_SCHEDULE
+    if (hor.filterType === 'grupo')   return semi ? ReportCode.GROUP_SCHEDULE_BY_DATE   : ReportCode.GROUP_SCHEDULE
+    if (hor.filterType === 'aula')    return semi ? ReportCode.PLACE_SCHEDULE_BY_DATE   : ReportCode.PLACE_SCHEDULE
     return ReportCode.TEACHER_SCHEDULE
 }
 
@@ -818,7 +841,7 @@ async function generateHorInline() {
         horBlob.value = blob
         horPdfUrl.value = URL.createObjectURL(blob)
     } catch (e: any) {
-        horError.value = e?.message ?? 'Error al generar el horario.'
+        handleReportError(e, horError, 'Error al generar el horario.')
     } finally {
         horGenerating.value = false
     }
@@ -961,7 +984,7 @@ async function generateCargaInline(code: string) {
         cargaBlob.value = blob
         cargaPdfUrl.value = URL.createObjectURL(blob)
     } catch (e: any) {
-        cargaError.value = e?.message ?? 'Error al generar el reporte.'
+        handleReportError(e, cargaError, 'Error al generar el reporte.')
     } finally {
         cargaGenerating.value = false
     }
@@ -1121,7 +1144,7 @@ async function generateOficioInline() {
         oficioBlob.value = blob
         oficioPdfUrl.value = URL.createObjectURL(blob)
     } catch (e: any) {
-        oficioError.value = e?.message ?? 'Error al generar el oficio.'
+        handleReportError(e, oficioError, 'Error al generar el oficio.')
     } finally {
         oficioGenerating.value = false
     }
@@ -1241,7 +1264,7 @@ async function generateSolInline() {
         solBlob.value = blob
         solPdfUrl.value = URL.createObjectURL(blob)
     } catch (e: any) {
-        solError.value = e?.message ?? 'Error al generar el reporte.'
+        handleReportError(e, solError, 'Error al generar el reporte.')
     } finally {
         solGenerating.value = false
     }
