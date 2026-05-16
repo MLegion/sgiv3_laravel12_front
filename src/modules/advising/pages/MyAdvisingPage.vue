@@ -70,7 +70,7 @@
                     class="px-5 py-2.5 text-sm rounded-md bg-emerald-600 text-white font-bold hover:bg-emerald-700 disabled:opacity-50 self-center"
                     @click="downloadFormat"
                 >
-                    {{ generatingFormat ? 'Generando…' : 'DESCARGAR FORMATO' }}
+                    {{ generatingFormat ? 'Generando…' : 'ABRIR FORMATO' }}
                 </button>
             </div>
 
@@ -699,13 +699,10 @@
             @confirm="reopen"
         />
 
-        <ConfirmModal
-            v-model="formatModalOpen"
-            variant="info"
-            title="Formato de asesoría"
-            message="El formato de asesoría reticular se generará una vez que el asesor apruebe tu sesión. Disponible próximamente."
-            confirm-text="Entendido"
-            hide-cancel
+        <FormatUnavailableModal
+            v-model="formatUnavailableOpen"
+            :code="formatUnavailableInfo.code"
+            :reason="formatUnavailableInfo.reason"
         />
     </div>
 </template>
@@ -716,6 +713,9 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 import PhotoUpload from '@/app/components/ui/form/PhotoUpload.vue'
+import FormatUnavailableModal from '@/modules/reports/components/FormatUnavailableModal.vue'
+import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
+import { ReportCode } from '@/modules/reports/types/reportCodes'
 import type {
     AdvisingSession, AdvisingStatus, CurriculumStatus, CurriculumStatusEntry,
     SubjectAttempt, PolicyViolation, ContactInfo, GeoSettlement, GeoPostalCodeResponse,
@@ -749,7 +749,12 @@ const violations    = ref<PolicyViolation[]>([])
 // Modales (reemplazo de confirm/alert nativos)
 const submitModalOpen = ref(false)
 const reopenModalOpen = ref(false)
-const formatModalOpen = ref(false)
+
+// Modal "Formato no disponible"
+const formatUnavailableOpen = ref(false)
+const formatUnavailableInfo = ref<{ code: string; reason: 'missing' | 'inactive' }>({ code: '', reason: 'missing' })
+
+const { generatePdf } = useReportGenerator()
 
 // Pestaña "Mis Datos"
 const contact = reactive<ContactInfo>({
@@ -1373,9 +1378,28 @@ async function reopen() {
     }
 }
 
-function downloadFormat() {
-    // Stub — el formato como reporte DOCX se genera en una iteracion posterior.
-    formatModalOpen.value = true
+async function downloadFormat() {
+    if (!session.value?.id || generatingFormat.value) return
+    generatingFormat.value = true
+    errorMsg.value = ''
+    try {
+        const { blob } = await generatePdf({
+            reportCode: ReportCode.ADVISING_RETICULAR_FORMAT,
+            params:     { session_id: session.value.id },
+        })
+        const url = URL.createObjectURL(blob)
+        window.open(url, '_blank')
+        // El revoke se deja al GC del navegador para que la pestaña abierta no pierda el blob.
+    } catch (e: any) {
+        if (e instanceof ReportFormatUnavailableError) {
+            formatUnavailableInfo.value = { code: e.code, reason: e.reason }
+            formatUnavailableOpen.value = true
+        } else {
+            errorMsg.value = e?.message ?? 'No se pudo generar el formato.'
+        }
+    } finally {
+        generatingFormat.value = false
+    }
 }
 
 /* ── Helpers visuales ──────────────────────────────────────────────── */
