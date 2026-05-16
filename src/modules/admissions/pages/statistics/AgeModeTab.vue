@@ -133,8 +133,8 @@ const ageChartOptions = computed(() => ({
 }))
 
 const sexColors: Record<string, string> = {
-    H:    'rgba(37, 99, 235, 0.85)',
-    M:    'rgba(236, 72, 153, 0.85)',
+    M:    'rgba(37, 99, 235, 0.85)',
+    F:    'rgba(236, 72, 153, 0.85)',
     NULL: 'rgba(148, 163, 184, 0.85)',
 }
 

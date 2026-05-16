@@ -6,6 +6,7 @@ export interface EmployeeShowType {
     collegeId: number
     curp?: string | null
     rfc?: string | null
+    sex?: 'M' | 'F' | null
     phone?: string | null
     email: string
     userId: number

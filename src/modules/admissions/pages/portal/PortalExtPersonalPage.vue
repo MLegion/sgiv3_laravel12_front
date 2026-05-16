@@ -53,8 +53,8 @@
                         <label class="text-xs font-medium text-slate-600">SEXO <span class="text-red-500">*</span></label>
                         <select v-model="form.sex" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">SELECCIONAR...</option>
-                            <option value="H">HOMBRE</option>
-                            <option value="M">MUJER</option>
+                            <option value="M">MASCULINO</option>
+                            <option value="F">FEMENINO</option>
                         </select>
                     </div>
 

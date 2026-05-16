@@ -84,7 +84,7 @@
                     <InfoItem label="APELLIDO PATERNO" :value="employee.firstSurname" />
                     <InfoItem label="APELLIDO MATERNO" :value="employee.secondSurname" />
                     <InfoItem label="CURP" :value="employee.curp" />
-                    <InfoItem label="SEXO" :value="employee.sex === 'H' ? 'Hombre' : (employee.sex === 'M' ? 'Mujer' : null)" />
+                    <InfoItem label="SEXO" :value="employee.sex === 'M' ? 'Masculino' : (employee.sex === 'F' ? 'Femenino' : null)" />
                     <InfoItem label="RFC" :value="employee.rfc" />
                     <InfoItem label="TELÉFONO" :value="employee.phone" />
                 </div>

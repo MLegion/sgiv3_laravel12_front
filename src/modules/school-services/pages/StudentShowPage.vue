@@ -48,7 +48,7 @@
                     <ReadField label="CURP"             :value="student.curp" highlight />
                     <ReadField label="RFC"              :value="student.rfc" />
                     <ReadField label="FECHA NAC."       :value="student.birthDate" />
-                    <ReadField label="SEXO"             :value="student.sex === 'H' ? 'Hombre' : (student.sex === 'M' ? 'Mujer' : null)" />
+                    <ReadField label="SEXO"             :value="student.sex === 'M' ? 'Masculino' : (student.sex === 'F' ? 'Femenino' : null)" />
                     <ReadField label="ESTADO NAC."      :value="student.birthState?.name ?? null" />
                     <ReadField label="MUNICIPIO NAC."   :value="student.birthMunicipality?.name ?? null" />
                     <ReadField label="ESTADO CIVIL"     :value="student.maritalStatus" />
