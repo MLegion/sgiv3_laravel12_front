@@ -14,6 +14,20 @@ export interface GenerateOptions {
     filename?:   string
 }
 
+export type ReportUnavailableReason = 'missing' | 'inactive'
+
+export class ReportFormatUnavailableError extends Error {
+    readonly notAvailable = true as const
+    constructor(
+        public readonly code: string,
+        public readonly reason: ReportUnavailableReason,
+        message: string,
+    ) {
+        super(message)
+        this.name = 'ReportFormatUnavailableError'
+    }
+}
+
 /**
  * Composable headless para generar reportes desde cualquier parte de la app.
  *
@@ -31,8 +45,20 @@ export function useReportGenerator() {
 
     async function fetchReport(options: GenerateOptions): Promise<Report> {
         if (options.reportCode) {
-            const { data } = await api.get(API.REPORTS_API.reports.byCode(options.reportCode))
-            return data as Report
+            try {
+                const { data } = await api.get(API.REPORTS_API.reports.byCode(options.reportCode))
+                return data as Report
+            } catch (e: any) {
+                if (e?.response?.status === 404) {
+                    const payload = e.response.data ?? {}
+                    throw new ReportFormatUnavailableError(
+                        payload.code ?? options.reportCode,
+                        (payload.reason as ReportUnavailableReason) ?? 'missing',
+                        payload.message ?? 'Formato no disponible.',
+                    )
+                }
+                throw e
+            }
         }
         if (options.reportId) {
             const { data } = await api.get(API.REPORTS_API.reports.byId(options.reportId))
