@@ -3,38 +3,134 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { EvdLevel, EvdTeacherResultRow } from '@/modules/evd/types/evd.type'
+import type {
+    EvdLevel,
+    EvdResultsFilterOptions,
+    EvdTeacherResultRow,
+} from '@/modules/evd/types/evd.type'
 
-const route   = useRoute()
-const router  = useRouter()
-const rows    = ref<EvdTeacherResultRow[]>([])
-const loading = ref(true)
-const error   = ref('')
-const search  = ref('')
+interface CollegeAcademicPeriodOption {
+    id: number
+    academicPeriod?: { name?: string | null; shortName?: string | null } | null
+}
 
-const periodId = computed(() => Number(route.params.periodId))
+const route  = useRoute()
+const router = useRouter()
 
-async function load() {
-    if (!periodId.value || isNaN(periodId.value)) return
+const caPeriods   = ref<CollegeAcademicPeriodOption[]>([])
+const loadingCaps = ref(true)
+
+const selectedCap    = ref<number | null>(null)
+const campusId       = ref<number | null>(null)
+const modalityTypeId = ref<number | null>(null)
+const careerId       = ref<number | null>(null)
+const search         = ref('')
+
+const filterOptions = ref<EvdResultsFilterOptions>({ campuses: [], modality_types: [], careers: [] })
+const rows          = ref<EvdTeacherResultRow[]>([])
+const loading       = ref(false)
+const error         = ref('')
+
+const hasPeriod = computed(() => selectedCap.value !== null)
+
+function queryNum(key: string): number | null {
+    const v = route.query[key]
+    return v !== undefined && v !== null && v !== '' ? Number(v) : null
+}
+
+function syncUrl(): void {
+    router.replace({
+        query: {
+            cap:           selectedCap.value ?? undefined,
+            campus_id:     campusId.value ?? undefined,
+            modality_type: modalityTypeId.value ?? undefined,
+            career_id:     careerId.value ?? undefined,
+        },
+    }).catch(() => {})
+}
+
+async function loadCaps() {
+    loadingCaps.value = true
+    try {
+        const { data } = await api.get(API.SCHOOL_SERVICES_API.collegeAcademicPeriods.list, {
+            params: { per_page: 50, order_by: 'id', order_dir: 'desc' },
+        })
+        caPeriods.value = Array.isArray(data?.items) ? data.items : []
+    } catch (e: any) {
+        error.value = e?.response?.data?.message ?? 'No se pudieron cargar los periodos.'
+    } finally {
+        loadingCaps.value = false
+    }
+}
+
+async function loadFilterOptions() {
+    if (selectedCap.value === null) {
+        filterOptions.value = { campuses: [], modality_types: [], careers: [] }
+        return
+    }
+    try {
+        const { data } = await api.get(API.EVD_API.admin.resultsFilters(selectedCap.value))
+        filterOptions.value = {
+            campuses:       Array.isArray(data?.campuses) ? data.campuses : [],
+            modality_types: Array.isArray(data?.modality_types) ? data.modality_types : [],
+            careers:        Array.isArray(data?.careers) ? data.careers : [],
+        }
+    } catch {
+        filterOptions.value = { campuses: [], modality_types: [], careers: [] }
+    }
+}
+
+async function loadResults() {
+    if (selectedCap.value === null) {
+        rows.value = []
+        return
+    }
     loading.value = true
     error.value = ''
     try {
-        const { data } = await api.get(API.EVD_API.admin.results(periodId.value), {
-            params: { search: search.value || undefined },
-        })
+        const params: Record<string, string | number> = {}
+        if (campusId.value !== null)       params.campus_id = campusId.value
+        if (modalityTypeId.value !== null) params.modality_type_id = modalityTypeId.value
+        if (careerId.value !== null)       params.career_id = careerId.value
+        if (search.value.trim() !== '')    params.search = search.value.trim()
+
+        const { data } = await api.get(API.EVD_API.admin.results(selectedCap.value), { params })
         rows.value = Array.isArray(data?.data) ? data.data : []
     } catch (e: any) {
         error.value = e?.response?.data?.message ?? 'No se pudieron cargar los resultados.'
+        rows.value = []
     } finally {
         loading.value = false
     }
 }
 
-let searchTimer: number | undefined
-watch(search, () => {
-    window.clearTimeout(searchTimer)
-    searchTimer = window.setTimeout(load, 350)
+// Cambiar de periodo limpia la segmentación y recarga catálogos + resultados.
+async function onPeriodChange() {
+    campusId.value = null
+    modalityTypeId.value = null
+    careerId.value = null
+    syncUrl()
+    await loadFilterOptions()
+    await loadResults()
+}
+
+watch([campusId, modalityTypeId, careerId], () => {
+    syncUrl()
+    loadResults()
 })
+
+let searchT: ReturnType<typeof setTimeout> | null = null
+watch(search, () => {
+    if (searchT) clearTimeout(searchT)
+    searchT = setTimeout(loadResults, 350)
+})
+
+function periodOptionLabel(p: CollegeAcademicPeriodOption): string {
+    const name  = p.academicPeriod?.name      ?? ''
+    const short = p.academicPeriod?.shortName ?? ''
+    if (name && short) return `${name} (${short})`
+    return name || short || `Periodo #${p.id}`
+}
 
 function avgClass(avg: number | null): string {
     if (avg === null) return 'text-slate-400'
@@ -54,39 +150,97 @@ function levelFromAvg(avg: number | null): EvdLevel {
     return 'INSUFICIENTE'
 }
 
-function goBack() {
-    router.push({ name: 'evd.admin.periods' })
-}
-
 function goToTeacher(r: EvdTeacherResultRow) {
     router.push({
         name: 'evd.admin.teacher-detail',
-        params: { periodId: periodId.value, teacherId: r.teacher.id },
+        params: { teacherId: r.teacher.id },
+        query: {
+            cap:           selectedCap.value ?? undefined,
+            campus_id:     campusId.value ?? undefined,
+            modality_type: modalityTypeId.value ?? undefined,
+            career_id:     careerId.value ?? undefined,
+        },
     })
 }
 
-onMounted(load)
+onMounted(async () => {
+    await loadCaps()
+    // Restaura el estado de filtros desde la URL (volver desde el detalle).
+    const cap = queryNum('cap')
+    if (cap !== null && caPeriods.value.some(p => p.id === cap)) {
+        selectedCap.value    = cap
+        campusId.value       = queryNum('campus_id')
+        modalityTypeId.value = queryNum('modality_type')
+        careerId.value       = queryNum('career_id')
+        await loadFilterOptions()
+        await loadResults()
+    }
+})
 </script>
 
 <template>
     <div class="space-y-4">
         <div>
-            <button class="text-sm text-slate-600 hover:underline" @click="goBack">← Periodos</button>
-            <h1 class="text-xl font-semibold text-slate-800 uppercase mt-1">Resultados por docente</h1>
-            <p class="text-xs text-slate-500 mt-0.5">Promedio general en escala Likert (1–5). Clic en un docente para ver el desglose por área.</p>
-        </div>
-
-        <div class="bg-white border border-slate-200 rounded-lg p-3 flex gap-3 items-end">
-            <div class="flex-1 flex flex-col gap-1">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Buscar docente</label>
-                <input v-model="search" type="text" placeholder="Nombre o ID"
-                       class="border border-slate-300 rounded px-2 py-1.5 text-sm" />
-            </div>
+            <h1 class="text-xl font-semibold text-slate-800 uppercase">Resultados de Evaluación</h1>
+            <p class="text-xs text-slate-500 mt-0.5">
+                Promedio general en escala Likert (1–5). Selecciona un periodo y, si lo deseas,
+                segmenta por campus, modalidad o carrera.
+            </p>
         </div>
 
         <div v-if="error" class="bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded px-3 py-2">{{ error }}</div>
 
-        <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <!-- Filtros -->
+        <div class="bg-white border border-slate-200 rounded-lg p-3 flex flex-wrap items-end gap-3">
+            <div class="flex flex-col gap-1 min-w-[240px]">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Periodo *</label>
+                <select v-model.number="selectedCap" :disabled="loadingCaps" @change="onPeriodChange"
+                        class="border border-slate-300 rounded px-2 py-1.5 text-sm">
+                    <option :value="null" disabled>Selecciona un periodo…</option>
+                    <option v-for="p in caPeriods" :key="p.id" :value="p.id">
+                        {{ periodOptionLabel(p) }}
+                    </option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-1 min-w-[170px]">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Campus</label>
+                <select v-model.number="campusId" :disabled="!hasPeriod"
+                        class="border border-slate-300 rounded px-2 py-1.5 text-sm disabled:bg-slate-50">
+                    <option :value="null">Todos</option>
+                    <option v-for="c in filterOptions.campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-1 min-w-[170px]">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Tipo de modalidad</label>
+                <select v-model.number="modalityTypeId" :disabled="!hasPeriod"
+                        class="border border-slate-300 rounded px-2 py-1.5 text-sm disabled:bg-slate-50">
+                    <option :value="null">Todas</option>
+                    <option v-for="m in filterOptions.modality_types" :key="m.id" :value="m.id">{{ m.name }}</option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-1 min-w-[190px]">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Carrera</label>
+                <select v-model.number="careerId" :disabled="!hasPeriod"
+                        class="border border-slate-300 rounded px-2 py-1.5 text-sm disabled:bg-slate-50">
+                    <option :value="null">Todas</option>
+                    <option v-for="c in filterOptions.careers" :key="c.id" :value="c.id">{{ c.name }}</option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-1 flex-1 min-w-[200px]">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Buscar docente</label>
+                <input v-model="search" :disabled="!hasPeriod" type="text" placeholder="Nombre o ID"
+                       class="border border-slate-300 rounded px-2 py-1.5 text-sm disabled:bg-slate-50" />
+            </div>
+        </div>
+
+        <!-- Sin periodo -->
+        <div v-if="!hasPeriod"
+             class="bg-white border border-dashed border-slate-300 rounded-lg px-4 py-12 text-center">
+            <p class="text-sm text-slate-500">Selecciona un periodo para ver los resultados.</p>
+        </div>
+
+        <!-- Tabla -->
+        <div v-else class="bg-white border border-slate-200 rounded-lg overflow-hidden">
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                     <tr>
@@ -102,12 +256,12 @@ onMounted(load)
                     <tr v-if="loading"><td colspan="6" class="px-4 py-6 text-center text-sm text-slate-400">Cargando…</td></tr>
                     <tr v-else-if="!rows.length">
                         <td colspan="6" class="px-4 py-6 text-center text-sm text-slate-400 italic">
-                            Aún no hay resultados agregados para este periodo.
+                            No hay resultados para los filtros seleccionados.
                         </td>
                     </tr>
                     <tr v-for="r in rows" :key="r.teacher.id" class="hover:bg-slate-50">
                         <td class="px-4 py-2">
-                            <div class="font-bold text-slate-700">{{ r.teacher.name }}</div>
+                            <div class="font-bold text-slate-700 uppercase">{{ r.teacher.name }}</div>
                             <div class="text-[10px] font-mono text-slate-400">{{ r.teacher.custom_id ?? '—' }}</div>
                         </td>
                         <td class="px-4 py-2 text-right text-xs text-slate-600 tabular-nums">{{ r.areas_count }}</td>

@@ -86,33 +86,51 @@ export interface EvdSubjectProgressRow {
     visible_in_consolidated_report: boolean
 }
 
-/* ── Admin: modalidades disponibles para apertura masiva ─────────── */
+/* ── Admin: panorama de periodos para apertura ───────────────────── */
 
-export interface EvdAvailableModality {
-    id: number
-    name: string
-    modality_type_name: string | null
-    campus_name: string | null
-    is_open: boolean
+export type EvdTepStatus = 'draft' | 'open' | 'closed'
+export type EvdCapStatus = 'draft' | 'planned' | 'active' | 'closed' | 'archived'
+
+export interface EvdPeriodModalityRow {
+    modality: {
+        id: number
+        modality_type_name: string | null
+        campus_name: string | null
+    }
+    tep: {
+        id: number
+        status: EvdTepStatus
+        form_slug: string
+        opens_at: string | null
+        closes_at: string | null
+        total_assignments: number
+        completed_assignments: number
+        progress_pct: number
+    } | null
 }
 
-/* ── Admin ─────────────────────────────────────────────────────────── */
-
-export interface EvdAdminPeriodRow {
+export interface EvdPeriodOverviewRow {
     id: number
-    form_slug: string
-    status: 'draft' | 'open' | 'closed'
-    opens_at: string | null
-    closes_at: string | null
-    modality: { id: number; name: string | null } | null
-    college_academic_period: {
-        id: number
-        name: string
-        short_name: string | null
-    }
-    total_assignments: number
-    completed_assignments: number
-    progress_pct: number
+    period_name: string
+    period_short_name: string | null
+    status: EvdCapStatus
+    actual_start_date: string | null
+    actual_end_date: string | null
+    modalities: EvdPeriodModalityRow[]
+}
+
+/* ── Admin: resultados ─────────────────────────────────────────────── */
+
+export interface EvdFilterOption {
+    id: number
+    name: string
+    short_name?: string | null
+}
+
+export interface EvdResultsFilterOptions {
+    campuses: EvdFilterOption[]
+    modality_types: EvdFilterOption[]
+    careers: EvdFilterOption[]
 }
 
 export type EvdLevel = 'EXCELENTE' | 'NOTABLE' | 'BUENO' | 'SUFICIENTE' | 'INSUFICIENTE' | null
@@ -136,20 +154,18 @@ export interface EvdAreaResult {
 }
 
 export interface EvdTeacherAssignmentRow {
-    id: number
-    status: 'pending' | 'in_progress' | 'completed' | 'no_show'
-    completed_at: string | null
-    folio: string | null
+    teacher_assignment_id: number
     subject: { id: number; name: string; official_code: string | null } | null
     group:   { id: number; name: string | null } | null
+    total_students: number
+    completed_students: number
+    progress_pct: number
 }
 
 export interface EvdTeacherDetail {
     teacher: { id: number; name: string; custom_id: string | null } | null
     period: {
         id: number
-        form_slug: string
-        status: string
         period_name: string
         period_short_name: string | null
     } | null

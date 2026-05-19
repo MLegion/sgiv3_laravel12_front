@@ -6,27 +6,22 @@ export default [
         meta: { title: 'Mi Evaluación Docente' },
     },
 
-    // Admin
+    // Admin — Resultados
     {
         path: 'evd/admin/periods',
-        name: 'evd.admin.periods',
-        component: () => import('@/modules/evd/pages/EvdPeriodsPage.vue'),
-        meta: { title: 'Resultados Evaluación Docente' },
-    },
-    {
-        path: 'evd/admin/periods/:periodId/results',
         name: 'evd.admin.results',
         component: () => import('@/modules/evd/pages/EvdResultsPage.vue'),
-        meta: { title: 'Resultados por docente' },
-        props: true,
+        meta: { title: 'Resultados de Evaluación' },
     },
     {
-        path: 'evd/admin/periods/:periodId/teachers/:teacherId',
+        path: 'evd/admin/periods/teacher/:teacherId',
         name: 'evd.admin.teacher-detail',
         component: () => import('@/modules/evd/pages/EvdTeacherDetailPage.vue'),
         meta: { title: 'Detalle docente' },
         props: true,
     },
+
+    // Admin — Concentrados
     {
         path: 'evd/admin/attendance',
         name: 'evd.admin.attendance',
@@ -39,10 +34,12 @@ export default [
         component: () => import('@/modules/evd/pages/EvdSubjectsProgressPage.vue'),
         meta: { title: 'Avance por Materia · EVD' },
     },
+
+    // Admin — Gestión de periodos
     {
         path: 'evd/admin/open',
         name: 'evd.admin.open',
-        component: () => import('@/modules/evd/pages/EvdOpenForModalitiesPage.vue'),
+        component: () => import('@/modules/evd/pages/EvdPeriodsAdminPage.vue'),
         meta: { title: 'Aperturar Evaluación Docente' },
     },
 ]
