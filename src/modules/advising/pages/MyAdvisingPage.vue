@@ -49,9 +49,8 @@
             </ul>
         </div>
 
-        <!-- Vista alterna cuando la asesoría está APROBADA: sólo muestra la
-             carga aprobada + botón para descargar el formato. Sin tabs de
-             edición. -->
+        <!-- Vista alterna cuando la asesoría está APROBADA.
+             La reinscripción y altas/bajas viven en sus propios menús. -->
         <div v-if="session && session.status === 'approved'" class="space-y-4">
             <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-6 flex items-start gap-4">
                 <div class="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
@@ -74,6 +73,26 @@
                 </button>
             </div>
 
+            <!-- CTA al menú de reinscripción -->
+            <RouterLink
+                :to="{ name: 'advising.my-enrollment' }"
+                class="block bg-white border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition rounded-xl p-5 flex items-center gap-4"
+            >
+                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-base font-bold text-slate-800 uppercase">Continuar con Mi Reinscripción</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Revisa los requisitos y confirma tu reinscripción del periodo.
+                    </p>
+                </div>
+                <span class="text-blue-600 font-bold text-2xl">→</span>
+            </RouterLink>
+
+            <!-- Resumen de la carga aprobada -->
             <div class="bg-white border rounded-xl shadow-sm">
                 <div class="border-b px-4 py-3 flex items-center justify-between flex-wrap gap-2">
                     <h3 class="text-sm font-bold text-slate-700 uppercase">Carga aprobada</h3>

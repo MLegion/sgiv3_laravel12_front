@@ -37,6 +37,16 @@ const advisingApi: ApiModule = {
             list:   apiUrl('/advising/phases'),
             toggle: apiUrl('/advising/phases/toggle'),
         },
+        enrollments: {
+            eligibility: apiUrl('/advising/enrollments/eligibility'),
+            confirm:     apiUrl('/advising/enrollments/confirm'),
+            me:          apiUrl('/advising/enrollments/me'),
+            byStudent:   (studentId: string | number) => apiUrl(`/advising/enrollments/by-student/${studentId}`),
+
+            adminGroups:           apiUrl('/advising/enrollments/admin/groups'),
+            adminGroupAssignments: (groupId: string | number) => apiUrl(`/advising/enrollments/admin/groups/${groupId}/assignments`),
+            adminByAssignment:     (teacherAssignmentId: string | number) => apiUrl(`/advising/enrollments/admin/by-teacher-assignment/${teacherAssignmentId}`),
+        },
     },
 }
 

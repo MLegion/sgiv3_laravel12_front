@@ -228,6 +228,70 @@ export interface ProposedItemInput {
     teacher_assignment_id?: number | null
 }
 
+/* ── Reinscripción (phase_enrollment) ──────────────────────────────── */
+
+export type GateStatus = 'pass' | 'fail' | 'skip'
+
+export interface EnrollmentGateResult {
+    code: string
+    title: string
+    status: GateStatus
+    message: string
+    meta: Record<string, unknown>
+}
+
+export interface EnrollmentEligibilityReport {
+    allowed: boolean
+    gates: EnrollmentGateResult[]
+}
+
+export interface EnrolledCourse {
+    id: number
+    teacher_assignment_id: number
+    status: string
+    source: string
+    enrolled_at: string | null
+    subject: { id: number; name: string; official_code: string | null } | null
+    teacher: { id: number; name: string } | null
+    group: { id: number; name: string | null } | null
+}
+
+/* ── Admin (SES_MANAGER) navegación grupos → materias → alumnos ────── */
+
+export interface EnrollmentGroupRow {
+    id: number
+    name: string
+    shift: string | null
+    capacity: number | null
+    college_academic_period_id: number
+    assignment_count: number
+    enrollment_count: number
+    careers: string | null
+    career_ids: number[]
+}
+
+export interface GroupAssignmentRow {
+    teacher_assignment_id: number
+    capacity: number | null
+    enrollment_count: number
+    group: { id: number; name: string; shift: string | null }
+    subject: { id: number; name: string; official_code: string | null; credits: number | null }
+    teacher: { id: number; name: string } | null
+}
+
+export interface AssignmentEnrolledStudentRow {
+    enrollment_id: number
+    enrolled_at: string | null
+    student: { id: number; num_control: string | null; full_name: string }
+    career: { id: number; name: string; short_name: string | null } | null
+}
+
+export interface EnrollmentConfirmResponse {
+    created: boolean
+    enrollment_ids: number[]
+    count: number
+}
+
 export interface PolicyViolation {
     code: string
     message: string
