@@ -3,9 +3,9 @@
         <!-- Periodo arriba (como SGI v2) -->
         <div class="flex items-center gap-3">
             <!-- Modo edición: select -->
-            <PeriodSelector v-if="!periodLocked" ref="periodSelectorRef" v-model="selectedPeriodId" @update:model-value="onPeriodChange" label="" placeholder="SELECCIONE UN PERIODO" class="flex-1" />
-            <!-- Modo lectura: div -->
-            <div v-else class="flex-1 border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold uppercase bg-slate-50 text-slate-700">
+            <PeriodSelector v-show="!periodLocked" ref="periodSelectorRef" v-model="selectedPeriodId" @update:model-value="onPeriodChange" label="" placeholder="SELECCIONE UN PERIODO" class="flex-1" auto-select-status="planned" />
+            <!-- Modo lectura: div (PeriodSelector queda montado con v-show para que su lista de periodos esté disponible al derivar lockedPeriodName tras restaurar desde URL) -->
+            <div v-show="periodLocked" class="flex-1 border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold uppercase bg-slate-50 text-slate-700">
                 {{ lockedPeriodName }}
             </div>
 
@@ -567,18 +567,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
+import { useQueryFilter, QueryFilters } from '@/shared/composables/useQueryFilter'
 
-/* ── State: Filtros ──────────────────────────────────────────────── */
-const selectedPeriodId       = ref<number | null>(null)
-const selectedCampusId       = ref<number | null>(null)
-const selectedModalityTypeId = ref<number | null>(null)
-const selectedStudyPlanId    = ref<number | null>(null)
-const selectedSpecialtyId    = ref<number | null>(null)
-const selectedOptionalGroupId = ref<number | null>(null)
+/* ── State: Filtros (persistidos en query string vía useQueryFilter) ─ */
+const selectedPeriodId        = useQueryFilter('period',    null, QueryFilters.number)
+const selectedCampusId        = useQueryFilter('campus',    null, QueryFilters.number)
+const selectedModalityTypeId  = useQueryFilter('mtype',     null, QueryFilters.number)
+const selectedStudyPlanId     = useQueryFilter('plan',      null, QueryFilters.number)
+const selectedSpecialtyId     = useQueryFilter('specialty', null, QueryFilters.number)
+const selectedOptionalGroupId = useQueryFilter('optgroup',  null, QueryFilters.number)
 
 const allCampuses      = ref<any[]>([])
 const allModalityTypes = ref<any[]>([])
@@ -611,37 +612,27 @@ const modalityTypes = computed(() => {
 })
 
 const periodSelectorRef  = ref<InstanceType<typeof PeriodSelector> | null>(null)
-const periodLocked       = ref(false)
+const periodLocked       = useQueryFilter('locked', false, QueryFilters.bool)
 const lockedPeriodName   = ref('')
 const lockedPeriodStatus = ref('')
 
-const STORAGE_KEY = 'sca_period'
-
-function savePeriodToStorage() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        id: selectedPeriodId.value,
-        name: lockedPeriodName.value,
-        status: lockedPeriodStatus.value,
-    }))
-}
-
-function clearPeriodStorage() {
-    localStorage.removeItem(STORAGE_KEY)
-}
-
-function restorePeriodFromStorage() {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY)
-        if (!raw) return
-        const saved = JSON.parse(raw)
-        if (saved?.id) {
-            selectedPeriodId.value = saved.id
-            lockedPeriodName.value = saved.name ?? ''
-            lockedPeriodStatus.value = saved.status ?? '—'
-            periodLocked.value = true
+// Cuando el lock se restaura desde la URL (refresh / link compartido), el
+// nombre del periodo bloqueado se deriva de la lista del PeriodSelector en
+// cuanto carga. El PeriodSelector se monta siempre (v-show) para que esta
+// derivación funcione aunque empecemos con periodLocked=true.
+watch(
+    () => periodSelectorRef.value?.periods,
+    (periods) => {
+        if (!periodLocked.value || lockedPeriodName.value) return
+        if (!periods || !selectedPeriodId.value) return
+        const p = periods.find((x: any) => x.id === selectedPeriodId.value)
+        if (p) {
+            lockedPeriodName.value   = p.name ?? 'SIN PERIODO'
+            lockedPeriodStatus.value = p.statusLabel ?? '—'
         }
-    } catch { /* corrupted data, ignore */ }
-}
+    },
+    { immediate: true },
+)
 
 const resolvedModalityId = ref<number | null>(null)
 const resolvedConfigId   = ref<number | null>(null)
@@ -681,10 +672,10 @@ function toggleLock() {
         lockedPeriodName.value = p?.name ?? 'SIN PERIODO'
         lockedPeriodStatus.value = p?.statusLabel ?? '—'
         periodLocked.value = true
-        savePeriodToStorage()
     } else {
         periodLocked.value = false
-        clearPeriodStorage()
+        lockedPeriodName.value = ''
+        lockedPeriodStatus.value = ''
         // Reset todo al desbloquear
         selectedCampusId.value = null
         selectedModalityTypeId.value = null
@@ -1189,7 +1180,6 @@ async function checkCanApprove() {
 
 onMounted(() => {
     fetchContext()
-    restorePeriodFromStorage()
     fetchCampuses()
     fetchModalityTypes()
     fetchModalities()

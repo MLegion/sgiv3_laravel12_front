@@ -2,8 +2,9 @@
     <div class="space-y-4">
         <!-- Periodo arriba -->
         <div class="flex items-center gap-3">
-            <PeriodSelector v-if="!periodLocked" ref="periodSelectorRef" v-model="selectedPeriodId" @update:model-value="onPeriodChange" label="" placeholder="SELECCIONE UN PERIODO" class="flex-1" />
-            <div v-else class="flex-1 border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold uppercase bg-slate-50 text-slate-700">
+            <PeriodSelector v-show="!periodLocked" ref="periodSelectorRef" v-model="selectedPeriodId" @update:model-value="onPeriodChange" label="" placeholder="SELECCIONE UN PERIODO" class="flex-1" auto-select-status="planned" />
+            <!-- Modo lectura: PeriodSelector queda montado con v-show para que su lista esté disponible al restaurar lockedPeriodName desde URL. -->
+            <div v-show="periodLocked" class="flex-1 border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold uppercase bg-slate-50 text-slate-700">
                 {{ lockedPeriodName }}
             </div>
             <button
@@ -299,16 +300,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
+import { useQueryFilter, QueryFilters } from '@/shared/composables/useQueryFilter'
 
-/* ── State: Filtros ──────────────────────────────────────────────── */
-const selectedPeriodId       = ref<number | null>(null)
-const selectedCampusId       = ref<number | null>(null)
-const selectedModalityTypeId = ref<number | null>(null)
-const selectedStudyPlanId    = ref<number | null>(null)
+/* ── State: Filtros (persistidos en query string vía useQueryFilter) ─ */
+const selectedPeriodId       = useQueryFilter('period', null, QueryFilters.number)
+const selectedCampusId       = useQueryFilter('campus', null, QueryFilters.number)
+const selectedModalityTypeId = useQueryFilter('mtype',  null, QueryFilters.number)
+const selectedStudyPlanId    = useQueryFilter('plan',   null, QueryFilters.number)
 
 const allCampuses      = ref<any[]>([])
 const allModalityTypes = ref<any[]>([])
@@ -341,9 +343,27 @@ const modalityTypes = computed(() => {
 })
 
 const periodSelectorRef  = ref<InstanceType<typeof PeriodSelector> | null>(null)
-const periodLocked       = ref(false)
+const periodLocked       = useQueryFilter('locked', false, QueryFilters.bool)
 const lockedPeriodName   = ref('')
 const lockedPeriodStatus = ref('')
+
+// Si el lock se restaura desde la URL (refresh / link compartido), el nombre
+// del periodo bloqueado se deriva de la lista del PeriodSelector en cuanto
+// carga. El PeriodSelector queda montado con v-show para que esto funcione
+// aunque empecemos con periodLocked=true.
+watch(
+    () => periodSelectorRef.value?.periods,
+    (periods) => {
+        if (!periodLocked.value || lockedPeriodName.value) return
+        if (!periods || !selectedPeriodId.value) return
+        const p = periods.find((x: any) => x.id === selectedPeriodId.value)
+        if (p) {
+            lockedPeriodName.value   = p.name ?? 'SIN PERIODO'
+            lockedPeriodStatus.value = p.statusLabel ?? '—'
+        }
+    },
+    { immediate: true },
+)
 
 const resolvedModalityId = ref<number | null>(null)
 const resolvedConfigId   = ref<number | null>(null)
@@ -363,8 +383,6 @@ async function hasActiveLateOpeningForConfig(configId: number): Promise<boolean>
     } catch { return false }
 }
 
-const STORAGE_KEY = 'sca_period'
-
 /* ── State: Datos ────────────────────────────────────────────────── */
 const summaryData   = ref<any[]>([])
 const loadingSummary = ref(false)
@@ -375,32 +393,6 @@ const approvingId    = ref<number | null>(null)
 const bulkApproving  = ref(false)
 
 /* ── Period lock ─────────────────────────────────────────────────── */
-function savePeriodToStorage() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        id: selectedPeriodId.value,
-        name: lockedPeriodName.value,
-        status: lockedPeriodStatus.value,
-    }))
-}
-
-function clearPeriodStorage() {
-    localStorage.removeItem(STORAGE_KEY)
-}
-
-function restorePeriodFromStorage() {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY)
-        if (!raw) return
-        const saved = JSON.parse(raw)
-        if (saved?.id) {
-            selectedPeriodId.value = saved.id
-            lockedPeriodName.value = saved.name ?? ''
-            lockedPeriodStatus.value = saved.status ?? '—'
-            periodLocked.value = true
-        }
-    } catch { /* corrupted data, ignore */ }
-}
-
 function toggleLock() {
     if (!periodLocked.value) {
         if (!selectedPeriodId.value) return
@@ -408,10 +400,10 @@ function toggleLock() {
         lockedPeriodName.value = p?.name ?? 'SIN PERIODO'
         lockedPeriodStatus.value = p?.statusLabel ?? '—'
         periodLocked.value = true
-        savePeriodToStorage()
     } else {
         periodLocked.value = false
-        clearPeriodStorage()
+        lockedPeriodName.value = ''
+        lockedPeriodStatus.value = ''
         resetAll()
     }
 }
@@ -744,7 +736,6 @@ function onStudyPlanChange() {
 /* ── Init ────────────────────────────────────────────────────────── */
 onMounted(() => {
     fetchContext()
-    restorePeriodFromStorage()
     fetchCampuses()
     fetchModalityTypes()
     fetchModalities()

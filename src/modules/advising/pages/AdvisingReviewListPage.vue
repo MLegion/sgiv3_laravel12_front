@@ -67,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
@@ -77,10 +77,22 @@ import {
     PencilSquareIcon, ArrowPathIcon, EyeIcon,
 } from '@heroicons/vue/24/outline'
 import type { AdvisingSession, AdvisingStatus } from '@/modules/advising/types/advising.type'
+import { useQueryFilter } from '@/shared/composables/useQueryFilter'
 
 const router = useRouter()
 
-const statusFilter = ref<'submitted' | 'approved' | 'rejected' | 'all'>('submitted')
+// Default 'submitted' = POR REVISAR. Persistido en URL: el asesor entra
+// desde el menú sin query y aterriza en POR REVISAR; si cambia el filtro,
+// queda en la URL y sobrevive refresh / link compartido.
+type ReviewStatus = 'submitted' | 'approved' | 'rejected' | 'all'
+const statusFilter = useQueryFilter<ReviewStatus>(
+    'status',
+    'submitted',
+    {
+        read:  (raw) => (raw === 'approved' || raw === 'rejected' || raw === 'all' ? raw : 'submitted'),
+        write: (v)   => (v === 'submitted' ? null : v),
+    },
+)
 const extraSearch  = computed(() => ({ status: statusFilter.value }))
 
 const columns: DataTableColumn<AdvisingSession>[] = [

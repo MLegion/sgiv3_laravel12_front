@@ -26,10 +26,20 @@ const props = withDefaults(defineProps<{
     label?: string
     placeholder?: string
     disabled?: boolean
+    /**
+     * Si se pasa, al terminar de cargar la lista de periodos y si el
+     * `modelValue` sigue en `null`, se auto-emite el periodo más reciente
+     * cuyo status coincida (p.ej. 'planned' para pantallas de carga
+     * académica). Si no hay coincidencia, cae a 'active' como fallback.
+     * Pensado para CAREER_MANAGER y similares: entrar a la página ya con
+     * un periodo razonable seleccionado.
+     */
+    autoSelectStatus?: string | null
 }>(), {
     label: 'PERIODO ACADÉMICO',
     placeholder: '-- SELECCIONAR PERIODO --',
     disabled: false,
+    autoSelectStatus: null,
 })
 
 const emit = defineEmits<{
@@ -60,11 +70,26 @@ async function fetchPeriods() {
             status: p.status,
             statusLabel: p.statusLabel ?? null,
         }))
+        maybeAutoSelect()
     } catch {
         periods.value = []
     } finally {
         loading.value = false
     }
+}
+
+function maybeAutoSelect() {
+    if (props.modelValue != null) return
+    if (!props.autoSelectStatus) return
+    // Lista ya ordenada por id desc → find() devuelve el más reciente.
+    // Fallback a 'active' si no hay del status pedido, así un CAREER_MANAGER
+    // que entra fuera de temporada de planeación igual ve datos.
+    const pick =
+        periods.value.find(p => p.status === props.autoSelectStatus) ??
+        (props.autoSelectStatus !== 'active'
+            ? periods.value.find(p => p.status === 'active')
+            : null)
+    if (pick) emit('update:modelValue', pick.id)
 }
 
 defineExpose({ selectedPeriod, periods })
