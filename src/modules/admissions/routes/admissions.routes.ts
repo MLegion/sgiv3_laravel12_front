@@ -25,6 +25,13 @@ export default [
         component: () => import('@/modules/admissions/pages/AdmissionConfigPage.vue'),
         meta: { title: 'Configuración de Admisión' },
     },
+    // Override de modalidad de examen por modalidad (sedes con infra distinta)
+    {
+        path: 'admissions/exam-mode-overrides',
+        name: 'admissions.exam-mode-overrides',
+        component: () => import('@/modules/admissions/pages/ExamModeOverridesPage.vue'),
+        meta: { title: 'Modalidad de Examen por Modalidad' },
+    },
 
     // Origin Schools
     {

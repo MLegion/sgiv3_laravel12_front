@@ -49,6 +49,10 @@ export default {
             list:   apiUrl('/admissions/config/list'),
             byId:   (id: string | number) => apiUrl(`/admissions/config/${id}`),
         },
+        examModeOverrides: {
+            list:   apiUrl('/admissions/exam-mode-overrides'),
+            update: (modalityId: number) => apiUrl(`/admissions/exam-mode-overrides/${modalityId}`),
+        },
         applicantStatuses: {
             list:   apiUrl('/admissions/applicant-statuses'),
             byId:   (id: string | number) => apiUrl(`/admissions/applicant-statuses/${id}`),
