@@ -66,6 +66,9 @@
                 </span>
             </button>
         </div>
+
+        <!-- Modal de confirmación de cierre de sesión -->
+        <LogoutConfirmModal v-model="confirmOpen" />
     </aside>
 </template>
 
@@ -73,12 +76,12 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useMenuStore } from '@/app/stores/menu.store'
 import { useLayoutStore } from '@/app/stores/layout.store'
-import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import SidebarItem from '@/app/components/SidebarItem.vue'
+import LogoutConfirmModal from '@/app/components/LogoutConfirmModal.vue'
 
 const menuStore = useMenuStore()
 const layout = useLayoutStore()
-const authStore = useAuthStore()
+const confirmOpen = ref(false)
 
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1200)
 
@@ -109,7 +112,7 @@ const isExpanded = computed(() => {
 })
 
 const handleLogout = () => {
-    authStore.logout()
+    confirmOpen.value = true
 }
 </script>
 
