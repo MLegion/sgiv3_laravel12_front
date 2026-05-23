@@ -134,6 +134,49 @@
                     <ReadField v-if="maxOfferOptions >= 2" label="2ª OPCIÓN" :value="offerLabel(savedOffer2)" />
                     <ReadField v-if="maxOfferOptions >= 3" label="3ª OPCIÓN" :value="offerLabel(savedOffer3)" />
                 </div>
+
+                <!-- Modalidad de examen — informativa si el plantel es online/presencial; chooser si mixto sin elegir; confirmación + cambiar si mixto ya eligió. -->
+                <div
+                    v-if="examGlobalMode"
+                    class="border-t pt-5 space-y-3"
+                >
+                    <p class="text-sm font-bold text-slate-700 tracking-widest uppercase">Modalidad de examen</p>
+
+                    <!-- Mixto sin elegir → chooser -->
+                    <ExamModeChooserCard
+                        v-if="examGlobalMode === 'mixto' && !examChosenMode && !examAlreadyTaken"
+                        :loading="choosingExam"
+                        :error-message="chooseExamError"
+                        @choose="onChooseExam"
+                    />
+
+                    <!-- Modalidad fija (online/presencial) o ya elegida en mixto -->
+                    <div
+                        v-else-if="examEffectiveMode"
+                        class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center justify-between gap-3"
+                    >
+                        <div class="flex items-center gap-3">
+                            <CheckCircleIcon class="w-6 h-6 text-emerald-600 shrink-0" />
+                            <div>
+                                <p class="text-sm font-bold text-emerald-800 uppercase">
+                                    {{ examEffectiveMode === 'online' ? 'En línea' : 'Presencial' }}
+                                </p>
+                                <p class="text-xs text-emerald-700">
+                                    {{ examGlobalMode === 'mixto'
+                                        ? 'Esta es la modalidad con la que presentarás el examen.'
+                                        : 'Tu plantel maneja esta modalidad de examen.' }}
+                                </p>
+                            </div>
+                        </div>
+                        <router-link
+                            v-if="examGlobalMode === 'mixto' && examCanChange"
+                            to="/admissions/portal/examen"
+                            class="text-xs text-emerald-700 hover:text-emerald-900 underline shrink-0"
+                        >
+                            Cambiar
+                        </router-link>
+                    </div>
+                </div>
             </div>
         </template>
     </div>
@@ -142,8 +185,11 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
+import { apiUrl } from '@/shared/api/config'
 import { API } from '@/shared/api'
+import { CheckCircleIcon } from '@heroicons/vue/24/outline'
 import ReadField from './ReadField.vue'
+import ExamModeChooserCard from '@/modules/admissions/components/ExamModeChooserCard.vue'
 
 const STATUS_PROSPECTO = 2
 const STATUS_PREFICHA  = 3
@@ -169,6 +215,27 @@ const form = reactive({
     offer_option_1_id: '' as number | '',
     offer_option_2_id: '' as number | '',
     offer_option_3_id: '' as number | '',
+})
+
+// ── Modalidad de examen ──────────────────────────────────────────────────────
+// Si el plantel tiene exam.mode = online o presencial → el aspirante sólo ve
+// informativamente cuál le tocará. Si es mixto → chooser hasta que elija;
+// después panel informativo con opción de cambiar mientras canChange.
+const examGlobalMode   = ref<'online' | 'presencial' | 'mixto' | null>(null)
+const examChosenMode   = ref<'online' | 'presencial' | null>(null)
+const examAlreadyTaken = ref(false)
+const examCanChange    = ref(false)
+const choosingExam     = ref(false)
+const chooseExamError  = ref<string | null>(null)
+
+// Modalidad efectiva: la que de hecho aplicará al aspirante.
+//   online/presencial puro → la global (no hay nada que elegir)
+//   mixto → la elegida (null si todavía no elige → toca chooser)
+const examEffectiveMode = computed<'online' | 'presencial' | null>(() => {
+    if (examGlobalMode.value === 'online' || examGlobalMode.value === 'presencial') {
+        return examGlobalMode.value
+    }
+    return examChosenMode.value
 })
 
 // ── Campus / modalidad watchers ──────────────────────────────────────────────
@@ -278,8 +345,38 @@ async function fetchAll() {
 
         allOffers.value = Array.isArray(offers) ? offers : []
         autoSelectFilters()
+
+        await fetchExamPass()
     } finally {
         loading.value = false
+    }
+}
+
+async function fetchExamPass() {
+    try {
+        const { data } = await api.get(API.ADMISSIONS_API.portalExamPass)
+        examGlobalMode.value   = data?.globalMode ?? null
+        examChosenMode.value   = data?.chosenMode ?? null
+        examAlreadyTaken.value = data?.alreadyTaken ?? false
+        examCanChange.value    = data?.canChange ?? false
+    } catch {
+        // Si el endpoint falla por cualquier razón, ocultamos la sección
+        // (best-effort: no bloquea el flujo de preficha).
+        examGlobalMode.value = null
+    }
+}
+
+async function onChooseExam(mode: 'online' | 'presencial') {
+    chooseExamError.value = null
+    choosingExam.value    = true
+    try {
+        await api.post(apiUrl('/admissions/portal/exam-mode/choose'), { mode })
+        await fetchExamPass()
+    } catch (e: any) {
+        chooseExamError.value = e?.response?.data?.message
+            ?? 'No se pudo guardar tu elección.'
+    } finally {
+        choosingExam.value = false
     }
 }
 

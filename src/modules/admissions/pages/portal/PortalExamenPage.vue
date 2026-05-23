@@ -7,34 +7,12 @@
         </div>
 
         <!-- 1. Mixto sin elegir → tarjetas de elección -->
-        <div v-else-if="pass?.status === 'CHOOSE_MODE'" class="space-y-4 print:hidden">
-            <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 text-sm text-blue-800">
-                Tu plantel ofrece dos modalidades de examen. Elige cómo quieres presentar.
-                Podrás cambiar tu elección mientras no presentes el examen.
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button
-                    type="button"
-                    :disabled="choosing"
-                    class="group bg-white border-2 border-slate-200 rounded-xl p-6 text-left hover:border-blue-500 hover:shadow-lg transition disabled:opacity-50"
-                    @click="onChoose('online')"
-                >
-                    <ComputerDesktopIcon class="w-10 h-10 text-blue-600 mb-3" />
-                    <h3 class="text-base font-bold text-slate-800 uppercase">En línea</h3>
-                    <p class="text-xs text-slate-600 mt-1">Presentas el examen desde tu computadora en el horario que elijas dentro del periodo.</p>
-                </button>
-                <button
-                    type="button"
-                    :disabled="choosing"
-                    class="group bg-white border-2 border-slate-200 rounded-xl p-6 text-left hover:border-purple-500 hover:shadow-lg transition disabled:opacity-50"
-                    @click="onChoose('presencial')"
-                >
-                    <BuildingLibraryIcon class="w-10 h-10 text-purple-600 mb-3" />
-                    <h3 class="text-base font-bold text-slate-800 uppercase">Presencial</h3>
-                    <p class="text-xs text-slate-600 mt-1">Asistes al plantel en la fecha y aula que se te asigne.</p>
-                </button>
-            </div>
-            <p v-if="chooseError" class="text-xs text-red-600">{{ chooseError }}</p>
+        <div v-else-if="pass?.status === 'CHOOSE_MODE'" class="print:hidden">
+            <ExamModeChooserCard
+                :loading="choosing"
+                :error-message="chooseError"
+                @choose="onChoose"
+            />
         </div>
 
         <!-- 2. ONLINE puro o mixto-online READY (no presentado) -->
@@ -227,7 +205,6 @@
 import { computed, onMounted, ref } from 'vue'
 import {
     ArrowTopRightOnSquareIcon,
-    BuildingLibraryIcon,
     CheckCircleIcon,
     ClockIcon,
     ComputerDesktopIcon,
@@ -237,6 +214,7 @@ import QRCode from 'qrcode'
 import { api } from '@/shared/services/api'
 import { apiUrl } from '@/shared/api/config'
 import { API } from '@/shared/api'
+import ExamModeChooserCard from '@/modules/admissions/components/ExamModeChooserCard.vue'
 
 interface PassResponse {
     status: 'CHOOSE_MODE' | 'READY_ONLINE' | 'TAKEN' | 'PENDING' | 'CONFIRMED'
