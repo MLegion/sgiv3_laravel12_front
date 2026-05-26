@@ -259,24 +259,49 @@
                         </svg>
                         Aspirantes que NO serán admitidos ({{ excludedIds.size }})
                     </p>
-                    <div class="space-y-1">
+                    <p class="text-[10px] text-red-500/80">
+                        Indica la razón por la que cada uno no será admitido. Esta información queda registrada para reportes.
+                    </p>
+                    <div class="space-y-2">
                         <div
                             v-for="exc in excludedList"
                             :key="exc.id"
-                            class="flex items-center justify-between bg-white border border-red-100 rounded-lg px-3 py-2 text-xs"
+                            class="bg-white border border-red-100 rounded-lg px-3 py-2.5 space-y-1.5"
                         >
-                            <span class="font-medium text-slate-700">{{ fullName(exc) }}</span>
-                            <span class="font-mono text-slate-400">{{ exc.curp || '—' }}</span>
-                            <span class="font-bold text-red-600">{{ exc.entranceScore ?? '—' }}</span>
-                            <button
-                                class="text-slate-400 hover:text-green-600 transition"
-                                title="Volver a admitir"
-                                @click="toggleAdmitted(exc.id)"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </button>
+                            <div class="flex items-center gap-3 text-xs">
+                                <span class="font-medium text-slate-700 flex-1 min-w-0 truncate">{{ fullName(exc) }}</span>
+                                <span class="font-mono text-slate-400 hidden sm:inline">{{ exc.curp || '—' }}</span>
+                                <span class="font-bold text-red-600 w-12 text-right">{{ exc.entranceScore ?? '—' }}</span>
+                                <button
+                                    class="text-slate-400 hover:text-green-600 transition shrink-0"
+                                    title="Volver a admitir"
+                                    @click="toggleAdmitted(exc.id)"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <select
+                                    :value="(excludedReasons.get(exc.id)?.reason) ?? 'score_low'"
+                                    class="text-xs border border-slate-200 rounded-md px-2 py-1 bg-white focus:outline-none focus:border-red-400 sm:w-56"
+                                    @change="updateReason(exc.id, ($event.target as HTMLSelectElement).value as ExclusionReason)"
+                                >
+                                    <option v-for="opt in REASON_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                                </select>
+                                <input
+                                    type="text"
+                                    :value="excludedReasons.get(exc.id)?.note ?? ''"
+                                    :placeholder="(excludedReasons.get(exc.id)?.reason) === 'other' ? 'Nota (requerida)' : 'Nota (opcional)'"
+                                    class="flex-1 text-xs border rounded-md px-2 py-1 focus:outline-none"
+                                    :class="(excludedReasons.get(exc.id)?.reason) === 'other' && !(excludedReasons.get(exc.id)?.note ?? '').trim()
+                                        ? 'border-red-300 bg-red-50 focus:border-red-500'
+                                        : 'border-slate-200 focus:border-slate-400'"
+                                    maxlength="500"
+                                    @input="updateNote(exc.id, ($event.target as HTMLInputElement).value)"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -301,6 +326,25 @@
                                 <p class="text-[11px] text-red-500 uppercase">Quedarán excluidos</p>
                             </div>
                         </div>
+
+                        <div v-if="excludedIds.size > 0" class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 space-y-1">
+                            <p class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Desglose por razón</p>
+                            <ul class="text-xs space-y-0.5">
+                                <li
+                                    v-for="(count, reason) in reasonCounts"
+                                    :key="reason"
+                                    class="flex justify-between"
+                                >
+                                    <span class="text-slate-700">{{ reasonLabel(reason as ExclusionReason) }}</span>
+                                    <span class="font-mono font-bold text-slate-800">{{ count }}</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <p v-if="otherMissingNote" class="text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                            Hay aspirantes con razón <strong>Otro</strong> sin nota. Completa la nota antes de continuar.
+                        </p>
+
                         <p class="text-xs text-slate-500">
                             Esta acción aplica a <strong>todos</strong> los aspirantes con resultado en el período,
                             incluidos los que no están visibles en la página actual.
@@ -319,7 +363,7 @@
                         </button>
                         <button
                             class="px-5 py-2 text-sm rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50 transition"
-                            :disabled="confirming"
+                            :disabled="confirming || otherMissingNote"
                             @click="doAdmitBulk"
                         >
                             {{ confirming ? 'Procesando...' : 'Confirmar' }}
@@ -394,6 +438,43 @@ const visiblePages = computed(() => {
 // Estado de admisión: Set de IDs excluidos (switch en NO)
 const excludedIds = ref<Set<number>>(new Set())
 
+// Razón de exclusión por aspirante. Default 'score_low' al excluir; el admin
+// puede editar inline en el panel. 'other' obliga a nota.
+type ExclusionReason = 'score_low' | 'documents_incomplete' | 'quota' | 'policy' | 'other'
+interface ExclusionEntry { reason: ExclusionReason; note: string }
+const excludedReasons = ref<Map<number, ExclusionEntry>>(new Map())
+const REASON_OPTIONS: { value: ExclusionReason; label: string }[] = [
+    { value: 'score_low',            label: 'Score bajo' },
+    { value: 'documents_incomplete', label: 'Documentos incompletos' },
+    { value: 'quota',                label: 'Sin cupo' },
+    { value: 'policy',               label: 'Decisión institucional' },
+    { value: 'other',                label: 'Otro (requiere nota)' },
+]
+function reasonLabel(r: ExclusionReason): string {
+    return REASON_OPTIONS.find(o => o.value === r)?.label ?? r
+}
+function updateReason(id: number, reason: ExclusionReason) {
+    const cur = excludedReasons.value.get(id) ?? { reason: 'score_low', note: '' }
+    excludedReasons.value = new Map(excludedReasons.value).set(id, { ...cur, reason })
+}
+function updateNote(id: number, note: string) {
+    const cur = excludedReasons.value.get(id) ?? { reason: 'score_low', note: '' }
+    excludedReasons.value = new Map(excludedReasons.value).set(id, { ...cur, note })
+}
+const reasonCounts = computed(() => {
+    const out: Record<string, number> = {}
+    for (const entry of excludedReasons.value.values()) {
+        out[entry.reason] = (out[entry.reason] ?? 0) + 1
+    }
+    return out
+})
+const otherMissingNote = computed(() => {
+    for (const entry of excludedReasons.value.values()) {
+        if (entry.reason === 'other' && !entry.note.trim()) return true
+    }
+    return false
+})
+
 // Lista de los excluidos con sus datos (para el panel)
 const excludedList = computed<ApplicantRow[]>(() => {
     const result: ApplicantRow[] = []
@@ -466,11 +547,12 @@ function goPage(page: number) {
 }
 
 function resetListState() {
-    excludedIds.value = new Set()
-    allItems.value    = new Map()
-    currentPage.value = 1
-    totalItems.value  = 0
-    items.value       = []
+    excludedIds.value     = new Set()
+    excludedReasons.value = new Map()
+    allItems.value        = new Map()
+    currentPage.value     = 1
+    totalItems.value      = 0
+    items.value           = []
 }
 
 function onPeriodChange(val: number | null) {
@@ -489,9 +571,17 @@ function onTabChange(next: Tab) {
 
 function toggleAdmitted(id: number) {
     const next = new Set(excludedIds.value)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    excludedIds.value = next
+    const nextReasons = new Map(excludedReasons.value)
+    if (next.has(id)) {
+        next.delete(id)
+        nextReasons.delete(id)
+    } else {
+        next.add(id)
+        // Default 'score_low' — caso más común. El admin puede cambiar en panel.
+        nextReasons.set(id, { reason: 'score_low', note: '' })
+    }
+    excludedIds.value     = next
+    excludedReasons.value = nextReasons
 }
 
 // ── Admisión masiva ───────────────────────────────────────────────────────────
@@ -507,13 +597,24 @@ async function doAdmitBulk() {
     confirmError.value = null
 
     try {
+        // Serializa el Map a objeto plain para el backend.
+        const excludedReasonsObj: Record<number, { reason: string; note: string | null }> = {}
+        for (const [id, entry] of excludedReasons.value.entries()) {
+            excludedReasonsObj[id] = {
+                reason: entry.reason,
+                note:   entry.note.trim() || null,
+            }
+        }
+
         const { data } = await api.post(API.ADMISSIONS_API.applicantRanking.admitBulk, {
             academic_period_id: periodId.value,
             excluded_ids:       [...excludedIds.value],
+            excluded_reasons:   excludedReasonsObj,
         })
 
         showConfirm.value    = false
         excludedIds.value    = new Set()
+        excludedReasons.value = new Map()
         successMessage.value = `Proceso completado: ${data.admitted} admitidos, ${data.excluded} excluidos.`
 
         // Recargar la página actual para reflejar los cambios
