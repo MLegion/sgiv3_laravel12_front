@@ -193,13 +193,23 @@
                                 </svg>
                                 {{ expandedGroupIds.has(g.id) ? 'Ocultar estudiantes' : 'Ver estudiantes asignados' }}
                             </button>
-                            <button
-                                :disabled="!selectedIds.length || g.is_full || assigning === g.id"
-                                class="px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-                                @click="assignSelection(g)"
-                            >
-                                {{ assigning === g.id ? 'Asignando...' : `Asignar ${selectedIds.length || 0} aquí` }}
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    class="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
+                                    title="Inscribir a TODOS los alumnos del grupo a las materias del semestre"
+                                    @click="openEnrollModal(g.id)"
+                                >
+                                    Inscribir a materias
+                                </button>
+                                <button
+                                    :disabled="!selectedIds.length || g.is_full || assigning === g.id"
+                                    class="px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                                    @click="assignSelection(g)"
+                                >
+                                    {{ assigning === g.id ? 'Asignando...' : `Asignar ${selectedIds.length || 0} aquí` }}
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Lista expandible de estudiantes en este grupo -->
@@ -247,6 +257,12 @@
                 </div>
             </div>
         </div>
+
+        <EnrollToCoursesModal
+            v-model="enrollModalOpen"
+            :group-id="enrollModalGroupId"
+            @enrolled="onEnrolled"
+        />
     </div>
 </template>
 
@@ -254,6 +270,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import EnrollToCoursesModal from '@/modules/school-services/components/EnrollToCoursesModal.vue'
 
 interface Student {
     id: number
@@ -299,6 +316,20 @@ const groupStudents = reactive<Record<number, Array<{ id: number, num_control: s
 const loadingStudentsOfGroup = ref(false)
 const removingStudentId = ref<number | null>(null)
 const searchTerm = ref('')
+
+// Modal "Inscribir a materias del semestre"
+const enrollModalOpen    = ref(false)
+const enrollModalGroupId = ref<number | null>(null)
+
+function openEnrollModal(groupId: number): void {
+    enrollModalGroupId.value = groupId
+    enrollModalOpen.value    = true
+}
+
+function onEnrolled(_result: { groupId: number; enrolledCount: number; studentsCount: number; subjectsCount: number }): void {
+    // Recargar cohorte para refrescar el occupancy de cada grupo y el ocupado de las materias.
+    loadCohort()
+}
 
 const loadState = reactive({ exists: false, finalized: false })
 

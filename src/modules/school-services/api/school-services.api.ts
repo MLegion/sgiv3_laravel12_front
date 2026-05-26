@@ -63,6 +63,8 @@ export default {
             list:   apiUrl('/school-services/students'),
             byId:   (id: string | number) => apiUrl(`/school-services/students/${id}`),
             enroll: (applicantId: string | number) => apiUrl(`/school-services/applicants/${applicantId}/enroll`),
+            enrollPreview: apiUrl('/school-services/enroll/preview'),
+            enrollBulk:    apiUrl('/school-services/enroll/bulk'),
             contacts: {
                 list:   (studentId: string | number) => apiUrl(`/school-services/students/${studentId}/contacts`),
                 byId:   (studentId: string | number, id: string | number) => apiUrl(`/school-services/students/${studentId}/contacts/${id}`),
@@ -87,6 +89,8 @@ export default {
             assign:           apiUrl('/school-services/student-groups/assign'),
             bulkAssign:       apiUrl('/school-services/student-groups/bulk-assign'),
             remove:           apiUrl('/school-services/student-groups'),
+            enrollToCoursesPreview: (groupId: string | number) => apiUrl(`/school-services/student-groups/${groupId}/enroll-to-courses/preview`),
+            enrollToCourses:        (groupId: string | number) => apiUrl(`/school-services/student-groups/${groupId}/enroll-to-courses`),
         },
         approvalTypes: {
             list:   apiUrl('/school-services/approval-types'),

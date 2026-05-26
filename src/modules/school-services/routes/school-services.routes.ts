@@ -20,6 +20,12 @@ export default [
         component: () => import('@/modules/school-services/pages/AdmittedApplicantsPage.vue'),
         meta: { title: 'Aspirantes Admitidos' },
     },
+    {
+        path: 'school-services/admitted-applicants/wizard',
+        name: 'school-services.admitted-applicants.wizard',
+        component: () => import('@/modules/school-services/pages/EnrollmentWizardPage.vue'),
+        meta: { title: 'Inscripción asistida' },
+    },
 
     // Modalities
     {
