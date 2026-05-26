@@ -434,5 +434,13 @@ watch(search, () => {
     debounceTimer = window.setTimeout(() => { clearSelection(); page.value = 1; load() }, 300)
 })
 
+// Recargar el listado cuando llega una notificación nueva vía WS.
+// El store incrementa wsTick en cada evento .notification.delivered;
+// esto evita acoplar la página al canal Echo y mantiene una sola fuente.
+watch(() => store.wsTick, (next, prev) => {
+    console.log('[InboxPage] wsTick:', prev, '→', next, '— reload')
+    load()
+})
+
 onMounted(load)
 </script>

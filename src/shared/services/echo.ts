@@ -25,6 +25,13 @@ window.Pusher = Pusher
 
 const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:'
 const host    = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
+// Reverb siempre en :8081. Asume:
+//  - Local dev: Vite sirve HTTP plano (mkcert deshabilitado por bug de WS+h2)
+//    → ws://host:8081 directo.
+//  - Server intranet: HTTP sin TLS → ws://host:8081 directo.
+//  - Si más adelante hay HTTPS real (cert público, no mkcert), habrá que
+//    proxear Reverb tras nginx con TLS, y aquí cambiar a usar el mismo
+//    puerto de la página vía proxy.
 const port    = 8081
 
 // Endpoint para autorización de canales privados — pasa por nuestro nginx

@@ -24,6 +24,10 @@ export const useNotificationsStore = defineStore('notifications', {
         // Marcador para no sonar en la primera carga del polling.
         _initialized: false,
         _subscribedChannel: null as string | null,
+        // Contador que se incrementa cada vez que llega un evento WS de
+        // notificación. Páginas como NotificationInboxPage lo `watch` para
+        // re-fetchar su listado sin necesidad de pasar por este store.
+        wsTick: 0,
     }),
 
     actions: {
@@ -48,6 +52,19 @@ export const useNotificationsStore = defineStore('notifications', {
                     // El servidor sólo manda metadata mínima; refrescamos el
                     // store completo para mantener una única fuente de verdad.
                     this.refresh()
+                    // Señal para páginas que tienen su propio listado (p.ej.
+                    // NotificationInboxPage). Watch en esta key dispara
+                    // re-fetch sin tener que acoplar la página al store.
+                    this.wsTick++
+                })
+                .listen('.user.disabled', () => {
+                    // El admin deshabilitó la cuenta del user actual. El backend
+                    // ya borró los tokens; aquí limpiamos sesión y redirigimos
+                    // al login con banner genérico (sin razón — info interna).
+                    // import dinámico para evitar circular con auth store.
+                    import('@/modules/auth/stores/auth.store').then(({ useAuthStore }) => {
+                        useAuthStore().forceLogout('disabled')
+                    })
                 })
 
             this._subscribedChannel = channelName
