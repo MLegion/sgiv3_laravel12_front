@@ -180,6 +180,8 @@ export default {
         reports: {
             fichas: (params: string = '') =>
                 apiUrl(`/admissions/reports/fichas${params ? '?' + params : ''}`),
+            nonAdmission: (params: string = '') =>
+                apiUrl(`/admissions/reports/non-admission${params ? '?' + params : ''}`),
         },
         registration: {
             register:     apiUrl('/admissions/register'),

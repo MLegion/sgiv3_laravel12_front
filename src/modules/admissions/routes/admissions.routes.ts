@@ -206,6 +206,12 @@ export default [
         component: () => import('@/modules/admissions/pages/FichasReportPage.vue'),
         meta: { title: 'Reporte de Fichas' },
     },
+    {
+        path: 'admissions/reports/non-admission',
+        name: 'admissions.reports.non-admission',
+        component: () => import('@/modules/admissions/pages/NonAdmissionReportPage.vue'),
+        meta: { title: 'Aspirantes no admitidos' },
+    },
 
     // Applicants
     {
