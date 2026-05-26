@@ -2,7 +2,7 @@
     <div class="space-y-4">
         <!-- Periodo arriba -->
         <div class="flex items-center gap-3">
-            <PeriodSelector v-show="!periodLocked" ref="periodSelectorRef" v-model="selectedPeriodId" @update:model-value="onPeriodChange" label="" placeholder="SELECCIONE UN PERIODO" class="flex-1" auto-select-status="planned" />
+            <PeriodSelector v-show="!periodLocked" ref="periodSelectorRef" v-model="selectedPeriodId" @update:model-value="onPeriodChange" @auto-selected="onPeriodAutoSelected" label="" placeholder="SELECCIONE UN PERIODO" class="flex-1" :auto-select-status="['planned', 'draft', 'active']" />
             <!-- Modo lectura: PeriodSelector queda montado con v-show para que su lista esté disponible al restaurar lockedPeriodName desde URL. -->
             <div v-show="periodLocked" class="flex-1 border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold uppercase bg-slate-50 text-slate-700">
                 {{ lockedPeriodName }}
@@ -408,6 +408,14 @@ function toggleLock() {
     }
 }
 
+// Auto-lock cuando PeriodSelector elige solo el periodo al cargar.
+function onPeriodAutoSelected(p: { id: number; name: string; statusLabel: string | null }) {
+    if (periodLocked.value) return
+    lockedPeriodName.value   = p.name ?? 'SIN PERIODO'
+    lockedPeriodStatus.value = p.statusLabel ?? '—'
+    periodLocked.value       = true
+}
+
 const currentPeriodStatusLabel = computed(() => {
     if (periodLocked.value) return lockedPeriodStatus.value
     return periodSelectorRef.value?.selectedPeriod?.statusLabel ?? '—'
@@ -416,9 +424,10 @@ const currentPeriodStatusLabel = computed(() => {
 const periodStatusClass = computed(() => {
     const status = currentPeriodStatusLabel.value.toLowerCase()
     if (status.includes('activo'))     return 'border-green-300 bg-green-50 text-green-700'
-    if (status.includes('planeaci'))   return 'border-amber-300 bg-amber-50 text-amber-700'
+    if (status.includes('preparaci'))  return 'border-amber-300 bg-amber-50 text-amber-700'
+    if (status.includes('planeaci'))   return 'border-blue-300 bg-blue-50 text-blue-700'
     if (status.includes('planeado'))   return 'border-blue-300 bg-blue-50 text-blue-700'
-    if (status.includes('cerrado') || status.includes('finalizado')) return 'border-slate-300 bg-slate-100 text-slate-500'
+    if (status.includes('cerrado') || status.includes('finalizado') || status.includes('archiv')) return 'border-slate-300 bg-slate-100 text-slate-500'
     return 'border-slate-200 bg-slate-50 text-slate-600'
 })
 

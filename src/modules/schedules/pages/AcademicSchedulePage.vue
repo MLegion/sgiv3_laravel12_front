@@ -3,14 +3,19 @@
 
         <!-- ═════ Periodo + Lock ═════ -->
         <div class="flex items-center gap-3">
-            <PeriodSelector v-if="!periodLocked" ref="periodSelectorRef" v-model="selectedPeriodId" @update:model-value="onPeriodChange" label="" placeholder="SELECCIONE UN PERIODO" class="flex-1" />
-            <div v-else class="flex-1 border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold uppercase bg-slate-50 text-slate-700">{{ lockedPeriodName }}</div>
+            <PeriodSelector v-show="!periodLocked" ref="periodSelectorRef" v-model="selectedPeriodId" @update:model-value="onPeriodChange" @auto-selected="onPeriodAutoSelected" label="" placeholder="SELECCIONE UN PERIODO" class="flex-1" :auto-select-status="['planned', 'draft', 'active']" />
+            <div v-show="periodLocked" class="flex-1 border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold uppercase bg-slate-50 text-slate-700">{{ lockedPeriodName }}</div>
             <button class="w-12 h-[46px] border-2 rounded-xl flex items-center justify-center transition"
                 :class="periodLocked ? 'border-slate-300 bg-slate-50 text-slate-500 hover:bg-slate-100' : 'border-blue-500 bg-blue-50 text-blue-600 hover:bg-blue-100'"
                 :disabled="!selectedPeriodId && !periodLocked" @click="toggleLock">
                 <svg v-if="periodLocked" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
                 <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z"/></svg>
             </button>
+            <div v-if="selectedPeriodId"
+                class="h-[46px] border-2 rounded-xl px-4 flex items-center text-xs font-black uppercase tracking-wider whitespace-nowrap"
+                :class="periodStatusClass">
+                {{ currentPeriodStatusLabel }}
+            </div>
         </div>
 
         <template v-if="periodLocked">
@@ -217,8 +222,18 @@
             </section>
 
             <!-- ═════ Alertas ═════ -->
-            <div v-if="resolvedConfigId && !phaseActive" class="bg-slate-100 border border-slate-300 rounded-xl p-3 text-center">
-                <p class="text-xs text-slate-500 font-semibold uppercase">Fase de horarios no activa — modo solo lectura</p>
+            <div v-if="resolvedConfigId && !phaseActive && !unlockedByLateOpening"
+                class="bg-rose-50 border-2 border-rose-300 rounded-xl p-4 flex items-start gap-3">
+                <svg class="w-6 h-6 text-rose-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+                <div class="flex-1 text-left">
+                    <p class="text-sm font-black uppercase text-rose-800 tracking-wide">Fase de horarios cerrada</p>
+                    <p class="text-xs text-rose-700 mt-1">
+                        Estás en <strong>modo solo lectura</strong>. Para editar, el jefe de carga académica
+                        debe abrir esta fase o aprobarte una <strong>apertura tardía</strong>.
+                    </p>
+                </div>
             </div>
 
             <div v-if="resolvedConfigId && unlockedByLateOpening" class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
@@ -1431,6 +1446,7 @@ const selectedPeriodId = ref<number | null>(null)
 const periodSelectorRef = ref<InstanceType<typeof PeriodSelector> | null>(null)
 const periodLocked = ref(false)
 const lockedPeriodName = ref('')
+const lockedPeriodStatus = ref('')
 
 // Filtros base
 const campuses = ref<any[]>([])
@@ -1988,7 +2004,13 @@ function showError(msg: string) {
 }
 
 // ══════════════════════ PERIODO + LOCK ═══════════════════════════
-function savePeriodToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: selectedPeriodId.value, name: lockedPeriodName.value })) }
+function savePeriodToStorage() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        id:          selectedPeriodId.value,
+        name:        lockedPeriodName.value,
+        statusLabel: lockedPeriodStatus.value,
+    }))
+}
 function clearPeriodStorage() { localStorage.removeItem(STORAGE_KEY) }
 function restorePeriodFromStorage() {
     try {
@@ -1996,24 +2018,67 @@ function restorePeriodFromStorage() {
         if (!r) return
         const s = JSON.parse(r)
         if (s?.id) {
-            selectedPeriodId.value = s.id
-            lockedPeriodName.value = s.name ?? ''
-            periodLocked.value = true
+            selectedPeriodId.value   = s.id
+            lockedPeriodName.value   = s.name ?? ''
+            lockedPeriodStatus.value = s.statusLabel ?? ''
+            periodLocked.value       = true
         }
     } catch {}
 }
+
+// Si el storage no tenía statusLabel (versión vieja), lo rellenamos cuando
+// el PeriodSelector termine de cargar su lista.
+watch(
+    () => periodSelectorRef.value?.periods,
+    (periods) => {
+        if (!periodLocked.value || lockedPeriodStatus.value) return
+        if (!periods || !selectedPeriodId.value) return
+        const p = periods.find((x: any) => x.id === selectedPeriodId.value)
+        if (p) lockedPeriodStatus.value = p.statusLabel ?? '—'
+    },
+    { immediate: true },
+)
+
 function toggleLock() {
     if (!periodLocked.value) {
         if (!selectedPeriodId.value) return
-        lockedPeriodName.value = periodSelectorRef.value?.selectedPeriod?.name ?? 'SIN PERIODO'
-        periodLocked.value = true
+        const p = periodSelectorRef.value?.selectedPeriod
+        lockedPeriodName.value   = p?.name ?? 'SIN PERIODO'
+        lockedPeriodStatus.value = p?.statusLabel ?? '—'
+        periodLocked.value       = true
         savePeriodToStorage()
     } else {
         periodLocked.value = false
+        lockedPeriodName.value = ''
+        lockedPeriodStatus.value = ''
         clearPeriodStorage()
         resetAll()
     }
 }
+
+// Auto-lock cuando PeriodSelector elige solo el periodo al cargar.
+function onPeriodAutoSelected(p: { id: number; name: string; statusLabel: string | null }) {
+    if (periodLocked.value) return
+    lockedPeriodName.value   = p.name ?? 'SIN PERIODO'
+    lockedPeriodStatus.value = p.statusLabel ?? '—'
+    periodLocked.value       = true
+    savePeriodToStorage()
+}
+
+const currentPeriodStatusLabel = computed(() => {
+    if (periodLocked.value) return lockedPeriodStatus.value
+    return periodSelectorRef.value?.selectedPeriod?.statusLabel ?? '—'
+})
+
+const periodStatusClass = computed(() => {
+    const status = currentPeriodStatusLabel.value.toLowerCase()
+    if (status.includes('activo'))     return 'border-green-300 bg-green-50 text-green-700'
+    if (status.includes('preparaci'))  return 'border-amber-300 bg-amber-50 text-amber-700'
+    if (status.includes('planeaci'))   return 'border-blue-300 bg-blue-50 text-blue-700'
+    if (status.includes('planeado'))   return 'border-blue-300 bg-blue-50 text-blue-700'
+    if (status.includes('cerrado') || status.includes('finalizado') || status.includes('archiv')) return 'border-slate-300 bg-slate-100 text-slate-500'
+    return 'border-slate-200 bg-slate-50 text-slate-600'
+})
 
 // ══════════════════════ DATA LOADING ═══════════════════════════
 async function fetchCampuses() {

@@ -13,7 +13,20 @@
         <section class="bg-white border rounded-xl shadow-sm p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">Periodo</label>
-                <PeriodSelector v-model="selectedPeriodId" @update:model-value="onPeriodChange" placeholder="SELECCIONE UN PERIODO" />
+                <PeriodSelector
+                    v-model="selectedPeriodId"
+                    @update:model-value="onPeriodChange"
+                    placeholder="SELECCIONE UN PERIODO"
+                    :exclude-statuses="showArchivedPeriods ? [] : ['archived']"
+                />
+                <label class="mt-2 inline-flex items-center gap-2 text-[11px] font-semibold text-slate-500 cursor-pointer select-none">
+                    <input
+                        type="checkbox"
+                        v-model="showArchivedPeriods"
+                        class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    Mostrar periodos archivados
+                </label>
             </div>
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">Campus</label>
@@ -194,6 +207,7 @@ interface CareerOption {
 }
 
 const selectedPeriodId        = ref<number | null>(null)
+const showArchivedPeriods     = ref(false)
 const selectedCampusId        = ref<number | null>(null)
 const selectedModalityTypeId  = ref<number | null>(null)
 const selectedCareerId        = ref<number | null>(null)

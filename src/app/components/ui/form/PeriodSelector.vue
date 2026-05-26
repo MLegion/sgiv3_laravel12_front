@@ -8,7 +8,7 @@
             :disabled="loading || disabled"
         >
             <option :value="null">{{ placeholder }}</option>
-            <option v-for="p in periods" :key="p.id" :value="p.id">
+            <option v-for="p in visiblePeriods" :key="p.id" :value="p.id">
                 {{ p.name }}
                 <template v-if="p.statusLabel"> — {{ p.statusLabel }}</template>
             </option>
@@ -29,25 +29,51 @@ const props = withDefaults(defineProps<{
     /**
      * Si se pasa, al terminar de cargar la lista de periodos y si el
      * `modelValue` sigue en `null`, se auto-emite el periodo más reciente
-     * cuyo status coincida (p.ej. 'planned' para pantallas de carga
-     * académica). Si no hay coincidencia, cae a 'active' como fallback.
+     * cuyo status coincida.
+     *
+     * Acepta string (un solo status) o string[] (lista de prioridad).
+     * Recorre la lista en orden y toma el PRIMER status que tenga match
+     * en algún periodo. Ej. `['planned', 'draft', 'active']` busca primero
+     * un periodo planeado; si no hay, uno en draft; en último caso uno
+     * activo.
+     *
      * Pensado para CAREER_MANAGER y similares: entrar a la página ya con
      * un periodo razonable seleccionado.
      */
-    autoSelectStatus?: string | null
+    autoSelectStatus?: string | string[] | null
+    /**
+     * Statuses a ocultar del dropdown. La auto-selección también los ignora.
+     * Útil p.ej. para esconder `['archived']` por default y dejar que la
+     * página padre los muestre vía checkbox cuando el user lo pida.
+     */
+    excludeStatuses?: string[]
 }>(), {
     label: 'PERIODO ACADÉMICO',
     placeholder: '-- SELECCIONAR PERIODO --',
     disabled: false,
     autoSelectStatus: null,
+    excludeStatuses: () => [],
 })
 
 const emit = defineEmits<{
     'update:modelValue': [value: number | null]
+    /**
+     * Se emite SOLO cuando el componente eligió el periodo por sí mismo
+     * (auto-selección al cargar). NO se emite en cambios manuales del
+     * usuario. Útil para que la página padre active automáticamente el
+     * modo "locked" sin esperar click manual en el candado.
+     */
+    'auto-selected':     [period: { id: number; name: string; status: string | null; statusLabel: string | null }]
 }>()
 
 const periods = ref<any[]>([])
 const loading = ref(false)
+
+const visiblePeriods = computed(() =>
+    props.excludeStatuses.length === 0
+        ? periods.value
+        : periods.value.filter(p => !props.excludeStatuses.includes(p.status))
+)
 
 const selectedPeriod = computed(() =>
     periods.value.find((p: any) => p.id === props.modelValue) ?? null
@@ -81,18 +107,31 @@ async function fetchPeriods() {
 function maybeAutoSelect() {
     if (props.modelValue != null) return
     if (!props.autoSelectStatus) return
-    // Lista ya ordenada por id desc → find() devuelve el más reciente.
-    // Fallback a 'active' si no hay del status pedido, así un CAREER_MANAGER
-    // que entra fuera de temporada de planeación igual ve datos.
-    const pick =
-        periods.value.find(p => p.status === props.autoSelectStatus) ??
-        (props.autoSelectStatus !== 'active'
-            ? periods.value.find(p => p.status === 'active')
-            : null)
-    if (pick) emit('update:modelValue', pick.id)
+
+    // Normalizamos a array de prioridad. Lista ya ordenada por id desc →
+    // find() devuelve el más reciente para cada status candidato.
+    const wanted = Array.isArray(props.autoSelectStatus)
+        ? props.autoSelectStatus
+        : [props.autoSelectStatus]
+
+    for (const status of wanted) {
+        // No auto-seleccionar un periodo que está oculto por excludeStatuses.
+        if (props.excludeStatuses.includes(status)) continue
+        const pick = periods.value.find(p => p.status === status)
+        if (pick) {
+            emit('update:modelValue', pick.id)
+            emit('auto-selected', {
+                id:          pick.id,
+                name:        pick.name,
+                status:      pick.status ?? null,
+                statusLabel: pick.statusLabel ?? null,
+            })
+            return
+        }
+    }
 }
 
-defineExpose({ selectedPeriod, periods })
+defineExpose({ selectedPeriod, periods, visiblePeriods })
 
 onMounted(fetchPeriods)
 </script>
