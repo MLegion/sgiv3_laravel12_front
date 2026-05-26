@@ -4,6 +4,8 @@ import type { AuthUser } from "@/shared/types/user";
 import { loginRequest, type LoginPayload } from '@/modules/auth/services/auth.service'
 import { api } from '@/shared/services/api'
 import { useMenuStore } from '@/app/stores/menu.store'
+import { resolveBrandingByCollegeId } from '@/modules/auth/services/branding.service'
+import { useBrandingStore } from '@/modules/auth/stores/branding.store'
 
 export type ProfileType = 'employee' | 'student' | 'applicant'
 
@@ -60,7 +62,22 @@ export const useAuthStore = defineStore('auth', {
                 String(response.must_change_password)
             )
 
+            if (payload.collegeId) {
+                localStorage.setItem('active_college_id', String(payload.collegeId))
+                this.loadAndApplyBranding(payload.collegeId).catch(() => { /* sin tema = OK */ })
+            }
+
             router.replace('/auth/splash')
+        },
+
+        /**
+         * Carga el branding del college activo desde el backend y lo aplica como
+         * variables CSS globales (--brand-primary, etc.). Idempotente y silencioso.
+         */
+        async loadAndApplyBranding(collegeId: number): Promise<void> {
+            const resolved = await resolveBrandingByCollegeId(collegeId)
+            if (!resolved) return
+            useBrandingStore().setResolved(resolved)
         },
 
         /**
@@ -80,6 +97,8 @@ export const useAuthStore = defineStore('auth', {
             localStorage.setItem('token', data.access_token)
             localStorage.setItem('user', JSON.stringify(data.user))
             localStorage.setItem('must_change_password', String(this.mustChangePassword))
+            localStorage.setItem('active_college_id', String(payload.collegeId))
+            this.loadAndApplyBranding(payload.collegeId).catch(() => { /* sin tema = OK */ })
 
             router.replace('/auth/splash')
         },
@@ -158,6 +177,10 @@ export const useAuthStore = defineStore('auth', {
                 // Esto cierra el caso de "cerré la ventana y al reabrir el token
                 // ya no sirve pero sigue en localStorage".
                 api.get('/api/v1/auth/me').catch(() => { /* 401 manejado por interceptor */ })
+
+                // Hidratar el branding store (lee cache + aplica CSS vars).
+                // Esto deja navbar/footer/sidebar reactivos desde el primer frame.
+                useBrandingStore().hydrate()
             }
         },
 
@@ -303,6 +326,8 @@ export const useAuthStore = defineStore('auth', {
             localStorage.removeItem('impersonator_user')
             localStorage.removeItem('impersonator_info')
             localStorage.removeItem('impersonation_expires_at')
+            localStorage.removeItem('active_college_id')
+            useBrandingStore().clear()
         },
 
         /**
@@ -311,6 +336,24 @@ export const useAuthStore = defineStore('auth', {
         logout() {
             this.clearSession()
             router.replace('/auth/logout')
+        },
+
+        /**
+         * Logout forzado por una acción externa (admin deshabilitó la cuenta,
+         * 403 USER_DISABLED del middleware, etc.). No hace POST al backend
+         * porque el token ya fue revocado server-side; solo limpia local y
+         * manda al login con un query reason para que la página muestre un
+         * banner explicativo.
+         */
+        forceLogout(reason: 'disabled' | string, message?: string | null) {
+            this.clearSession()
+            router.replace({
+                path:  '/auth/login',
+                query: {
+                    reason,
+                    ...(message ? { msg: message } : {}),
+                },
+            })
         },
     },
 })

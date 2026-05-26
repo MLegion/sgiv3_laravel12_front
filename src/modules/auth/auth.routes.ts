@@ -5,6 +5,11 @@ export default [
         meta: { title: 'Ingresar' }
     },
     {
+        path: 'login/:shortname',
+        component: () => import('@/modules/auth/pages/UserLoginPage.vue'),
+        meta: { title: 'Ingresar' }
+    },
+    {
         path: 'admin/login',
         component: () => import('@/modules/auth/pages/SuperadminLoginPage.vue'),
         meta: { title: 'Ingresar admin' }

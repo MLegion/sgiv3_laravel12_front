@@ -11,13 +11,40 @@
                 <Bars3BottomLeftIcon class="w-6 h-6" />
             </button>
 
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-xs">
+            <div class="flex items-center gap-3">
+                <!-- Logo izquierdo: del branding si existe, sino SGI v3 default -->
+                <img
+                    v-if="branding.branding?.navbar_logo_left_url"
+                    :src="branding.branding.navbar_logo_left_url"
+                    alt="Logo"
+                    class="h-9 w-auto object-contain"
+                />
+                <div
+                    v-else
+                    class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-xs"
+                    :style="{ backgroundColor: 'var(--brand-primary, #4f46e5)' }"
+                >
                     S3
                 </div>
-                <span class="font-black text-slate-800 tracking-tighter text-lg hidden sm:inline-block">
-                    SGI <span class="text-indigo-600">v3</span>
+
+                <!-- Texto del colegio (o fallback SGI v3) -->
+                <span
+                    v-if="branding.navbarTitle"
+                    class="font-black text-slate-800 tracking-tight text-base hidden sm:inline-block truncate max-w-[280px]"
+                >
+                    {{ branding.navbarTitle }}
                 </span>
+                <span v-else class="font-black text-slate-800 tracking-tighter text-lg hidden sm:inline-block">
+                    SGI <span :style="{ color: 'var(--brand-primary, #4f46e5)' }">v3</span>
+                </span>
+
+                <!-- Logo derecho (opcional, sólo si hay branding) -->
+                <img
+                    v-if="branding.branding?.navbar_logo_right_url"
+                    :src="branding.branding.navbar_logo_right_url"
+                    alt="Logo"
+                    class="h-9 w-auto object-contain hidden sm:inline-block"
+                />
             </div>
         </div>
 
@@ -39,7 +66,8 @@
             <div class="relative pl-2 border-l border-slate-100" ref="dropdownRef">
                 <button
                     @click="menuOpen = !menuOpen"
-                    class="w-10 h-10 rounded-2xl bg-slate-100 text-indigo-600 font-black flex items-center justify-center border-2 border-white shadow-sm hover:scale-105 transition-transform"
+                    class="w-10 h-10 rounded-2xl bg-slate-100 font-black flex items-center justify-center border-2 border-white shadow-sm hover:scale-105 transition-transform"
+                    :style="{ color: 'var(--brand-primary, #4f46e5)' }"
                 >
                     {{ auth.userName?.charAt(0).toUpperCase() }}
                 </button>
@@ -103,11 +131,13 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
+import { useBrandingStore } from '@/modules/auth/stores/branding.store'
 import { Bars3BottomLeftIcon, UserCircleIcon, ArrowRightStartOnRectangleIcon } from '@heroicons/vue/24/outline'
 import NotificationsBell from '@/modules/notifications/components/NotificationsBell.vue'
 import LogoutConfirmModal from '@/app/components/LogoutConfirmModal.vue'
 
 const auth = useAuthStore()
+const branding = useBrandingStore()
 defineEmits(['toggle-sidebar'])
 
 const menuOpen = ref(false)

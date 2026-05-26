@@ -57,6 +57,14 @@
                     </div>
                 </div>
 
+                <!-- Footer brandeable: fijo en la base del main, fuera del área de scroll -->
+                <footer
+                    v-if="branding.branding?.footer_text"
+                    class="shrink-0 py-3 px-6 text-center text-xs text-slate-500 border-t border-slate-200 bg-white"
+                >
+                    {{ branding.branding.footer_text }}
+                </footer>
+
             </main>
         </div>
     </div>
@@ -69,8 +77,10 @@ import AppSidebar from '@/app/components/AppSidebar.vue';
 import Breadcrumbs from '@/app/components/Breadcrumbs.vue';
 import ImpersonationBanner from '@/app/components/ImpersonationBanner.vue';
 import { useLayoutStore } from '@/app/stores/layout.store';
+import { useBrandingStore } from '@/modules/auth/stores/branding.store';
 
 const layout = useLayoutStore();
+const branding = useBrandingStore();
 
 // Cerrar sidebar móvil si se redimensiona a pantalla grande
 const handleResize = () => {

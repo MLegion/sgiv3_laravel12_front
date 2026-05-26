@@ -13,16 +13,38 @@
                     class="h-20 object-contain"
                 />
 
-                <h1 class="text-center text-lg md:text-xl font-semibold text-blue-700 leading-snug">
-                    INSTITUTO TECNOLÓGICO<br />
-                    SUPERIOR DE TIERRA BLANCA
+                <h1 class="text-center text-lg md:text-xl font-semibold leading-snug" :style="brandedTitleStyle">
+                    <template v-if="brandedTitle">
+                        {{ brandedTitle }}
+                        <span v-if="brandedSubtitle" class="block text-sm font-normal text-gray-500 mt-1">
+                            {{ brandedSubtitle }}
+                        </span>
+                    </template>
+                    <template v-else>
+                        INSTITUTO TECNOLÓGICO<br />
+                        SUPERIOR DE TIERRA BLANCA
+                    </template>
                 </h1>
 
                 <img
-                    src="/img/ITSTB.jpg"
-                    alt="ITSTB"
+                    :src="brandedLogo || '/img/ITSTB.jpg'"
+                    :alt="brandedTitle || 'ITSTB'"
                     class="h-20 object-contain"
                 />
+            </div>
+
+            <!-- Banner: redirigido por cuenta deshabilitada (full width, encima del grid) -->
+            <div
+                v-if="disabledBanner"
+                class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 flex items-start gap-3"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 shrink-0 mt-0.5 text-red-600">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285zm0 13.036h.008v.008H12v-.008z" />
+                </svg>
+                <div>
+                    <p class="font-bold text-red-800">Tu cuenta fue deshabilitada</p>
+                    <p class="mt-1 text-xs">Contacta al administrador de tu plantel para más información.</p>
+                </div>
             </div>
 
             <!-- BODY -->
@@ -40,8 +62,8 @@
                 <!-- FORM -->
                 <form class="space-y-5" @submit.prevent="submit">
 
-                    <!-- College -->
-                    <div>
+                    <!-- College: oculto cuando ya viene fijado por shortname -->
+                    <div v-if="!brandedCollegeLocked">
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Institución
                         </label>
@@ -132,8 +154,8 @@
                     <!-- Button -->
                     <button
                         type="submit"
-                        class="w-full mt-4 h-12 bg-indigo-600 hover:bg-indigo-700
-                   text-white font-semibold rounded-lg transition shadow-md"
+                        class="w-full mt-4 h-12 text-white font-semibold rounded-lg transition shadow-md"
+                        :style="brandedButtonStyle"
                     >
                         INGRESAR
                     </button>
@@ -185,15 +207,44 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { useCollegeStore } from '@/modules/auth/stores/college.store'
 import { requestGoogleAccessToken } from '@/modules/auth/composables/useGoogleAuth'
+import {
+    resolveBrandingByShortname,
+    resolveLoginDefault,
+    applyBrandingCssVars,
+    cacheBranding,
+    type CollegeBranding,
+    type CollegeBrandingResolved,
+} from '@/modules/auth/services/branding.service'
 
 /* ---------- state ---------- */
 const authStore = useAuthStore()
 const collegeStore = useCollegeStore()
+const route = useRoute()
+const router = useRouter()
+
+/* Branding cargado desde /auth/login/<shortname> */
+const branding = ref<CollegeBranding | null>(null)
+const brandedCollegeLocked = ref(false)
+
+const brandedLogo = computed(() => branding.value?.logo_url ?? null)
+const brandedTitle = computed(() => branding.value?.welcome_title ?? null)
+const brandedSubtitle = computed(() => branding.value?.welcome_subtitle ?? null)
+const brandedTitleStyle = computed(() =>
+    branding.value ? { color: branding.value.primary_color } : { color: '#1d4ed8' /* blue-700 */ },
+)
+const brandedButtonStyle = computed(() =>
+    branding.value
+        ? { backgroundColor: branding.value.primary_color }
+        : { backgroundColor: '#4f46e5' /* indigo-600 */ },
+)
+
+// Banner cuando llegamos con ?reason=disabled (admin deshabilitó la cuenta).
+const disabledBanner = computed(() => route.query.reason === 'disabled')
 
 const collegeId = ref<number | null>(null)
 const email = ref('')
@@ -249,13 +300,44 @@ const errors = ref<{
     general?: string
 }>({})
 
-onMounted(() => {
+onMounted(async () => {
     collegeStore.hydrate()
-
     collegeStore.loadColleges()
 
     if (collegeStore.selectedCollege) {
         collegeId.value = collegeStore.selectedCollege.id
+    }
+
+    // Si la URL trae /auth/login/<shortname>, resolver el branding y, si existe,
+    // fijar el college sin mostrar el selector. Si no existe, caer a /auth/login
+    // (la página estándar con selector visible).
+    //
+    // Si NO trae shortname y el SUPERADMIN configuró un default global, aplicamos
+    // ese branding como si la URL hubiera traído el shortname.
+    const shortname = (route.params as any).shortname as string | undefined
+
+    let resolved: CollegeBrandingResolved | null = null
+    if (shortname) {
+        resolved = await resolveBrandingByShortname(shortname)
+        if (!resolved) {
+            await router.replace('/auth/login')
+            return
+        }
+    } else {
+        resolved = await resolveLoginDefault()
+    }
+
+    if (resolved) {
+        branding.value = resolved.branding
+        brandedCollegeLocked.value = true
+        collegeId.value = resolved.college.id
+        collegeStore.selectCollege({
+            id: resolved.college.id,
+            name: resolved.college.name,
+            short_name: resolved.college.short_name,
+        } as any)
+        cacheBranding(resolved)
+        applyBrandingCssVars(resolved.branding)
     }
 })
 
@@ -295,8 +377,15 @@ async function submit() {
             collegeId: collegeStore.selectedCollege!.id,
             rememberMe: rememberMe.value,
         })
-    } catch (error) {
+    } catch (error: any) {
         console.log(error)
+        // El backend devuelve {code:'USER_DISABLED', ...} con HTTP 403
+        // cuando el admin marcó la cuenta como deshabilitada.
+        const data = error?.response?.data
+        if (data?.code === 'USER_DISABLED') {
+            errors.value.general = 'Tu cuenta fue deshabilitada por un administrador. Contacta al admin del plantel.'
+            return
+        }
         errors.value.general = 'Usuario o contraseña incorrectos'
     }
 }
