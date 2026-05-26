@@ -200,6 +200,12 @@ export default [
         component: () => import('@/modules/admissions/pages/StatisticsPage.vue'),
         meta: { title: 'Reportes Estadísticos' },
     },
+    {
+        path: 'admissions/reports/fichas',
+        name: 'admissions.reports.fichas',
+        component: () => import('@/modules/admissions/pages/FichasReportPage.vue'),
+        meta: { title: 'Reporte de Fichas' },
+    },
 
     // Applicants
     {

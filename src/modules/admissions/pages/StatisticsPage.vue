@@ -93,8 +93,21 @@ const tabs = computed(() => allTabs.filter(t => {
 }))
 
 onMounted(async () => {
-    const { data } = await api.get<StatsContext>(API.ADMISSIONS_API.statistics.context)
-    ctx.value = data
+    const [ctxRes, periodsRes] = await Promise.all([
+        api.get<StatsContext>(API.ADMISSIONS_API.statistics.context),
+        api.get<{ items: { academicPeriodId: number }[] }>(
+            API.SCHOOL_SERVICES_API.collegeAcademicPeriods.list,
+            { params: { order_by: 'actual_start_date', order_dir: 'desc', per_page: 1 } },
+        ),
+    ])
+    ctx.value = ctxRes.data
+    // Pre-selecciona el periodo más reciente para que los reportes carguen sin
+    // que el usuario tenga que elegir manualmente. Puede limpiarlo para ver
+    // datos históricos (vacío = todos).
+    const first = periodsRes.data.items?.[0]
+    if (first?.academicPeriodId) {
+        periodId.value = first.academicPeriodId
+    }
 })
 </script>
 

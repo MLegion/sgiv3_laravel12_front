@@ -177,6 +177,10 @@ export default {
             originDistribution: (params: string) => apiUrl(`/admissions/statistics/origin-distribution?${params}`),
             inclusion:          (params: string) => apiUrl(`/admissions/statistics/inclusion?${params}`),
         },
+        reports: {
+            fichas: (params: string = '') =>
+                apiUrl(`/admissions/reports/fichas${params ? '?' + params : ''}`),
+        },
         registration: {
             register:     apiUrl('/admissions/register'),
             activeWindow: (collegeId: string | number) => apiUrl(`/admissions/active-window?college_id=${collegeId}`),
