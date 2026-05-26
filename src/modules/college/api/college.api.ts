@@ -9,6 +9,8 @@ export default {
             byId:     (id: string | number) => apiUrl(`/college/users/${id}`),
             assign:   (id: string | number) => apiUrl(`/college/users/${id}/role-assignments`),
             revoke:   (id: string | number, assignmentId: string | number) => apiUrl(`/college/users/${id}/role-assignments/${assignmentId}`),
+            disable:  (id: string | number) => apiUrl(`/college/users/${id}/disable`),
+            enable:   (id: string | number) => apiUrl(`/college/users/${id}/enable`),
         },
         assignableRoles: apiUrl('/college/assignable-roles'),
         contextOptions:  (alias: string) => apiUrl(`/college/context-options/${alias}`),
