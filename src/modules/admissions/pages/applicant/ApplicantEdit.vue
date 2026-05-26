@@ -67,7 +67,7 @@
                 <div v-show="activeTab === 'ext_personal'" class="p-6 space-y-5">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <FormInput label="RFC" v-model="form.rfc" uppercase :maxlength="13" />
-                        <FormInput label="FECHA DE NACIMIENTO" v-model="form.birth_date" type="date" />
+                        <FormInput label="FECHA DE NACIMIENTO" v-model="form.birth_date" type="date" required />
                         <div class="space-y-1">
                             <label class="text-xs font-medium text-slate-600">SEXO</label>
                             <select v-model="form.sex" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">

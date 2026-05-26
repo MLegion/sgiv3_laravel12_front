@@ -3,7 +3,7 @@
         <template v-if="editing">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <FormInput label="RFC" v-model="form.rfc" uppercase :maxlength="13" />
-                <FormInput label="FECHA DE NACIMIENTO" v-model="form.birth_date" type="date" />
+                <FormInput label="FECHA DE NACIMIENTO" v-model="form.birth_date" type="date" required />
                 <div class="space-y-1">
                     <label class="text-xs font-medium text-slate-600">ESTADO CIVIL</label>
                     <select v-model="form.marital_status" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
