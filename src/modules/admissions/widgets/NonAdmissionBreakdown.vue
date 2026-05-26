@@ -58,11 +58,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useWidgetData } from '@/modules/dashboard/composables/useWidgetData'
-import type { WidgetMeta } from '@/modules/dashboard/types/widget.type'
 
-const props = defineProps<{ widget: WidgetMeta }>()
-
+// Contrato widget (mismo que ApplicantsPeriodCount, EnrollmentProgress, etc.):
+// WidgetCard llama useWidgetData internamente y pasa data/loading/error/view.
 interface Payload {
     period: { id: number; name: string; shortName: string | null } | null
     total: number
@@ -71,27 +69,36 @@ interface Payload {
     reasonLabels: Record<string, string>
 }
 
-const { data, loading, error } = useWidgetData<Payload>(props.widget)
+const props = defineProps<{
+    data:    Payload | null
+    loading: boolean
+    error:   unknown
+    view?:   'data' | 'settings'
+}>()
 
 const COLOR_BY_REASON: Record<string, string> = {
-    cancelled:         'bg-slate-400',
-    unverified:        'bg-amber-400',
-    incomplete:        'bg-orange-400',
-    no_show:           'bg-rose-400',
-    score_with_result: 'bg-red-500',
-    other:             'bg-slate-300',
+    cancelled:            'bg-slate-400',
+    unverified:           'bg-amber-400',
+    incomplete:           'bg-orange-400',
+    no_show:              'bg-rose-400',
+    score_with_result:    'bg-red-500',
+    score_low:            'bg-red-600',
+    documents_incomplete: 'bg-orange-500',
+    quota:                'bg-purple-500',
+    policy:               'bg-indigo-500',
+    other:                'bg-slate-500',
 }
 
 const nonZeroReasons = computed(() => {
-    if (!data.value) return []
-    const max = Math.max(1, ...Object.values(data.value.byReason))
-    return Object.entries(data.value.byReason)
+    if (!props.data) return []
+    const max = Math.max(1, ...Object.values(props.data.byReason))
+    return Object.entries(props.data.byReason)
         .filter(([, count]) => count > 0)
         .sort((a, b) => b[1] - a[1])
         .map(([key, count]) => ({
             key,
             count,
-            label: data.value!.reasonLabels[key] ?? key,
+            label: props.data!.reasonLabels[key] ?? key,
             pct:   Math.round((count / max) * 100),
             color: COLOR_BY_REASON[key] ?? 'bg-slate-300',
         }))
