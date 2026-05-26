@@ -27,6 +27,8 @@
                     <div class="flex flex-wrap items-center gap-2 text-xs">
                         <span class="font-semibold text-slate-700">{{ config.collegeAcademicPeriod?.academicPeriod?.name ?? '—' }}</span>
                         <span class="text-slate-300">|</span>
+                        <span class="font-semibold text-slate-700">{{ config.modality?.campus?.shortName ?? config.modality?.campus?.name ?? '—' }}</span>
+                        <span class="text-slate-300">·</span>
                         <span class="text-slate-500">{{ config.modality?.modalityType?.name ?? '—' }}</span>
                         <span class="px-2 py-0.5 text-[10px] font-bold rounded-full" :class="periodStatusClass(periodStatus)">
                             PERIODO: {{ periodStatus.toUpperCase() }}

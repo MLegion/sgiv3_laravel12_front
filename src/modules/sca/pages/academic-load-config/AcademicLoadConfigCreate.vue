@@ -31,7 +31,7 @@
                     v-model="form.modalityId"
                     :endpoint="API.SCHOOL_SERVICES_API.modalities.list"
                     :endpoint-by-id="API.SCHOOL_SERVICES_API.modalities.byId"
-                    :item-label="(m: any) => m.modalityType?.name || 'Modalidad #' + m.id"
+                    :item-label="modalityLabel"
                     item-value="id"
                     required
                 />
@@ -69,6 +69,14 @@ const form = reactive({
     modalityId:              null as number | null,
     status:                  'draft' as string,
 })
+
+// Muestra "Campus — Tipo" para que el SES_MANAGER distinga la modalidad
+// cuando el college opera varios campus con el mismo modalityType.
+function modalityLabel(m: any): string {
+    const campus = m.campus?.shortName || m.campus?.name
+    const type   = m.modalityType?.name || `Modalidad #${m.id}`
+    return campus ? `${campus} — ${type}` : type
+}
 
 async function submit() {
     errors.value = []
