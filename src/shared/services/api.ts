@@ -58,6 +58,25 @@ api.interceptors.response.use(
         const status = err.response.status
         const url = err.config?.url || ''
 
+        // 403 USER_DISABLED: red de seguridad si el WS push no llegó. El
+        // middleware EnsureUserNotDisabled bloqueó la request → expulsar al
+        // login con banner. Si YA estamos en /auth/* (caso: usuario
+        // deshabilitado intentando login), dejamos pasar la excepción para
+        // que la página la muestre inline sin nukear localStorage.
+        if (status === 403 && err.response?.data?.code === 'USER_DISABLED' && !handling401) {
+            if (/\/auth\//.test(window.location.pathname)) {
+                throw err
+            }
+            handling401 = true
+            localStorage.removeItem('token')
+            localStorage.removeItem('user')
+            localStorage.removeItem('must_change_password')
+            localStorage.removeItem('selected_college')
+            // Sin razón en la URL — solo el flag para mostrar el banner.
+            window.location.assign('/auth/login?reason=disabled')
+            return new Promise(() => {})
+        }
+
         // Solo actuamos en 401 y evitamos recursión
         if (status !== 401 || handling401) throw err
         // No re-procesar el propio stop/logout

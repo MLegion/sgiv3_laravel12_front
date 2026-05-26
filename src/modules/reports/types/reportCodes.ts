@@ -33,6 +33,7 @@ export enum ReportCode {
     // Formatos dirigidos al alumno
     ADVISING_RETICULAR_FORMAT       = 'RPT.ASESORIA_RETICULAR',
     ENROLLMENT_PROOF                = 'RPT.COMPROBANTE_REINSCRIPCION',
+    INITIAL_ENROLLMENT_PROOF        = 'RPT.COMPROBANTE_INSCRIPCION',
 
     // Reportes admin
     TEACHER_EVALUATION              = 'RPT.EVALUACION_DOCENTE',

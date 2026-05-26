@@ -1,15 +1,17 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
-import mkcert from 'vite-plugin-mkcert'
+// import mkcert from 'vite-plugin-mkcert'  // deshabilitado, ver comentario abajo
 import path from 'path'
 
 export default defineConfig({
-  // mkcert genera certificado local firmado por una CA confiable instalada
-  // automáticamente en el OS (necesario para que los Service Workers se
-  // registren — `@vitejs/plugin-basic-ssl` produce un cert auto-firmado que
-  // los SW rechazan, aunque el browser acepte la página).
-  plugins: [vue(), tailwindcss(), mkcert()],
+  // mkcert deshabilitado temporalmente: Vite v7 con HTTPS levanta un
+  // Http2SecureServer (h2) y la proxy WebSocket no funciona sobre HTTP/2
+  // (no existe `Upgrade` header allá). Volveremos a HTTPS cuando se
+  // resuelva con Reverb-TLS propio o nginx fronting.
+  // Mientras tanto: Service Worker / Web Push no se registran en dev,
+  // pero el WS de notifications/disable funciona sobre ws://.
+  plugins: [vue(), tailwindcss()],
 
   build: {
       outDir: path.resolve(__dirname, '../public/frontend'),
@@ -38,6 +40,8 @@ export default defineConfig({
     proxy: {
       '/api':     { target: 'http://www', changeOrigin: true },
       '/sanctum': { target: 'http://www', changeOrigin: true },
+      // Sin proxy de /app: con HTTP plano, el browser conecta WS directo a
+      // ws://...:8081 (Reverb) sin pasar por Vite.
     },
   },
 })
