@@ -39,6 +39,34 @@
             {{ okMsg }}
         </div>
 
+        <!-- Banner proyección at_risk (Fase D) -->
+        <div
+            v-if="projectionData?.projection?.atRisk"
+            class="text-sm rounded-lg px-4 py-3 border"
+            :class="projectionData.hasSignedLetter
+                ? 'bg-amber-50 border-amber-200 text-amber-800'
+                : 'bg-rose-50 border-rose-200 text-rose-800'"
+        >
+            <div class="flex items-start gap-3">
+                <ExclamationTriangleIcon class="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <div class="flex-1">
+                    <p class="font-semibold">Estás en riesgo de exceder tus periodos máximos</p>
+                    <p class="text-xs leading-relaxed mt-0.5">{{ projectionData.projection.atRiskReason }}</p>
+                    <p v-if="projectionData.requiresLetter && !projectionData.hasSignedLetter" class="text-xs mt-1">
+                        Para que tu asesor pueda aprobarte la reticular, primero firma y sube tu carta compromiso.
+                    </p>
+                    <p v-else-if="projectionData.hasSignedLetter" class="text-xs mt-1">
+                        ✓ Carta compromiso firmada el {{ formatLetterDate(projectionData.latestLetter?.signedAt) }}.
+                    </p>
+                </div>
+                <button
+                    v-if="projectionData.requiresLetter && !projectionData.hasSignedLetter && projectionData.projection.studentAffiliationId"
+                    class="px-3 py-1.5 text-xs font-semibold rounded bg-rose-600 text-white hover:bg-rose-700"
+                    @click="letterModalOpen = true"
+                >Firmar y subir carta</button>
+            </div>
+        </div>
+
         <!-- Violations -->
         <div v-if="violations.length" class="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-1">
             <h3 class="text-xs font-bold text-amber-700 uppercase mb-2">Reglas a corregir</h3>
@@ -723,14 +751,26 @@
             :code="formatUnavailableInfo.code"
             :reason="formatUnavailableInfo.reason"
         />
+
+        <CompromiseLetterModal
+            v-if="projectionData?.projection"
+            v-model="letterModalOpen"
+            :student-affiliation-id="projectionData.projection.studentAffiliationId"
+            :advising-session-id="session?.id ?? null"
+            :projection="projectionData.projection"
+            :for-self="true"
+            @uploaded="loadProjection"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
 import { computed, defineComponent, h, reactive, ref, onMounted } from 'vue'
+import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
+import CompromiseLetterModal from '@/modules/advising/components/CompromiseLetterModal.vue'
 import PhotoUpload from '@/app/components/ui/form/PhotoUpload.vue'
 import FormatUnavailableModal from '@/modules/reports/components/FormatUnavailableModal.vue'
 import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
@@ -1512,8 +1552,48 @@ async function focusRejectionIfHashed() {
     setTimeout(() => { rejectionHighlighted.value = false }, 4000)
 }
 
+// Proyección de trayectoria (Fase D) — banner at_risk + carta compromiso.
+interface ProjectionPayload {
+    projection: {
+        studentAffiliationId:   number
+        currentPeriodNumber:    number
+        maxPeriods:             number
+        periodsRemaining:       number
+        totalSubjects:          number
+        approvedSubjects:       number
+        subjectsRemaining:      number
+        projectedFinishPeriod:  number
+        atRisk:                 boolean
+        atRiskReason:           string | null
+    } | null
+    requiresLetter:  boolean
+    hasSignedLetter: boolean
+    latestLetter:    { id: number; signedAt: string; reason: string; originalFilename: string | null } | null
+}
+const projectionData  = ref<ProjectionPayload | null>(null)
+const letterModalOpen = ref(false)
+
+async function loadProjection(): Promise<void> {
+    try {
+        const { data } = await api.get<ProjectionPayload>(API.ADVISING_API.projection.forMe)
+        projectionData.value = data
+    } catch {
+        projectionData.value = null
+    }
+}
+
+function formatLetterDate(iso: string | null | undefined): string {
+    if (!iso) return '—'
+    try {
+        return new Date(iso).toLocaleDateString('es-MX', { dateStyle: 'medium' })
+    } catch {
+        return iso
+    }
+}
+
 onMounted(async () => {
     await loadActivePeriod()
+    loadProjection()
     await focusRejectionIfHashed()
 })
 </script>

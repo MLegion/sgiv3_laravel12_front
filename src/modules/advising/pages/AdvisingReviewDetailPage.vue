@@ -62,6 +62,40 @@
             {{ okMsg }}
         </div>
 
+        <!-- Banner proyección at_risk -->
+        <div
+            v-if="projectionData?.projection?.atRisk"
+            class="text-sm rounded-lg px-4 py-3 border"
+            :class="projectionData.hasSignedLetter
+                ? 'bg-amber-50 border-amber-200 text-amber-800'
+                : 'bg-rose-50 border-rose-200 text-rose-800'"
+        >
+            <div class="flex items-start gap-3">
+                <ExclamationTriangleIcon class="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <div class="flex-1">
+                    <p class="font-semibold">Alumno en riesgo de exceder periodos máximos</p>
+                    <p class="text-xs leading-relaxed mt-0.5">{{ projectionData.projection.atRiskReason }}</p>
+                    <p v-if="projectionData.requiresLetter && !projectionData.hasSignedLetter" class="text-xs mt-1">
+                        Para aprobar la asesoría hace falta carta compromiso firmada.
+                    </p>
+                    <p v-else-if="projectionData.hasSignedLetter" class="text-xs mt-1">
+                        ✓ Carta compromiso firmada el {{ formatLetterDate(projectionData.latestLetter?.signedAt) }}.
+                        <a
+                            v-if="projectionData.latestLetter?.id"
+                            :href="API.ADVISING_API.compromiseLetters.download(projectionData.latestLetter.id)"
+                            target="_blank"
+                            class="underline hover:no-underline"
+                        >Descargar PDF</a>
+                    </p>
+                </div>
+                <button
+                    v-if="projectionData.requiresLetter && !projectionData.hasSignedLetter && session?.studentAffiliationId"
+                    class="px-3 py-1.5 text-xs font-semibold rounded bg-rose-600 text-white hover:bg-rose-700"
+                    @click="letterModalOpen = true"
+                >Subir carta firmada</button>
+            </div>
+        </div>
+
         <!-- Acciones de posesión y resultado -->
         <div v-if="session" class="bg-white border rounded-xl shadow-sm p-4 flex flex-wrap items-center gap-2">
             <button v-if="!session.reviewer"
@@ -510,15 +544,27 @@
             </div>
         </Teleport>
 
+        <CompromiseLetterModal
+            v-if="projectionData?.projection && session?.studentAffiliationId"
+            v-model="letterModalOpen"
+            :student-affiliation-id="session.studentAffiliationId"
+            :advising-session-id="sessionId"
+            :projection="projectionData.projection"
+            :for-self="false"
+            @uploaded="load"
+        />
+
     </div>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
+import CompromiseLetterModal from '@/modules/advising/components/CompromiseLetterModal.vue'
 import type {
     AdvisingSession, AdvisingSessionItem, AdvisingStatus,
     CurriculumStatus, CurriculumStatusEntry,
@@ -549,6 +595,36 @@ interface OverrideModalState {
     messages: string[]
 }
 const overrideModal = ref<OverrideModalState | null>(null)
+
+// Proyección de trayectoria (Fase D)
+interface ProjectionPayload {
+    projection: {
+        studentAffiliationId:   number
+        currentPeriodNumber:    number
+        maxPeriods:             number
+        periodsRemaining:       number
+        totalSubjects:          number
+        approvedSubjects:       number
+        subjectsRemaining:      number
+        projectedFinishPeriod:  number
+        atRisk:                 boolean
+        atRiskReason:           string | null
+    } | null
+    requiresLetter:  boolean
+    hasSignedLetter: boolean
+    latestLetter:    { id: number; signedAt: string; reason: string; originalFilename: string | null } | null
+}
+const projectionData = ref<ProjectionPayload | null>(null)
+const letterModalOpen = ref(false)
+
+function formatLetterDate(iso: string | null | undefined): string {
+    if (!iso) return '—'
+    try {
+        return new Date(iso).toLocaleDateString('es-MX', { dateStyle: 'medium' })
+    } catch {
+        return iso
+    }
+}
 
 // Modales (reemplazan prompt/confirm/alert)
 const approveModalOpen      = ref(false)
@@ -746,6 +822,10 @@ async function load() {
             }).then(r => { curriculum.value = r.data })
               .catch(() => { /* informativo */ })
         }
+        // Proyección de trayectoria (banner at_risk + carta compromiso).
+        api.get<ProjectionPayload>(API.ADVISING_API.projection.forSession(sessionId))
+            .then(r => { projectionData.value = r.data })
+            .catch(() => { projectionData.value = null })
     } catch (e: any) {
         errorMsg.value = e?.response?.data?.message ?? 'Error al cargar la asesoría.'
     }
@@ -847,6 +927,11 @@ async function removeItem(subjectId: number) {
 
 function askApprove() {
     if (!canDecide.value) return
+    if (projectionData.value?.requiresLetter && !projectionData.value.hasSignedLetter) {
+        errorMsg.value = 'No puedes aprobar: el alumno está en riesgo y aún no ha subido la carta compromiso.'
+        letterModalOpen.value = true
+        return
+    }
     approveModalOpen.value = true
 }
 

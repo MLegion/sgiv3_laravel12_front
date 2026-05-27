@@ -47,6 +47,14 @@ const advisingApi: ApiModule = {
             adminGroupAssignments: (groupId: string | number) => apiUrl(`/advising/enrollments/admin/groups/${groupId}/assignments`),
             adminByAssignment:     (teacherAssignmentId: string | number) => apiUrl(`/advising/enrollments/admin/by-teacher-assignment/${teacherAssignmentId}`),
         },
+        projection: {
+            forSession: (id: string | number) => apiUrl(`/advising/sessions/${id}/projection`),
+            forMe:      apiUrl('/advising/me/projection'),
+        },
+        compromiseLetters: {
+            upload:   apiUrl('/advising/compromise-letters'),
+            download: (id: string | number) => apiUrl(`/advising/compromise-letters/${id}/download`),
+        },
     },
 }
 
