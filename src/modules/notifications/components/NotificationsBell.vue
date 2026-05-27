@@ -11,6 +11,7 @@
             <span
                 v-if="store.unreadCount > 0"
                 class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center"
+                :class="{ 'notif-bell-pulse': pulsing }"
             >{{ store.unreadCount > 99 ? '99+' : store.unreadCount }}</span>
         </button>
 
@@ -74,22 +75,52 @@
                         <li
                             v-for="n in store.items"
                             :key="n.id"
-                            class="px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer"
+                            class="group relative px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer"
                             :class="{ 'bg-indigo-50/50': !n.read_at }"
                             @click="onClick(n)"
                         >
-                            <div class="flex items-start gap-2">
-                                <span
-                                    class="mt-1 w-2 h-2 rounded-full flex-shrink-0"
-                                    :class="n.read_at ? 'bg-transparent' : 'bg-indigo-500'"
-                                />
+                            <div class="flex items-start gap-2.5">
+                                <div
+                                    class="mt-0.5 w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 relative"
+                                    :class="iconClassForEvent(n.event_key ?? null)"
+                                >
+                                    <component :is="iconForEvent(n.event_key ?? null)" class="w-3.5 h-3.5" />
+                                    <span
+                                        v-if="!n.read_at"
+                                        class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-indigo-500 ring-2 ring-white"
+                                    />
+                                </div>
                                 <div class="min-w-0 flex-1">
-                                    <p class="text-sm font-semibold text-slate-800 truncate">
+                                    <p class="text-sm font-semibold text-slate-800 truncate pr-12">
                                         {{ n.subject || '(sin asunto)' }}
                                     </p>
                                     <p class="text-xs text-slate-600 mt-0.5 line-clamp-2">{{ n.body_rendered }}</p>
-                                    <p class="text-[10px] text-slate-400 mt-1">{{ formatRelative(n.created_at) }}</p>
+                                    <p class="text-[10px] text-slate-400 mt-1 flex items-center gap-1.5">
+                                        <span>{{ moduleLabelForEvent(n.event_key ?? null) }}</span>
+                                        <span class="text-slate-300">·</span>
+                                        <span>{{ formatRelative(n.created_at) }}</span>
+                                    </p>
                                 </div>
+                            </div>
+
+                            <div class="absolute right-2 top-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+                                <button
+                                    v-if="!n.read_at"
+                                    type="button"
+                                    class="p-1 rounded text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+                                    title="Marcar como leída"
+                                    @click.stop="store.markRead(n.id)"
+                                >
+                                    <CheckIcon class="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                    type="button"
+                                    class="p-1 rounded text-slate-400 hover:bg-rose-100 hover:text-rose-600"
+                                    title="Descartar"
+                                    @click.stop="store.remove(n.id)"
+                                >
+                                    <XMarkIcon class="w-3.5 h-3.5" />
+                                </button>
                             </div>
                         </li>
                     </ul>
@@ -108,15 +139,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
     BellIcon, BellAlertIcon, BellSlashIcon,
     SpeakerWaveIcon, SpeakerXMarkIcon,
+    CheckIcon, XMarkIcon,
 } from '@heroicons/vue/24/outline'
 import { useNotificationsStore } from '@/modules/notifications/stores/notifications.store'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { useWebPush } from '@/modules/notifications/composables/useWebPush'
+import {
+    iconForEvent,
+    iconClassForEvent,
+    moduleLabelForEvent,
+} from '@/modules/notifications/utils/notificationVisuals'
 import type { NotificationItem } from '@/modules/notifications/types/notification.type'
 
 const store     = useNotificationsStore()
@@ -124,8 +161,19 @@ const auth      = useAuthStore()
 const webPush   = useWebPush()
 const open      = ref(false)
 const rootRef   = ref<HTMLElement>()
+const pulsing   = ref(false)
 
 let pollHandle: number | undefined
+let pulseHandle: number | undefined
+
+// Pulso visual del badge cuando sube el contador (notif nueva entró).
+watch(() => store.unreadCount, (next, prev) => {
+    if (next > (prev ?? 0)) {
+        pulsing.value = true
+        if (pulseHandle) window.clearTimeout(pulseHandle)
+        pulseHandle = window.setTimeout(() => { pulsing.value = false }, 1200)
+    }
+})
 
 const pushTitle = computed(() => {
     if (webPush.status.value === 'subscribed') return 'Notificaciones push activas (click para desactivar)'
@@ -186,7 +234,19 @@ onMounted(() => {
 
 onUnmounted(() => {
     if (pollHandle) window.clearInterval(pollHandle)
+    if (pulseHandle) window.clearTimeout(pulseHandle)
     store.unsubscribeRealtime()
     document.removeEventListener('click', handleClickOutside)
 })
 </script>
+
+<style scoped>
+@keyframes notif-bell-pulse-kf {
+    0%   { transform: scale(1);    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+    60%  { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+    100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+.notif-bell-pulse {
+    animation: notif-bell-pulse-kf 1.1s ease-out 1;
+}
+</style>

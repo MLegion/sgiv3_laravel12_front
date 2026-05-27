@@ -53,6 +53,7 @@
 
             <!-- Campana de notificaciones -->
             <NotificationsBell />
+            <NotificationToast />
 
             <!-- Información Usuario (Oculta en móviles muy pequeños) -->
             <div class="hidden md:block text-right">
@@ -134,6 +135,7 @@ import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { useBrandingStore } from '@/modules/auth/stores/branding.store'
 import { Bars3BottomLeftIcon, UserCircleIcon, ArrowRightStartOnRectangleIcon } from '@heroicons/vue/24/outline'
 import NotificationsBell from '@/modules/notifications/components/NotificationsBell.vue'
+import NotificationToast from '@/modules/notifications/components/NotificationToast.vue'
 import LogoutConfirmModal from '@/app/components/LogoutConfirmModal.vue'
 
 const auth = useAuthStore()

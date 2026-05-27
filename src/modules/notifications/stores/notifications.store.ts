@@ -1,10 +1,19 @@
 import { defineStore } from 'pinia'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useWebPush } from '@/modules/notifications/composables/useWebPush'
 import type { NotificationItem } from '@/modules/notifications/types/notification.type'
 import { playNotificationBeep } from '@/modules/notifications/utils/notificationSound'
 
 const SOUND_PREF_KEY = 'notif.soundEnabled'
+
+interface IncomingPayload {
+    id:         number
+    channel:    string
+    subject:    string | null
+    event_key:  string | null
+    created_at: string | null
+}
 
 /**
  * Estado central de la campana in-app:
@@ -28,6 +37,9 @@ export const useNotificationsStore = defineStore('notifications', {
         // notificación. Páginas como NotificationInboxPage lo `watch` para
         // re-fetchar su listado sin necesidad de pasar por este store.
         wsTick: 0,
+        // Última notificación recibida por WS (in-app). El toast lo escucha
+        // para mostrar un popup efímero. `null` mientras no llega ninguna.
+        lastIncoming: null as IncomingPayload | null,
     }),
 
     actions: {
@@ -48,7 +60,7 @@ export const useNotificationsStore = defineStore('notifications', {
             }
 
             window.Echo.private(channelName)
-                .listen('.notification.delivered', () => {
+                .listen('.notification.delivered', (payload: IncomingPayload) => {
                     // El servidor sólo manda metadata mínima; refrescamos el
                     // store completo para mantener una única fuente de verdad.
                     this.refresh()
@@ -56,6 +68,10 @@ export const useNotificationsStore = defineStore('notifications', {
                     // NotificationInboxPage). Watch en esta key dispara
                     // re-fetch sin tener que acoplar la página al store.
                     this.wsTick++
+                    // Guarda el payload para que el toast lo muestre. El watch
+                    // del toast hace un push con esto + items[0] (que ya trae
+                    // body_rendered tras refresh()).
+                    this.lastIncoming = payload
                 })
                 .listen('.user.disabled', () => {
                     // El admin deshabilitó la cuenta del user actual. El backend
@@ -85,10 +101,13 @@ export const useNotificationsStore = defineStore('notifications', {
                 const previous = this.unreadCount
                 this.unreadCount = next
 
-                // Suena sólo si subió el contador y el usuario ya cargó la app
-                // al menos una vez (evita beep al refresh de la página).
+                // Suena sólo si subió el contador, el usuario ya cargó la app
+                // al menos una vez (evita beep al refresh) y NO tiene Web Push
+                // activo (el navegador ya está sonando por su cuenta).
                 if (this._initialized && next > previous && this.soundEnabled) {
-                    playNotificationBeep()
+                    if (useWebPush().status.value !== 'subscribed') {
+                        playNotificationBeep()
+                    }
                 }
                 this._initialized = true
             } catch { /* tolerar fallos del polling */ }
