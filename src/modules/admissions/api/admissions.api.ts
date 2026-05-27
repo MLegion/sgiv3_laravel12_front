@@ -31,6 +31,7 @@ export default {
             create: (offerId: string | number) => apiUrl(`/admissions/academic-offers/${offerId}/required-documents`),
             update: (offerId: string | number, id: string | number) => apiUrl(`/admissions/academic-offers/${offerId}/required-documents/${id}`),
             delete: (offerId: string | number, id: string | number) => apiUrl(`/admissions/academic-offers/${offerId}/required-documents/${id}`),
+            counts: apiUrl('/admissions/offer-required-documents/counts'),
         },
         applicants: {
             list:          apiUrl('/admissions/applicants'),
@@ -42,6 +43,17 @@ export default {
             avatar:        (id: string | number, size: 'sm' | 'md' | 'lg' = 'md') => apiUrl(`/admissions/applicants/${id}/avatar?size=${size}`),
             resetPassword: (id: string | number) => apiUrl(`/admissions/applicants/${id}/reset-password`),
             neighbors:     (id: string | number) => apiUrl(`/admissions/applicants/${id}/neighbors`),
+            releaseResult: (id: string | number) => apiUrl(`/admissions/applicants/${id}/release-result`),
+            bulkRelease:   apiUrl('/admissions/applicants/release-results-bulk'),
+            myExamResult:  apiUrl('/admissions/applicants/me/exam-result'),
+        },
+        admissionProcess: {
+            close: apiUrl('/admissions/process/close'),
+        },
+        proctorRecords: {
+            pending:  apiUrl('/admissions/proctor-records/pending'),
+            validate: (id: string | number) => apiUrl(`/admissions/proctor-records/${id}/validate`),
+            mine:     apiUrl('/admissions/proctor-records/mine'),
         },
         config: {
             get:    apiUrl('/admissions/config'),

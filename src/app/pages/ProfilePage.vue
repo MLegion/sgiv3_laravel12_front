@@ -117,6 +117,43 @@
                         <ProfileField label="Dirección" :value="data.profile.address" />
                     </div>
                 </ProfileSection>
+
+                <!-- Mis constancias (participación como cuidador del examen) -->
+                <ProfileSection v-if="proctorRecords.length > 0" title="Constancias de participación como cuidador">
+                    <div class="space-y-2">
+                        <article
+                            v-for="r in proctorRecords"
+                            :key="r.id"
+                            class="border border-slate-200 rounded-lg p-3 flex items-center gap-3 flex-wrap"
+                        >
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-semibold text-slate-800">
+                                    {{ r.academicPeriodShortName ?? r.academicPeriodName }} · {{ r.collegeShortName ?? r.collegeName }}
+                                </div>
+                                <div class="text-xs text-slate-500">
+                                    Cubriste <strong>{{ r.sessionsCount }}</strong> sesión(es) y evaluaste
+                                    <strong>{{ r.applicantsCount }}</strong> aspirante(s).
+                                </div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">
+                                    Cerrado: {{ formatRecordDate(r.closedAt) }}
+                                </div>
+                            </div>
+                            <div>
+                                <span
+                                    v-if="r.certificateValidated"
+                                    class="text-[10px] uppercase font-semibold px-2 py-1 rounded bg-emerald-100 text-emerald-700"
+                                >Validada</span>
+                                <span
+                                    v-else
+                                    class="text-[10px] uppercase font-semibold px-2 py-1 rounded bg-amber-100 text-amber-700"
+                                >Pendiente de validación</span>
+                            </div>
+                        </article>
+                        <p class="text-[11px] text-slate-400 italic">
+                            La descarga del PDF de constancia estará disponible próximamente.
+                        </p>
+                    </div>
+                </ProfileSection>
             </template>
 
             <!-- ══ PERFIL ESTUDIANTE ══ -->
@@ -264,14 +301,41 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
+import { API } from '@/shared/api'
 
 /* ── Sub-componentes inline ── */
 import ProfileSection from '@/app/components/ProfileSection.vue'
 import ProfileField from '@/app/components/ProfileField.vue'
 
+interface ProctorRecord {
+    id:                       number
+    academicPeriodId:         number
+    academicPeriodName:       string
+    academicPeriodShortName:  string | null
+    collegeId:                number
+    collegeShortName:         string | null
+    collegeName:              string
+    sessionsCount:            number
+    applicantsCount:          number
+    closedAt:                 string
+    certificateValidated:     boolean
+    certificateValidatedAt:   string | null
+    certificatePath:          string | null
+}
+
 /* ── State ── */
 const loading = ref(true)
 const data = ref<any>(null)
+const proctorRecords = ref<ProctorRecord[]>([])
+
+function formatRecordDate(iso: string | null): string {
+    if (!iso) return '—'
+    try {
+        return new Date(iso).toLocaleDateString('es-MX', { dateStyle: 'medium' })
+    } catch {
+        return iso
+    }
+}
 
 const form = reactive({
     current_password: '',
@@ -344,8 +408,12 @@ async function saveContact() {
 /* ── Cargar perfil ── */
 onMounted(async () => {
     try {
-        const res = await api.get('/api/v1/user/profile')
-        data.value = res.data
+        const [profile, records] = await Promise.all([
+            api.get('/api/v1/user/profile'),
+            api.get<{ employeeId: number | null; items: ProctorRecord[] }>(API.ADMISSIONS_API.proctorRecords.mine).catch(() => null),
+        ])
+        data.value = profile.data
+        proctorRecords.value = records?.data?.items ?? []
     } catch {
         data.value = null
     } finally {

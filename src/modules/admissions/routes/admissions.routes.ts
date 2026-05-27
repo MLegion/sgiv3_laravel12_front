@@ -25,6 +25,12 @@ export default [
         component: () => import('@/modules/admissions/pages/AdmissionConfigPage.vue'),
         meta: { title: 'Configuración de Admisión' },
     },
+    {
+        path: 'admissions/proctor-certificates',
+        name: 'admissions.proctor-certificates',
+        component: () => import('@/modules/admissions/pages/ProctorCertificatesPage.vue'),
+        meta: { title: 'Constancias de Cuidadores' },
+    },
     // Override de modalidad de examen por modalidad (sedes con infra distinta)
     {
         path: 'admissions/exam-mode-overrides',

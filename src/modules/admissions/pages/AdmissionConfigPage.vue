@@ -164,7 +164,38 @@
                     {{ submitting ? 'GUARDANDO...' : 'GUARDAR CONFIGURACIÓN' }}
                 </button>
             </div>
+
+            <!-- Cierre del proceso de admisión -->
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 space-y-3">
+                <h3 class="text-[11px] font-bold text-amber-700 uppercase tracking-widest">Cierre del proceso</h3>
+                <p class="text-sm text-amber-800">
+                    Cierra el proceso de admisión del periodo actual. Esta acción:
+                </p>
+                <ul class="list-disc list-inside text-xs text-amber-700 space-y-0.5">
+                    <li>Genera registros de participación para cada cuidador del examen presencial.</li>
+                    <li>Retira el rol PROCTOR de los empleados involucrados.</li>
+                    <li>Habilita el menú "Constancias de cuidadores" para emitirlas.</li>
+                </ul>
+                <p v-if="closeBanner" class="text-sm text-emerald-700">{{ closeBanner }}</p>
+                <p v-if="closeError" class="text-sm text-rose-700">{{ closeError }}</p>
+                <button
+                    class="px-4 py-2 text-sm font-semibold rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-60"
+                    :disabled="closing"
+                    @click="confirmClose = true"
+                >
+                    {{ closing ? 'CERRANDO...' : 'CERRAR PROCESO DE ADMISIÓN' }}
+                </button>
+            </div>
         </template>
+
+        <ConfirmModal
+            v-model="confirmClose"
+            title="Cerrar proceso de admisión"
+            message="Esta acción es irreversible. Quitará el rol PROCTOR a los cuidadores asignados y generará sus constancias. Sólo después podrás validar y emitir constancias desde el menú de Constancias de Cuidadores."
+            confirm-text="Cerrar proceso"
+            variant="warning"
+            @confirm="onClose"
+        />
     </div>
 </template>
 
@@ -173,6 +204,7 @@ import { ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 
 function toDateInput(dt: string | null | undefined): string {
     if (!dt) return ''
@@ -182,6 +214,32 @@ function toDateInput(dt: string | null | undefined): string {
 const loading    = ref(true)
 const submitting = ref(false)
 const error      = ref<string | null>(null)
+
+// Cierre del proceso de admisión
+const closing      = ref(false)
+const confirmClose = ref(false)
+const closeBanner  = ref<string | null>(null)
+const closeError   = ref<string | null>(null)
+
+async function onClose(): Promise<void> {
+    closing.value = true
+    closeBanner.value = null
+    closeError.value  = null
+    try {
+        const { data } = await api.post<{
+            recordsCreated: number
+            proctorsWithoutEmployee: number
+            rolesRemoved: number
+            closedAt: string
+        }>(API.ADMISSIONS_API.admissionProcess.close, {})
+        closeBanner.value = `✓ Proceso cerrado. ${data.recordsCreated} constancia(s) generadas, ${data.rolesRemoved} rol(es) retirado(s).`
+    } catch (e: unknown) {
+        closeError.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error
+            ?? 'No se pudo cerrar el proceso.'
+    } finally {
+        closing.value = false
+    }
+}
 const saved      = ref(false)
 
 const form = ref({

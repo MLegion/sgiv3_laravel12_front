@@ -363,7 +363,20 @@ async function doDelete() {
     }
 }
 
-onMounted(() => { /* espera selección de periodo */ })
+onMounted(async () => {
+    // Pre-seleccionar el periodo actual desde AdmissionPeriodConfig del college.
+    try {
+        const { data } = await api.get<{ academicPeriodId?: number | null }>(
+            API.ADMISSIONS_API.config.get,
+        )
+        if (data?.academicPeriodId) {
+            filterPeriodId.value = data.academicPeriodId
+            onPeriodFilter(data.academicPeriodId)
+        }
+    } catch {
+        // Si no hay config, queda esperando selección manual.
+    }
+})
 </script>
 
 <style scoped>

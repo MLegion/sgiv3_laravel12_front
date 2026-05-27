@@ -11,17 +11,46 @@
                 </p>
             </div>
 
-            <!-- Botón sincronizar (sólo si online + outbound configurado) -->
-            <button
-                v-if="syncStatus?.enabled"
-                :disabled="syncing"
-                class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
-                @click="onSync"
-            >
-                <ArrowPathIcon class="w-4 h-4" :class="{ 'animate-spin': syncing }" />
-                {{ syncing ? 'SINCRONIZANDO...' : 'SINCRONIZAR DESDE SISTEMA EXTERNO' }}
-            </button>
+            <div class="flex items-center gap-2 flex-wrap">
+                <!-- Botón sincronizar (sólo si online + outbound configurado) -->
+                <button
+                    v-if="syncStatus?.enabled"
+                    :disabled="syncing"
+                    class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+                    @click="onSync"
+                >
+                    <ArrowPathIcon class="w-4 h-4" :class="{ 'animate-spin': syncing }" />
+                    {{ syncing ? 'SINCRONIZANDO...' : 'SINCRONIZAR DESDE SISTEMA EXTERNO' }}
+                </button>
+
+                <!-- Liberar resultados al portal -->
+                <button
+                    :disabled="releasing"
+                    class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                    @click="confirmRelease"
+                >
+                    <PaperAirplaneIcon class="w-4 h-4" />
+                    {{ releasing ? 'LIBERANDO...' : 'LIBERAR RESULTADOS A ASPIRANTES' }}
+                </button>
+            </div>
         </div>
+
+        <div
+            v-if="releaseBanner"
+            class="border border-indigo-300 bg-indigo-50 rounded-lg p-3 text-sm text-indigo-800"
+        >
+            {{ releaseBanner }}
+        </div>
+        <p v-if="releaseError" class="text-xs text-red-600">{{ releaseError }}</p>
+
+        <ConfirmModal
+            v-model="confirmOpen"
+            title="Liberar resultados a aspirantes"
+            message="Esta acción permitirá que TODOS los aspirantes con calificación capturada (status ≥ Con Resultado) vean su resultado en el portal. La acción es por colegio y queda auditada."
+            confirm-text="Liberar"
+            variant="warning"
+            @confirm="onRelease"
+        />
 
         <!-- Resultado de la última sincronización -->
         <div
@@ -264,10 +293,11 @@ EFGH789012MDFYYY01,72.0</pre>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { ArrowPathIcon } from '@heroicons/vue/24/outline'
+import { ArrowPathIcon, PaperAirplaneIcon } from '@heroicons/vue/24/outline'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 
@@ -293,6 +323,34 @@ const syncStatus = ref<SyncStatus | null>(null)
 const syncResult = ref<SyncResult | null>(null)
 const syncing    = ref(false)
 const syncError  = ref<string | null>(null)
+
+// ── Liberación de resultados al portal del aspirante ─────────────────────────
+const confirmOpen   = ref(false)
+const releasing     = ref(false)
+const releaseBanner = ref<string | null>(null)
+const releaseError  = ref<string | null>(null)
+
+function confirmRelease(): void {
+    confirmOpen.value = true
+}
+
+async function onRelease(): Promise<void> {
+    releasing.value = true
+    releaseBanner.value = null
+    releaseError.value  = null
+    try {
+        const { data } = await api.post<{ released: number }>(
+            API.ADMISSIONS_API.applicants.bulkRelease,
+            {},
+        )
+        releaseBanner.value = `✓ Se liberaron ${data.released} resultados.`
+    } catch (e: unknown) {
+        releaseError.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error
+            ?? 'No se pudo liberar.'
+    } finally {
+        releasing.value = false
+    }
+}
 
 async function loadSyncStatus() {
     try {

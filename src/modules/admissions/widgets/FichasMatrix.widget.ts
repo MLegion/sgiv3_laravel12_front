@@ -2,8 +2,9 @@ import type { WidgetComponentDefinition } from '@/modules/dashboard/registry/wid
 import Component from '@/modules/admissions/components/FichasMatrix.vue'
 
 const definition: WidgetComponentDefinition = {
-    id: 'adm.fichas.matrix',
-    component: Component,
+    id:          'adm.fichas.matrix',
+    component:   Component,
+    hasSettings: true,
 }
 
 export default definition

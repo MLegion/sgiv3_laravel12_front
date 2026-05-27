@@ -197,6 +197,59 @@
             </div>
         </div>
 
+        <!-- Resultado oficial liberado por admisiones -->
+        <section
+            v-if="myResult && myResult.available"
+            class="rounded-xl border-2 p-6 space-y-2 print:hidden"
+            :class="myResult.decision === 'admitted'
+                ? 'bg-emerald-50 border-emerald-300'
+                : myResult.decision === 'rejected'
+                ? 'bg-rose-50 border-rose-300'
+                : 'bg-blue-50 border-blue-300'"
+        >
+            <p class="text-[10px] uppercase tracking-widest font-semibold"
+               :class="myResult.decision === 'admitted'
+                       ? 'text-emerald-700'
+                       : myResult.decision === 'rejected'
+                       ? 'text-rose-700'
+                       : 'text-blue-700'">
+                Resultado oficial
+            </p>
+            <p class="text-3xl font-bold tabular-nums"
+               :class="myResult.decision === 'admitted'
+                       ? 'text-emerald-800'
+                       : myResult.decision === 'rejected'
+                       ? 'text-rose-800'
+                       : 'text-blue-800'">
+                {{ Number(myResult.score).toFixed(2) }}
+            </p>
+            <p
+                v-if="myResult.decisionLabel"
+                class="inline-block px-3 py-1 rounded-full text-sm font-bold"
+                :class="myResult.decision === 'admitted'
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-rose-600 text-white'"
+            >{{ myResult.decisionLabel }}</p>
+            <p class="text-xs italic"
+               :class="myResult.decision === 'admitted'
+                       ? 'text-emerald-700'
+                       : myResult.decision === 'rejected'
+                       ? 'text-rose-700'
+                       : 'text-blue-700'">
+                {{ myResult.message }}
+            </p>
+            <p v-if="myResult.releasedAt" class="text-[10px] text-slate-500">
+                Liberado el {{ formatLongDate(myResult.releasedAt.slice(0,10)) }}
+            </p>
+        </section>
+
+        <section
+            v-else-if="myResult && !myResult.available"
+            class="bg-amber-50 border border-amber-200 rounded-xl p-6 text-amber-800 text-sm print:hidden"
+        >
+            {{ myResult.message }}
+        </section>
+
         <p v-if="error" class="text-xs text-red-600">{{ error }}</p>
     </div>
 </template>
@@ -247,6 +300,15 @@ interface PassResponse {
     } | null
 }
 
+interface MyResult {
+    available:     boolean
+    score:         string | null
+    decision:      'admitted' | 'rejected' | null
+    decisionLabel: string | null
+    releasedAt:    string | null
+    message:       string
+}
+
 const pass = ref<PassResponse | null>(null)
 const applicant = ref<any>(null)
 const loading = ref(true)
@@ -254,6 +316,7 @@ const error   = ref<string | null>(null)
 const qrDataUrl = ref<string | null>(null)
 const choosing = ref(false)
 const chooseError = ref<string | null>(null)
+const myResult = ref<MyResult | null>(null)
 
 const fullName = computed(() => {
     const a = applicant.value
@@ -284,12 +347,14 @@ async function load() {
     loading.value = true
     error.value   = null
     try {
-        const [passRes, meRes] = await Promise.all([
+        const [passRes, meRes, resultRes] = await Promise.all([
             api.get<PassResponse>(API.ADMISSIONS_API.portalExamPass),
             api.get(API.ADMISSIONS_API.portal.me),
+            api.get<MyResult>(API.ADMISSIONS_API.applicants.myExamResult).catch(() => null),
         ])
         pass.value      = passRes.data
         applicant.value = meRes.data
+        myResult.value  = resultRes?.data ?? null
 
         if (passRes.data?.session) {
             await loadQr()
