@@ -4,6 +4,10 @@ import type { ApiModule } from '@/shared/api/types'
 export default {
     name: 'TEACHING_API',
     api: {
+        teacherPortal: {
+            myAssignments: apiUrl('/teaching/my-assignments'),
+            roster:        apiUrl('/teaching/roster'),
+        },
         instrumentations: {
             list:          apiUrl('/teaching/instrumentations'),
             pendingReview: apiUrl('/teaching/instrumentations/pending-review'),

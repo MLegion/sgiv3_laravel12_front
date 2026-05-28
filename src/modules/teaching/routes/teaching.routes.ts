@@ -6,6 +6,12 @@ export default [
         meta: { title: 'Planeación' },
     },
     {
+        path: 'teaching/planeacion/asignacion',
+        name: 'teaching.planeacion.assignment',
+        component: () => import('@/modules/teaching/pages/InstrumentacionesAsignacionPage.vue'),
+        meta: { title: 'Instrumentación' },
+    },
+    {
         path: 'teaching/planeacion/create',
         name: 'teaching.planeacion.create',
         component: () => import('@/modules/teaching/pages/InstrumentacionForm.vue'),

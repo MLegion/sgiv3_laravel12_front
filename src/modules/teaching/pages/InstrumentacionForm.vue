@@ -168,7 +168,7 @@ async function submit() {
         } else {
             await api.post(API.TEACHING_API.instrumentations.create, payload)
         }
-        router.push({ name: 'teaching.planeacion', query: { teacher_assignment_id: payload.teacher_assignment_id ?? '' } })
+        router.push({ name: 'teaching.planeacion.assignment', query: { teacher_assignment_id: payload.teacher_assignment_id ?? '' } })
     } catch (e: any) {
         if (e?.response?.status === 422) {
             setErrors(e.response.data.errors ?? {})
