@@ -6,6 +6,18 @@ export default [
         meta: { title: 'Planeación' },
     },
     {
+        path: 'teaching/planeacion/create',
+        name: 'teaching.planeacion.create',
+        component: () => import('@/modules/teaching/pages/InstrumentacionForm.vue'),
+        meta: { title: 'Nueva instrumentación' },
+    },
+    {
+        path: 'teaching/planeacion/:id/edit',
+        name: 'teaching.planeacion.edit',
+        component: () => import('@/modules/teaching/pages/InstrumentacionForm.vue'),
+        meta: { title: 'Editar instrumentación' },
+    },
+    {
         path: 'teaching/listas-oficiales',
         name: 'teaching.listas-oficiales',
         component: () => import('@/modules/teaching/pages/ListasOficialesPage.vue'),
