@@ -16,5 +16,9 @@ export default {
             import:     apiUrl('/study-programs/import'),
             forSubject: (subjectId: string | number) => apiUrl(`/study-programs/for-subject/${subjectId}`),
         },
+        subjectLinks: {
+            list:      apiUrl('/study-programs/subject-links'),
+            setUrl:    (subjectId: string | number) => apiUrl(`/study-programs/subjects/${subjectId}/program-url`),
+        },
     },
 } satisfies ApiModule

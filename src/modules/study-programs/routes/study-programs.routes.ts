@@ -6,6 +6,12 @@ export default [
         meta: { title: 'Programas de estudio' },
     },
     {
+        path: 'study-programs/links',
+        name: 'study-programs.links',
+        component: () => import('@/modules/study-programs/pages/SubjectProgramLinksPage.vue'),
+        meta: { title: 'Enlaces de programas' },
+    },
+    {
         path: 'study-programs/create',
         name: 'study-programs.create',
         component: () => import('@/modules/study-programs/pages/StudyProgramForm.vue'),
