@@ -40,11 +40,12 @@
                         <td class="px-4 py-2">{{ a.periodShort ?? a.periodName }}</td>
                         <td class="px-4 py-2 text-right">
                             <button
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg text-white"
+                                :class="a.instrumentationId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'"
                                 @click="openInstrumentacion(a)"
                             >
-                                <ClipboardDocumentListIcon class="w-4 h-4" />
-                                Ver instrumentación
+                                <component :is="a.instrumentationId ? ClipboardDocumentListIcon : PlusIcon" class="w-4 h-4" />
+                                {{ a.instrumentationId ? 'Ver instrumentación' : 'Crear instrumentación' }}
                             </button>
                         </td>
                     </tr>
@@ -60,7 +61,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ClipboardDocumentListIcon } from '@heroicons/vue/24/outline'
+import { ClipboardDocumentListIcon, PlusIcon } from '@heroicons/vue/24/outline'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -91,10 +92,13 @@ const filtered = computed(() =>
 )
 
 function openInstrumentacion(a: any) {
-    router.push({
-        name: 'teaching.planeacion.assignment',
-        query: { teacher_assignment_id: a.teacherAssignmentId, label: `${a.subjectName} · ${a.groupName}` },
-    })
+    // Una asignatura tiene una instrumentación: si ya existe se abre para editar,
+    // si no, se va directo a crearla (quedará ligada a esa asignatura).
+    if (a.instrumentationId) {
+        router.push({ name: 'teaching.planeacion.edit', params: { id: a.instrumentationId } })
+    } else {
+        router.push({ name: 'teaching.planeacion.create', query: { teacher_assignment_id: a.teacherAssignmentId } })
+    }
 }
 
 onMounted(async () => {
