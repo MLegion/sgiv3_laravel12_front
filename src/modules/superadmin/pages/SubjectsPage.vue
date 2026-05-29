@@ -75,6 +75,15 @@
                     </button>
 
                     <button
+                        class="border p-1.5 rounded-md cursor-pointer"
+                        :class="(row.programIsLocal || row.programUrl) ? 'hover:bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-400'"
+                        title="Programa de estudio"
+                        @click="openProgram(row)"
+                    >
+                        📄
+                    </button>
+
+                    <button
                         class="border p-1.5 rounded-md hover:bg-red-50 cursor-pointer"
                         title="Eliminar"
                         @click="remove(row)"
@@ -84,13 +93,27 @@
                 </div>
             </template>
         </DataTable>
+
+        <SubjectProgramModal
+            v-if="programRow"
+            v-model="programModalOpen"
+            :subject-id="programRow.id"
+            :subject-code="programRow.officialCode"
+            :subject-name="programRow.name"
+            :program-url="programRow.programUrl"
+            :program-is-local="programRow.programIsLocal"
+            :program-source-url="programRow.programSourceUrl"
+            @changed="onProgramChanged"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import SubjectProgramModal from '@/modules/study-programs/components/SubjectProgramModal.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
@@ -154,6 +177,24 @@ function edit(row: SubjectType) {
 
 function remove(row: SubjectType) {
     router.push({ name: 'superadmin.subjects.delete', params: { id: row.id } })
+}
+
+/* -------------------------------------------------------------------------- */
+/* PROGRAMA DE ESTUDIO */
+/* -------------------------------------------------------------------------- */
+const programModalOpen = ref(false)
+const programRow = ref<SubjectType | null>(null)
+
+function openProgram(row: SubjectType) {
+    programRow.value = row
+    programModalOpen.value = true
+}
+
+function onProgramChanged(v: { programUrl: string | null; programIsLocal: boolean; programSourceUrl: string | null }) {
+    if (!programRow.value) return
+    programRow.value.programUrl = v.programUrl
+    programRow.value.programIsLocal = v.programIsLocal
+    programRow.value.programSourceUrl = v.programSourceUrl
 }
 
 function canApprove(row: SubjectType): boolean {

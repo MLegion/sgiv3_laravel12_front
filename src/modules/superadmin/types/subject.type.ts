@@ -9,6 +9,13 @@ export interface SubjectType {
     shortName: string | null
     officialCode: string
 
+    /** Enlace externo al programa (o fallback si hay copia local). */
+    programUrl?: string | null
+    /** true = el programa está respaldado localmente y lo sirve la app. */
+    programIsLocal?: boolean
+    /** Origen externo del que se descargó la copia local. */
+    programSourceUrl?: string | null
+
     ht: number
     hp: number
     credits: number

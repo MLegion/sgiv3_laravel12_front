@@ -39,14 +39,24 @@
                         <td class="px-4 py-2">{{ a.modalityName ?? '—' }}</td>
                         <td class="px-4 py-2">{{ a.periodShort ?? a.periodName }}</td>
                         <td class="px-4 py-2 text-right">
-                            <button
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg text-white"
-                                :class="a.instrumentationId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'"
-                                @click="openInstrumentacion(a)"
-                            >
-                                <component :is="a.instrumentationId ? ClipboardDocumentListIcon : PlusIcon" class="w-4 h-4" />
-                                {{ a.instrumentationId ? 'Ver instrumentación' : 'Crear instrumentación' }}
-                            </button>
+                            <div class="inline-flex items-center gap-2">
+                                <button
+                                    v-if="a.programIsLocal || a.programExternalUrl"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50"
+                                    @click="verPrograma(a)"
+                                >
+                                    <DocumentTextIcon class="w-4 h-4" />
+                                    Ver programa
+                                </button>
+                                <button
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg text-white"
+                                    :class="a.instrumentationId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'"
+                                    @click="openInstrumentacion(a)"
+                                >
+                                    <component :is="a.instrumentationId ? ClipboardDocumentListIcon : PlusIcon" class="w-4 h-4" />
+                                    {{ a.instrumentationId ? 'Ver instrumentación' : 'Crear instrumentación' }}
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     <tr v-if="!loading && !filtered.length">
@@ -61,10 +71,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ClipboardDocumentListIcon, PlusIcon } from '@heroicons/vue/24/outline'
+import { ClipboardDocumentListIcon, PlusIcon, DocumentTextIcon } from '@heroicons/vue/24/outline'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { openSubjectProgram } from '@/modules/study-programs/composables/useSubjectProgram'
 
 const router = useRouter()
 const assignments = ref<any[]>([])
@@ -90,6 +101,10 @@ const filtered = computed(() =>
         (!modalityFilter.value || a.modalityId === Number(modalityFilter.value))
     )
 )
+
+async function verPrograma(a: any) {
+    await openSubjectProgram(a.subjectId, !!a.programIsLocal, a.programExternalUrl)
+}
 
 function openInstrumentacion(a: any) {
     // Una asignatura tiene una instrumentación: si ya existe se abre para editar,
