@@ -3,8 +3,9 @@
         <div>
             <h1 class="text-xl font-semibold text-slate-800">Enlaces de programas de estudio</h1>
             <p class="text-sm text-slate-500 mt-1">
-                Materias activas en la currícula de planes activos. Asigna el link del programa oficial
-                (preferir <code>tecnm.mx</code>). Usa "Buscar en web" para las de especialidad que faltan.
+                Materias activas en la currícula de planes activos. Asigna el programa oficial:
+                pega un enlace (preferir <code>tecnm.mx</code>) o sube el PDF (queda respaldado en el sistema).
+                Usa "Buscar en web" para las de especialidad que faltan.
             </p>
         </div>
 
@@ -16,13 +17,13 @@
                 class="w-72 px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <label class="flex items-center gap-2 text-sm text-slate-600">
-                <input type="checkbox" v-model="onlyMissing" /> Solo sin link
+                <input type="checkbox" v-model="onlyMissing" /> Solo sin programa
             </label>
             <label class="flex items-center gap-2 text-sm text-slate-600">
                 <input type="checkbox" v-model="onlyActiveStudents" /> Solo con estudiantes activos
             </label>
             <span class="ml-auto text-xs text-slate-400">
-                {{ filtered.length }} de {{ rows.length }} · con link: {{ linkedCount }}
+                {{ filtered.length }} de {{ rows.length }} · con programa: {{ linkedCount }}
             </span>
         </div>
 
@@ -46,8 +47,11 @@
                             <span v-else class="text-slate-300">—</span>
                         </td>
                         <td class="px-3 py-2">
-                            <a v-if="r.programUrl" :href="r.programUrl" target="_blank" rel="noopener" class="text-blue-600 hover:underline break-all">Abrir PDF</a>
-                            <span v-else-if="r.checked" class="text-amber-600 text-xs">Sin link (revisado)</span>
+                            <button v-if="r.programIsLocal" class="text-emerald-700 hover:underline" @click="view(r)">
+                                Ver PDF <span class="text-[10px] text-emerald-600">(respaldado)</span>
+                            </button>
+                            <a v-else-if="r.programUrl" :href="r.programUrl" target="_blank" rel="noopener" class="text-blue-600 hover:underline break-all">Abrir enlace</a>
+                            <span v-else-if="r.checked" class="text-amber-600 text-xs">Sin programa (revisado)</span>
                             <span v-else class="text-slate-400 text-xs">Pendiente</span>
                         </td>
                         <td class="px-3 py-2">
@@ -58,17 +62,10 @@
                                     rel="noopener"
                                     class="px-2 py-1 text-xs rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"
                                 >Buscar en web</a>
-                                <input
-                                    v-model="drafts[r.id]"
-                                    type="url"
-                                    placeholder="Pega el URL del PDF…"
-                                    class="w-56 px-2 py-1 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                />
                                 <button
-                                    class="px-2 py-1 text-xs rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-                                    :disabled="saving === r.id"
-                                    @click="save(r)"
-                                >{{ saving === r.id ? '…' : 'Guardar' }}</button>
+                                    class="px-2 py-1 text-xs rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                                    @click="manage(r)"
+                                >Gestionar</button>
                             </div>
                         </td>
                     </tr>
@@ -78,28 +75,42 @@
                 </tbody>
             </table>
         </div>
+
+        <SubjectProgramModal
+            v-if="current"
+            v-model="modalOpen"
+            :subject-id="current.id"
+            :subject-code="current.clave"
+            :subject-name="current.name"
+            :program-url="current.programUrl"
+            :program-is-local="current.programIsLocal"
+            @changed="onChanged"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SubjectProgramModal from '@/modules/study-programs/components/SubjectProgramModal.vue'
+import { openSubjectProgram } from '@/modules/study-programs/composables/useSubjectProgram'
 
 const rows = ref<any[]>([])
-const drafts = reactive<Record<number, string>>({})
 const loading = ref(false)
-const saving = ref<number | null>(null)
 const search = ref('')
 const onlyMissing = ref(false)
 const onlyActiveStudents = ref(false)
 
-const linkedCount = computed(() => rows.value.filter(r => r.programUrl).length)
+const modalOpen = ref(false)
+const current = ref<any | null>(null)
+
+const linkedCount = computed(() => rows.value.filter(r => r.programUrl || r.programIsLocal).length)
 
 const filtered = computed(() => {
     const q = search.value.trim().toLowerCase()
     return rows.value.filter(r =>
-        (!onlyMissing.value || !r.programUrl) &&
+        (!onlyMissing.value || (!r.programUrl && !r.programIsLocal)) &&
         (!onlyActiveStudents.value || r.hasActiveStudents) &&
         (!q || r.clave.toLowerCase().includes(q) || (r.name ?? '').toLowerCase().includes(q))
     )
@@ -110,26 +121,29 @@ function googleUrl(r: any): string {
     return `https://www.google.com/search?q=${encodeURIComponent(q)}`
 }
 
+function manage(r: any) {
+    current.value = r
+    modalOpen.value = true
+}
+
+async function view(r: any) {
+    await openSubjectProgram(r.id, !!r.programIsLocal, r.programUrl)
+}
+
+function onChanged(v: { programUrl: string | null; programIsLocal: boolean }) {
+    if (!current.value) return
+    current.value.programUrl = v.programUrl
+    current.value.programIsLocal = v.programIsLocal
+    current.value.checked = true
+}
+
 async function load() {
     loading.value = true
     try {
         const { data } = await api.get(API.STUDY_PROGRAMS_API.subjectLinks.list)
         rows.value = Array.isArray(data) ? data : (data.items ?? [])
-        for (const r of rows.value) drafts[r.id] = r.programUrl ?? ''
     } finally {
         loading.value = false
-    }
-}
-
-async function save(r: any) {
-    saving.value = r.id
-    try {
-        const url = (drafts[r.id] ?? '').trim() || null
-        await api.patch(API.STUDY_PROGRAMS_API.subjectLinks.setUrl(r.id), { program_url: url })
-        r.programUrl = url
-        r.checked = true
-    } finally {
-        saving.value = null
     }
 }
 
