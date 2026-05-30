@@ -30,10 +30,9 @@
                     <!-- DATOS GENERALES -->
                     <template v-if="activeTab === 'general'">
                         <div class="space-y-4">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <FormInput label="CLAVE" v-model="form.clave" uppercase required :error="errors.clave" />
-                                <FormInput label="PLAN DE ESTUDIOS (ID)" type="number" v-model="form.study_plan_id" required :error="errors.study_plan_id" />
-                                <FormInput label="ASIGNATURA (ID, opcional)" type="number" v-model="form.subject_id" :error="errors.subject_id" />
+                                <FormInput label="ASIGNATURA (ID)" type="number" v-model="form.subject_id" required :error="errors.subject_id" />
                             </div>
                             <FormInput label="NOMBRE" v-model="form.name" required :error="errors.name" />
                             <div class="grid grid-cols-3 gap-4">
@@ -215,7 +214,7 @@ const help: Record<string, { title: string; items: string[] }> = {
 }
 
 const form = reactive<any>({
-    clave: '', study_plan_id: '', subject_id: '', name: '',
+    clave: '', subject_id: '', name: '',
     satca_t: '', satca_p: '', satca_c: '',
     caracterizacion: '', intencion_didactica: '', competencia_especifica: '', competencias_previas: '',
     temas: [] as any[],
@@ -236,7 +235,6 @@ onMounted(async () => {
     try {
         const { data } = await api.get(API.STUDY_PROGRAMS_API.studyPrograms.byId(programId.value!))
         form.clave = data.claveNormalized ?? ''
-        form.study_plan_id = data.studyPlanId ?? ''
         form.subject_id = data.subjectId ?? ''
         form.name = data.name ?? ''
         form.satca_t = data.satcaT ?? ''
@@ -263,7 +261,6 @@ async function submit() {
     clearErrors()
     const payload = {
         clave: form.clave,
-        study_plan_id: form.study_plan_id ? Number(form.study_plan_id) : null,
         subject_id: form.subject_id ? Number(form.subject_id) : null,
         name: form.name,
         satca_t: form.satca_t !== '' ? Number(form.satca_t) : null,
