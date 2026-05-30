@@ -39,13 +39,21 @@
                         Subir PDF del programa
                     </label>
                     <input
+                        ref="fileInput"
                         type="file"
-                        accept="application/pdf"
-                        class="w-full text-xs"
-                        :disabled="isBusy"
+                        accept="application/pdf,.pdf"
+                        class="hidden"
                         @change="onFileChange"
                     />
-                    <p v-if="file" class="text-[10px] text-slate-500 mt-1">{{ file.name }}</p>
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            class="px-3 py-1.5 text-xs rounded border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                            :disabled="isBusy"
+                            @click="pickFile"
+                        >Seleccionar PDF…</button>
+                        <span v-if="file" class="text-[11px] text-slate-500 truncate">{{ file.name }}</span>
+                    </div>
                     <button
                         type="button"
                         class="mt-2 px-3 py-1.5 text-xs font-semibold rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
@@ -123,8 +131,13 @@ const state = reactive({
     sourceUrl: props.programSourceUrl ?? null,
 })
 
-const file     = ref<File | null>(null)
-const urlInput = ref('')
+const file      = ref<File | null>(null)
+const fileInput = ref<HTMLInputElement | null>(null)
+const urlInput  = ref('')
+
+function pickFile(): void {
+    fileInput.value?.click()
+}
 const busy      = ref<'' | 'upload' | 'url' | 'remove'>('')
 const isBusy    = computed(() => busy.value !== '')
 const error    = ref('')
@@ -160,9 +173,8 @@ async function upload(): Promise<void> {
     try {
         const form = new FormData()
         form.append('file', file.value)
-        await api.post(API.STUDY_PROGRAMS_API.subjectLinks.programFile(props.subjectId), form, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        })
+        // No fijamos Content-Type: axios añade el boundary del multipart por nosotros.
+        await api.post(API.STUDY_PROGRAMS_API.subjectLinks.programFile(props.subjectId), form)
         state.isLocal = true; state.sourceUrl = null
         file.value = null
         emitChanged()
