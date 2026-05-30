@@ -60,6 +60,11 @@
                         :disabled="!file || isBusy"
                         @click="upload"
                     >{{ busy === 'upload' ? 'Subiendo…' : 'Subir PDF' }}</button>
+
+                    <div v-if="generatedProgramId" class="mt-2 rounded-lg bg-emerald-50 border border-emerald-200 p-2 text-[12px] text-emerald-900">
+                        Se generó el programa a partir del PDF. Solo falta adaptarlo.
+                        <button type="button" class="ml-1 font-semibold text-emerald-700 underline" @click="adaptProgram">Adaptar programa →</button>
+                    </div>
                 </section>
 
                 <!-- Pegar URL externa -->
@@ -106,9 +111,12 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { openSubjectProgram } from '@/modules/study-programs/composables/useSubjectProgram'
+
+const router = useRouter()
 
 const props = defineProps<{
     modelValue:   boolean
@@ -134,6 +142,7 @@ const state = reactive({
 const file      = ref<File | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 const urlInput  = ref('')
+const generatedProgramId = ref<number | null>(null)
 
 function pickFile(): void {
     fileInput.value?.click()
@@ -151,6 +160,7 @@ watch(() => props.modelValue, (v) => {
         urlInput.value  = ''
         error.value     = ''
         busy.value      = ''
+        generatedProgramId.value = null
     }
 })
 
@@ -174,15 +184,22 @@ async function upload(): Promise<void> {
         const form = new FormData()
         form.append('file', file.value)
         // No fijamos Content-Type: axios añade el boundary del multipart por nosotros.
-        await api.post(API.STUDY_PROGRAMS_API.subjectLinks.programFile(props.subjectId), form)
+        const { data } = await api.post(API.STUDY_PROGRAMS_API.subjectLinks.programFile(props.subjectId), form)
         state.isLocal = true; state.sourceUrl = null
         file.value = null
+        generatedProgramId.value = data?.programId ?? null
         emitChanged()
     } catch (e) {
         error.value = readError(e)
     } finally {
         busy.value = ''
     }
+}
+
+function adaptProgram(): void {
+    if (generatedProgramId.value === null) return
+    emit('update:modelValue', false)
+    router.push({ name: 'study-programs.edit', params: { id: generatedProgramId.value } })
 }
 
 async function saveUrl(): Promise<void> {
