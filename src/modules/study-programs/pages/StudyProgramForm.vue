@@ -136,6 +136,16 @@
                             <li v-for="(line, idx) in help[activeTab].items" :key="idx">{{ line }}</li>
                         </ul>
                     </div>
+                    <div v-if="helpImage[activeTab]" class="mt-3">
+                        <p class="text-[11px] text-amber-700 mb-1">Ejemplo en el PDF oficial (clic para ampliar):</p>
+                        <a :href="helpImage[activeTab]" target="_blank" rel="noopener" class="block">
+                            <img
+                                :src="helpImage[activeTab]"
+                                alt="Ejemplo del programa oficial TecNM"
+                                class="w-full rounded border border-amber-300 bg-white hover:opacity-90 transition"
+                            />
+                        </a>
+                    </div>
                 </div>
             </aside>
         </div>
@@ -152,6 +162,21 @@ import Tabs from '@/app/components/ui/Tabs.vue'
 import { useFormErrors } from '@/app/components/ui/form/useFormErrors'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+
+// Recortes de un programa oficial TecNM (©mayo 2016) como guía visual por pestaña.
+import helpGeneral from '@/modules/study-programs/assets/help/general.jpg'
+import helpNarrativa from '@/modules/study-programs/assets/help/narrativa.jpg'
+import helpCompetencias from '@/modules/study-programs/assets/help/competencias.jpg'
+import helpUnidades from '@/modules/study-programs/assets/help/unidades.jpg'
+import helpFuentes from '@/modules/study-programs/assets/help/fuentes.jpg'
+
+const helpImage: Record<string, string> = {
+    general: helpGeneral,
+    narrativa: helpNarrativa,
+    competencias: helpCompetencias,
+    unidades: helpUnidades,
+    fuentes: helpFuentes,
+}
 
 const route = useRoute()
 const router = useRouter()
