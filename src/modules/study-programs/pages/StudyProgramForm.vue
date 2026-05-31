@@ -126,12 +126,14 @@
                                 <div class="border-l-2 border-purple-200 pl-3 space-y-2">
                                     <div class="flex items-center justify-between">
                                         <span class="text-xs font-medium text-slate-500">Desarrollo de competencias genéricas</span>
-                                        <button type="button" class="text-xs text-blue-600" @click="currentUnidad.competenciasGenericas.push('')">+ Competencia</button>
+                                        <button type="button" class="text-xs text-blue-600" @click="currentUnidad.competenciasGenericas.push({ type: '', description: '' })">+ Competencia</button>
                                     </div>
                                     <div v-for="(g, gi) in currentUnidad.competenciasGenericas" :key="gi" class="flex gap-2 items-center">
-                                        <span class="text-slate-400 text-xs">•</span>
-                                        <input :value="g" class="flex-1 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="Competencia genérica"
-                                            @input="currentUnidad.competenciasGenericas[gi] = ($event.target as HTMLInputElement).value" />
+                                        <select v-model="g.type" class="px-2 py-1 text-xs border border-slate-300 rounded bg-white text-slate-700">
+                                            <option value="">Tipo…</option>
+                                            <option v-for="t in TIPOS_COMPETENCIA_GENERICA" :key="t" :value="t">{{ t }}</option>
+                                        </select>
+                                        <input v-model="g.description" class="flex-1 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="Competencia genérica" />
                                         <button type="button" class="text-red-400 hover:text-red-600 text-xs" @click="currentUnidad.competenciasGenericas.splice(gi, 1)">✕</button>
                                     </div>
                                     <p v-if="!currentUnidad.competenciasGenericas.length" class="text-[11px] text-slate-400">Sin competencias genéricas.</p>
@@ -249,6 +251,35 @@ function joinItems(items: string[]): string | null {
     return clean.length ? clean.join('\n') : null
 }
 
+// Competencias genéricas por unidad: cada una indica su tipo (instrumental,
+// interpersonal o sistémica) según el modelo TecNM. Se guardan como JSON dentro
+// de la misma columna de texto (sin migración); el texto plano heredado de la
+// extracción automática se interpreta como competencias sin tipo asignado.
+type CompetenciaGenerica = { type: string; description: string }
+
+const TIPOS_COMPETENCIA_GENERICA = ['INSTRUMENTAL', 'INTERPERSONAL', 'SISTÉMICA'] as const
+
+function parseGenericas(raw: string | null | undefined): CompetenciaGenerica[] {
+    const text = (raw ?? '').trim()
+    if (!text) return []
+    try {
+        const parsed = JSON.parse(text)
+        if (Array.isArray(parsed)) {
+            return parsed
+                .map((g: any) => ({ type: String(g?.type ?? '').toUpperCase(), description: String(g?.description ?? '').trim() }))
+                .filter((g) => g.description)
+        }
+    } catch { /* texto plano heredado */ }
+    return text.split('\n').map((s) => s.trim()).filter(Boolean).map((description) => ({ type: '', description }))
+}
+
+function serializeGenericas(items: CompetenciaGenerica[]): string | null {
+    const clean = (items ?? [])
+        .map((g) => ({ type: (g.type ?? '').trim().toUpperCase(), description: (g.description ?? '').trim() }))
+        .filter((g) => g.description)
+    return clean.length ? JSON.stringify(clean) : null
+}
+
 const route = useRoute()
 const router = useRouter()
 const { errors, setErrors, clearErrors } = useFormErrors()
@@ -355,7 +386,7 @@ onMounted(async () => {
         form.temas = (data.temas ?? []).map((t: any) => ({
             number: t.number, title: t.title,
             competenciaEspecifica: t.competenciaEspecifica ?? '',
-            competenciasGenericas: splitItems(t.competenciasGenericas),
+            competenciasGenericas: parseGenericas(t.competenciasGenericas),
             subtemas: (t.subtemas ?? []).map((s: any) => ({ number: s.number ?? '', title: s.title ?? '' })),
             learningActivities: (t.learningActivities ?? []).map((a: any) => ({ description: a.description ?? '' })),
         }))
@@ -383,7 +414,7 @@ async function submit() {
             number: t.number ? Number(t.number) : i + 1,
             title: t.title,
             competenciaEspecifica: t.competenciaEspecifica || null,
-            competenciasGenericas: joinItems(t.competenciasGenericas ?? []),
+            competenciasGenericas: serializeGenericas(t.competenciasGenericas ?? []),
             subtemas: (t.subtemas ?? []).filter((s: any) => s.number || s.title),
             learningActivities: (t.learningActivities ?? []).filter((a: any) => a.description),
         })),
