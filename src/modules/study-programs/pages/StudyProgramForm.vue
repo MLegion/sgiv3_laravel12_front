@@ -53,9 +53,35 @@
 
                     <!-- COMPETENCIAS -->
                     <template v-else-if="activeTab === 'competencias'">
-                        <div class="space-y-4">
-                            <FormTextarea label="3.1 Competencias previas" v-model="form.competencias_previas" :rows="4" />
-                            <FormTextarea label="3.3 Competencia específica de la asignatura (objetivo)" v-model="form.competencia_especifica" :rows="4" />
+                        <div class="space-y-5">
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="text-[11px] uppercase tracking-wider text-slate-500">3.1 Competencias previas</label>
+                                    <button type="button" class="text-xs text-blue-600" @click="form.competencias_previas.push('')">+ Competencia</button>
+                                </div>
+                                <div v-for="(c, i) in form.competencias_previas" :key="i" class="flex gap-2 items-start mb-1">
+                                    <span class="text-slate-400 text-xs pt-1.5">•</span>
+                                    <textarea :value="c" rows="2" placeholder="Describe una competencia previa"
+                                        class="flex-1 border border-slate-300 rounded px-2 py-1 text-sm"
+                                        @input="form.competencias_previas[i] = ($event.target as HTMLTextAreaElement).value"></textarea>
+                                    <button type="button" class="text-red-400 hover:text-red-600 text-xs pt-1.5" @click="form.competencias_previas.splice(i, 1)">✕</button>
+                                </div>
+                                <p v-if="!form.competencias_previas.length" class="text-xs text-slate-400">Sin competencias previas.</p>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="text-[11px] uppercase tracking-wider text-slate-500">3.3 Competencia(s) específica(s) de la asignatura</label>
+                                    <button type="button" class="text-xs text-blue-600" @click="form.competencia_especifica.push('')">+ Competencia</button>
+                                </div>
+                                <div v-for="(c, i) in form.competencia_especifica" :key="i" class="flex gap-2 items-start mb-1">
+                                    <span class="text-slate-400 text-xs pt-1.5">•</span>
+                                    <textarea :value="c" rows="2" placeholder="Describe una competencia específica"
+                                        class="flex-1 border border-slate-300 rounded px-2 py-1 text-sm"
+                                        @input="form.competencia_especifica[i] = ($event.target as HTMLTextAreaElement).value"></textarea>
+                                    <button type="button" class="text-red-400 hover:text-red-600 text-xs pt-1.5" @click="form.competencia_especifica.splice(i, 1)">✕</button>
+                                </div>
+                                <p v-if="!form.competencia_especifica.length" class="text-xs text-slate-400">Sin competencias específicas.</p>
+                            </div>
                         </div>
                     </template>
 
@@ -178,6 +204,16 @@ const helpImage: Record<string, string> = {
     fuentes: helpFuentes,
 }
 
+// Las competencias se editan como items pero se guardan como texto (una por línea),
+// así no hace falta migrar la columna.
+function splitItems(text: string | null | undefined): string[] {
+    return (text ?? '').split('\n').map((s) => s.trim()).filter(Boolean)
+}
+function joinItems(items: string[]): string | null {
+    const clean = items.map((s) => s.trim()).filter(Boolean)
+    return clean.length ? clean.join('\n') : null
+}
+
 const route = useRoute()
 const router = useRouter()
 const { errors, setErrors, clearErrors } = useFormErrors()
@@ -241,7 +277,8 @@ const help: Record<string, { title: string; items: string[] }> = {
 const form = reactive<any>({
     clave: '', subject_id: '', name: '',
     satca_t: '', satca_p: '', satca_c: '',
-    caracterizacion: '', intencion_didactica: '', competencia_especifica: '', competencias_previas: '',
+    caracterizacion: '', intencion_didactica: '',
+    competencia_especifica: [] as string[], competencias_previas: [] as string[],
     temas: [] as any[],
     sources: [] as any[],
 })
@@ -267,8 +304,8 @@ onMounted(async () => {
         form.satca_c = data.satcaC ?? ''
         form.caracterizacion = data.caracterizacion ?? ''
         form.intencion_didactica = data.intencionDidactica ?? ''
-        form.competencia_especifica = data.competenciaEspecifica ?? ''
-        form.competencias_previas = data.competenciasPrevias ?? ''
+        form.competencia_especifica = splitItems(data.competenciaEspecifica)
+        form.competencias_previas = splitItems(data.competenciasPrevias)
         form.temas = (data.temas ?? []).map((t: any) => ({
             number: t.number, title: t.title,
             competenciaEspecifica: t.competenciaEspecifica ?? '',
@@ -293,8 +330,8 @@ async function submit() {
         satca_c: form.satca_c !== '' ? Number(form.satca_c) : null,
         caracterizacion: form.caracterizacion || null,
         intencion_didactica: form.intencion_didactica || null,
-        competencia_especifica: form.competencia_especifica || null,
-        competencias_previas: form.competencias_previas || null,
+        competencia_especifica: joinItems(form.competencia_especifica),
+        competencias_previas: joinItems(form.competencias_previas),
         temas: form.temas.map((t: any, i: number) => ({
             number: t.number ? Number(t.number) : i + 1,
             title: t.title,
