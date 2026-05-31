@@ -88,47 +88,67 @@
                     <!-- UNIDADES (temario) -->
                     <template v-else-if="activeTab === 'unidades'">
                         <div class="space-y-3">
+                            <!-- Barra del carrusel -->
                             <div class="flex items-center justify-between">
-                                <h2 class="text-sm font-semibold text-slate-700">Unidades / competencias</h2>
-                                <button type="button" class="text-sm text-blue-600 hover:text-blue-800" @click="addUnidad">+ Unidad</button>
-                            </div>
-                            <div v-for="(unidad, i) in form.temas" :key="i" class="border border-slate-200 rounded-lg p-3 space-y-3 bg-slate-50">
-                                <div class="grid grid-cols-12 gap-3 items-start">
-                                    <div class="col-span-2"><FormInput label="Unidad N°" type="number" v-model="unidad.number" /></div>
-                                    <div class="col-span-9"><FormInput label="Nombre de la unidad / competencia" v-model="unidad.title" /></div>
-                                    <div class="col-span-1 pt-6 text-right">
-                                        <button type="button" class="text-red-500 hover:text-red-700 text-sm" @click="form.temas.splice(i, 1)">✕</button>
-                                    </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" class="px-2 py-1 rounded border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                                        :disabled="unidadIndex <= 0" @click="unidadIndex--">←</button>
+                                    <span class="text-sm font-medium text-slate-700">
+                                        {{ form.temas.length ? `Unidad ${unidadIndex + 1} de ${form.temas.length}` : 'Sin unidades' }}
+                                    </span>
+                                    <button type="button" class="px-2 py-1 rounded border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                                        :disabled="unidadIndex >= form.temas.length - 1" @click="unidadIndex++">→</button>
                                 </div>
-                                <FormTextarea label="Descripción de la competencia específica de la unidad" v-model="unidad.competenciaEspecifica" :rows="2" />
+                                <div class="flex items-center gap-3">
+                                    <button v-if="currentUnidad" type="button" class="text-xs text-red-500 hover:text-red-700" @click="removeUnidad(unidadIndex)">✕ Eliminar unidad</button>
+                                    <button type="button" class="text-sm text-blue-600 hover:text-blue-800" @click="addUnidad">+ Unidad</button>
+                                </div>
+                            </div>
+
+                            <!-- Puntos indicadores -->
+                            <div v-if="form.temas.length > 1" class="flex flex-wrap items-center gap-1.5">
+                                <button v-for="i in form.temas.length" :key="i" type="button"
+                                    class="w-2.5 h-2.5 rounded-full transition"
+                                    :class="(i - 1) === unidadIndex ? 'bg-blue-600' : 'bg-slate-300 hover:bg-slate-400'"
+                                    :title="`Ir a la unidad ${i}`"
+                                    @click="unidadIndex = i - 1"></button>
+                            </div>
+
+                            <!-- Unidad actual -->
+                            <div v-if="currentUnidad" class="border border-slate-200 rounded-lg p-3 space-y-3 bg-slate-50">
+                                <div class="grid grid-cols-12 gap-3 items-start">
+                                    <div class="col-span-3"><FormInput label="Unidad N°" type="number" v-model="currentUnidad.number" /></div>
+                                    <div class="col-span-9"><FormInput label="Nombre de la unidad / competencia" v-model="currentUnidad.title" /></div>
+                                </div>
+                                <FormTextarea label="Descripción de la competencia específica de la unidad" v-model="currentUnidad.competenciaEspecifica" :rows="2" />
 
                                 <!-- Temas y subtemas -->
                                 <div class="border-l-2 border-blue-200 pl-3 space-y-2">
                                     <div class="flex items-center justify-between">
                                         <span class="text-xs font-medium text-slate-500">Temas y subtemas</span>
-                                        <button type="button" class="text-xs text-blue-600" @click="addSubtema(unidad)">+ Subtema</button>
+                                        <button type="button" class="text-xs text-blue-600" @click="addSubtema(currentUnidad)">+ Subtema</button>
                                     </div>
-                                    <div v-for="(sub, j) in unidad.subtemas" :key="j" class="flex gap-2 items-center">
+                                    <div v-for="(sub, j) in currentUnidad.subtemas" :key="j" class="flex gap-2 items-center">
                                         <input v-model="sub.number" class="w-20 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="1.1" />
                                         <input v-model="sub.title" class="flex-1 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="Título del subtema" />
-                                        <button type="button" class="text-red-400 hover:text-red-600 text-xs" @click="unidad.subtemas.splice(j, 1)">✕</button>
+                                        <button type="button" class="text-red-400 hover:text-red-600 text-xs" @click="currentUnidad.subtemas.splice(j, 1)">✕</button>
                                     </div>
-                                    <p v-if="!unidad.subtemas.length" class="text-[11px] text-slate-400">Sin subtemas.</p>
+                                    <p v-if="!currentUnidad.subtemas.length" class="text-[11px] text-slate-400">Sin subtemas.</p>
                                 </div>
 
                                 <!-- Actividades de aprendizaje -->
                                 <div class="border-l-2 border-emerald-200 pl-3 space-y-2">
                                     <div class="flex items-center justify-between">
                                         <span class="text-xs font-medium text-slate-500">Actividades de aprendizaje</span>
-                                        <button type="button" class="text-xs text-blue-600" @click="unidad.learningActivities.push({ description: '' })">+ Actividad</button>
+                                        <button type="button" class="text-xs text-blue-600" @click="currentUnidad.learningActivities.push({ description: '' })">+ Actividad</button>
                                     </div>
-                                    <div v-for="(act, k) in unidad.learningActivities" :key="k" class="flex gap-2 items-center">
+                                    <div v-for="(act, k) in currentUnidad.learningActivities" :key="k" class="flex gap-2 items-center">
                                         <input v-model="act.description" class="flex-1 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="Describe la actividad de aprendizaje" />
-                                        <button type="button" class="text-red-400 hover:text-red-600 text-xs" @click="unidad.learningActivities.splice(k, 1)">✕</button>
+                                        <button type="button" class="text-red-400 hover:text-red-600 text-xs" @click="currentUnidad.learningActivities.splice(k, 1)">✕</button>
                                     </div>
                                 </div>
                             </div>
-                            <p v-if="!form.temas.length" class="text-xs text-slate-400">Sin unidades. Agrega al menos una.</p>
+                            <p v-else class="text-xs text-slate-400">Sin unidades. Usa "+ Unidad" para agregar la primera.</p>
                         </div>
                     </template>
 
@@ -225,6 +245,7 @@ const loading = ref(false)
 const submitting = ref(false)
 const activeTab = ref('general')
 const helpOpen = ref(false)
+const unidadIndex = ref(0)
 
 const tabs = [
     { key: 'general', label: 'Datos generales' },
@@ -283,8 +304,18 @@ const form = reactive<any>({
     sources: [] as any[],
 })
 
+// Carrusel de unidades: mostramos una a la vez.
+const currentUnidad = computed<any>(() => form.temas[unidadIndex.value] ?? null)
+
 function addUnidad() {
     form.temas.push({ number: form.temas.length + 1, title: '', competenciaEspecifica: '', subtemas: [], learningActivities: [] })
+    unidadIndex.value = form.temas.length - 1
+}
+function removeUnidad(i: number) {
+    form.temas.splice(i, 1)
+    if (unidadIndex.value > form.temas.length - 1) {
+        unidadIndex.value = Math.max(0, form.temas.length - 1)
+    }
 }
 function addSubtema(unidad: any) {
     const n = unidad.number || form.temas.indexOf(unidad) + 1
