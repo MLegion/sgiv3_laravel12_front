@@ -122,6 +122,21 @@
                                 </div>
                                 <FormTextarea label="Descripción de la competencia específica de la unidad" v-model="currentUnidad.competenciaEspecifica" :rows="2" />
 
+                                <!-- Competencias genéricas -->
+                                <div class="border-l-2 border-purple-200 pl-3 space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-medium text-slate-500">Desarrollo de competencias genéricas</span>
+                                        <button type="button" class="text-xs text-blue-600" @click="currentUnidad.competenciasGenericas.push('')">+ Competencia</button>
+                                    </div>
+                                    <div v-for="(g, gi) in currentUnidad.competenciasGenericas" :key="gi" class="flex gap-2 items-center">
+                                        <span class="text-slate-400 text-xs">•</span>
+                                        <input :value="g" class="flex-1 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="Competencia genérica"
+                                            @input="currentUnidad.competenciasGenericas[gi] = ($event.target as HTMLInputElement).value" />
+                                        <button type="button" class="text-red-400 hover:text-red-600 text-xs" @click="currentUnidad.competenciasGenericas.splice(gi, 1)">✕</button>
+                                    </div>
+                                    <p v-if="!currentUnidad.competenciasGenericas.length" class="text-[11px] text-slate-400">Sin competencias genéricas.</p>
+                                </div>
+
                                 <!-- Temas y subtemas -->
                                 <div class="border-l-2 border-blue-200 pl-3 space-y-2">
                                     <div class="flex items-center justify-between">
@@ -308,7 +323,7 @@ const form = reactive<any>({
 const currentUnidad = computed<any>(() => form.temas[unidadIndex.value] ?? null)
 
 function addUnidad() {
-    form.temas.push({ number: form.temas.length + 1, title: '', competenciaEspecifica: '', subtemas: [], learningActivities: [] })
+    form.temas.push({ number: form.temas.length + 1, title: '', competenciaEspecifica: '', competenciasGenericas: [], subtemas: [], learningActivities: [] })
     unidadIndex.value = form.temas.length - 1
 }
 function removeUnidad(i: number) {
@@ -340,6 +355,7 @@ onMounted(async () => {
         form.temas = (data.temas ?? []).map((t: any) => ({
             number: t.number, title: t.title,
             competenciaEspecifica: t.competenciaEspecifica ?? '',
+            competenciasGenericas: splitItems(t.competenciasGenericas),
             subtemas: (t.subtemas ?? []).map((s: any) => ({ number: s.number ?? '', title: s.title ?? '' })),
             learningActivities: (t.learningActivities ?? []).map((a: any) => ({ description: a.description ?? '' })),
         }))
@@ -367,6 +383,7 @@ async function submit() {
             number: t.number ? Number(t.number) : i + 1,
             title: t.title,
             competenciaEspecifica: t.competenciaEspecifica || null,
+            competenciasGenericas: joinItems(t.competenciasGenericas ?? []),
             subtemas: (t.subtemas ?? []).filter((s: any) => s.number || s.title),
             learningActivities: (t.learningActivities ?? []).filter((a: any) => a.description),
         })),

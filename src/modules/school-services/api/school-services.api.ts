@@ -122,5 +122,20 @@ export default {
             show:   apiUrl('/school-services/config'),
             update: apiUrl('/school-services/config'),
         },
+        academicPeriodStatus: {
+            drift:     apiUrl('/school-services/academic-period-status/drift'),
+            apply:     apiUrl('/school-services/academic-period-status/apply'),
+            applyBulk: apiUrl('/school-services/academic-period-status/apply-bulk'),
+        },
+        periodClosure: {
+            summary:                 apiUrl('/school-services/academic-periods/closure-summary'),
+            myPendingActas:          apiUrl('/school-services/teacher-assignments/my-pending-actas'),
+            status:                  (capId: string | number) => apiUrl(`/school-services/academic-periods/${capId}/grades-loading-status`),
+            markLoaded:              (capId: string | number) => apiUrl(`/school-services/academic-periods/${capId}/mark-grades-loaded`),
+            closeActa:               (taId: string | number) => apiUrl(`/school-services/teacher-assignments/${taId}/close-acta`),
+            reopenActa:              (taId: string | number) => apiUrl(`/school-services/teacher-assignments/${taId}/reopen-acta`),
+            reclassificationPreview: (capId: string | number) => apiUrl(`/school-services/academic-periods/${capId}/reclassification-preview`),
+            reclassify:              (capId: string | number) => apiUrl(`/school-services/academic-periods/${capId}/reclassify`),
+        },
     },
 } satisfies ApiModule

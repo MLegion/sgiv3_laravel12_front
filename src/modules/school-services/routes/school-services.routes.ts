@@ -13,6 +13,20 @@ export default [
         meta: { title: 'Detalle - Estudiante' },
     },
 
+    // Period Closure (cierre formal de carga de calificaciones del periodo)
+    {
+        path: 'school-services/period-closure',
+        name: 'school-services.period-closure.list',
+        component: () => import('@/modules/school-services/pages/PeriodClosureListPage.vue'),
+        meta: { title: 'Cierre de periodo escolar' },
+    },
+    {
+        path: 'school-services/period-closure/:capId',
+        name: 'school-services.period-closure',
+        component: () => import('@/modules/school-services/pages/PeriodClosurePage.vue'),
+        meta: { title: 'Cierre de carga del periodo' },
+    },
+
     // Admitted Applicants (inscripción)
     {
         path: 'school-services/admitted-applicants',

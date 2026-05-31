@@ -96,6 +96,16 @@
                     <button
                         v-if="!row.isDisabled"
                         type="button"
+                        class="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 transition"
+                        @click="openResetModal(row)"
+                        title="Restablecer contraseña — genera una temporal"
+                    >
+                        <KeyIcon class="w-4 h-4" />
+                        Contraseña
+                    </button>
+                    <button
+                        v-if="!row.isDisabled"
+                        type="button"
                         class="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-300 text-red-700 hover:bg-red-50 transition"
                         @click="openDisableModal(row)"
                         title="Deshabilitar usuario — lo desconectará al instante"
@@ -161,6 +171,78 @@
                 </div>
             </div>
         </Teleport>
+
+        <!-- Modal de restablecer contraseña -->
+        <Teleport to="body">
+            <div v-if="resetModal.open" class="fixed inset-0 z-50 flex items-center justify-center">
+                <div class="absolute inset-0 bg-black/40" @click="closeResetModal" />
+                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 space-y-4">
+                    <h3 class="text-base font-bold text-slate-800 uppercase">Restablecer contraseña</h3>
+
+                    <!-- Fase 1: confirmación -->
+                    <template v-if="!resetModal.result">
+                        <p class="text-sm text-slate-600">
+                            Se generará una <strong>contraseña temporal</strong> para
+                            <strong>{{ resetModal.userName }}</strong>. La verás en pantalla y el usuario deberá
+                            cambiarla la próxima vez que ingrese.
+                        </p>
+                        <label class="flex items-start gap-2 text-sm text-slate-700 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                v-model="resetModal.sendEmail"
+                                class="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-400"
+                                :disabled="resetModal.submitting"
+                            />
+                            <span>
+                                Enviar la nueva contraseña al correo del usuario
+                                <span v-if="resetModal.userEmail" class="block text-[11px] text-slate-400">{{ resetModal.userEmail }}</span>
+                            </span>
+                        </label>
+                        <p v-if="resetModal.error" class="text-[11px] text-red-600">{{ resetModal.error }}</p>
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button class="px-4 py-2 text-sm rounded-md border hover:bg-slate-50"
+                                    :disabled="resetModal.submitting"
+                                    @click="closeResetModal">CANCELAR</button>
+                            <button class="px-4 py-2 text-sm rounded-md bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50"
+                                    :disabled="resetModal.submitting"
+                                    @click="submitReset">
+                                {{ resetModal.submitting ? 'GENERANDO…' : 'RESTABLECER' }}
+                            </button>
+                        </div>
+                    </template>
+
+                    <!-- Fase 2: resultado con la contraseña -->
+                    <template v-else>
+                        <p class="text-sm text-slate-600">
+                            Contraseña temporal de <strong>{{ resetModal.userName }}</strong>. Cópiala ahora; por
+                            seguridad no volverá a mostrarse.
+                        </p>
+                        <div class="flex items-center gap-2">
+                            <code class="flex-1 font-mono text-base bg-slate-100 rounded-md px-3 py-2 tracking-wider select-all break-all">
+                                {{ resetModal.result.password }}
+                            </code>
+                            <button
+                                type="button"
+                                class="px-3 py-2 text-xs font-semibold rounded-md border border-slate-300 hover:bg-slate-50"
+                                @click="copyPassword"
+                            >
+                                {{ copied ? 'COPIADO' : 'COPIAR' }}
+                            </button>
+                        </div>
+                        <p v-if="resetModal.result.emailed" class="text-[12px] text-emerald-700">
+                            Se envió al correo {{ resetModal.result.email }}.
+                        </p>
+                        <p v-else class="text-[12px] text-slate-500">
+                            No se envió por correo. Comparte la contraseña de forma segura.
+                        </p>
+                        <div class="flex justify-end pt-2">
+                            <button class="px-4 py-2 text-sm rounded-md bg-slate-800 text-white hover:bg-slate-900"
+                                    @click="closeResetModal">CERRAR</button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
@@ -172,7 +254,7 @@ import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFet
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import AssignRoleDrawer from '@/modules/college/components/AssignRoleDrawer.vue'
-import { AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline'
+import { AdjustmentsHorizontalIcon, KeyIcon } from '@heroicons/vue/24/outline'
 
 interface Assignment {
     id: number
@@ -314,5 +396,61 @@ async function reactivate(row: UserRow) {
     } finally {
         enabling.value = null
     }
+}
+
+// ── Restablecer contraseña ───────────────────────────────────────────────────
+const copied = ref(false)
+const resetModal = reactive({
+    open: false,
+    userId: 0,
+    userName: '',
+    userEmail: '',
+    sendEmail: false,
+    submitting: false,
+    error: '' as string,
+    result: null as { password: string; email: string; emailed: boolean } | null,
+})
+
+function openResetModal(row: UserRow) {
+    resetModal.open = true
+    resetModal.userId = row.id
+    resetModal.userName = row.name
+    resetModal.userEmail = row.email
+    resetModal.sendEmail = false
+    resetModal.submitting = false
+    resetModal.error = ''
+    resetModal.result = null
+    copied.value = false
+}
+
+function closeResetModal() {
+    if (resetModal.submitting) return
+    resetModal.open = false
+}
+
+async function submitReset() {
+    resetModal.error = ''
+    resetModal.submitting = true
+    try {
+        const { data } = await api.post(API.COLLEGE_API.users.resetPassword(resetModal.userId), {
+            send_email: resetModal.sendEmail,
+        })
+        resetModal.result = { password: data.password, email: data.email, emailed: !!data.emailed }
+        banner.ok = true
+        banner.message = `Contraseña de ${resetModal.userName} restablecida.`
+    } catch (e: any) {
+        resetModal.error = e?.response?.data?.message ?? 'No se pudo restablecer la contraseña.'
+    } finally {
+        resetModal.submitting = false
+    }
+}
+
+async function copyPassword() {
+    if (!resetModal.result) return
+    try {
+        await navigator.clipboard.writeText(resetModal.result.password)
+        copied.value = true
+        setTimeout(() => { copied.value = false }, 2000)
+    } catch { /* clipboard no disponible */ }
 }
 </script>
