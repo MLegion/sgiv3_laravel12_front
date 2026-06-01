@@ -15,6 +15,7 @@ export default {
             promote:    (id: string | number) => apiUrl(`/study-programs/${id}/promote`),
             import:     apiUrl('/study-programs/import'),
             forSubject: (subjectId: string | number) => apiUrl(`/study-programs/for-subject/${subjectId}`),
+            genericCompetencies: apiUrl('/study-programs/generic-competencies'),
         },
         subjectLinks: {
             list:        apiUrl('/study-programs/subject-links'),

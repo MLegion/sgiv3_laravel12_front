@@ -12,7 +12,13 @@
                 >
                     <QuestionMarkCircleIcon class="w-4 h-4" /> Ayuda
                 </button>
-                <button type="button" class="text-sm text-slate-500 hover:text-slate-700" @click="router.back()">Volver</button>
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"
+                    @click="router.back()"
+                >
+                    <ArrowLeftIcon class="w-4 h-4" /> Volver
+                </button>
                 <button
                     type="button"
                     class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
@@ -82,6 +88,28 @@
                                 </div>
                                 <p v-if="!form.competencia_especifica.length" class="text-xs text-slate-400">Sin competencias específicas.</p>
                             </div>
+
+                            <!-- Competencias genéricas (catálogo M2M, por tipo) -->
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="text-[11px] uppercase tracking-wider text-slate-500">Competencias genéricas</label>
+                                    <button type="button" class="text-xs text-blue-600" @click="form.genericCompetencies.push({ typeId: '', description: '' })">+ Competencia</button>
+                                </div>
+                                <datalist id="generic-competency-options">
+                                    <option v-for="opt in genericCatalogOptions" :key="opt" :value="opt" />
+                                </datalist>
+                                <div v-for="(g, i) in form.genericCompetencies" :key="i" class="flex gap-2 items-start mb-1">
+                                    <select v-model="g.typeId" class="px-2 py-1 text-sm border border-slate-300 rounded bg-white text-slate-700">
+                                        <option value="">Tipo…</option>
+                                        <option v-for="t in genericCatalog" :key="t.id" :value="t.id">{{ t.name }}</option>
+                                    </select>
+                                    <input v-model="g.description" list="generic-competency-options"
+                                        placeholder="Elige una existente o escribe una nueva"
+                                        class="flex-1 border border-slate-300 rounded px-2 py-1 text-sm" />
+                                    <button type="button" class="text-red-400 hover:text-red-600 text-xs pt-1.5" @click="form.genericCompetencies.splice(i, 1)">✕</button>
+                                </div>
+                                <p v-if="!form.genericCompetencies.length" class="text-xs text-slate-400">Sin competencias genéricas.</p>
+                            </div>
                         </div>
                     </template>
 
@@ -122,23 +150,6 @@
                                 </div>
                                 <FormTextarea label="Descripción de la competencia específica de la unidad" v-model="currentUnidad.competenciaEspecifica" :rows="2" />
 
-                                <!-- Competencias genéricas -->
-                                <div class="border-l-2 border-purple-200 pl-3 space-y-2">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs font-medium text-slate-500">Desarrollo de competencias genéricas</span>
-                                        <button type="button" class="text-xs text-blue-600" @click="currentUnidad.competenciasGenericas.push({ type: '', description: '' })">+ Competencia</button>
-                                    </div>
-                                    <div v-for="(g, gi) in currentUnidad.competenciasGenericas" :key="gi" class="flex gap-2 items-center">
-                                        <select v-model="g.type" class="px-2 py-1 text-xs border border-slate-300 rounded bg-white text-slate-700">
-                                            <option value="">Tipo…</option>
-                                            <option v-for="t in TIPOS_COMPETENCIA_GENERICA" :key="t" :value="t">{{ t }}</option>
-                                        </select>
-                                        <input v-model="g.description" class="flex-1 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="Competencia genérica" />
-                                        <button type="button" class="text-red-400 hover:text-red-600 text-xs" @click="currentUnidad.competenciasGenericas.splice(gi, 1)">✕</button>
-                                    </div>
-                                    <p v-if="!currentUnidad.competenciasGenericas.length" class="text-[11px] text-slate-400">Sin competencias genéricas.</p>
-                                </div>
-
                                 <!-- Temas y subtemas -->
                                 <div class="border-l-2 border-blue-200 pl-3 space-y-2">
                                     <div class="flex items-center justify-between">
@@ -177,9 +188,16 @@
                                 <button type="button" class="text-sm text-blue-600 hover:text-blue-800" @click="form.sources.push({ reference: '', type: '' })">+ Fuente</button>
                             </div>
                             <div v-for="(src, i) in form.sources" :key="i" class="flex gap-2 items-center">
+                                <input v-model="src.type" list="source-type-options" class="w-44 px-2 py-1 text-sm border border-slate-300 rounded" placeholder="Tipo (ej. CONSULTA BÁSICA)" />
                                 <input v-model="src.reference" class="flex-1 px-2 py-1 text-sm border border-slate-300 rounded" placeholder="Referencia bibliográfica" />
                                 <button type="button" class="text-red-400 hover:text-red-600 text-xs" @click="form.sources.splice(i, 1)">✕</button>
                             </div>
+                            <datalist id="source-type-options">
+                                <option value="CONSULTA BÁSICA" />
+                                <option value="CONSULTA COMPLEMENTARIA" />
+                                <option value="REVISTAS SERIADAS" />
+                                <option value="PÁGINAS WEB" />
+                            </datalist>
                         </div>
                     </template>
                 </Tabs>
@@ -218,7 +236,7 @@
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
+import { QuestionMarkCircleIcon, ArrowLeftIcon } from '@heroicons/vue/24/outline'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormTextarea from '@/app/components/ui/form/FormTextarea.vue'
 import Tabs from '@/app/components/ui/Tabs.vue'
@@ -251,33 +269,22 @@ function joinItems(items: string[]): string | null {
     return clean.length ? clean.join('\n') : null
 }
 
-// Competencias genéricas por unidad: cada una indica su tipo (instrumental,
-// interpersonal o sistémica) según el modelo TecNM. Se guardan como JSON dentro
-// de la misma columna de texto (sin migración); el texto plano heredado de la
-// extracción automática se interpreta como competencias sin tipo asignado.
-type CompetenciaGenerica = { type: string; description: string }
+// Competencias genéricas: catálogo normalizado (tipo + descripción), M2M a nivel
+// programa. El selector ofrece las existentes agrupadas por tipo y permite crear
+// nuevas (find-or-create en el backend). Cada fila del form: { typeId, description }.
+type GenericType = { id: number; name: string; position: number; competencies: { id: number; description: string }[] }
+const genericCatalog = ref<GenericType[]>([])
+const genericCatalogOptions = computed(() =>
+    Array.from(new Set(genericCatalog.value.flatMap((t) => t.competencies.map((c) => c.description)))),
+)
 
-const TIPOS_COMPETENCIA_GENERICA = ['INSTRUMENTAL', 'INTERPERSONAL', 'SISTÉMICA'] as const
-
-function parseGenericas(raw: string | null | undefined): CompetenciaGenerica[] {
-    const text = (raw ?? '').trim()
-    if (!text) return []
+async function loadGenericCatalog() {
     try {
-        const parsed = JSON.parse(text)
-        if (Array.isArray(parsed)) {
-            return parsed
-                .map((g: any) => ({ type: String(g?.type ?? '').toUpperCase(), description: String(g?.description ?? '').trim() }))
-                .filter((g) => g.description)
-        }
-    } catch { /* texto plano heredado */ }
-    return text.split('\n').map((s) => s.trim()).filter(Boolean).map((description) => ({ type: '', description }))
-}
-
-function serializeGenericas(items: CompetenciaGenerica[]): string | null {
-    const clean = (items ?? [])
-        .map((g) => ({ type: (g.type ?? '').trim().toUpperCase(), description: (g.description ?? '').trim() }))
-        .filter((g) => g.description)
-    return clean.length ? JSON.stringify(clean) : null
+        const { data } = await api.get(API.STUDY_PROGRAMS_API.studyPrograms.genericCompetencies)
+        genericCatalog.value = Array.isArray(data) ? data : []
+    } catch {
+        genericCatalog.value = []
+    }
 }
 
 const route = useRoute()
@@ -346,6 +353,7 @@ const form = reactive<any>({
     satca_t: '', satca_p: '', satca_c: '',
     caracterizacion: '', intencion_didactica: '',
     competencia_especifica: [] as string[], competencias_previas: [] as string[],
+    genericCompetencies: [] as Array<{ typeId: number | ''; description: string }>,
     temas: [] as any[],
     sources: [] as any[],
 })
@@ -354,7 +362,7 @@ const form = reactive<any>({
 const currentUnidad = computed<any>(() => form.temas[unidadIndex.value] ?? null)
 
 function addUnidad() {
-    form.temas.push({ number: form.temas.length + 1, title: '', competenciaEspecifica: '', competenciasGenericas: [], subtemas: [], learningActivities: [] })
+    form.temas.push({ number: form.temas.length + 1, title: '', competenciaEspecifica: '', subtemas: [], learningActivities: [] })
     unidadIndex.value = form.temas.length - 1
 }
 function removeUnidad(i: number) {
@@ -369,6 +377,7 @@ function addSubtema(unidad: any) {
 }
 
 onMounted(async () => {
+    await loadGenericCatalog()
     if (!isEdit.value) return
     loading.value = true
     try {
@@ -383,10 +392,13 @@ onMounted(async () => {
         form.intencion_didactica = data.intencionDidactica ?? ''
         form.competencia_especifica = splitItems(data.competenciaEspecifica)
         form.competencias_previas = splitItems(data.competenciasPrevias)
+        // Genéricas (agrupadas por tipo desde el backend) → filas planas { typeId, description }.
+        form.genericCompetencies = (data.genericCompetencies ?? []).flatMap((grp: any) =>
+            (grp.items ?? []).map((it: any) => ({ typeId: grp.typeId, description: it.description })),
+        )
         form.temas = (data.temas ?? []).map((t: any) => ({
             number: t.number, title: t.title,
             competenciaEspecifica: t.competenciaEspecifica ?? '',
-            competenciasGenericas: parseGenericas(t.competenciasGenericas),
             subtemas: (t.subtemas ?? []).map((s: any) => ({ number: s.number ?? '', title: s.title ?? '' })),
             learningActivities: (t.learningActivities ?? []).map((a: any) => ({ description: a.description ?? '' })),
         }))
@@ -410,11 +422,13 @@ async function submit() {
         intencion_didactica: form.intencion_didactica || null,
         competencia_especifica: joinItems(form.competencia_especifica),
         competencias_previas: joinItems(form.competencias_previas),
+        generic_competencies: form.genericCompetencies
+            .filter((g: any) => String(g.description ?? '').trim() && g.typeId)
+            .map((g: any) => ({ type_id: Number(g.typeId), description: String(g.description).trim() })),
         temas: form.temas.map((t: any, i: number) => ({
             number: t.number ? Number(t.number) : i + 1,
             title: t.title,
             competenciaEspecifica: t.competenciaEspecifica || null,
-            competenciasGenericas: serializeGenericas(t.competenciasGenericas ?? []),
             subtemas: (t.subtemas ?? []).filter((s: any) => s.number || s.title),
             learningActivities: (t.learningActivities ?? []).filter((a: any) => a.description),
         })),
