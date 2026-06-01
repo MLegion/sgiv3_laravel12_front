@@ -11,6 +11,7 @@ export default {
         instrumentations: {
             list:          apiUrl('/teaching/instrumentations'),
             seed:          (teacherAssignmentId: string | number) => apiUrl(`/teaching/instrumentations/seed?teacher_assignment_id=${teacherAssignmentId}`),
+            calendar:      (teacherAssignmentId: string | number) => apiUrl(`/teaching/instrumentations/calendar?teacher_assignment_id=${teacherAssignmentId}`),
             pendingReview: apiUrl('/teaching/instrumentations/pending-review'),
             byId:          (id: string | number) => apiUrl(`/teaching/instrumentations/${id}`),
             create:        apiUrl('/teaching/instrumentations'),

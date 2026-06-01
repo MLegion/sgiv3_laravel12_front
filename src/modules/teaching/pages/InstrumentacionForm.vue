@@ -1,23 +1,51 @@
 <template>
     <div class="space-y-4">
         <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-xl font-semibold text-slate-800">
-                    {{ isEdit ? 'Editar instrumentación' : 'Nueva instrumentación' }}
-                </h1>
+            <div class="flex-1 min-w-0">
+                <p class="text-[11px] uppercase tracking-wider text-slate-400">Instrumentación didáctica</p>
+                <input
+                    v-model="header.title"
+                    :placeholder="defaultTitle || 'Título de la instrumentación'"
+                    class="w-full bg-transparent text-xl font-semibold text-slate-800 border-0 border-b border-transparent hover:border-slate-200 focus:border-blue-400 focus:outline-none focus:ring-0 px-0 py-0.5"
+                />
                 <p v-if="header.studyProgram" class="text-xs text-slate-500 mt-0.5">
                     {{ header.studyProgram.claveNormalized }} · {{ header.studyProgram.name }}
                 </p>
             </div>
-            <div class="flex items-center gap-2">
-                <button type="button" class="text-sm text-slate-500 hover:text-slate-700" @click="router.back()">Volver</button>
-                <button
-                    type="button"
-                    class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
-                    :disabled="submitting || loading"
-                    @click="submit"
-                >{{ submitting ? 'Guardando…' : (isEdit ? 'Guardar cambios' : 'Crear instrumentación') }}</button>
+            <div class="flex items-center gap-3">
+                <!-- Estado de la instrumentación -->
+                <span class="text-xs font-semibold px-2 py-1 rounded-full"
+                    :class="{
+                        'bg-slate-100 text-slate-600': status === 'draft',
+                        'bg-amber-100 text-amber-700': status === 'submitted',
+                        'bg-green-100 text-green-700': status === 'approved',
+                        'bg-red-100 text-red-700': status === 'rejected',
+                    }">{{ statusLabel }}</span>
+
+                <!-- Estado de guardado (autosave) -->
+                <span class="text-xs flex items-center gap-1.5"
+                    :class="{
+                        'text-slate-400': saveState === 'idle',
+                        'text-amber-600': saveState === 'saving',
+                        'text-emerald-600': saveState === 'saved',
+                        'text-red-600': saveState === 'error',
+                    }">
+                    <svg v-if="saveState === 'saving'" class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                    <span v-else-if="saveState === 'saved'">✓</span>
+                    <span v-else-if="saveState === 'error'">⚠</span>
+                    {{ saveLabel }}
+                </span>
+
+                <button type="button" class="px-3 py-2 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50" @click="goBack">Volver</button>
             </div>
+        </div>
+
+        <div v-if="header.studyProgramId && programApprovalStatus && programApprovalStatus !== 'approved'"
+            class="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm text-amber-800">
+            ⚠ El programa de estudio de esta materia aún no está aprobado (estado: <span class="font-medium">{{ programStatusLabel }}</span>). La instrumentación se pre-llenó con su contenido actual; podría cambiar al aprobarse.
         </div>
 
         <div v-if="loading" class="text-sm text-slate-500">Cargando…</div>
@@ -34,7 +62,6 @@
                         <ReadField label="Asignatura" :value="header.studyProgram?.name" />
                         <ReadField label="Clave" :value="header.studyProgram?.claveNormalized" />
                         <ReadField label="Horas T-P-Créditos" :value="satcaText" />
-                        <FormInput label="TÍTULO (opcional)" v-model="header.title" />
                     </div>
                     <div>
                         <label class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">1. Caracterización de la asignatura</label>
@@ -53,50 +80,69 @@
             <template v-else-if="activeTab === 'competencias'">
                 <div class="space-y-4">
                     <Field label="3.1 Competencias previas"><textarea v-model="header.competencias_previas" rows="4" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></textarea></Field>
-                    <Field label="3.2 Competencias genéricas"><textarea v-model="header.competencias_genericas" rows="6" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></textarea></Field>
+                    <Field label="3.2 Competencias genéricas">
+                        <textarea v-model="header.competencias_genericas" rows="6" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></textarea>
+                        <div v-if="programGenericas.length" class="mt-2 text-xs border border-slate-200 rounded p-2 bg-slate-50">
+                            <p class="text-slate-500 mb-1.5">Genéricas del programa de estudio (clic para agregar):</p>
+                            <div v-for="grp in programGenericas" :key="grp.typeId" class="mb-2 last:mb-0">
+                                <span class="font-medium text-slate-600">{{ grp.typeName }}</span>
+                                <div class="flex flex-wrap gap-1 mt-1">
+                                    <button v-for="c in grp.items" :key="c.id" type="button"
+                                        class="px-2 py-0.5 rounded-full border text-left transition"
+                                        :class="genericaInText(c.description)
+                                            ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                                            : 'border-slate-300 text-slate-600 hover:bg-emerald-50 hover:border-emerald-300'"
+                                        :title="genericaInText(c.description) ? 'Ya agregada' : 'Agregar'"
+                                        @click="addGenericaToText(c.description)">
+                                        + {{ c.description }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </Field>
                     <Field label="3.3 Competencias específicas de la asignatura"><textarea v-model="header.competencia_especifica_override" rows="4" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></textarea></Field>
                 </div>
             </template>
 
-            <!-- UNIDAD N -->
-            <template v-else-if="activeUnit !== null">
-                <div class="space-y-5">
-                    <!-- FRENTE -->
-                    <section class="space-y-3">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-sm font-semibold text-slate-700">Unidad {{ activeUnit.number }} — Frente</h3>
-                            <button type="button" class="text-xs text-red-500 hover:text-red-700" @click="removeUnit(activeUnitIndex)">✕ Eliminar unidad</button>
+            <!-- UNIDAD N — FRENTE -->
+            <template v-else-if="activeUnit !== null && activeUnitSide === 'front'">
+                <section class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-slate-700">Unidad {{ activeUnit.number }} — Frente</h3>
+                        <button type="button" class="text-xs text-red-500 hover:text-red-700" @click="removeUnit(activeUnitIndex)">✕ Eliminar unidad</button>
+                    </div>
+                    <div class="grid grid-cols-12 gap-3">
+                        <div class="col-span-2"><FormInput label="Competencia N°" type="number" v-model="activeUnit.number" /></div>
+                        <div class="col-span-10"><FormInput label="Nombre de la competencia" v-model="activeUnit.title" /></div>
+                    </div>
+                    <Field label="Descripción"><textarea v-model="activeUnit.competenciaDescripcion" rows="2" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></textarea></Field>
+                    <div class="grid grid-cols-12 gap-3">
+                        <div class="col-span-6">
+                            <Field label="Temas y subtemas"><textarea v-model="activeUnit.temasSubtemas" rows="8" class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs"></textarea></Field>
                         </div>
-                        <div class="grid grid-cols-12 gap-3">
-                            <div class="col-span-2"><FormInput label="Competencia N°" type="number" v-model="activeUnit.number" /></div>
-                            <div class="col-span-10"><FormInput label="Nombre de la competencia" v-model="activeUnit.title" /></div>
+                        <div class="col-span-6">
+                            <Field label="Desarrollo de competencias genéricas"><textarea v-model="activeUnit.competenciasGenericas" rows="8" class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs"></textarea></Field>
                         </div>
-                        <Field label="Descripción"><textarea v-model="activeUnit.competenciaDescripcion" rows="2" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></textarea></Field>
-                        <div class="grid grid-cols-12 gap-3">
-                            <div class="col-span-6">
-                                <Field label="Temas y subtemas"><textarea v-model="activeUnit.temasSubtemas" rows="8" class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs"></textarea></Field>
-                            </div>
-                            <div class="col-span-6">
-                                <Field label="Desarrollo de competencias genéricas"><textarea v-model="activeUnit.competenciasGenericas" rows="8" class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs"></textarea></Field>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <ActivityList title="Actividades de aprendizaje" :items="activeUnit.learningActivities" />
-                            <ActivityList title="Actividades de enseñanza" :items="activeUnit.teachingActivities" />
-                        </div>
-                        <div class="grid grid-cols-4 gap-3">
-                            <FormInput label="Horas teóricas" type="number" v-model="activeUnit.hoursT" />
-                            <FormInput label="Horas prácticas" type="number" v-model="activeUnit.hoursP" />
-                            <FormInput label="Inicio" type="date" v-model="activeUnit.startDate" />
-                            <FormInput label="Fin" type="date" v-model="activeUnit.endDate" />
-                        </div>
-                    </section>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <ActivityList title="Actividades de aprendizaje" :items="activeUnit.learningActivities" />
+                        <ActivityList title="Actividades de enseñanza" :items="activeUnit.teachingActivities" />
+                    </div>
+                    <div class="grid grid-cols-4 gap-3">
+                        <FormInput label="Horas teóricas" type="number" v-model="activeUnit.hoursT" />
+                        <FormInput label="Horas prácticas" type="number" v-model="activeUnit.hoursP" />
+                        <FormInput label="Inicio" type="date" v-model="activeUnit.startDate" />
+                        <FormInput label="Fin" type="date" v-model="activeUnit.endDate" />
+                    </div>
+                </section>
+            </template>
 
-                    <!-- ATRÁS -->
-                    <section class="space-y-3 border-t border-slate-200 pt-4">
-                        <h3 class="text-sm font-semibold text-slate-700">Unidad {{ activeUnit.number }} — Atrás (evaluación)</h3>
+            <!-- UNIDAD N — ATRÁS -->
+            <template v-else-if="activeUnit !== null && activeUnitSide === 'back'">
+                <section class="space-y-3">
+                    <h3 class="text-sm font-semibold text-slate-700">Unidad {{ activeUnit.number }} — Atrás (evaluación)</h3>
 
-                        <Field label="Indicadores de alcance">
+                    <Field label="Indicadores de alcance">
                             <table class="w-full text-xs border border-slate-200">
                                 <thead class="bg-slate-50"><tr><th class="border px-2 py-1 w-8"></th><th class="border px-2 py-1 text-left">Indicador</th><th class="border px-2 py-1 w-20">Valor</th></tr></thead>
                                 <tbody>
@@ -137,11 +183,17 @@
                                 <span class="text-xs" :class="unitWeight(activeUnit.number) === 100 ? 'text-emerald-600' : 'text-slate-500'">Total unidad: {{ unitWeight(activeUnit.number) }}%</span>
                             </div>
                         </Field>
-                    </section>
-                </div>
+                </section>
             </template>
 
             <!-- CALENDARIO -->
+            <template v-else-if="activeTab === 'fechas'">
+                <div v-if="header.teacher_assignment_id">
+                    <CalendarizacionView :teacher-assignment-id="Number(header.teacher_assignment_id)" />
+                </div>
+                <div v-else class="text-sm text-slate-500">Selecciona una asignación para ver sus fechas de clase.</div>
+            </template>
+
             <template v-else-if="activeTab === 'calendario'">
                 <div class="space-y-3">
                     <div class="flex items-center justify-between">
@@ -201,22 +253,37 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed, onMounted, h } from 'vue'
+import { reactive, ref, computed, onMounted, onBeforeUnmount, watch, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import Tabs from '@/app/components/ui/Tabs.vue'
+import CalendarizacionView from '@/modules/teaching/components/CalendarizacionView.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 
 const route = useRoute()
 const router = useRouter()
 
-const instId = computed(() => (route.params.id ? Number(route.params.id) : null))
+const instId = ref<number | null>(route.params.id ? Number(route.params.id) : null)
 const isEdit = computed(() => instId.value !== null)
 
 const loading = ref(true)
-const submitting = ref(false)
 const activeTab = ref('portada')
+
+// Autoguardado: estado + maquinaria de debounce.
+const saveState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
+const status = ref<string>('draft')   // estado de la instrumentación (draft/submitted/...)
+const ready = ref(false)              // true tras la carga inicial: habilita el autoguardado
+let saveTimer: ReturnType<typeof setTimeout> | null = null
+let savingNow = false                 // hay un guardado en curso
+let pendingChanges = false            // llegaron cambios mientras se guardaba
+
+const saveLabel = computed(() => ({
+    idle: '', saving: 'Guardando…', saved: 'Guardado', error: 'Error al guardar',
+}[saveState.value]))
+const statusLabel = computed(() => ({
+    draft: 'BORRADOR', submitted: 'EN REVISIÓN', approved: 'APROBADA', rejected: 'RECHAZADA',
+}[status.value] ?? status.value))
 
 const header = reactive<any>({
     teacher_assignment_id: (route.query.teacher_assignment_id as string) ?? '',
@@ -239,18 +306,46 @@ const header = reactive<any>({
 const units = ref<any[]>([])
 const evaluationItems = ref<any[]>([])
 
+// Genéricas del programa de estudio (catálogo, agrupadas por tipo) para agregarlas al textarea.
+const programGenericas = ref<any[]>([])
+
+// Título por defecto (materia · campus · tipo de modalidad · periodo), del backend.
+const defaultTitle = ref('')
+
+// Estado de aprobación del programa de estudio del que se sembró (informativo).
+const programApprovalStatus = ref<string | null>(null)
+const programStatusLabel = computed(() => ({
+    draft: 'Borrador', pending: 'En revisión', rejected: 'Rechazado', approved: 'Aprobado',
+}[programApprovalStatus.value ?? ''] ?? programApprovalStatus.value))
+
+function genericaInText(desc: string): boolean {
+    return (header.competencias_genericas || '').includes(desc)
+}
+function addGenericaToText(desc: string): void {
+    if (genericaInText(desc)) return
+    const cur = (header.competencias_genericas || '').trim()
+    header.competencias_genericas = cur ? cur + ' • ' + desc : '• ' + desc
+}
+
 const satcaText = computed(() => `${header.satca?.t ?? '?'}-${header.satca?.p ?? '?'}-${header.satca?.c ?? '?'}`)
 
 const tabs = computed(() => [
     { key: 'portada', label: 'Portada' },
     { key: 'intencion', label: 'Intención' },
     { key: 'competencias', label: 'Competencias' },
-    ...units.value.map((_, i) => ({ key: `unit-${i}`, label: `Unidad ${units.value[i].number}` })),
+    // Cada unidad se parte en dos pestañas (como el Excel TecNM): frente y atrás.
+    ...units.value.flatMap((_, i) => [
+        { key: `unit-${i}-front`, label: `Unidad ${units.value[i].number} · Frente` },
+        { key: `unit-${i}-back`, label: `Unidad ${units.value[i].number} · Atrás` },
+    ]),
+    { key: 'fechas', label: 'Fechas' },
     { key: 'calendario', label: 'Calendario' },
     { key: 'fuentes', label: 'Fuentes' },
 ])
 
-const activeUnitIndex = computed(() => (activeTab.value.startsWith('unit-') ? Number(activeTab.value.slice(5)) : -1))
+const unitTabMatch = computed(() => activeTab.value.match(/^unit-(\d+)-(front|back)$/))
+const activeUnitIndex = computed(() => (unitTabMatch.value ? Number(unitTabMatch.value[1]) : -1))
+const activeUnitSide = computed<'front' | 'back' | null>(() => (unitTabMatch.value ? (unitTabMatch.value[2] as 'front' | 'back') : null))
 const activeUnit = computed(() => (activeUnitIndex.value >= 0 ? units.value[activeUnitIndex.value] : null))
 
 function unitEvidences(unitNumber: number) {
@@ -282,7 +377,7 @@ function newUnit(n: number) {
 }
 function addUnit() {
     units.value.push(newUnit(units.value.length + 1))
-    activeTab.value = `unit-${units.value.length - 1}`
+    activeTab.value = `unit-${units.value.length - 1}-front`
 }
 function removeUnit(i: number) {
     units.value.splice(i, 1)
@@ -296,12 +391,17 @@ function hydrate(data: any) {
     header.study_program_id = data.studyProgramId ?? null
     header.studyProgramId = data.studyProgramId ?? null
     header.studyProgram = data.studyProgram ?? null
+    if (data.defaultTitle) defaultTitle.value = data.defaultTitle
     header.title = data.title ?? ''
+    // Sin título guardado: pre-llenar con el default (materia · campus · modalidad · periodo).
+    if (!header.title && defaultTitle.value) header.title = defaultTitle.value
     header.caracterizacion = data.caracterizacion ?? ''
     header.intencion_didactica = data.intencionDidactica ?? ''
     header.competencias_previas = data.competenciasPrevias ?? ''
     header.competencias_genericas = data.competenciasGenericas ?? ''
     header.competencia_especifica_override = data.competenciaEspecificaOverride ?? ''
+    if (Array.isArray(data.programGenericCompetencies)) programGenericas.value = data.programGenericCompetencies
+    if (data.programApprovalStatus !== undefined && data.programApprovalStatus !== null) programApprovalStatus.value = data.programApprovalStatus
     header.satca = data.satca ?? { t: null, p: null, c: null }
     header.fuentes = (data.fuentes ?? []).map((f: any) => ({ reference: f.reference ?? '', type: f.type ?? null }))
     header.apoyos_didacticos = data.apoyosDidacticos ?? []
@@ -332,25 +432,71 @@ function unitNumberByUnitId(unitId: number | null): number | null {
     return u ? u.number : null
 }
 
+async function loadById(id: number): Promise<void> {
+    const { data } = await api.get(API.TEACHING_API.instrumentations.byId(id))
+    instId.value = id
+    header.teacher_assignment_id = data.teacherAssignmentId ?? header.teacher_assignment_id
+    status.value = data.status ?? 'draft'
+    hydrate(data)
+    saveState.value = 'saved'
+}
+
+/** byId no trae el catálogo de genéricas del programa; lo tomamos del seed (best-effort). */
+async function loadGenericasFallback(): Promise<void> {
+    if (programGenericas.value.length || !header.teacher_assignment_id) return
+    try {
+        const seed = await api.get(API.TEACHING_API.instrumentations.seed(header.teacher_assignment_id))
+        if (Array.isArray(seed.data?.programGenericCompetencies)) programGenericas.value = seed.data.programGenericCompetencies
+        if (seed.data?.programApprovalStatus) programApprovalStatus.value = seed.data.programApprovalStatus
+        if (seed.data?.defaultTitle) {
+            defaultTitle.value = seed.data.defaultTitle
+            if (!header.title) header.title = seed.data.defaultTitle
+        }
+    } catch { /* sin permiso/seed: se omite el listado */ }
+}
+
 onMounted(async () => {
     loading.value = true
     try {
         if (isEdit.value) {
-            const { data } = await api.get(API.TEACHING_API.instrumentations.byId(instId.value!))
-            header.teacher_assignment_id = data.teacherAssignmentId ?? header.teacher_assignment_id
-            hydrate(data)
+            await loadById(instId.value!)
+            await loadGenericasFallback()
         } else {
-            const { data } = await api.get(API.TEACHING_API.instrumentations.seed(header.teacher_assignment_id))
-            hydrate(data)
+            // ¿Ya existe una instrumentación para esta asignación? Adoptarla (no duplicar).
+            let existing: any[] = []
+            try {
+                const res = await api.get(API.TEACHING_API.instrumentations.list, {
+                    params: { teacher_assignment_id: header.teacher_assignment_id },
+                })
+                existing = res.data?.items ?? (Array.isArray(res.data) ? res.data : [])
+            } catch { /* ignora: seguimos a crear */ }
+
+            if (existing.length) {
+                await loadById(Number(existing[0].id))
+                await loadGenericasFallback()
+            } else {
+                const { data } = await api.get(API.TEACHING_API.instrumentations.seed(header.teacher_assignment_id))
+                hydrate(data)
+                // Crea el registro de inmediato (aunque "vacío") con lo que el seed pre-llenó.
+                if (header.studyProgramId) {
+                    await persistNow()
+                }
+            }
         }
     } finally {
         loading.value = false
+        // Habilita el autoguardado sólo tras la carga inicial.
+        ready.value = true
+        watch([header, units, evaluationItems], scheduleSave, { deep: true })
     }
 })
 
-async function submit() {
-    submitting.value = true
-    const payload: any = {
+onBeforeUnmount(() => {
+    if (saveTimer) { clearTimeout(saveTimer); void persistNow() }
+})
+
+function buildPayload(): any {
+    return {
         teacher_assignment_id: header.teacher_assignment_id ? Number(header.teacher_assignment_id) : null,
         study_program_id: header.study_program_id ? Number(header.study_program_id) : null,
         title: header.title || null,
@@ -387,16 +533,50 @@ async function submit() {
             indicators: e.indicators,
         })),
     }
+}
+
+/**
+ * Persiste de inmediato: crea el registro si aún no existe (autoguardado al entrar)
+ * o actualiza. Encola un re-guardado si llegaron cambios mientras guardaba.
+ */
+async function persistNow(): Promise<void> {
+    if (savingNow) { pendingChanges = true; return }
+    if (!header.studyProgramId) return // sin programa no hay nada que persistir
+    savingNow = true
+    saveState.value = 'saving'
     try {
-        if (isEdit.value) {
-            await api.put(API.TEACHING_API.instrumentations.update(instId.value!), payload)
+        const payload = buildPayload()
+        if (instId.value) {
+            await api.put(API.TEACHING_API.instrumentations.update(instId.value), payload)
         } else {
-            await api.post(API.TEACHING_API.instrumentations.create, payload)
+            const { data } = await api.post(API.TEACHING_API.instrumentations.create, payload)
+            instId.value = data?.id ?? instId.value
+            if (data?.status) status.value = data.status
+            // Mantener la URL en sincronía (refresh-safe) sin recargar.
+            if (instId.value) {
+                router.replace({ name: 'teaching.planeacion.edit', params: { id: instId.value }, query: route.query }).catch(() => {})
+            }
         }
-        router.push({ name: 'teaching.planeacion' })
+        saveState.value = 'saved'
+    } catch {
+        saveState.value = 'error'
     } finally {
-        submitting.value = false
+        savingNow = false
+        if (pendingChanges) { pendingChanges = false; void persistNow() }
     }
+}
+
+/** Autoguardado con debounce ante cualquier cambio del formulario. */
+function scheduleSave(): void {
+    if (!ready.value) return
+    saveState.value = 'saving'
+    if (saveTimer) clearTimeout(saveTimer)
+    saveTimer = setTimeout(() => { void persistNow() }, 900)
+}
+
+async function goBack(): Promise<void> {
+    if (saveTimer) { clearTimeout(saveTimer); await persistNow() }
+    router.push({ name: 'teaching.planeacion' })
 }
 
 /* Pequeños componentes de presentación inline (sin archivo aparte). */
