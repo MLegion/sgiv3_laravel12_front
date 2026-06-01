@@ -53,8 +53,8 @@ const router = useRouter()
 
 const columns: DataTableColumn<any>[] = [
     { key: 'id',        label: '#',       field: 'id', sortable: true },
-    { key: 'clave',     label: 'CLAVE',   field: 'clave_normalized' },
-    { key: 'name',      label: 'NOMBRE',  field: 'name' },
+    { key: 'clave',     label: 'CLAVE',   field: 'clave_normalized', searchable: true },
+    { key: 'name',      label: 'NOMBRE',  field: 'name', searchable: true },
     { key: 'status',    label: 'ESTADO' },
     { key: 'opciones',  label: 'OPCIONES' },
 ]
