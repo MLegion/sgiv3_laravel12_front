@@ -15,7 +15,7 @@
                 class="border-2 border-slate-200 rounded-lg px-3 py-1.5 text-sm font-bold focus:outline-none focus:border-rose-500"
                 @change="reload"
             >
-                <option v-if="data?.availablePeriods === undefined" :value="null">Cargando…</option>
+                <option v-if="periodsLoading" :value="null">Cargando…</option>
                 <option :value="null">— Default (configurado en Admisión) —</option>
                 <option v-for="p in periodsList" :key="p.id" :value="p.id">
                     {{ p.name }}
@@ -171,6 +171,7 @@ const loading = ref(false)
 const periodId = ref<number | null>(null)
 const scope    = ref<'campus' | 'career'>('campus')
 const periodsList = ref<Array<{ id: number; name: string }>>([])
+const periodsLoading = ref(true)
 
 const COLOR_BY_REASON: Record<string, string> = {
     cancelled:         'bg-slate-400',
@@ -223,12 +224,15 @@ async function reload() {
 
 async function loadPeriods() {
     // Reusar el catalog del reporte de fichas (mismo endpoint expone availablePeriods).
+    periodsLoading.value = true
     try {
         const { data: payload } = await api.get<{ availablePeriods: Array<{ id: number; name: string }> }>(
             API.ADMISSIONS_API.reports.fichas(''),
         )
         periodsList.value = payload.availablePeriods ?? []
-    } catch { /* opcional */ }
+    } catch { /* opcional */ } finally {
+        periodsLoading.value = false
+    }
 }
 
 onMounted(async () => {
