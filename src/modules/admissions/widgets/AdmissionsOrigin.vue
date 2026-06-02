@@ -38,6 +38,7 @@ interface Payload { topSchools: School[]; byState: State[]; availablePeriods: Pe
 const props = defineProps<{ data: Payload | null; loading: boolean; error: unknown; view?: 'data' | 'settings' }>()
 defineEmits<{ (e: 'params', p: Record<string, unknown>): void }>()
 
-const topSchools = computed(() => (props.data?.topSchools ?? []).slice(0, 8).map(s => ({ key: s.schoolId, label: s.name, count: s.count, color: 'bg-teal-500' })))
-const byState    = computed(() => (props.data?.byState ?? []).slice(0, 6).map(s => ({ key: s.stateId, label: s.name, count: s.count, color: 'bg-amber-500' })))
+// Sin color fijo: WidgetBars asigna un color distinto por barra (su paleta por índice).
+const topSchools = computed(() => (props.data?.topSchools ?? []).slice(0, 8).map(s => ({ key: s.schoolId, label: s.name, count: s.count })))
+const byState    = computed(() => (props.data?.byState ?? []).slice(0, 6).map(s => ({ key: s.stateId, label: s.name, count: s.count })))
 </script>
