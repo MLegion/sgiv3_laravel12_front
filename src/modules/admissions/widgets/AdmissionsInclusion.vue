@@ -14,10 +14,10 @@
 
         <template v-else>
             <p class="text-[10px] text-slate-400 mb-2">
-                Sobre <span class="font-semibold text-slate-600">{{ data.total }}</span> aspirantes (barra = % que sí aplica).
+                Sobre <span class="font-semibold text-slate-600">{{ data.total }}</span> aspirantes (barra = cantidad que sí aplica; sub: %).
             </p>
             <div class="flex-1 min-h-0 overflow-auto">
-                <WidgetBars :items="categories" :max="100" />
+                <WidgetBars :items="categories" vertical />
             </div>
         </template>
     </div>
@@ -47,7 +47,7 @@ const categories = computed(() => {
     const d = props.data
     if (!d) return []
     const row = (label: string, c: CategoryStats, color: string) =>
-        ({ label, count: Math.round(c.percentage), sub: `${c.withCount} · ${c.percentage.toFixed(0)}%`, color })
+        ({ label, count: c.withCount, sub: `${c.percentage.toFixed(0)}%`, color })
     return [
         row('Discapacidad',     d.disability,         'bg-rose-500'),
         row('Grupo indígena',   d.indigenousGroup,    'bg-amber-500'),
