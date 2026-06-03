@@ -35,4 +35,10 @@ export default [
         component: () => import('@/modules/notifications/pages/NotificationEventBindingsPage.vue'),
         meta: { title: 'Disparadores de notificación', permissions: ['notif.event-binding.view'] },
     },
+    {
+        path: 'notifications/interceptor',
+        name: 'notifications.interceptor',
+        component: () => import('@/modules/notifications/pages/NotificationInterceptorPage.vue'),
+        meta: { title: 'Interceptor de notificaciones', permissions: ['notif.interceptor.manage'] },
+    },
 ]

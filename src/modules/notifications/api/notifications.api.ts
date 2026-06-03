@@ -22,6 +22,7 @@ export default {
         recipientSearch:  apiUrl('/notifications/recipients/search'),
         send:             apiUrl('/notifications/send'),
         logs:             apiUrl('/notifications/logs'),
+        interceptor:      apiUrl('/notifications/interceptor'),
         eventBindings: {
             matrix: apiUrl('/notifications/event-bindings/matrix'),
             upsert: apiUrl('/notifications/event-bindings'),
