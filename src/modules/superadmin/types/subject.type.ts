@@ -23,6 +23,9 @@ export interface SubjectType {
     specialtyId: number | null
     optionalGroupId: number | null
 
+    /** Tipo especial (servicio social / actividades complementarias / residencia). null = normal. */
+    specialType: 'social_service' | 'complementary_activities' | 'professional_residency' | null
+
     collegeId: number | null
     college?: College | null
 

@@ -75,6 +75,7 @@
                             <InfoItem label="HP" :value="subject?.hp" :loading="loading" />
                             <InfoItem label="CRÉDITOS" :value="subject?.credits" :loading="loading" class="font-bold text-slate-900" />
                         </div>
+                        <InfoItem label="TIPO ESPECIAL" :value="specialTypeLabel" :loading="loading" />
                     </div>
 
                     <!-- Columna 2: Estatus de Validación -->
@@ -148,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -162,6 +163,15 @@ const router = useRouter()
 
 const loading = ref(true)
 const subject = ref<SubjectType | null>(null)
+
+const SPECIAL_TYPE_LABELS: Record<string, string> = {
+    social_service: 'SERVICIO SOCIAL',
+    complementary_activities: 'ACTIVIDADES COMPLEMENTARIAS',
+    professional_residency: 'RESIDENCIA PROFESIONAL',
+}
+const specialTypeLabel = computed(() =>
+    subject.value?.specialType ? (SPECIAL_TYPE_LABELS[subject.value.specialType] ?? subject.value.specialType) : '—',
+)
 
 function formatDate(dateValue: any) {
     if (!dateValue) return null

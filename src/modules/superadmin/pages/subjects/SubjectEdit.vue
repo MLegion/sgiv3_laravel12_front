@@ -57,6 +57,12 @@
                     <FormInput label="HORAS PRÁCTICAS (HP)" type="number" v-model.number="form.hp" required />
                 </div>
 
+                <FormSelect
+                    label="TIPO ESPECIAL (opcional)"
+                    v-model="form.specialType"
+                    :options="SPECIAL_TYPE_OPTIONS"
+                />
+
                 <div class="flex justify-end gap-2 pt-4 border-t">
                     <button type="button" class="px-4 py-2 text-sm border rounded-lg uppercase" @click="goBack">
                         CANCELAR
@@ -77,7 +83,14 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api' // <-- Revisa que este objeto tenga SUPERADMIN_API
 
 import FormInput from '@/app/components/ui/form/FormInput.vue'
+import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+
+const SPECIAL_TYPE_OPTIONS = [
+    { value: 'social_service', label: 'SERVICIO SOCIAL' },
+    { value: 'complementary_activities', label: 'ACTIVIDADES COMPLEMENTARIAS' },
+    { value: 'professional_residency', label: 'RESIDENCIA PROFESIONAL' },
+]
 
 const route = useRoute()
 const router = useRouter()
@@ -96,6 +109,7 @@ const form = reactive({
     credits: 0,
     specialtyId: null as number | null,
     optionalGroupId: null as number | null,
+    specialType: '' as string,
 })
 
 async function fetchSubject() {
@@ -112,6 +126,7 @@ async function fetchSubject() {
         form.credits = Number(data.credits)
         form.specialtyId = data.specialtyId
         form.optionalGroupId = data.optionalGroupId
+        form.specialType = data.specialType ?? ''
 
         if (data.specialtyId) hasSpecialty.value = true
         if (data.optionalGroupId) hasOptionalGroup.value = true
@@ -130,7 +145,8 @@ async function submit() {
             short_name: form.shortName,
             official_code: form.officialCode,
             specialty_id: form.specialtyId,
-            optional_group_id: form.optionalGroupId
+            optional_group_id: form.optionalGroupId,
+            special_type: form.specialType || null
         })
         router.push({ name: 'superadmin.subjects.show', params: { id: route.params.id } })
     } finally {

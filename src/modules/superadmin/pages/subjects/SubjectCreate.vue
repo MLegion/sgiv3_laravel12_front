@@ -73,6 +73,16 @@
                     <FormInput label="CRÉDITOS" type="number" v-model.number="form.credits" required />
                 </div>
 
+                <!-- Tipo especial (servicio social / actividades complementarias / residencia) -->
+                <FormSelect
+                    label="TIPO ESPECIAL (opcional)"
+                    v-model="form.specialType"
+                    :options="SPECIAL_TYPE_OPTIONS"
+                />
+                <p class="-mt-4 text-[10px] text-slate-400 italic">
+                    * Marca la materia como servicio social, actividades complementarias o residencia profesional. Déjalo en "Seleccionar" para una materia normal.
+                </p>
+
                 <!-- Actions -->
                 <div class="flex justify-end gap-2 pt-4 border-t">
                     <button type="button" class="px-4 py-2 text-sm border rounded-lg uppercase" @click="goBack">
@@ -98,7 +108,14 @@ import { useRouter, useRoute } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
+import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+
+const SPECIAL_TYPE_OPTIONS = [
+    { value: 'social_service', label: 'SERVICIO SOCIAL' },
+    { value: 'complementary_activities', label: 'ACTIVIDADES COMPLEMENTARIAS' },
+    { value: 'professional_residency', label: 'RESIDENCIA PROFESIONAL' },
+]
 
 const props = defineProps<{
     specialtyId?: number | string | null,
@@ -122,6 +139,7 @@ const form = reactive({
     credits: 0,
     specialtyId: currentSpecialtyId.value ? Number(currentSpecialtyId.value) : null,
     optionalGroupId: currentOptionalGroupId.value ? Number(currentOptionalGroupId.value) : null,
+    specialType: '' as string,
 })
 
 const isLockedSpecialty = computed(() => !!currentSpecialtyId.value)
@@ -136,6 +154,7 @@ async function submit() {
             official_code: form.officialCode,
             specialty_id: form.specialtyId,
             optional_group_id: form.optionalGroupId,
+            special_type: form.specialType || null,
         })
 
         // Si veníamos de una especialidad, regresamos a su edición para ver la materia ya ahí
