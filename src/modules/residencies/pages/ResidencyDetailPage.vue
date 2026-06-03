@@ -53,13 +53,20 @@
                 </ul>
                 <p v-else class="text-xs text-slate-400 italic">Sin asesores asignados.</p>
 
-                <div class="flex flex-wrap items-center gap-2 border-t pt-3">
+                <div class="flex flex-wrap items-end gap-2 border-t pt-3">
                     <select v-model="advisorType" class="border rounded-md px-3 py-2 text-sm">
                         <option v-for="o in ADVISOR_TYPE_OPTIONS" :key="o.value" :value="o.value"
                             :disabled="residency.advisors.some(a => a.advisorType === o.value)">{{ o.label }}</option>
                     </select>
-                    <input v-model.number="advisorUserId" type="number" min="1" placeholder="ID de usuario del docente/empleado"
-                        class="border rounded-md px-3 py-2 text-sm w-72" />
+                    <div class="w-72">
+                        <FormRemoteSelect
+                            v-model="advisorUserId"
+                            :endpoint="R.residency.advisorCandidates"
+                            item-value="userId"
+                            item-label="name"
+                            :item-searchs="['name']"
+                            placeholder="Buscar docente/empleado…" />
+                    </div>
                     <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                         :disabled="!advisorUserId || assigning" @click="assignAdvisor">Asignar</button>
                 </div>
@@ -122,6 +129,7 @@ import { ref, reactive, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import type { Residency, ResidencyDocumentChecklistItem, ApprovalStatus, ProjectOption, ResidencyAdvisorType } from '@/modules/residencies/types/residency.type'
 import { ADVISOR_TYPE_OPTIONS } from '@/modules/residencies/types/residency.type'
 
