@@ -15,5 +15,6 @@ export default {
         },
         assignableRoles: apiUrl('/college/assignable-roles'),
         contextOptions:  (alias: string) => apiUrl(`/college/context-options/${alias}`),
+        roleMenus:       apiUrl('/college/role-menus'),
     },
 } satisfies ApiModule
