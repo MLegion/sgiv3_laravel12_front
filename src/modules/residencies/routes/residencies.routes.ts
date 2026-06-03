@@ -7,6 +7,14 @@ export default [
         meta: { title: 'Mi Residencia' },
     },
 
+    // ── Asesor de residencia ──────────────────────────────────────────
+    {
+        path: 'residencies/my-advisees',
+        name: 'residencies.my-advisees',
+        component: () => import('@/modules/residencies/pages/AdvisorResidentsPage.vue'),
+        meta: { title: 'Mis Residentes' },
+    },
+
     // ── Coordinador / Jefe de carrera ─────────────────────────────────
     {
         path: 'residencies/list',

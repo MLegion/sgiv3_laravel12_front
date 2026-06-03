@@ -7,6 +7,7 @@ const residenciesApi: ApiModule = {
         // ── Residencia (proceso) ──
         residency: {
             me:             apiUrl('/residencies/me'),
+            myAdvisees:     apiUrl('/residencies/my-advisees'),
             list:           apiUrl('/residencies/residencies'),
             byId:           (id: string | number) => apiUrl(`/residencies/residencies/${id}`),
             approveProject: (id: string | number) => apiUrl(`/residencies/residencies/${id}/approve-project`),
