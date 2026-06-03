@@ -30,20 +30,24 @@
                 </div>
 
                 <button type="button" class="text-xs px-3 py-1.5 border rounded-md hover:bg-slate-50" @click="toggleDocs(r)">
-                    {{ openId === r.id ? 'Ocultar documentos' : 'Ver documentos' }}
+                    {{ openId === r.id ? 'Ocultar' : 'Documentos y evaluación' }}
                 </button>
 
-                <ul v-if="openId === r.id" class="border-t pt-3 space-y-1.5">
-                    <li v-for="d in docs" :key="d.typeId" class="flex items-center justify-between text-sm">
-                        <span class="text-slate-700">{{ d.name }}</span>
-                        <div class="flex items-center gap-2">
-                            <a v-if="d.document" :href="downloadUrl(d.document.id)" target="_blank" class="text-xs px-2 py-1 border rounded-md hover:bg-slate-100">Ver</a>
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="approvalClass(d.document?.status ?? null)">
-                                {{ approvalLabel(d.document?.status ?? null) }}
-                            </span>
-                        </div>
-                    </li>
-                </ul>
+                <div v-if="openId === r.id" class="border-t pt-3 space-y-4">
+                    <ul class="space-y-1.5">
+                        <li v-for="d in docs" :key="d.typeId" class="flex items-center justify-between text-sm">
+                            <span class="text-slate-700">{{ d.name }}</span>
+                            <div class="flex items-center gap-2">
+                                <a v-if="d.document" :href="downloadUrl(d.document.id)" target="_blank" class="text-xs px-2 py-1 border rounded-md hover:bg-slate-100">Ver</a>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="approvalClass(d.document?.status ?? null)">
+                                    {{ approvalLabel(d.document?.status ?? null) }}
+                                </span>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <ResidencyEvaluationCard :residency-id="r.id" :can-confirm="false" />
+                </div>
             </li>
         </ul>
     </div>
@@ -53,6 +57,7 @@
 import { ref } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import ResidencyEvaluationCard from '@/modules/residencies/components/ResidencyEvaluationCard.vue'
 import type { Residency, ResidencyDocumentChecklistItem, ResidencyStatus, ApprovalStatus } from '@/modules/residencies/types/residency.type'
 
 const R = API.RESIDENCIES_API

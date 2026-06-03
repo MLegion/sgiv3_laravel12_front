@@ -15,6 +15,8 @@ const residenciesApi: ApiModule = {
             rejectProject:  (id: string | number) => apiUrl(`/residencies/residencies/${id}/reject-project`),
             assignAdvisor:  (id: string | number) => apiUrl(`/residencies/residencies/${id}/assign-advisor`),
             removeAdvisor:  (id: string | number, advisorId: string | number) => apiUrl(`/residencies/residencies/${id}/advisors/${advisorId}`),
+            evaluation:        (id: string | number) => apiUrl(`/residencies/residencies/${id}/evaluation`),
+            confirmEvaluation: (id: string | number) => apiUrl(`/residencies/residencies/${id}/evaluation/confirm`),
         },
 
         // ── Documentos ──

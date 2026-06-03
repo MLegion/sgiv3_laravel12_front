@@ -102,6 +102,27 @@ export interface ProjectCareerRef {
     name: string
 }
 
+export interface ResidencyEvaluationComponent {
+    key: string
+    label: string
+    weight: number
+    score: number | null
+    capturedBy: string | null
+    capturedAt: string | null
+}
+
+export interface ResidencyEvaluation {
+    residencyId: number
+    status: ResidencyStatus
+    components: ResidencyEvaluationComponent[]
+    final: number
+    passed: boolean
+    complete: boolean
+    finalGrade: number | null
+    kardexSyncedAt: string | null
+    concludedAt: string | null
+}
+
 export interface ResidencyProject {
     id: number
     title: string

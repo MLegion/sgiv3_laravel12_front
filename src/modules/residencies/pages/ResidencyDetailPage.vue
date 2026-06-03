@@ -73,6 +73,9 @@
                 <p v-if="advisorMsg" class="text-xs" :class="advisorError ? 'text-red-600' : 'text-emerald-600'">{{ advisorMsg }}</p>
             </div>
 
+            <!-- Evaluación -->
+            <ResidencyEvaluationCard :residency-id="props.id" :can-confirm="true" @confirmed="load" />
+
             <!-- Carta de presentación -->
             <div class="rounded-xl border bg-white p-5 space-y-3">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Carta de presentación</h2>
@@ -150,6 +153,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import ReportGenerateButton from '@/modules/reports/components/ReportGenerateButton.vue'
+import ResidencyEvaluationCard from '@/modules/residencies/components/ResidencyEvaluationCard.vue'
 import { ReportCode } from '@/modules/reports/types/reportCodes'
 import type { Residency, ResidencyDocumentChecklistItem, ApprovalStatus, ProjectOption, ResidencyAdvisorType } from '@/modules/residencies/types/residency.type'
 import { ADVISOR_TYPE_OPTIONS } from '@/modules/residencies/types/residency.type'
