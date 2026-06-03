@@ -73,6 +73,25 @@
                 <p v-if="advisorMsg" class="text-xs" :class="advisorError ? 'text-red-600' : 'text-emerald-600'">{{ advisorMsg }}</p>
             </div>
 
+            <!-- Carta de presentación -->
+            <div class="rounded-xl border bg-white p-5 space-y-3">
+                <h2 class="text-sm font-bold text-slate-700 uppercase">Carta de presentación</h2>
+                <p class="text-xs text-slate-500">
+                    Se habilita cuando el proyecto está avalado y el kardex sellado y la vigencia del IMSS están aprobados.
+                </p>
+                <div v-if="canGenerateLetter">
+                    <ReportGenerateButton
+                        :report-code="ReportCode.RESIDENCY_PRESENTATION_LETTER"
+                        :params="{ residency_id: Number(props.id) }"
+                        format="docx"
+                        label="Generar carta (DOCX)"
+                        :filename="`carta-presentacion-${residency.numControl ?? props.id}`" />
+                </div>
+                <p v-else class="text-xs text-amber-600">
+                    Falta: {{ letterMissing.join(', ') }}.
+                </p>
+            </div>
+
             <!-- Documentos -->
             <div class="rounded-xl border bg-white p-5 space-y-3">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Documentos</h2>
@@ -125,11 +144,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, h } from 'vue'
+import { ref, reactive, computed, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import ReportGenerateButton from '@/modules/reports/components/ReportGenerateButton.vue'
+import { ReportCode } from '@/modules/reports/types/reportCodes'
 import type { Residency, ResidencyDocumentChecklistItem, ApprovalStatus, ProjectOption, ResidencyAdvisorType } from '@/modules/residencies/types/residency.type'
 import { ADVISOR_TYPE_OPTIONS } from '@/modules/residencies/types/residency.type'
 
@@ -150,6 +171,18 @@ const advisorError  = ref(false)
 const reason = reactive<{ open: boolean; text: string; error: string | null; mode: 'project' | 'doc'; docId: number | null }>({
     open: false, text: '', error: null, mode: 'project', docId: null,
 })
+
+// Habilitación de la carta: proyecto avalado + kardex sellado + vigencia IMSS aprobados.
+const letterMissing = computed<string[]>(() => {
+    const missing: string[] = []
+    if (residency.value?.projectApprovalStatus !== 'approved') missing.push('aval del proyecto')
+    const docOk = (code: string) =>
+        checklist.value.find(i => i.code === code)?.document?.status === 'approved'
+    if (!docOk('KARDEX_SELLADO')) missing.push('kardex sellado aprobado')
+    if (!docOk('VIGENCIA_IMSS')) missing.push('vigencia IMSS aprobada')
+    return missing
+})
+const canGenerateLetter = computed(() => letterMissing.value.length === 0)
 
 // Componente inline de campo
 const Field = (p: { label: string; value?: string | null; sub?: string | null }) => h('div', [
