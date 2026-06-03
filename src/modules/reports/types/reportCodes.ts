@@ -37,4 +37,7 @@ export enum ReportCode {
 
     // Reportes admin
     TEACHER_EVALUATION              = 'RPT.EVALUACION_DOCENTE',
+
+    // Residencias profesionales
+    RESIDENCY_PRESENTATION_LETTER   = 'RPT.CARTA_PRESENTACION_RESIDENCIA',
 }
