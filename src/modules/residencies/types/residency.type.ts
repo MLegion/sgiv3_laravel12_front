@@ -2,6 +2,23 @@ export type ApprovalStatus = 'pending' | 'approved' | 'rejected'
 export type ResidencyStatus = 'registered' | 'in_progress' | 'concluded' | 'dropped'
 export type ProjectOption = 'worker' | 'own' | 'bank'
 export type ProjectBankStatus = 'draft' | 'published' | 'closed'
+export type ResidencyAdvisorType = 'principal' | 'vocal_1' | 'vocal_2' | 'vocal_suplente'
+
+/** Catálogo de tipos de asesor interno (comisión revisora). */
+export const ADVISOR_TYPE_OPTIONS: { value: ResidencyAdvisorType; label: string }[] = [
+    { value: 'principal',      label: 'PRINCIPAL' },
+    { value: 'vocal_1',        label: 'VOCAL 1' },
+    { value: 'vocal_2',        label: 'VOCAL 2' },
+    { value: 'vocal_suplente', label: 'VOCAL SUPLENTE' },
+]
+
+export interface ResidencyAdvisorRef {
+    id: number
+    advisorUserId: number
+    advisorName: string | null
+    advisorType: ResidencyAdvisorType
+    advisorTypeLabel: string | null
+}
 
 /** Residencia presentada (camelCase desde EloquentResidencyRepository). */
 export interface Residency {
@@ -16,7 +33,7 @@ export interface Residency {
     company: string | null
     companyAdvisorId: number | null
     companyAdvisor: string | null
-    internalAdvisorId: number | null
+    advisors: ResidencyAdvisorRef[]
     projectOption: ProjectOption | null
     projectId: number | null
     project: string | null

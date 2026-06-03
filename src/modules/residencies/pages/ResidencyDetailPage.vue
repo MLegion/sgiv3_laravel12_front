@@ -38,11 +38,26 @@
                 </div>
             </div>
 
-            <!-- Asesor interno -->
+            <!-- Comisión de asesores internos -->
             <div class="rounded-xl border bg-white p-5 space-y-3">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">Asesor interno</h2>
-                <p v-if="residency.internalAdvisorId" class="text-xs text-emerald-600">Asesor asignado (usuario #{{ residency.internalAdvisorId }}).</p>
-                <div class="flex items-center gap-2">
+                <h2 class="text-sm font-bold text-slate-700 uppercase">Comisión de asesores internos</h2>
+
+                <ul v-if="residency.advisors.length" class="space-y-1.5">
+                    <li v-for="a in residency.advisors" :key="a.id" class="flex items-center justify-between text-sm">
+                        <div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 mr-2">{{ a.advisorTypeLabel }}</span>
+                            <span class="text-slate-700">{{ a.advisorName ?? ('usuario #' + a.advisorUserId) }}</span>
+                        </div>
+                        <button type="button" class="text-xs px-2 py-1 border rounded-md text-red-600 hover:bg-red-50" @click="removeAdvisor(a.id)">Quitar</button>
+                    </li>
+                </ul>
+                <p v-else class="text-xs text-slate-400 italic">Sin asesores asignados.</p>
+
+                <div class="flex flex-wrap items-center gap-2 border-t pt-3">
+                    <select v-model="advisorType" class="border rounded-md px-3 py-2 text-sm">
+                        <option v-for="o in ADVISOR_TYPE_OPTIONS" :key="o.value" :value="o.value"
+                            :disabled="residency.advisors.some(a => a.advisorType === o.value)">{{ o.label }}</option>
+                    </select>
                     <input v-model.number="advisorUserId" type="number" min="1" placeholder="ID de usuario del docente/empleado"
                         class="border rounded-md px-3 py-2 text-sm w-72" />
                     <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
@@ -107,7 +122,8 @@ import { ref, reactive, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { Residency, ResidencyDocumentChecklistItem, ApprovalStatus, ProjectOption } from '@/modules/residencies/types/residency.type'
+import type { Residency, ResidencyDocumentChecklistItem, ApprovalStatus, ProjectOption, ResidencyAdvisorType } from '@/modules/residencies/types/residency.type'
+import { ADVISOR_TYPE_OPTIONS } from '@/modules/residencies/types/residency.type'
 
 const props = defineProps<{ id: string | number }>()
 const R = API.RESIDENCIES_API
@@ -118,6 +134,7 @@ const residency = ref<Residency | null>(null)
 const checklist = ref<ResidencyDocumentChecklistItem[]>([])
 
 const advisorUserId = ref<number | null>(null)
+const advisorType   = ref<ResidencyAdvisorType>('principal')
 const assigning     = ref(false)
 const advisorMsg    = ref<string | null>(null)
 const advisorError  = ref(false)
@@ -153,14 +170,19 @@ async function assignAdvisor() {
     if (!advisorUserId.value) return
     assigning.value = true; advisorMsg.value = null
     try {
-        await api.post(R.residency.assignAdvisor(props.id), { advisor_user_id: advisorUserId.value })
+        await api.post(R.residency.assignAdvisor(props.id), { advisor_user_id: advisorUserId.value, advisor_type: advisorType.value })
         advisorError.value = false
         advisorMsg.value = 'Asesor asignado.'
+        advisorUserId.value = null
         await load()
     } catch (e: any) {
         advisorError.value = true
         advisorMsg.value = e?.response?.data?.message ?? 'No se pudo asignar.'
     } finally { assigning.value = false }
+}
+async function removeAdvisor(advisorRowId: number) {
+    await api.delete(R.residency.removeAdvisor(props.id, advisorRowId))
+    await load()
 }
 async function approveDoc(id: number) {
     await api.post(R.documents.approve(id), {})

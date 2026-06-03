@@ -25,7 +25,7 @@
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="approvalClass(residency.projectApprovalStatus)">
                         {{ approvalLabel(residency.projectApprovalStatus) }}
                     </span>
-                    <p v-if="residency.internalAdvisorId" class="text-[11px] text-emerald-600 mt-1">Asesor interno asignado</p>
+                    <p v-if="residency.advisors?.length" class="text-[11px] text-emerald-600 mt-1">{{ residency.advisors.length }} asesor(es) interno(s) asignado(s)</p>
                 </div>
             </div>
 
