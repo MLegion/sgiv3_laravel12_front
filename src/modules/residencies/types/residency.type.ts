@@ -123,6 +123,18 @@ export interface ResidencyEvaluation {
     concludedAt: string | null
 }
 
+export interface ResidencyStatLabelCount { label: string; count: number }
+
+export interface ResidencyStatistics {
+    total: number
+    byStatus: Record<string, number>
+    byCareer: ResidencyStatLabelCount[]
+    byModality: Record<string, number>
+    byCompany: ResidencyStatLabelCount[]
+    approval: { passed: number; failed: number }
+    gradeBins: number[]
+}
+
 export interface ResidencyProject {
     id: number
     title: string

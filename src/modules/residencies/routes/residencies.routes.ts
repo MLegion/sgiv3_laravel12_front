@@ -41,4 +41,10 @@ export default [
         component: () => import('@/modules/residencies/pages/ProjectBankPage.vue'),
         meta: { title: 'Banco de Proyectos' },
     },
+    {
+        path: 'residencies/statistics',
+        name: 'residencies.statistics',
+        component: () => import('@/modules/residencies/pages/ResidencyStatisticsPage.vue'),
+        meta: { title: 'Estadísticas de Residencias' },
+    },
 ]
