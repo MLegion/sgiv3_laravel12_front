@@ -33,7 +33,7 @@ export default [
         path: 'residencies/companies',
         name: 'residencies.companies',
         component: () => import('@/modules/residencies/pages/CompaniesValidationPage.vue'),
-        meta: { title: 'Empresas por Validar' },
+        meta: { title: 'Empresas' },
     },
     {
         path: 'residencies/projects',

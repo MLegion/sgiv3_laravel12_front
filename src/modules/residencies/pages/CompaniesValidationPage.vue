@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-4">
         <div class="flex items-center justify-between flex-wrap gap-3">
-            <h1 class="text-xl font-semibold text-slate-800 uppercase">Empresas por Validar</h1>
+            <h1 class="text-xl font-semibold text-slate-800 uppercase">Empresas</h1>
             <div class="flex items-center gap-2">
                 <input v-model="search" placeholder="Buscar…" class="border rounded-md px-2 py-1 text-xs" @keyup.enter="reload" />
                 <select v-model="statusFilter" class="border rounded-md px-2 py-1 text-xs" @change="reload">

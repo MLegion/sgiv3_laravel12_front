@@ -32,7 +32,7 @@ export default [
         path: 'evd/admin/subjects',
         name: 'evd.admin.subjects',
         component: () => import('@/modules/evd/pages/EvdSubjectsProgressPage.vue'),
-        meta: { title: 'Avance por Materia · EVD' },
+        meta: { title: 'Avance por Grupos · EVD' },
     },
 
     // Admin — Gestión de periodos

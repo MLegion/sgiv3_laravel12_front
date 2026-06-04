@@ -108,7 +108,7 @@ onMounted(loadCaps)
 <template>
     <div class="space-y-4">
         <div class="flex items-center justify-between flex-wrap gap-2">
-            <h1 class="text-xl font-semibold text-slate-800 uppercase">Avance por Materia · EVD</h1>
+            <h1 class="text-xl font-semibold text-slate-800 uppercase">Avance por Grupos · EVD</h1>
             <span v-if="!canToggle"
                   class="text-[10px] text-slate-400 italic">
                 (modo lectura · solo el Encargado de Evaluación Docente edita visibilidad)
