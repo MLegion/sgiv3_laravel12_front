@@ -19,7 +19,7 @@ const emit = defineEmits<DataTableEmits<T>>()
 /* -------------------------------------------------------------------------- */
 const sortBy = ref<string | undefined>(props.sortBy)
 const sortDirection = ref<'asc' | 'desc' | undefined>(props.sortDirection)
-const search = ref('')
+const search = ref(props.initialSearch ?? '')
 let searchTimeout: any = null
 
 /* -------------------------------------------------------------------------- */

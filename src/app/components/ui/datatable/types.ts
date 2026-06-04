@@ -149,6 +149,12 @@ export interface DataTableProps<T = any> {
     emptyText?: string
 
     searchPlaceholder?: string
+
+    /**
+     * Valor inicial del cuadro de búsqueda (para restaurar estado persistido).
+     * Solo se usa al montar; después el input maneja su propio estado.
+     */
+    initialSearch?: string
 }
 
 /**
