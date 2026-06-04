@@ -40,6 +40,9 @@
             :loading="loading"
             :pagination="pagination"
             :perPageOptions="[10, 15, 30, 50]"
+            :initial-search="initialSearch"
+            :sort-by="initialSortBy"
+            :sort-direction="initialSortDirection"
             @change="handleChange"
         >
             <template #cell-id="{ value }">
@@ -251,6 +254,7 @@ import { ref, reactive, onMounted } from 'vue'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
+import { usePersistentRef } from '@/shared/composables/usePersistentRef'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import AssignRoleDrawer from '@/modules/college/components/AssignRoleDrawer.vue'
@@ -277,7 +281,10 @@ interface UserRow {
 const drawerUser = ref<UserRow | null>(null)
 const banner = reactive({ message: '', ok: false })
 
-const selectedRoleCode = ref<string>('')
+// Opciones de vista persistidas entre refreshes (localStorage):
+//  - filtro por rol (esta página)         → usePersistentRef
+//  - búsqueda / orden / página (la tabla)  → persistKey en useDataTableFetch
+const selectedRoleCode = usePersistentRef<string>('college.users.roleFilter', '')
 const availableRoles = ref<{ code: string; name: string }[]>([])
 const extraSearch = ref<Record<string, string>>({})
 
@@ -296,10 +303,14 @@ const {
     pagination,
     fetchData: rawFetch,
     handleChange,
+    initialSearch,
+    initialSortBy,
+    initialSortDirection,
 } = useDataTableFetch<UserRow>({
     endpoint: API.COLLEGE_API.users.list,
     initialPerPage: 15,
     extraSearch,
+    persistKey: 'college.users.table',
     mapResponse: data => ({
         items:   data.items,
         total:   data.total,
@@ -328,6 +339,8 @@ async function loadRoles() {
 }
 
 onMounted(loadRoles)
+// Carga inicial única; el composable ya restauró búsqueda/orden/página y el
+// rol guardado se aplica vía extraSearch. Un solo fetch, ya filtrado.
 fetchData()
 
 function openDrawer(row: UserRow) {
