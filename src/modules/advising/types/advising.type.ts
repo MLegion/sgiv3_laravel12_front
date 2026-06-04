@@ -300,3 +300,42 @@ export interface PolicyViolation {
     item_id?: number | null
     payload?: Record<string, unknown>
 }
+
+/* ── Excepciones a requisitos de reinscripción ─────────────────────── */
+
+/** Sub-requisito dentro del meta.checks de un gate (p. ej. residencia). */
+export interface RequirementCheck {
+    code: string
+    label: string
+    ok: boolean
+    detail: string
+    waived?: boolean
+}
+
+export type RequirementExceptionStatus = 'pending' | 'approved' | 'rejected'
+
+/** Estado de las excepciones del alumno (para pintar el botón). */
+export interface MyRequirementException {
+    gateCode: string
+    requirementCode: string
+    status: RequirementExceptionStatus
+    resolutionNote: string | null
+}
+
+/** Fila de la bandeja del jefe de carrera. */
+export interface PendingRequirementException {
+    id: number
+    gateCode: string
+    requirementCode: string
+    requirementLabel: string
+    status: RequirementExceptionStatus
+    studentNote: string | null
+    resolutionNote: string | null
+    requestedAt: string | null
+    resolvedAt: string | null
+    student: string
+    numControl: string | null
+    careerName: string | null
+    modalityName: string | null
+    periodName: string | null
+}

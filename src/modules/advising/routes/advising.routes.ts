@@ -13,6 +13,12 @@ export default [
         meta: { title: 'Mi Reinscripción' },
     },
     {
+        path: 'advising/requirement-exceptions',
+        name: 'advising.requirement-exceptions',
+        component: () => import('@/modules/advising/pages/RequirementExceptionsInboxPage.vue'),
+        meta: { title: 'Excepciones de Requisitos' },
+    },
+    {
         path: 'advising/my-add-drop',
         name: 'advising.my-add-drop',
         component: () => import('@/modules/advising/pages/MyAddDropPage.vue'),

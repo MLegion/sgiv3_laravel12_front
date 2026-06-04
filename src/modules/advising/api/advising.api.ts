@@ -47,6 +47,12 @@ const advisingApi: ApiModule = {
             adminGroupAssignments: (groupId: string | number) => apiUrl(`/advising/enrollments/admin/groups/${groupId}/assignments`),
             adminByAssignment:     (teacherAssignmentId: string | number) => apiUrl(`/advising/enrollments/admin/by-teacher-assignment/${teacherAssignmentId}`),
         },
+        requirementExceptions: {
+            request: apiUrl('/advising/requirement-exceptions'),
+            mine:    apiUrl('/advising/requirement-exceptions/mine'),
+            pending: apiUrl('/advising/requirement-exceptions/pending'),
+            resolve: (id: string | number) => apiUrl(`/advising/requirement-exceptions/${id}/resolve`),
+        },
         projection: {
             forSession: (id: string | number) => apiUrl(`/advising/sessions/${id}/projection`),
             forMe:      apiUrl('/advising/me/projection'),

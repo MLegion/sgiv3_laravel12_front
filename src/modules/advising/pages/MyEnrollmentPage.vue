@@ -120,6 +120,32 @@
                         <div class="flex-1">
                             <div class="text-sm font-semibold text-slate-700 uppercase">{{ g.title }}</div>
                             <div class="text-xs text-slate-500 mt-0.5">{{ g.message }}</div>
+
+                            <!-- Sub-requisitos (p. ej. residencia): botón de excepción a la izquierda -->
+                            <ul v-if="gateChecks(g).length" class="mt-2.5 space-y-1.5">
+                                <li v-for="c in gateChecks(g)" :key="c.code" class="flex items-start gap-2.5">
+                                    <div class="flex-shrink-0 w-[150px]">
+                                        <ExceptionControl
+                                            :ok="c.ok" :waived="c.waived"
+                                            :status="exceptionStatus(g.code, c.code)"
+                                            @request="openExceptionModal(g.code, c.code, c.label)"
+                                        />
+                                    </div>
+                                    <div class="min-w-0 pt-0.5">
+                                        <span class="text-xs font-medium" :class="c.ok ? 'text-slate-600' : 'text-rose-700'">{{ c.label }}</span>
+                                        <span class="text-[11px] text-slate-400"> · {{ c.detail }}</span>
+                                    </div>
+                                </li>
+                            </ul>
+
+                            <!-- Gate sin sub-checks pero no cumplido: excepción a nivel de requisito -->
+                            <div v-else-if="g.status === 'fail'" class="mt-2">
+                                <ExceptionControl
+                                    :ok="false" :waived="false"
+                                    :status="exceptionStatus(g.code, g.code)"
+                                    @request="openExceptionModal(g.code, g.code, g.title)"
+                                />
+                            </div>
                         </div>
                     </li>
                 </ul>
@@ -183,21 +209,56 @@
             :code="formatUnavailableInfo.code"
             :reason="formatUnavailableInfo.reason"
         />
+
+        <!-- Modal: solicitar excepción al jefe de carrera -->
+        <Teleport to="body">
+            <div v-if="exceptionModal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div class="absolute inset-0 bg-black/40" @click="exceptionModal.open = false" />
+                <div class="relative bg-white rounded-xl shadow-lg w-full max-w-md p-6 space-y-4 z-10">
+                    <h3 class="text-sm font-bold text-slate-800 uppercase">Pedir excepción al jefe de carrera</h3>
+                    <p class="text-sm text-slate-600">
+                        Solicitarás una excepción al requisito
+                        <strong class="text-slate-800">{{ exceptionModal.requirementLabel }}</strong>.
+                        El jefe de carrera la revisará; si la aprueba, podrás continuar con tu reinscripción.
+                    </p>
+                    <label class="block">
+                        <span class="text-xs font-semibold text-slate-500 uppercase">Motivo (opcional)</span>
+                        <textarea v-model="exceptionModal.note" rows="3"
+                            class="mt-1 w-full border rounded-md px-3 py-2 text-sm"
+                            placeholder="Explica por qué solicitas la excepción…"></textarea>
+                    </label>
+                    <p v-if="exceptionModal.error" class="text-xs text-red-600">{{ exceptionModal.error }}</p>
+                    <div class="flex justify-end gap-2 pt-1">
+                        <button type="button" class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50"
+                                :disabled="exceptionModal.submitting" @click="exceptionModal.open = false">
+                            Cancelar
+                        </button>
+                        <button type="button"
+                                class="px-4 py-2 text-sm rounded-lg text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-50"
+                                :disabled="exceptionModal.submitting" @click="submitException">
+                            {{ exceptionModal.submitting ? 'Enviando…' : 'Enviar solicitud' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 import FormatUnavailableModal from '@/modules/reports/components/FormatUnavailableModal.vue'
+import ExceptionControl from '@/modules/advising/components/ExceptionControl.vue'
 import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
 import { ReportCode } from '@/modules/reports/types/reportCodes'
 import type {
     AdvisingSession, AdvisingStatus,
     EnrollmentEligibilityReport, EnrolledCourse, EnrollmentConfirmResponse, GateStatus, PolicyViolation,
+    EnrollmentGateResult, RequirementCheck, MyRequirementException, RequirementExceptionStatus,
 } from '@/modules/advising/types/advising.type'
 
 interface ActivePeriod {
@@ -223,7 +284,70 @@ const confirmEnrollmentModalOpen = ref(false)
 const formatUnavailableOpen = ref(false)
 const formatUnavailableInfo = ref<{ code: string; reason: 'missing' | 'inactive' }>({ code: '', reason: 'missing' })
 
+// Excepciones a requisitos (solicitar al jefe de carrera)
+const myExceptions = ref<MyRequirementException[]>([])
+const exceptionModal = reactive<{
+    open: boolean; gateCode: string; requirementCode: string; requirementLabel: string;
+    note: string; submitting: boolean; error: string
+}>({ open: false, gateCode: '', requirementCode: '', requirementLabel: '', note: '', submitting: false, error: '' })
+
 const { generatePdf } = useReportGenerator()
+
+/** Sub-requisitos de un gate (p. ej. residencia trae checks en meta). */
+function gateChecks(g: EnrollmentGateResult): RequirementCheck[] {
+    const checks = (g.meta as any)?.checks
+    return Array.isArray(checks) ? checks as RequirementCheck[] : []
+}
+
+/** Estado de la excepción para un requisito, o null si no se ha solicitado. */
+function exceptionStatus(gateCode: string, requirementCode: string): RequirementExceptionStatus | null {
+    const e = myExceptions.value.find(x => x.gateCode === gateCode && x.requirementCode === requirementCode)
+    return e ? e.status : null
+}
+
+function openExceptionModal(gateCode: string, requirementCode: string, requirementLabel: string) {
+    exceptionModal.open = true
+    exceptionModal.gateCode = gateCode
+    exceptionModal.requirementCode = requirementCode
+    exceptionModal.requirementLabel = requirementLabel
+    exceptionModal.note = ''
+    exceptionModal.error = ''
+}
+
+async function submitException() {
+    const periodId = activePeriod.value?.collegeAcademicPeriodId
+    if (!periodId || exceptionModal.submitting) return
+    exceptionModal.submitting = true
+    exceptionModal.error = ''
+    try {
+        await api.post(API.ADVISING_API.requirementExceptions.request, {
+            college_academic_period_id: periodId,
+            gate_code:                  exceptionModal.gateCode,
+            requirement_code:           exceptionModal.requirementCode,
+            requirement_label:          exceptionModal.requirementLabel,
+            note:                       exceptionModal.note || null,
+        })
+        exceptionModal.open = false
+        okMsg.value = 'Solicitud enviada al jefe de carrera.'
+        setTimeout(() => okMsg.value = '', 4000)
+        await loadMyExceptions(periodId)
+    } catch (e: any) {
+        exceptionModal.error = extractMsg(e)
+    } finally {
+        exceptionModal.submitting = false
+    }
+}
+
+async function loadMyExceptions(periodId: number) {
+    try {
+        const { data } = await api.get(API.ADVISING_API.requirementExceptions.mine, {
+            params: { college_academic_period_id: periodId },
+        })
+        myExceptions.value = Array.isArray(data?.data) ? data.data : []
+    } catch {
+        myExceptions.value = []
+    }
+}
 
 function gateBadgeClass(status: GateStatus): string {
     return ({
@@ -283,6 +407,7 @@ async function loadEnrollmentsAndEligibility() {
                 },
             })
             eligibility.value = report ?? null
+            await loadMyExceptions(periodId)
         } else {
             eligibility.value = null
         }
