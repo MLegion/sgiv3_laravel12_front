@@ -65,7 +65,7 @@
                                         </div>
                                     </div>
                                     <button
-                                        v-if="a.belongs_to_current_college !== false"
+                                        v-if="a.belongs_to_current_college !== false && !isProtectedRole(a.role_code)"
                                         :disabled="revokingId === a.id"
                                         class="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 disabled:opacity-60 transition"
                                         title="Revocar rol"
@@ -73,6 +73,13 @@
                                     >
                                         <TrashIcon class="w-4 h-4" />
                                     </button>
+                                    <span
+                                        v-else-if="isProtectedRole(a.role_code)"
+                                        class="shrink-0 inline-flex items-center gap-1 text-[10px] text-slate-400"
+                                        title="Este rol no puede revocarse desde el college"
+                                    >
+                                        <LockClosedIcon class="w-3.5 h-3.5" /> No revocable
+                                    </span>
                                 </li>
                             </ul>
                         </section>
@@ -191,7 +198,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import { XMarkIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import { XMarkIcon, TrashIcon, LockClosedIcon } from '@heroicons/vue/24/outline'
 
 interface RequiredContext {
     alias: string
@@ -235,6 +242,12 @@ const emit = defineEmits<{
     (e: 'close'): void
     (e: 'changed', payload: { ok: boolean, message: string }): void
 }>()
+
+// Roles que NO pueden revocarse desde el college (espeja FORBIDDEN_ROLE_CODES
+// de RevokeRoleFromCollegeUserHandler): el college_admin no puede quitarse a sí
+// mismo ni a otros este rol, ni el superadmin.
+const PROTECTED_ROLE_CODES = ['SUPERADMIN', 'COLLEGE_ADMIN']
+const isProtectedRole = (code: string) => PROTECTED_ROLE_CODES.includes(code)
 
 const roles = ref<Role[]>([])
 const detail = ref<UserDetail | null>(null)
