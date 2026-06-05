@@ -224,8 +224,15 @@ async function loadPeriods() {
             : (Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []))
         periods.value = list
         if (!periodId.value && list.length) {
-            // Auto-seleccionar el más reciente para evitar pantalla vacía.
-            periodId.value = list[0].id
+            // Default: el periodo más reciente CON inscripciones activas (evita
+            // aterrizar en uno futuro/planeado vacío). Fallback al más reciente.
+            let defaultId: number | null = null
+            try {
+                const { data: dp } = await api.get(API.ADVISING_API.enrollments.adminDefaultPeriod)
+                const candidate = dp?.college_academic_period_id ?? null
+                if (candidate && list.some(p => p.id === candidate)) defaultId = candidate
+            } catch { /* sin default sugerido */ }
+            periodId.value = defaultId ?? list[0].id
             await loadGroups()
         }
     } catch (e: any) {
