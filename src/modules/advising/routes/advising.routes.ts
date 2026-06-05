@@ -39,6 +39,20 @@ export default [
         meta: { title: 'Revisión de Asesoría' },
     },
 
+    // ── Jefe de carrera: Altas y Bajas ───────────────────────────────
+    {
+        path: 'advising/add-drop/review',
+        name: 'advising.add-drop.review.list',
+        component: () => import('@/modules/advising/pages/AddDropReviewListPage.vue'),
+        meta: { title: 'Altas y Bajas por Revisar' },
+    },
+    {
+        path: 'advising/add-drop/review/:id',
+        name: 'advising.add-drop.review.detail',
+        component: () => import('@/modules/advising/pages/AddDropReviewDetailPage.vue'),
+        meta: { title: 'Revisión de Altas y Bajas' },
+    },
+
     // ── Admin ────────────────────────────────────────────────────────
     {
         path: 'advising/phases',

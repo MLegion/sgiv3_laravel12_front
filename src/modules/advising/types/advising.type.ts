@@ -301,6 +301,70 @@ export interface PolicyViolation {
     payload?: Record<string, unknown>
 }
 
+/* ── Altas y Bajas (phase_add_drop) ────────────────────────────────── */
+
+export type AddDropItemType = 'add' | 'drop'
+
+export interface AddDropSubjectRef {
+    id: number
+    name: string
+    officialCode?: string | null
+    credits?: number | null
+}
+
+export interface AddDropRequestItem {
+    id: number
+    addDropRequestId: number
+    type: AddDropItemType
+    subjectId: number
+    curriculumId: number | null
+    teacherAssignmentId: number | null
+    sourceEnrollmentId: number | null
+    isRepeat: boolean
+    isSpecial: boolean
+    applied: boolean
+    appliedEnrollmentId: number | null
+    subject: AddDropSubjectRef | null
+    teacherAssignment: AdvisingTeacherAssignmentRef | null
+    createdAt?: string | null
+    updatedAt?: string | null
+}
+
+export interface AddDropRequest {
+    id: number
+    studentId: number
+    studentAffiliationId: number
+    collegeAcademicPeriodId: number
+    studyPlanId: number | null
+    status: AdvisingStatus
+    submittedAt: string | null
+    reviewedAt: string | null
+    reviewedBy: number | null
+    autoApproved: boolean
+    rejectionReason: string | null
+    createdByUserId: number | null
+    student: { id: number; numControl?: string | null; fullName: string } | null
+    reviewer: { id: number; name?: string | null; email?: string | null } | null
+    period?: { id: number; name: string | null; shortName: string | null } | null
+    items: AddDropRequestItem[]
+    createdAt?: string | null
+    updatedAt?: string | null
+}
+
+export interface MyAddDropResponse {
+    studentId: number
+    request: AddDropRequest | null
+    currentLoad: EnrolledCourse[]
+}
+
+export interface AddDropActivePeriod {
+    open: boolean
+    message?: string
+    collegeAcademicPeriodId?: number
+    modalityId?: number
+    period?: { id: number; name: string | null; shortName: string | null } | null
+}
+
 /* ── Excepciones a requisitos de reinscripción ─────────────────────── */
 
 /** Sub-requisito dentro del meta.checks de un gate (p. ej. residencia). */
