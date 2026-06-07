@@ -354,8 +354,8 @@ function isExceptional(phase: string, newValue: boolean): boolean {
     if (status === 'draft' || status === 'planned') return false
     // En active: solo es excepcional reabrir una fase de planeación
     if (status === 'active') return newValue && PLANNING_PHASES.includes(phase)
-    // closed/archived: cualquier cambio es excepcional
-    if (['closed','archived'].includes(status)) return true
+    // closed/archived: cerrar una fase es normal; solo reabrir es excepcional
+    if (['closed','archived'].includes(status)) return newValue
     return false
 }
 
