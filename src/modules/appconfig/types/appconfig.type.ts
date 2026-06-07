@@ -37,6 +37,8 @@ export interface ConfigSchemaSummary {
     icon: string | null
     icon_svg: string | null
     permission: string | null
+    group: string | null
+    custom_route: string | null
 }
 
 export interface SecretPlaceholder {
