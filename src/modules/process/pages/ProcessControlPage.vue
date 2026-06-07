@@ -37,7 +37,7 @@
             <div v-for="m in proc.modalities" :key="m.modalityId" class="bg-white border rounded-xl shadow-sm">
                 <div class="border-b px-4 py-2 flex items-center justify-between">
                     <span class="text-sm font-bold text-slate-700">{{ m.modalityLabel }}</span>
-                    <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full" :class="statusClass(m.periodStatus)">
+                    <span v-if="m.periodStatus" class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full" :class="statusClass(m.periodStatus)">
                         Periodo: {{ m.periodStatus }}
                     </span>
                 </div>
