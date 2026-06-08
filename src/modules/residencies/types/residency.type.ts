@@ -1,5 +1,5 @@
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected'
-export type ResidencyStatus = 'registered' | 'in_progress' | 'concluded' | 'dropped'
+export type ResidencyStatus = 'pending_activation' | 'registered' | 'in_progress' | 'concluded' | 'dropped'
 export type ProjectOption = 'worker' | 'own' | 'bank'
 export type ProjectBankStatus = 'draft' | 'published' | 'closed'
 export type ResidencyAdvisorType = 'principal' | 'vocal_1' | 'vocal_2' | 'vocal_suplente'

@@ -22,6 +22,28 @@
                 </div>
             </div>
 
+            <!-- Activación + instructivo -->
+            <div class="rounded-xl border bg-white p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-slate-700 uppercase">Estado de activación</h2>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                          :class="residency.status === 'pending_activation' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'">
+                        {{ residency.status === 'pending_activation' ? 'Pendiente de activación' : 'Activada' }}
+                    </span>
+                </div>
+                <div v-if="canManage" class="flex items-center gap-2">
+                    <button v-if="residency.status === 'pending_activation'" type="button"
+                        class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" @click="activate">
+                        Activar residencia
+                    </button>
+                    <button v-else type="button"
+                        class="text-xs px-3 py-2 border rounded-md hover:bg-slate-50" @click="resendInstructions">
+                        Reenviar instructivo
+                    </button>
+                </div>
+                <p v-if="actionMsg" class="text-xs" :class="actionErr ? 'text-red-600' : 'text-emerald-600'">{{ actionMsg }}</p>
+            </div>
+
             <!-- Aval del proyecto -->
             <div class="rounded-xl border bg-white p-5 space-y-3">
                 <div class="flex items-center justify-between">
@@ -166,6 +188,10 @@ const loading   = ref(true)
 const residency = ref<Residency | null>(null)
 const checklist = ref<ResidencyDocumentChecklistItem[]>([])
 
+const actionMsg = ref('')
+const actionErr = ref(false)
+const canManage = ref(false)
+
 const advisorUserId = ref<number | null>(null)
 const advisorType   = ref<ResidencyAdvisorType>('principal')
 const assigning     = ref(false)
@@ -205,6 +231,38 @@ async function load() {
         residency.value = r
         checklist.value = docs ?? []
     } finally { loading.value = false }
+}
+
+// Solo el coordinador (res.residency.manage) puede activar/reenviar. Probe con
+// el endpoint de auto-accept, gateado por el mismo permiso (oculta ante 403).
+async function loadCanManage() {
+    try { await api.get(R.documents.autoAccept); canManage.value = true }
+    catch { canManage.value = false }
+}
+
+async function activate() {
+    actionMsg.value = ''
+    try {
+        await api.post(R.residency.activate(props.id), {})
+        await load()
+        actionMsg.value = 'Residencia activada. Se envió el instructivo al residente.'
+        actionErr.value = false
+    } catch (e: any) {
+        actionMsg.value = e?.response?.data?.message ?? 'No se pudo activar.'
+        actionErr.value = true
+    }
+}
+
+async function resendInstructions() {
+    actionMsg.value = ''
+    try {
+        await api.post(R.residency.resendInstructions(props.id), {})
+        actionMsg.value = 'Instructivo reenviado al residente.'
+        actionErr.value = false
+    } catch (e: any) {
+        actionMsg.value = e?.response?.data?.message ?? 'No se pudo reenviar.'
+        actionErr.value = true
+    }
 }
 
 async function approveProject() {
@@ -269,4 +327,5 @@ function approvalClass(s: ApprovalStatus | null): string {
 }
 
 load()
+loadCanManage()
 </script>
