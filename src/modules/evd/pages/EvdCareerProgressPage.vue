@@ -33,10 +33,16 @@ const caps        = ref<CapOption[]>([])
 const selectedCap = ref<number | null>(null)
 const loadingCaps = ref(true)
 
+interface NamedRef { id: number; name: string }
+
 const careers     = ref<Career[]>([])
+const campuses    = ref<NamedRef[]>([])
+const modalityTypes = ref<NamedRef[]>([])
 const summary     = ref<Summary>({ total: 0, completed: 0, pending: 0, progress_pct: 0, groups_count: 0 })
 const groups      = ref<GroupRow[]>([])
-const careerFilter = ref<number | null>(null)   // null = todas
+const careerFilter   = ref<number | null>(null)   // null = todas
+const campusFilter   = ref<number | null>(null)
+const modalityFilter = ref<number | null>(null)
 const search      = ref('')
 const loading     = ref(false)
 const error       = ref('')
@@ -86,12 +92,20 @@ async function load() {
     error.value = ''
     try {
         const params: Record<string, string> = {}
-        if (careerFilter.value !== null) params.career_id = String(careerFilter.value)
+        if (careerFilter.value !== null)   params.career_id = String(careerFilter.value)
+        if (campusFilter.value !== null)   params.campus_id = String(campusFilter.value)
+        if (modalityFilter.value !== null) params.modality_type_id = String(modalityFilter.value)
         if (search.value.trim() !== '') params.search = search.value.trim()
         const { data } = await api.get(API.EVD_API.admin.myCareerProgress(selectedCap.value), { params })
         careers.value = Array.isArray(data?.careers) ? data.careers : []
+        campuses.value = Array.isArray(data?.campuses) ? data.campuses : []
+        modalityTypes.value = Array.isArray(data?.modality_types) ? data.modality_types : []
         summary.value = data?.summary ?? summary.value
         groups.value  = Array.isArray(data?.groups) ? data.groups : []
+        // Si solo hay una opción se aplica directo (se muestra como valor fijo).
+        if (campuses.value.length === 1 && campusFilter.value !== campuses.value[0].id) campusFilter.value = campuses.value[0].id
+        if (modalityTypes.value.length === 1 && modalityFilter.value !== modalityTypes.value[0].id) modalityFilter.value = modalityTypes.value[0].id
+        if (careers.value.length === 1 && careerFilter.value !== careers.value[0].id) careerFilter.value = careers.value[0].id
         // reset detalle al recargar
         for (const k of Object.keys(expanded)) delete expanded[Number(k)]
         for (const k of Object.keys(students)) delete students[Number(k)]
@@ -133,8 +147,15 @@ function statusBadge(status: string): { label: string; cls: string } {
     }
 }
 
-watch(selectedCap, load)
-watch(careerFilter, load)
+// Al cambiar de periodo, limpia los filtros (los ids podrían no existir en él).
+watch(selectedCap, () => {
+    careerFilter.value = null
+    campusFilter.value = null
+    modalityFilter.value = null
+})
+// Un solo watcher consolidado: Vue agrupa los cambios síncronos en un flush,
+// así que un cambio de periodo + reset de filtros dispara load() una vez.
+watch([selectedCap, careerFilter, campusFilter, modalityFilter], load)
 onMounted(async () => {
     await loadCaps()
     await resolveDefaultCap()   // dispara load() vía watch(selectedCap)
@@ -162,21 +183,33 @@ onMounted(async () => {
             </div>
         </div>
 
-        <!-- Filtro de carrera (solo si tiene más de una) -->
-        <div v-if="careers.length > 1" class="flex flex-wrap items-center gap-2">
-            <span class="text-xs text-slate-500">Carrera:</span>
-            <button type="button"
-                class="text-xs px-2.5 py-1 rounded-full border"
-                :class="careerFilter === null ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'"
-                @click="careerFilter = null">
-                Todas
-            </button>
-            <button v-for="c in careers" :key="c.id" type="button"
-                class="text-xs px-2.5 py-1 rounded-full border"
-                :class="careerFilter === c.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'"
-                @click="careerFilter = c.id">
-                {{ c.short_name ?? c.name }}
-            </button>
+        <!-- Filtros en una sola fila: campus · tipo de modalidad · carrera.
+             Con varias opciones → selector; con una sola → valor fijo (mismo look, sin selector). -->
+        <div class="flex flex-wrap items-end gap-4">
+            <label v-if="campuses.length >= 1" class="flex flex-col gap-1">
+                <span class="text-xs text-slate-500">Campus</span>
+                <select v-if="campuses.length > 1" v-model="campusFilter" class="border border-slate-300 rounded px-2 py-1.5 text-sm min-w-44">
+                    <option :value="null">Todos</option>
+                    <option v-for="cmp in campuses" :key="cmp.id" :value="cmp.id">{{ cmp.name }}</option>
+                </select>
+                <div v-else class="border border-slate-300 rounded px-2 py-1.5 text-sm bg-slate-50 text-slate-700 min-w-44">{{ campuses[0].name }}</div>
+            </label>
+            <label v-if="modalityTypes.length >= 1" class="flex flex-col gap-1">
+                <span class="text-xs text-slate-500">Tipo de modalidad</span>
+                <select v-if="modalityTypes.length > 1" v-model="modalityFilter" class="border border-slate-300 rounded px-2 py-1.5 text-sm min-w-44">
+                    <option :value="null">Todas</option>
+                    <option v-for="mt in modalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
+                </select>
+                <div v-else class="border border-slate-300 rounded px-2 py-1.5 text-sm bg-slate-50 text-slate-700 min-w-44">{{ modalityTypes[0].name }}</div>
+            </label>
+            <label v-if="careers.length >= 1" class="flex flex-col gap-1">
+                <span class="text-xs text-slate-500">Carrera</span>
+                <select v-if="careers.length > 1" v-model="careerFilter" class="border border-slate-300 rounded px-2 py-1.5 text-sm min-w-72">
+                    <option :value="null">Todas</option>
+                    <option v-for="c in careers" :key="c.id" :value="c.id">{{ c.name }}</option>
+                </select>
+                <div v-else class="border border-slate-300 rounded px-2 py-1.5 text-sm bg-slate-50 text-slate-700 min-w-72">{{ careers[0].name }}</div>
+            </label>
         </div>
 
         <!-- Resumen -->

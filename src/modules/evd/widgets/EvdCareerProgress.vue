@@ -12,11 +12,14 @@ interface BehindGroup {
     total_assignments: number
     progress_pct: number
 }
+interface NamedRef { id: number; name: string }
 interface Payload {
     period: { id: number; name: string; short_name: string | null } | null
     cap_id: number | null
     career_scoped: boolean
     careers: Career[]
+    campuses: NamedRef[]
+    modality_types: NamedRef[]
     summary: { total: number; completed: number; pending: number; progress_pct: number; groups_count: number }
     top_behind: BehindGroup[]
 }
@@ -33,7 +36,23 @@ const router = useRouter()
 const summary    = computed(() => props.data?.summary ?? { total: 0, completed: 0, pending: 0, progress_pct: 0, groups_count: 0 })
 const topBehind  = computed(() => props.data?.top_behind ?? [])
 const careers    = computed(() => props.data?.careers ?? [])
+const campuses   = computed(() => props.data?.campuses ?? [])
+const modalities = computed(() => props.data?.modality_types ?? [])
 const hasData    = computed(() => summary.value.total > 0)
+
+const campusLabel   = computed(() => campuses.value.map(c => c.name).join(', '))
+const modalityLabel = computed(() => modalities.value.map(m => m.name).join(', '))
+
+// Alcance de lo mostrado: por carrera (jefe) o global (director/SES).
+const scope = computed<{ label: string; cls: string }>(() => {
+    if (props.data?.career_scoped) {
+        const cs = careers.value
+        if (cs.length === 1) return { label: cs[0].short_name ?? cs[0].name, cls: 'bg-indigo-100 text-indigo-700' }
+        if (cs.length > 1)   return { label: `${cs.length} carreras`, cls: 'bg-indigo-100 text-indigo-700' }
+        return { label: 'Mi carrera', cls: 'bg-indigo-100 text-indigo-700' }
+    }
+    return { label: 'Global · todas las carreras', cls: 'bg-slate-100 text-slate-600' }
+})
 
 function barColor(pct: number): string {
     if (pct >= 80) return 'bg-emerald-500'
@@ -49,7 +68,7 @@ function goDetail() {
 <template>
     <div class="h-full flex flex-col text-xs">
         <div class="flex items-center gap-2 mb-2 flex-wrap">
-            <span class="font-medium text-slate-700">Avance Evaluación Docente</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold" :class="scope.cls">{{ scope.label }}</span>
             <span v-if="data?.period" class="text-[9px] text-slate-500 ml-auto">
                 {{ data.period.short_name ?? data.period.name }}
             </span>
@@ -83,6 +102,10 @@ function goDetail() {
                           class="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
                         {{ c.short_name ?? c.name }}
                     </span>
+                </div>
+                <div v-if="campusLabel || modalityLabel" class="mt-1 space-y-0.5 text-[9px] text-slate-500">
+                    <div v-if="campusLabel"><span class="font-semibold text-slate-400 uppercase">Campus:</span> {{ campusLabel }}</div>
+                    <div v-if="modalityLabel"><span class="font-semibold text-slate-400 uppercase">Modalidad:</span> {{ modalityLabel }}</div>
                 </div>
             </div>
 
