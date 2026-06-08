@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { EvaluationStartResponse, MyEvdAssignment, MyEvdStatus } from '@/modules/evd/types/evd.type'
+import type { MyEvdAssignment, MyEvdStatus } from '@/modules/evd/types/evd.type'
 
 interface ActivePeriod {
     open: boolean
@@ -10,6 +11,8 @@ interface ActivePeriod {
     collegeAcademicPeriodId?: number
     period?: { id: number; name: string; shortName: string } | null
 }
+
+const router = useRouter()
 
 const activePeriod = ref<ActivePeriod | null>(null)
 const status       = ref<MyEvdStatus | null>(null)
@@ -57,25 +60,11 @@ async function load() {
     }
 }
 
-async function startEvaluation(it: MyEvdAssignment) {
+function startEvaluation(it: MyEvdAssignment) {
     if (it.status === 'completed' || startingId.value !== null) return
-    startingId.value = it.assignment_id
-    error.value = ''
-    try {
-        const { data } = await api.post<EvaluationStartResponse>(API.EVD_API.start(it.assignment_id))
-        if (!data.sgi_forms_url || !data.sso_token) {
-            error.value = 'La integración con sgi_forms no está configurada en este plantel.'
-            return
-        }
-        const base = data.sgi_forms_url.replace(/\/$/, '')
-        const redirect = `/attempts/start-with-context?form=${encodeURIComponent(data.form_slug)}`
-        const url = `${base}/sso-bridge?token=${encodeURIComponent(data.sso_token)}&redirect=${encodeURIComponent(redirect)}`
-        window.location.href = url
-    } catch (e: any) {
-        error.value = e?.response?.data?.message ?? e?.message ?? 'No se pudo iniciar la evaluación.'
-    } finally {
-        startingId.value = null
-    }
+    // El cuestionario se abre EMBEBIDO en el layout de sgiv3 (ruta nativa).
+    // Esa página pide el token EVD y habla directo con el API de sgi_forms.
+    router.push({ name: 'evd.attempt', params: { assignmentId: it.assignment_id } })
 }
 
 function formatDateTime(s: string | null): string {
@@ -229,51 +218,60 @@ onMounted(load)
             </div>
         </div>
 
-        <!-- (c/d) Lista mixta: pendientes con botón + completadas con badge ─ -->
-        <ul v-else-if="uiState === 'has_pending'" class="space-y-2">
-            <li v-for="it in status?.assignments ?? []" :key="it.assignment_id"
-                class="bg-white border border-slate-200 rounded-xl p-4 flex flex-wrap items-center gap-4">
-                <div class="flex-1 min-w-[260px]">
-                    <div class="flex items-center gap-2">
-                        <template v-if="it.status === 'completed'">
-                            <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 bg-emerald-100 text-emerald-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
-                                </svg>
-                                Ya realizada
-                            </span>
-                            <span class="text-[10px] text-slate-400">{{ formatDateTime(it.completed_at) }}</span>
-                        </template>
-                        <span v-else-if="it.status === 'in_progress'"
-                              class="text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 bg-amber-100 text-amber-700">
-                            En progreso
-                        </span>
-                        <span v-else
-                              class="text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 bg-blue-100 text-blue-700">
-                            Pendiente
-                        </span>
-                    </div>
-                    <div class="font-bold text-slate-800 uppercase mt-1">{{ it.subject.name }}</div>
-                    <div class="text-xs text-slate-500">
-                        <span class="font-mono">{{ it.subject.official_code ?? '—' }}</span>
-                        <span class="mx-2">·</span>
-                        <span>Grupo {{ it.group.name ?? '—' }}</span>
-                        <span class="mx-2">·</span>
-                        <span>{{ it.teacher?.name ?? '— por asignar —' }}</span>
-                    </div>
-                </div>
-
-                <!-- Botón solo visible para pendiente/in_progress -->
-                <button v-if="it.status !== 'completed'"
-                    :disabled="startingId !== null"
-                    class="px-4 py-2 rounded-md text-sm font-bold text-white disabled:opacity-50 bg-blue-600 hover:bg-blue-700"
-                    @click="startEvaluation(it)"
-                >
-                    <template v-if="startingId === it.assignment_id">Abriendo…</template>
-                    <template v-else-if="it.status === 'in_progress'">CONTINUAR</template>
-                    <template v-else>EVALUAR</template>
-                </button>
-            </li>
-        </ul>
+        <!-- (c/d) Tabla: materias con su estado + acción ─────────────────── -->
+        <div v-else-if="uiState === 'has_pending'" class="space-y-2">
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
+                        <tr>
+                            <th class="text-left px-4 py-2 w-36">Estado</th>
+                            <th class="text-left px-4 py-2">Materia</th>
+                            <th class="text-left px-4 py-2 w-28">Grupo</th>
+                            <th class="text-left px-4 py-2">Docente</th>
+                            <th class="text-right px-4 py-2 w-40">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr v-for="it in status?.assignments ?? []" :key="it.assignment_id" class="hover:bg-slate-50/60">
+                            <td class="px-4 py-2.5">
+                                <span v-if="it.status === 'completed'"
+                                      class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 bg-emerald-100 text-emerald-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                                    </svg>
+                                    Ya realizada
+                                </span>
+                                <span v-else-if="it.status === 'in_progress'"
+                                      class="text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 bg-amber-100 text-amber-700">
+                                    En progreso
+                                </span>
+                                <span v-else
+                                      class="text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 bg-blue-100 text-blue-700">
+                                    Pendiente
+                                </span>
+                            </td>
+                            <td class="px-4 py-2.5">
+                                <div class="font-bold text-slate-800 uppercase">{{ it.subject.name }}</div>
+                                <div class="text-[10px] font-mono text-slate-400">{{ it.subject.official_code ?? '—' }}</div>
+                            </td>
+                            <td class="px-4 py-2.5 font-mono text-xs text-slate-700">{{ it.group.name ?? '—' }}</td>
+                            <td class="px-4 py-2.5 text-xs text-slate-600">{{ it.teacher?.name ?? '— por asignar —' }}</td>
+                            <td class="px-4 py-2.5 text-right">
+                                <button v-if="it.status !== 'completed'"
+                                    :disabled="startingId !== null"
+                                    class="px-3 py-1.5 rounded-md text-xs font-bold text-white disabled:opacity-50 bg-blue-600 hover:bg-blue-700"
+                                    @click="startEvaluation(it)"
+                                >
+                                    <template v-if="startingId === it.assignment_id">Abriendo…</template>
+                                    <template v-else-if="it.status === 'in_progress'">CONTINUAR</template>
+                                    <template v-else>EVALUAR</template>
+                                </button>
+                                <span v-else class="text-[10px] text-slate-400">{{ formatDateTime(it.completed_at) }}</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </template>

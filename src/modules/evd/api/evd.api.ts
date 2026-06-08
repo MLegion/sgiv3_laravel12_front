@@ -26,6 +26,12 @@ const evdApi: ApiModule = {
             attendanceSummary: (capId: string | number) => apiUrl(`/evd/admin/college-academic-periods/${capId}/attendance-summary`),
             subjectsProgress:  (capId: string | number) => apiUrl(`/evd/admin/college-academic-periods/${capId}/subjects-progress`),
             toggleVisibility:  (taId: string | number)  => apiUrl(`/evd/admin/teacher-assignments/${taId}/evd-settings`),
+
+            // Avance del jefe de carrera (acotado a su carrera) + detalle de
+            // estudiantes por asignación con su estado de EVD.
+            activeEvdCap:       apiUrl('/evd/admin/active-evd-cap'),
+            myCareerProgress:   (capId: string | number) => apiUrl(`/evd/admin/college-academic-periods/${capId}/my-career-progress`),
+            assignmentStudents: (taId: string | number)  => apiUrl(`/evd/admin/teacher-assignments/${taId}/student-progress`),
         },
     },
 }

@@ -5,6 +5,19 @@ export default [
         component: () => import('@/modules/evd/pages/MyEvdPage.vue'),
         meta: { title: 'Mi Evaluación Docente' },
     },
+    {
+        path: 'evd/attempt/:assignmentId',
+        name: 'evd.attempt',
+        component: () => import('@/modules/evd/pages/EvdAttemptPage.vue'),
+        meta: { title: 'Evaluación Docente' },
+        props: true,
+    },
+    {
+        path: 'evd/career-progress',
+        name: 'evd.career-progress',
+        component: () => import('@/modules/evd/pages/EvdCareerProgressPage.vue'),
+        meta: { title: 'Avance por Grupos · EVD' },
+    },
 
     // Admin — Resultados
     {
