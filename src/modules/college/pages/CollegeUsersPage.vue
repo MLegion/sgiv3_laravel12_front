@@ -107,7 +107,7 @@
                         Contraseña
                     </button>
                     <button
-                        v-if="!row.isDisabled"
+                        v-if="!row.isDisabled && !isSelf(row)"
                         type="button"
                         class="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-300 text-red-700 hover:bg-red-50 transition"
                         @click="openDisableModal(row)"
@@ -115,6 +115,7 @@
                     >
                         Deshabilitar
                     </button>
+                    <span v-else-if="!row.isDisabled && isSelf(row)" class="text-[10px] text-slate-400 italic px-2">Tú</span>
                     <button
                         v-else
                         type="button"
@@ -259,6 +260,13 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import AssignRoleDrawer from '@/modules/college/components/AssignRoleDrawer.vue'
 import { AdjustmentsHorizontalIcon, KeyIcon } from '@heroicons/vue/24/outline'
+import { useAuthStore } from '@/modules/auth/stores/auth.store'
+
+const auth = useAuthStore()
+// Nadie puede deshabilitarse a sí mismo (el backend también lo impide).
+function isSelf(row: { id: number }): boolean {
+    return !!auth.user && row.id === auth.user.id
+}
 
 interface Assignment {
     id: number
