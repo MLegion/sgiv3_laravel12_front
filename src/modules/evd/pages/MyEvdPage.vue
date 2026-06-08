@@ -40,7 +40,7 @@ async function load() {
     loading.value = true
     error.value = ''
     try {
-        const { data: ap } = await api.get(API.ADVISING_API.sessions.myActivePeriod)
+        const { data: ap } = await api.get(API.EVD_API.myActivePeriod)
         activePeriod.value = ap
         if (!ap?.open || !ap.collegeAcademicPeriodId) {
             status.value = null

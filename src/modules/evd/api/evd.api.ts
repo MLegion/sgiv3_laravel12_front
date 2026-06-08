@@ -4,6 +4,7 @@ import type { ApiModule } from '@/shared/api/types'
 const evdApi: ApiModule = {
     name: 'EVD_API',
     api: {
+        myActivePeriod: apiUrl('/evd/my-active-period'),
         myPending: apiUrl('/evd/my-pending'),
         myStatus:  apiUrl('/evd/my-status'),
         start:     (assignmentId: string | number) => apiUrl(`/evd/assignments/${assignmentId}/start`),
