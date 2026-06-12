@@ -23,6 +23,35 @@
 
         <!-- Con preficha (FICHA o superior) -->
         <template v-else>
+            <PortalHelpDrawer title="Cómo cargar tus Documentos">
+                <div class="rounded-lg bg-blue-50 border border-blue-200 p-3 text-blue-800 text-xs">
+                    Sube aquí los documentos que se te solicitan. Hazlo antes de la <strong>fecha y hora límite</strong> que aparece en la parte superior.
+                </div>
+                <div class="space-y-2">
+                    <p class="font-semibold text-slate-800">1. Identifica cada documento</p>
+                    <p class="text-xs text-slate-500">Cada tarjeta corresponde a un documento. Los marcados como <span class="font-semibold text-red-600">OBLIGATORIO</span> debes subirlos todos; los <span class="font-semibold">OPCIONALES</span> solo si aplican. Lee las instrucciones en amarillo de cada tarjeta.</p>
+                </div>
+                <div class="space-y-2">
+                    <p class="font-semibold text-slate-800">2. Sube el archivo</p>
+                    <p class="text-xs text-slate-500">Presiona <span class="font-semibold">SUBIR</span> y elige el archivo desde tu dispositivo. Respeta los formatos permitidos (por ejemplo PDF o imagen) y que se vea legible.</p>
+                </div>
+                <div class="space-y-2">
+                    <p class="font-semibold text-slate-800">3. Verifica con VER</p>
+                    <p class="text-xs text-slate-500">Después de subir, usa el botón <span class="font-semibold">VER</span> para revisar que el archivo se cargó correctamente. Si te equivocaste, presiona <span class="font-semibold">REEMPLAZAR</span>.</p>
+                </div>
+                <div class="space-y-2">
+                    <p class="font-semibold text-slate-800">4. Revisa el estado</p>
+                    <p class="text-xs text-slate-500">
+                        <span class="font-semibold text-green-600">Aprobado</span>: validado, ya no se puede cambiar.
+                        <span class="font-semibold text-amber-600">En Revisión</span>: lo estamos revisando.
+                        <span class="font-semibold text-red-600">Rechazado</span>: debes subirlo de nuevo corregido.
+                    </p>
+                </div>
+                <div class="rounded-lg bg-amber-50 border border-amber-200 p-3 text-amber-800 text-xs">
+                    No necesitas un botón de guardar: cada documento se registra al subirlo. Asegúrate de que <strong>todos los obligatorios</strong> queden cargados.
+                </div>
+            </PortalHelpDrawer>
+
             <!-- Sección informativa -->
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
                 <div class="border-l-4 border-blue-500 px-6 py-3 bg-slate-50">
@@ -256,6 +285,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import PortalHelpDrawer from './PortalHelpDrawer.vue'
 import type { ApplicantDocument } from '@/modules/admissions/types/applicant-document.type'
 
 const STATUS_FICHA = 4

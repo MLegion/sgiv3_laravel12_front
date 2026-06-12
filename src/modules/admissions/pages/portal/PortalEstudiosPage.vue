@@ -7,6 +7,26 @@
         />
         <PortalRequiredNotice />
 
+        <PortalHelpDrawer title="Cómo llenar Último Nivel de Estudio">
+            <div class="rounded-lg bg-blue-50 border border-blue-200 p-3 text-blue-800 text-xs">
+                Presiona <strong>Editar</strong>, captura los datos de tu bachillerato y al final presiona <strong>Guardar</strong>.
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold text-slate-800">1. Encuentra tu escuela de procedencia</p>
+                <p class="text-xs text-slate-500">Usa los filtros de <span class="font-semibold">estado</span> y <span class="font-semibold">municipio</span> para acotar la lista, luego selecciona tu <span class="font-semibold">escuela de procedencia</span> en el buscador.</p>
+            </div>
+            <div class="rounded-lg bg-amber-50 border border-amber-200 p-3 text-amber-800 text-xs">
+                Si no encuentras tu escuela en la lista, comunícate con el área de admisiones para que la registren.
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold text-slate-800">2. Datos académicos</p>
+                <p class="text-xs text-slate-500">Captura el <span class="font-semibold">año de egreso</span>, tu <span class="font-semibold">promedio</span> (en escala de 0 a 100) y el <span class="font-semibold">área académica</span> que cursaste.</p>
+            </div>
+            <div class="rounded-lg bg-amber-50 border border-amber-200 p-3 text-amber-800 text-xs">
+                Al terminar, presiona <strong>Guardar</strong> en la barra superior.
+            </div>
+        </PortalHelpDrawer>
+
         <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
         <div v-else class="bg-white border rounded-xl shadow-sm p-6 space-y-5">
             <template v-if="editing">
@@ -80,6 +100,7 @@ import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import PortalEditHeader from './PortalEditHeader.vue'
 import PortalRequiredNotice from './PortalRequiredNotice.vue'
+import PortalHelpDrawer from './PortalHelpDrawer.vue'
 import ReadField from './ReadField.vue'
 
 const DRAFT = 'estudios'
@@ -127,7 +148,7 @@ watch(filterStateId, async (newStateId) => {
     if (!newStateId) return
     loadingMunicipalities.value = true
     try {
-        const { data } = await api.get(API.GEO_API.municipalities(newStateId))
+        const { data } = await api.get(API.ADMISSIONS_API.portal.catalogs.originSchoolMunicipalities(newStateId))
         municipalities.value = data
     } finally { loadingMunicipalities.value = false }
 })
@@ -147,7 +168,7 @@ async function fetchMe() {
     try {
         const [{ data }, statesRes, areasRes] = await Promise.all([
             api.get(API.ADMISSIONS_API.portal.me),
-            api.get(API.GEO_API.states),
+            api.get(API.ADMISSIONS_API.portal.catalogs.originSchoolStates),
             api.get(API.ADMISSIONS_API.portal.catalogs.academicAreas),
         ])
         applicantId = data.id

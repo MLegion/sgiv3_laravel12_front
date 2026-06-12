@@ -7,12 +7,33 @@
         />
         <PortalRequiredNotice />
 
+        <PortalHelpDrawer title="Cómo llenar Datos Preventivos">
+            <div class="rounded-lg bg-blue-50 border border-blue-200 p-3 text-blue-800 text-xs">
+                Estos datos nos ayudan a atenderte mejor ante cualquier emergencia médica. Presiona <strong>Editar</strong> para capturarlos.
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold text-slate-800">1. Seguridad social</p>
+                <p class="text-xs text-slate-500">Captura tu <span class="font-semibold">NSS / número de IMSS</span> y la <span class="font-semibold">clínica de atención</span> que te corresponde.</p>
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold text-slate-800">2. Datos médicos</p>
+                <p class="text-xs text-slate-500">Selecciona tu <span class="font-semibold">tipo de sangre</span> y, si tienes alguna <span class="font-semibold">discapacidad</span>, elígela en la lista.</p>
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold text-slate-800">3. Alergias y tratamientos</p>
+                <p class="text-xs text-slate-500">Indica tus <span class="font-semibold">alergias</span> y si llevas algún <span class="font-semibold">tratamiento psicológico o psiquiátrico</span>. Si no aplica, déjalo en blanco.</p>
+            </div>
+            <div class="rounded-lg bg-amber-50 border border-amber-200 p-3 text-amber-800 text-xs">
+                Al terminar, presiona <strong>Guardar</strong> en la barra superior.
+            </div>
+        </PortalHelpDrawer>
+
         <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
         <div v-else class="bg-white border rounded-xl shadow-sm p-6 space-y-5">
             <template v-if="editing">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <FormInput label="NSS / NÚMERO IMSS" v-model="form.nss" :maxlength="20" />
-                    <FormInput label="CLÍNICA DE ATENCIÓN" v-model="form.medical_clinic" :maxlength="120" />
+                    <FormInput label="NSS / NÚMERO IMSS" v-model="form.nss" :maxlength="20" uppercase />
+                    <FormInput label="CLÍNICA DE ATENCIÓN" v-model="form.medical_clinic" :maxlength="120" uppercase />
                     <div class="space-y-1">
                         <label class="text-xs font-medium text-slate-600">TIPO DE SANGRE</label>
                         <select v-model="form.blood_type" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -29,11 +50,11 @@
                     </div>
                     <div class="sm:col-span-2 space-y-1">
                         <label class="text-xs font-medium text-slate-600">ALERGIAS</label>
-                        <textarea v-model="form.allergies" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                        <textarea v-model="form.allergies" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none uppercase placeholder:normal-case"></textarea>
                     </div>
                     <div class="sm:col-span-2 space-y-1">
                         <label class="text-xs font-medium text-slate-600">TRATAMIENTOS PSICOLÓGICOS/PSIQUIÁTRICOS</label>
-                        <textarea v-model="form.psychological_treatment" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                        <textarea v-model="form.psychological_treatment" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none uppercase placeholder:normal-case"></textarea>
                     </div>
                 </div>
             </template>
@@ -58,6 +79,7 @@ import { API } from '@/shared/api'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import PortalEditHeader from './PortalEditHeader.vue'
 import PortalRequiredNotice from './PortalRequiredNotice.vue'
+import PortalHelpDrawer from './PortalHelpDrawer.vue'
 import ReadField from './ReadField.vue'
 
 const DRAFT = 'preventivos'

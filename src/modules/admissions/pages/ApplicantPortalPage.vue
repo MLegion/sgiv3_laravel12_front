@@ -171,6 +171,7 @@ const form = reactive({
     nss: '', medical_clinic: '', blood_type: '', allergies: '',
     psychological_treatment: '', disability_id: null as number | null,
     indigenous_group_id: null as number | null, indigenous_language_id: null as number | null,
+    is_afromexican: null as boolean | null,
     offer_option_1_id: '' as number | '', offer_option_2_id: '' as number | '',
     offer_option_3_id: '' as number | '', origin_school_id: null as number | null,
 })
@@ -210,6 +211,7 @@ function populateForm(data: any) {
     form.disability_id         = data.disabilityId ?? null
     form.indigenous_group_id   = data.indigenousGroupId ?? null
     form.indigenous_language_id = data.indigenousLanguageId ?? null
+    form.is_afromexican        = data.isAfromexican ?? null
     form.offer_option_1_id     = data.offerOption1Id ?? ''
     form.offer_option_2_id     = data.offerOption2Id ?? ''
     form.offer_option_3_id     = data.offerOption3Id ?? ''
@@ -309,6 +311,7 @@ async function save() {
             disability_id:           form.disability_id || null,
             indigenous_group_id:     form.indigenous_group_id || null,
             indigenous_language_id:  form.indigenous_language_id || null,
+            is_afromexican:          form.is_afromexican, // boolean|null; no usar || para no perder "No" (false)
             offer_option_1_id:       form.offer_option_1_id || null,
             offer_option_2_id:       form.offer_option_2_id || null,
             offer_option_3_id:       form.offer_option_3_id || null,

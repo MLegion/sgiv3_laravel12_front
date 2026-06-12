@@ -16,6 +16,14 @@
                         <option v-for="l in indigenousLanguages" :key="l.id" :value="l.id">{{ l.name }}</option>
                     </select>
                 </div>
+                <div class="sm:col-span-2 space-y-1">
+                    <label class="text-xs font-medium text-slate-600">¿PERTENECES A UN PUEBLO AFROMEXICANO?</label>
+                    <select v-model="form.is_afromexican" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option :value="null">Sin responder</option>
+                        <option :value="true">Sí</option>
+                        <option :value="false">No</option>
+                    </select>
+                </div>
                 <FormInput label="EMPRESA (si trabaja)" v-model="form.company" :maxlength="120" />
                 <FormInput label="AÑO DE EGRESO" v-model="form.graduation_year" type="number" min="1950" max="2099" />
                 <FormInput label="PROMEDIO (escala 100)" v-model="form.academic_average" type="number" step="0.01" min="0" max="100" />
@@ -32,6 +40,7 @@
             <div class="grid grid-cols-2 gap-3 text-sm">
                 <ReadField label="GRUPO INDÍGENA" :value="indigenousGroups.find(g => g.id === form.indigenous_group_id)?.name ?? '—'" />
                 <ReadField label="LENGUA INDÍGENA" :value="indigenousLanguages.find(l => l.id === form.indigenous_language_id)?.name ?? '—'" />
+                <ReadField label="PUEBLO AFROMEXICANO" :value="form.is_afromexican === null || form.is_afromexican === undefined ? '—' : (form.is_afromexican ? 'Sí' : 'No')" />
                 <ReadField label="EMPRESA" :value="form.company" />
                 <ReadField label="AÑO DE EGRESO" :value="form.graduation_year" />
                 <ReadField label="PROMEDIO" :value="form.academic_average" />
@@ -49,6 +58,7 @@ defineProps<{
     form: {
         indigenous_group_id: number | null
         indigenous_language_id: number | null
+        is_afromexican: boolean | null
         company: string
         graduation_year: string | ''
         academic_average: string | ''

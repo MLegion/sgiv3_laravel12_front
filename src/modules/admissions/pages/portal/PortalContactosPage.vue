@@ -2,6 +2,28 @@
     <div class="max-w-2xl space-y-4">
         <h1 class="text-xl font-semibold text-slate-800">CONTACTOS</h1>
         <PortalRequiredNotice />
+
+        <PortalHelpDrawer title="Cómo registrar tus Contactos">
+            <div class="rounded-lg bg-blue-50 border border-blue-200 p-3 text-blue-800 text-xs">
+                Registra de <strong>1 a 3 contactos</strong> de tus familiares o tutores con quienes podamos comunicarnos.
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold text-slate-800">1. Agrega un contacto</p>
+                <p class="text-xs text-slate-500">Presiona <span class="font-semibold">+ AGREGAR</span> para abrir el formulario.</p>
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold text-slate-800">2. Captura los datos</p>
+                <p class="text-xs text-slate-500"><span class="font-semibold">Nombre</span> y <span class="font-semibold">apellidos</span> (se guardan en mayúsculas), el <span class="font-semibold">parentesco</span> (padre, madre, tutor, etc.) y al menos un medio de contacto: <span class="font-semibold">teléfono</span> o <span class="font-semibold">correo</span>.</p>
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold text-slate-800">3. Contacto de emergencia</p>
+                <p class="text-xs text-slate-500">Marca la casilla <span class="font-semibold">Contacto de emergencia</span> en quien debamos buscar primero ante cualquier eventualidad.</p>
+            </div>
+            <div class="rounded-lg bg-amber-50 border border-amber-200 p-3 text-amber-800 text-xs">
+                Presiona <strong>Guardar</strong> dentro del formulario para registrar cada contacto. Puedes editarlos o eliminarlos con los iconos de cada tarjeta.
+            </div>
+        </PortalHelpDrawer>
+
         <div class="bg-white border rounded-xl shadow-sm p-6 space-y-4">
         <div class="flex items-center justify-between">
             <p class="text-sm text-slate-500">Mínimo 1, máximo 3 contactos.</p>
@@ -53,15 +75,15 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre *</label>
-                        <input v-model="cForm.name" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                        <input v-model="cForm.name" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-400" />
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Primer Apellido *</label>
-                        <input v-model="cForm.first_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                        <input v-model="cForm.first_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-400" />
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Segundo Apellido</label>
-                        <input v-model="cForm.second_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                        <input v-model="cForm.second_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-400" />
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Parentesco *</label>
@@ -125,6 +147,7 @@ import { ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PortalRequiredNotice from './PortalRequiredNotice.vue'
+import PortalHelpDrawer from './PortalHelpDrawer.vue'
 
 
 const loading     = ref(false)

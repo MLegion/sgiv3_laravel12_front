@@ -13,6 +13,14 @@
 
         <PortalRequiredNotice />
 
+        <div class="flex justify-end">
+            <button type="button"
+                class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800"
+                @click="helpOpen = true">
+                <QuestionMarkCircleIcon class="w-4 h-4" /> ¿Cómo lleno esta sección?
+            </button>
+        </div>
+
         <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
 
         <template v-else>
@@ -81,11 +89,71 @@
                 </template>
             </div>
         </template>
+
+        <!-- Drawer de ayuda contextual -->
+        <Teleport to="body">
+            <div v-if="helpOpen" class="fixed inset-0 z-50 flex justify-end">
+                <div class="absolute inset-0 bg-black/40" @click="helpOpen = false" />
+                <aside class="relative w-full max-w-md bg-white h-full shadow-xl overflow-y-auto">
+                    <div class="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-white">
+                        <h3 class="text-sm font-bold text-slate-800 uppercase">Cómo llenar Información General</h3>
+                        <button type="button" class="text-slate-400 hover:text-slate-700 text-xl leading-none" @click="helpOpen = false">&times;</button>
+                    </div>
+
+                    <div class="p-5 space-y-6 text-sm text-slate-700">
+                        <!-- Aviso de los dos guardar -->
+                        <div class="rounded-lg bg-amber-50 border border-amber-200 p-3 text-amber-800 text-xs">
+                            <strong>Importante:</strong> hay <strong>dos botones de guardar</strong> en esta pantalla:
+                            uno para la <strong>FOTO</strong> y otro para los <strong>DATOS</strong>. Se guardan por separado.
+                        </div>
+
+                        <!-- Paso 1: editar -->
+                        <div class="space-y-2">
+                            <p class="font-semibold text-slate-800">1. Entra en modo edición</p>
+                            <p class="text-xs text-slate-500">Presiona <span class="font-semibold">Editar</span> en la barra superior para poder capturar.</p>
+                        </div>
+
+                        <!-- Paso 2: foto -->
+                        <div class="space-y-2">
+                            <p class="font-semibold text-slate-800">2. Foto del aspirante</p>
+                            <p class="text-xs text-slate-500">Haz clic en el recuadro de la foto, elige una imagen y luego presiona <span class="font-semibold">GUARDAR FOTO</span>. Este botón guarda <em>solo la foto</em>.</p>
+                            <div class="rounded-lg border border-slate-200 p-3 flex flex-col items-center gap-2 bg-slate-50">
+                                <div class="w-20 h-24 rounded border-2 border-dashed border-slate-300 flex items-center justify-center text-[10px] text-slate-400 bg-white">FOTO</div>
+                                <span class="px-3 py-1.5 text-[11px] rounded-lg bg-blue-600 text-white">GUARDAR FOTO</span>
+                                <span class="text-[10px] text-slate-400">↑ guarda únicamente la foto</span>
+                            </div>
+                        </div>
+
+                        <!-- Paso 3: nombre -->
+                        <div class="space-y-2">
+                            <p class="font-semibold text-slate-800">3. Nombre y apellidos</p>
+                            <p class="text-xs text-slate-500">Escribe tu <span class="font-semibold">nombre(s)</span>, <span class="font-semibold">primer apellido</span> y <span class="font-semibold">segundo apellido</span>.</p>
+                            <div class="rounded-lg border border-slate-200 p-3 space-y-2 bg-slate-50">
+                                <div class="h-7 rounded border border-slate-300 bg-white px-2 flex items-center text-[11px] text-slate-400">NOMBRE(S)</div>
+                                <div class="h-7 rounded border border-slate-300 bg-white px-2 flex items-center text-[11px] text-slate-400">PRIMER APELLIDO</div>
+                                <div class="h-7 rounded border border-slate-300 bg-white px-2 flex items-center text-[11px] text-slate-400">SEGUNDO APELLIDO</div>
+                            </div>
+                        </div>
+
+                        <!-- Paso 4: guardar datos -->
+                        <div class="space-y-2">
+                            <p class="font-semibold text-slate-800">4. Guarda los datos</p>
+                            <p class="text-xs text-slate-500">Al terminar, presiona <span class="font-semibold">Guardar</span> en la barra superior. Este botón guarda los <em>datos</em> (nombre, etc.), <em>no</em> la foto.</p>
+                            <div class="rounded-lg border border-slate-200 p-3 flex items-center justify-end gap-2 bg-slate-50">
+                                <span class="text-[10px] text-slate-400">guarda los datos →</span>
+                                <span class="px-3 py-1.5 text-[11px] rounded-lg bg-emerald-600 text-white">Guardar</span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </Teleport>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted, onUnmounted } from 'vue'
+import { QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
@@ -98,6 +166,7 @@ const DRAFT = 'info_general'
 
 const loading        = ref(true)
 const editing        = ref(false)
+const helpOpen       = ref(false)
 const submitting     = ref(false)
 const saveError      = ref<string | null>(null)
 const hasDraft       = ref(false)

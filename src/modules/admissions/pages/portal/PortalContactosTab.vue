@@ -49,15 +49,15 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre *</label>
-                            <input v-model="cForm.name" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <input v-model="cForm.name" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Primer Apellido *</label>
-                            <input v-model="cForm.first_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <input v-model="cForm.first_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Segundo Apellido</label>
-                            <input v-model="cForm.second_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <input v-model="cForm.second_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Parentesco *</label>

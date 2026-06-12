@@ -107,6 +107,8 @@ export default {
                 academicOffers:      apiUrl('/admissions/portal/catalogs/academic-offers'),
                 originSchools:       apiUrl('/admissions/portal/catalogs/origin-schools'),
                 originSchoolById:    (id: string | number) => apiUrl(`/admissions/portal/catalogs/origin-schools/${id}`),
+                originSchoolStates:  apiUrl('/admissions/portal/catalogs/origin-school-states'),
+                originSchoolMunicipalities: (stateId: string | number) => apiUrl(`/admissions/portal/catalogs/origin-school-municipalities/${stateId}`),
             },
         },
         applicantDocuments: {

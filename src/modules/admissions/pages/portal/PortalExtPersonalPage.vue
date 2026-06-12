@@ -7,6 +7,31 @@
         />
         <PortalRequiredNotice />
 
+        <PortalHelpDrawer title="Cómo llenar Datos Personales">
+            <div class="rounded-lg bg-blue-50 border border-blue-200 p-3 text-blue-800 text-xs">
+                Presiona <strong>Editar</strong> en la barra superior, captura tus datos y al final presiona <strong>Guardar</strong>.
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold text-slate-800">1. Domicilio</p>
+                <p class="text-xs text-slate-500">Escribe tu <span class="font-semibold">código postal</span> para cargar las colonias, elige tu <span class="font-semibold">colonia</span> y captura la <span class="font-semibold">calle y número</span>.</p>
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold text-slate-800">2. Contacto</p>
+                <p class="text-xs text-slate-500">Captura tu <span class="font-semibold">correo electrónico</span> y tu <span class="font-semibold">teléfono celular</span> (importantes para avisarte).</p>
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold text-slate-800">3. Nacimiento y datos generales</p>
+                <p class="text-xs text-slate-500">Elige el <span class="font-semibold">estado</span> y luego el <span class="font-semibold">municipio</span> de nacimiento, la <span class="font-semibold">fecha de nacimiento</span>, el <span class="font-semibold">sexo</span> y el <span class="font-semibold">estado civil</span>.</p>
+            </div>
+            <div class="space-y-2">
+                <p class="font-semibold text-slate-800">4. CURP y RFC</p>
+                <p class="text-xs text-slate-500">La <span class="font-semibold">CURP</span> tiene 18 caracteres. Si no cuentas con RFC, usa el genérico <span class="font-mono font-semibold">XAXX010101000</span>.</p>
+            </div>
+            <div class="rounded-lg bg-amber-50 border border-amber-200 p-3 text-amber-800 text-xs">
+                Al terminar, presiona <strong>Guardar</strong> en la barra superior.
+            </div>
+        </PortalHelpDrawer>
+
         <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
         <div v-else class="bg-white border rounded-xl shadow-sm p-6 space-y-5">
             <template v-if="editing">
@@ -120,6 +145,7 @@ import FormInput from '@/app/components/ui/form/FormInput.vue'
 import GeoAddressFields from '@/app/components/ui/form/GeoAddressFields.vue'
 import PortalEditHeader from './PortalEditHeader.vue'
 import PortalRequiredNotice from './PortalRequiredNotice.vue'
+import PortalHelpDrawer from './PortalHelpDrawer.vue'
 import ReadField from './ReadField.vue'
 
 const DRAFT = 'datos_personales'
