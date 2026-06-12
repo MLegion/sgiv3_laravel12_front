@@ -82,6 +82,13 @@ export const useNotificationsStore = defineStore('notifications', {
                         useAuthStore().forceLogout('disabled')
                     })
                 })
+                .listen('.menu.changed', () => {
+                    // Cambiaron los roles/accesos del user (p.ej. alta/activación
+                    // de residente): recarga el menú sin requerir re-login.
+                    import('@/app/stores/menu.store').then(({ useMenuStore }) => {
+                        useMenuStore().reload()
+                    })
+                })
 
             this._subscribedChannel = channelName
         },
