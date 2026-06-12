@@ -45,23 +45,102 @@
                         @click="router.push({ name: 'study-programs.edit', params: { id: row.id } })">
                         <PencilSquareIcon class="w-4 h-4" />
                     </button>
+                    <!-- Flujo de aprobación -->
+                    <button v-if="row.approvalStatus === 'draft' || row.approvalStatus === 'rejected'" type="button"
+                        class="border p-1.5 rounded-md text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer"
+                        title="Enviar a revisión" @click="openAction('submit', row)">
+                        <PaperAirplaneIcon class="w-4 h-4" />
+                    </button>
+                    <button v-if="row.approvalStatus === 'pending'" type="button"
+                        class="border p-1.5 rounded-md text-slate-500 hover:text-green-600 hover:bg-green-50 transition cursor-pointer"
+                        title="Aprobar" @click="openAction('approve', row)">
+                        <CheckIcon class="w-4 h-4" />
+                    </button>
+                    <button v-if="row.approvalStatus === 'pending'" type="button"
+                        class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                        title="Rechazar" @click="openAction('reject', row)">
+                        <XMarkIcon class="w-4 h-4" />
+                    </button>
                 </div>
             </template>
         </DataTable>
+
+        <!-- Modal de flujo (enviar / aprobar / rechazar) -->
+        <div v-if="action.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30" @click.self="action.open = false">
+            <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-4 space-y-3">
+                <h3 class="font-semibold text-slate-800">{{ actionTitle }}</h3>
+                <p class="text-sm text-slate-600">{{ actionMessage }}</p>
+                <div v-if="action.mode === 'reject'">
+                    <label class="block text-xs text-slate-500 mb-1">Motivo del rechazo</label>
+                    <textarea v-model="action.notes" rows="3" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm" placeholder="Explica por qué se rechaza…"></textarea>
+                </div>
+                <p v-if="action.error" class="text-sm text-red-600">{{ action.error }}</p>
+                <div class="flex justify-end gap-2 pt-1">
+                    <button type="button" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50" @click="action.open = false">Cancelar</button>
+                    <button type="button" class="px-3 py-1.5 text-sm rounded-lg text-white disabled:opacity-50" :class="confirmBtnClass"
+                        :disabled="action.busy || (action.mode === 'reject' && !action.notes.trim())" @click="confirmAction">
+                        {{ action.busy ? 'Procesando…' : confirmLabel }}
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { PlusIcon, PencilSquareIcon, DocumentTextIcon } from '@heroicons/vue/24/outline'
+import { PlusIcon, PencilSquareIcon, DocumentTextIcon, PaperAirplaneIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { API } from '@/shared/api'
+import { api } from '@/shared/services/api'
 import { openSubjectProgram } from '@/modules/study-programs/composables/useSubjectProgram'
 
 const router = useRouter()
+
+// Flujo de aprobación (enviar a revisión / aprobar / rechazar) vía modal inline.
+type ActionMode = 'submit' | 'approve' | 'reject'
+const action = reactive<{ open: boolean; mode: ActionMode; row: any; notes: string; busy: boolean; error: string }>(
+    { open: false, mode: 'submit', row: null, notes: '', busy: false, error: '' },
+)
+const actionTitle = computed(() => ({ submit: 'Enviar a revisión', approve: 'Aprobar programa', reject: 'Rechazar programa' }[action.mode]))
+const actionMessage = computed(() => ({
+    submit: `Se enviará a revisión "${action.row?.name ?? ''}". Quedará EN REVISIÓN.`,
+    approve: `Se aprobará "${action.row?.name ?? ''}". Quedará APROBADO.`,
+    reject: `Se rechazará "${action.row?.name ?? ''}".`,
+}[action.mode]))
+const confirmLabel = computed(() => ({ submit: 'Enviar', approve: 'Aprobar', reject: 'Rechazar' }[action.mode]))
+const confirmBtnClass = computed(() => ({
+    submit: 'bg-blue-600 hover:bg-blue-700', approve: 'bg-green-600 hover:bg-green-700', reject: 'bg-red-600 hover:bg-red-700',
+}[action.mode]))
+
+function openAction(mode: ActionMode, row: any): void {
+    Object.assign(action, { open: true, mode, row, notes: '', busy: false, error: '' })
+}
+
+async function confirmAction(): Promise<void> {
+    action.busy = true
+    action.error = ''
+    try {
+        const id = action.row.id
+        if (action.mode === 'submit') {
+            await api.patch(API.STUDY_PROGRAMS_API.studyPrograms.submit(id))
+        } else {
+            await api.patch(API.STUDY_PROGRAMS_API.studyPrograms.approve(id), {
+                approved: action.mode === 'approve',
+                notes: action.mode === 'reject' ? action.notes : null,
+            })
+        }
+        action.open = false
+        fetchData()
+    } catch (e: any) {
+        action.error = e?.response?.data?.message ?? 'No se pudo completar la acción (¿permiso?).'
+    } finally {
+        action.busy = false
+    }
+}
 
 const openingPdfId = ref<number | null>(null)
 
