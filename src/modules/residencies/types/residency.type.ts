@@ -76,7 +76,8 @@ export interface Company {
     college_id: number
     name: string
     rfc: string | null
-    sector: string | null
+    sector_id: number | null
+    sector: { id: number; name: string } | null
     address: string | null
     phone: string | null
     email: string | null

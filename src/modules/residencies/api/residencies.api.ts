@@ -51,6 +51,7 @@ const residenciesApi: ApiModule = {
         // ── Empresas y asesores externos ──
         companies: {
             options:        apiUrl('/residencies/companies/options'),
+            sectors:        apiUrl('/residencies/companies/sectors'),
             list:           apiUrl('/residencies/companies'),
             byId:           (id: string | number) => apiUrl(`/residencies/companies/${id}`),
             create:         apiUrl('/residencies/companies'),

@@ -26,7 +26,7 @@
                         </div>
                         <p class="text-xs text-slate-500">
                             <span v-if="c.rfc">RFC {{ c.rfc }} · </span>
-                            <span v-if="c.sector">{{ c.sector }} · </span>
+                            <span v-if="c.sector">{{ c.sector.name }} · </span>
                             <span v-if="c.titular_name">Titular: {{ c.titular_name }}</span>
                         </p>
                         <p v-if="c.address" class="text-xs text-slate-400">{{ c.address }}</p>

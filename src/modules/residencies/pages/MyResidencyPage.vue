@@ -104,13 +104,16 @@
                             </div>
                         </div>
                         <div v-if="showNewCompany" class="rounded-lg border bg-slate-50 p-4 grid sm:grid-cols-2 gap-3">
-                            <input v-model="newCompany.name" placeholder="Razón social *" class="border rounded-md px-3 py-2 text-sm sm:col-span-2" />
-                            <input v-model="newCompany.rfc" placeholder="RFC" class="border rounded-md px-3 py-2 text-sm" />
-                            <input v-model="newCompany.sector" placeholder="Giro / sector" class="border rounded-md px-3 py-2 text-sm" />
-                            <input v-model="newCompany.address" placeholder="Domicilio" class="border rounded-md px-3 py-2 text-sm sm:col-span-2" />
-                            <input v-model="newCompany.titular_name" placeholder="Titular / responsable" class="border rounded-md px-3 py-2 text-sm" />
-                            <input v-model="newCompany.titular_position" placeholder="Cargo del titular" class="border rounded-md px-3 py-2 text-sm" />
-                            <input v-model="newCompany.phone" placeholder="Teléfono" class="border rounded-md px-3 py-2 text-sm" />
+                            <input v-model="newCompany.name" placeholder="Razón social *" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
+                            <input v-model="newCompany.rfc" placeholder="RFC" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                            <select v-model.number="newCompany.sector_id" class="border rounded-md px-3 py-2 text-sm bg-white">
+                                <option :value="null">Giro / sector…</option>
+                                <option v-for="s in sectorOptions" :key="s.id" :value="s.id">{{ s.name }}</option>
+                            </select>
+                            <input v-model="newCompany.address" placeholder="Domicilio" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
+                            <input v-model="newCompany.titular_name" placeholder="Titular / responsable" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                            <input v-model="newCompany.titular_position" placeholder="Cargo del titular" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                            <input v-model="newCompany.phone" placeholder="Teléfono" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
                             <input v-model="newCompany.email" placeholder="Correo" class="border rounded-md px-3 py-2 text-sm" />
                             <div class="sm:col-span-2 flex items-center gap-2">
                                 <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
@@ -135,9 +138,9 @@
                                     :disabled="saving" @click="saveProcess">Guardar</button>
                         </div>
                         <div v-if="showNewAdvisor" class="rounded-lg border bg-slate-50 p-4 grid sm:grid-cols-2 gap-3">
-                            <input v-model="newAdvisor.name" placeholder="Nombre del asesor *" class="border rounded-md px-3 py-2 text-sm sm:col-span-2" />
-                            <input v-model="newAdvisor.position" placeholder="Cargo / puesto" class="border rounded-md px-3 py-2 text-sm" />
-                            <input v-model="newAdvisor.phone" placeholder="Teléfono" class="border rounded-md px-3 py-2 text-sm" />
+                            <input v-model="newAdvisor.name" placeholder="Nombre del asesor *" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
+                            <input v-model="newAdvisor.position" placeholder="Cargo / puesto" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                            <input v-model="newAdvisor.phone" placeholder="Teléfono" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
                             <input v-model="newAdvisor.email" placeholder="Correo" class="border rounded-md px-3 py-2 text-sm sm:col-span-2" />
                             <div class="sm:col-span-2">
                                 <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
@@ -300,8 +303,9 @@ const showNewCompany = ref(false)
 const showNewAdvisor = ref(false)
 const savingCompany  = ref(false)
 const savingAdvisor  = ref(false)
-const newCompany = ref<Record<string, string>>({ name: '', rfc: '', sector: '', address: '', titular_name: '', titular_position: '', phone: '', email: '' })
+const newCompany = ref<Record<string, any>>({ name: '', rfc: '', sector_id: null, address: '', titular_name: '', titular_position: '', phone: '', email: '' })
 const newAdvisor = ref<Record<string, string>>({ name: '', position: '', phone: '', email: '' })
+const sectorOptions = ref<{ id: number; name: string }[]>([])
 
 const checklist   = ref<ResidencyDocumentChecklistItem[]>([])
 const docsLoading = ref(false)
@@ -367,7 +371,7 @@ async function load() {
                 project_title:      data.projectTitle ?? null,
                 nss:                data.nss ?? null,
             }
-            await Promise.all([loadCompanies(), loadAvailableProjects()])
+            await Promise.all([loadCompanies(), loadAvailableProjects(), loadSectors()])
             if (form.value.company_id) await loadAdvisors(form.value.company_id)
         }
     } finally { loading.value = false }
@@ -376,6 +380,10 @@ async function load() {
 async function loadCompanies() {
     const { data } = await api.get(R.companies.options)
     companies.value = data ?? []
+}
+async function loadSectors() {
+    try { const { data } = await api.get(R.companies.sectors); sectorOptions.value = data ?? [] }
+    catch { sectorOptions.value = [] }
 }
 async function loadAdvisors(companyId: number) {
     const { data } = await api.get(R.companies.advisors(companyId), { params: { status: 'approved' } })
@@ -414,7 +422,7 @@ async function proposeCompany() {
     try {
         await api.post(R.companies.create, newCompany.value)
         showNewCompany.value = false
-        newCompany.value = { name: '', rfc: '', sector: '', address: '', titular_name: '', titular_position: '', phone: '', email: '' }
+        newCompany.value = { name: '', rfc: '', sector_id: null, address: '', titular_name: '', titular_position: '', phone: '', email: '' }
         msgError.value = false
         msg.value = 'Empresa enviada para validación del coordinador.'
     } catch (e: any) {
