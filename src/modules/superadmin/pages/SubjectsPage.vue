@@ -26,6 +26,9 @@
             :rows="rows"
             :loading="loading"
             :pagination="pagination"
+            :initial-search="initialSearch"
+            :sort-by="initialSortBy"
+            :sort-direction="initialSortDirection"
             @change="handleChange"
         >
             <!-- Estado activo -->
@@ -38,6 +41,18 @@
                 >
                     {{ row.isActive ? 'ACTIVO' : 'INACTIVO' }}
                 </span>
+            </template>
+
+            <!-- Tipo especial -->
+            <template #cell-specialType="{ row }">
+                <span
+                    v-if="row.specialType"
+                    class="px-2 py-1 text-xs rounded-full whitespace-nowrap"
+                    :class="SPECIAL_TYPE_META[row.specialType]?.class ?? 'bg-slate-100 text-slate-600'"
+                >
+                    {{ SPECIAL_TYPE_META[row.specialType]?.label ?? row.specialType }}
+                </span>
+                <span v-else class="text-xs text-slate-400">—</span>
             </template>
 
             <!-- Estado aprobación -->
@@ -126,6 +141,15 @@ import type { SubjectType } from '@/modules/superadmin/types/subject.type'
 const router = useRouter()
 
 /* -------------------------------------------------------------------------- */
+/* TIPO ESPECIAL — etiqueta + color por valor (null = materia normal) */
+/* -------------------------------------------------------------------------- */
+const SPECIAL_TYPE_META: Record<string, { label: string; class: string }> = {
+    social_service:           { label: 'SERVICIO SOCIAL',        class: 'bg-indigo-100 text-indigo-700' },
+    complementary_activities: { label: 'ACT. COMPLEMENTARIAS',   class: 'bg-amber-100 text-amber-700' },
+    professional_residency:   { label: 'RESIDENCIA PROFESIONAL', class: 'bg-emerald-100 text-emerald-700' },
+}
+
+/* -------------------------------------------------------------------------- */
 /* COLUMNS */
 /* -------------------------------------------------------------------------- */
 const columns: DataTableColumn<SubjectType>[] = [
@@ -136,6 +160,7 @@ const columns: DataTableColumn<SubjectType>[] = [
     { key: 'ht', label: 'HT', field: 'ht' },
     { key: 'hp', label: 'HP', field: 'hp' },
     { key: 'credits', label: 'CRÉDITOS', field: 'credits' },
+    { key: 'specialType', label: 'TIPO ESPECIAL' },
     { key: 'status', label: 'APROBADO' },
     { key: 'isActive', label: 'ESTADO' },
     { key: 'opciones', label: 'OPCIONES' },
@@ -150,8 +175,12 @@ const {
     pagination,
     handleChange,
     fetchData,
+    initialSearch,
+    initialSortBy,
+    initialSortDirection,
 } = useDataTableFetch<SubjectType>({
     endpoint: API.SUPERADMIN_API.subjects.list,
+    persistKey: 'superadmin.subjects.table',
 })
 
 fetchData()
