@@ -132,9 +132,14 @@ const onExport = (type: DataTableExportType) => {
                 <tr class="bg-slate-50/50 border-b border-slate-200">
                     <th
                         v-for="col in visibleColumns" :key="col.key"
+                        scope="col"
+                        :tabindex="col.sortable ? 0 : undefined"
+                        :aria-sort="col.sortable ? (sortBy === col.key ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none') : undefined"
                         @click="handleSort(col)"
+                        @keydown.enter.prevent="col.sortable && handleSort(col)"
+                        @keydown.space.prevent="col.sortable && handleSort(col)"
                         class="px-4 py-3 font-semibold text-slate-500 uppercase text-[10px] tracking-wider whitespace-nowrap"
-                        :class="[col.sortable ? 'cursor-pointer hover:text-blue-600 select-none' : '', `text-${col.align || 'left'}`]"
+                        :class="[col.sortable ? 'cursor-pointer hover:text-blue-600 select-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400' : '', `text-${col.align || 'left'}`]"
                         :style="{ width: col.width }"
                     >
                         <div class="flex items-center gap-2" :class="{'justify-end': col.align === 'right', 'justify-center': col.align === 'center'}">
@@ -194,6 +199,7 @@ const onExport = (type: DataTableExportType) => {
                     <span class="hidden xs:inline">Mostrar</span>
                     <select
                         :value="pagination.perPage"
+                        aria-label="Registros por página"
                         @change="(e) => emit('change', { ...pagination!, perPage: Number((e.target as HTMLSelectElement).value), page: 1 })"
                         class="bg-white border border-slate-200 rounded px-2 py-1.5 outline-none"
                     >

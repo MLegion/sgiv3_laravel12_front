@@ -94,8 +94,8 @@ onMounted(loadCaps)
         <!-- Filtros -->
         <div class="bg-white border border-slate-200 rounded-lg p-3 flex flex-wrap items-end gap-3">
             <div class="flex flex-col gap-1 min-w-[260px]">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Periodo SCA</label>
-                <select v-model.number="selectedCap"
+                <label for="evd-att-period" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Periodo SCA</label>
+                <select id="evd-att-period" v-model.number="selectedCap"
                         :disabled="loadingCaps"
                         class="border border-slate-300 rounded px-2 py-1.5 text-sm">
                     <option :value="null" disabled>Selecciona…</option>
@@ -105,13 +105,13 @@ onMounted(loadCaps)
                 </select>
             </div>
             <div class="flex flex-col gap-1 flex-1 min-w-[220px]">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Buscar (nombre / nº control)</label>
-                <input v-model="search" type="text" placeholder="Empieza a escribir…"
+                <label for="evd-att-search" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Buscar (nombre / nº control)</label>
+                <input id="evd-att-search" v-model="search" type="text" placeholder="Empieza a escribir…"
                        class="border border-slate-300 rounded px-2 py-1.5 text-sm" />
             </div>
             <div class="flex flex-col gap-1 min-w-[160px]">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Estado</label>
-                <select v-model="statusFilter"
+                <label for="evd-att-status" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Estado</label>
+                <select id="evd-att-status" v-model="statusFilter"
                         class="border border-slate-300 rounded px-2 py-1.5 text-sm">
                     <option value="all">Todos</option>
                     <option value="submitted">Solo entregaron acuse</option>
@@ -145,11 +145,11 @@ onMounted(loadCaps)
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                     <tr>
-                        <th class="text-left  px-3 py-2 w-28">NO. CONTROL</th>
-                        <th class="text-left  px-3 py-2">ALUMNO</th>
-                        <th class="text-left  px-3 py-2 w-24">CARRERA</th>
-                        <th class="text-right px-3 py-2 w-44">AVANCE</th>
-                        <th class="text-left  px-3 py-2 w-48">ACUSE</th>
+                        <th scope="col" class="text-left  px-3 py-2 w-28">NO. CONTROL</th>
+                        <th scope="col" class="text-left  px-3 py-2">ALUMNO</th>
+                        <th scope="col" class="text-left  px-3 py-2 w-24">CARRERA</th>
+                        <th scope="col" class="text-right px-3 py-2 w-44">AVANCE</th>
+                        <th scope="col" class="text-left  px-3 py-2 w-48">ACUSE</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">
