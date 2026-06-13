@@ -14,22 +14,22 @@
                 <button
                     type="button"
                     :disabled="currentIndex === 0"
-                    class="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    class="inline-flex w-[6.5rem] items-center justify-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
                     @click="go(currentIndex - 1)"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4 shrink-0">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                     </svg>
-                    <span class="hidden sm:inline">Anterior</span>
+                    Anterior
                 </button>
                 <button
                     type="button"
                     :disabled="currentIndex === steps.length - 1"
-                    class="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                    class="inline-flex w-[6.5rem] items-center justify-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
                     @click="go(currentIndex + 1)"
                 >
-                    <span>Siguiente</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4">
+                    Siguiente
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4 shrink-0">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                     </svg>
                 </button>
@@ -51,19 +51,19 @@
                     :aria-label="`Ir al paso ${i + 1}: ${s.label}`"
                     :aria-current="i === currentIndex ? 'step' : undefined"
                     :title="s.label"
-                    class="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-full text-[10px] sm:text-[11px] font-bold transition ring-2 ring-offset-1 focus:outline-none focus:ring-blue-400"
+                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold transition focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-400"
                     :class="circleClass(i)"
                     @click="go(i)"
                 >
-                    <svg v-if="i < currentIndex" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="h-3 w-3 sm:h-3.5 sm:w-3.5">
+                    <svg v-if="i < currentIndex" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="h-3.5 w-3.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                     <template v-else>{{ i + 1 }}</template>
                 </button>
-                <!-- conector que estira -->
+                <!-- conector que estira (mismo grosor/estilo entre todos) -->
                 <span
                     v-if="i < steps.length - 1"
-                    class="mx-1 h-0.5 flex-1 rounded-full"
+                    class="mx-0.5 h-0.5 flex-1 rounded-full"
                     :class="i < currentIndex ? 'bg-emerald-400' : 'bg-slate-200'"
                 />
             </li>
@@ -108,8 +108,8 @@ function go(index: number): void {
 }
 
 function circleClass(i: number): string {
-    if (i < currentIndex.value)  return 'bg-emerald-500 text-white ring-emerald-200'
-    if (i === currentIndex.value) return 'bg-blue-600 text-white ring-blue-200'
-    return 'bg-slate-100 text-slate-400 ring-transparent group-hover:bg-slate-200'
+    if (i < currentIndex.value)   return 'bg-emerald-500 text-white hover:bg-emerald-600'
+    if (i === currentIndex.value) return 'bg-blue-600 text-white hover:bg-blue-700'
+    return 'bg-slate-100 text-slate-400 hover:bg-slate-200'
 }
 </script>
