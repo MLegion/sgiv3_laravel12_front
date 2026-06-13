@@ -36,38 +36,34 @@
             </div>
         </div>
 
-        <!-- Línea de progreso con círculos numerados (scroll horizontal en móvil) -->
-        <ol class="flex items-center gap-1 overflow-x-auto pb-1 custom-scrollbar">
+        <!-- Línea de progreso: círculos numerados con conectores que llenan el
+             ancho (flex-1) — nunca se desborda ni se corta. Sin labels por paso
+             (el del paso actual va en el encabezado). -->
+        <ol class="flex items-center">
             <li
                 v-for="(s, i) in steps"
                 :key="s.name"
-                class="flex items-center shrink-0"
+                class="flex items-center"
+                :class="i < steps.length - 1 ? 'flex-1' : 'shrink-0'"
             >
                 <button
                     type="button"
                     :aria-label="`Ir al paso ${i + 1}: ${s.label}`"
                     :aria-current="i === currentIndex ? 'step' : undefined"
-                    class="group flex flex-col items-center gap-1 focus:outline-none"
+                    :title="s.label"
+                    class="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-full text-[10px] sm:text-[11px] font-bold transition ring-2 ring-offset-1 focus:outline-none focus:ring-blue-400"
+                    :class="circleClass(i)"
                     @click="go(i)"
                 >
-                    <span
-                        class="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold transition ring-2 ring-offset-1 group-focus:ring-blue-400"
-                        :class="circleClass(i)"
-                    >
-                        <svg v-if="i < currentIndex" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="h-3.5 w-3.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                        </svg>
-                        <template v-else>{{ i + 1 }}</template>
-                    </span>
-                    <span
-                        class="whitespace-nowrap text-[9px] font-semibold uppercase tracking-wide"
-                        :class="i === currentIndex ? 'text-blue-600' : 'text-slate-400'"
-                    >{{ s.label }}</span>
+                    <svg v-if="i < currentIndex" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="h-3 w-3 sm:h-3.5 sm:w-3.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    <template v-else>{{ i + 1 }}</template>
                 </button>
-                <!-- conector -->
+                <!-- conector que estira -->
                 <span
                     v-if="i < steps.length - 1"
-                    class="mx-1 h-0.5 w-5 sm:w-8 rounded-full"
+                    class="mx-1 h-0.5 flex-1 rounded-full"
                     :class="i < currentIndex ? 'bg-emerald-400' : 'bg-slate-200'"
                 />
             </li>
