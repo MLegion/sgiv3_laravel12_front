@@ -71,8 +71,8 @@
                         <h2 class="text-sm font-bold text-slate-700 uppercase">Datos personales</h2>
                         <StudentContactPhotoPanel>
                             <template #extra>
-                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">NSS (IMSS)</label>
-                                <input v-model="form.nss" placeholder="Número de seguridad social"
+                                <label for="res-nss" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">NSS (IMSS)</label>
+                                <input id="res-nss" v-model="form.nss" placeholder="Número de seguridad social"
                                        class="border rounded-md px-3 py-2 text-sm w-full sm:w-64" @change="saveProcess" />
                                 <p class="text-[11px] text-slate-400 mt-1">Tu número de seguridad social para el trámite de residencia.</p>
                             </template>
@@ -104,17 +104,17 @@
                             </div>
                         </div>
                         <div v-if="showNewCompany" class="rounded-lg border bg-slate-50 p-4 grid sm:grid-cols-2 gap-3">
-                            <input v-model="newCompany.name" placeholder="Razón social *" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
-                            <input v-model="newCompany.rfc" placeholder="RFC" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
-                            <select v-model.number="newCompany.sector_id" class="border rounded-md px-3 py-2 text-sm bg-white">
+                            <input v-model="newCompany.name" aria-label="Razón social" placeholder="Razón social *" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
+                            <input v-model="newCompany.rfc" aria-label="RFC" placeholder="RFC" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                            <select v-model.number="newCompany.sector_id" aria-label="Giro / sector" class="border rounded-md px-3 py-2 text-sm bg-white">
                                 <option :value="null">Giro / sector…</option>
                                 <option v-for="s in sectorOptions" :key="s.id" :value="s.id">{{ s.name }}</option>
                             </select>
-                            <input v-model="newCompany.address" placeholder="Domicilio" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
-                            <input v-model="newCompany.titular_name" placeholder="Titular / responsable" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
-                            <input v-model="newCompany.titular_position" placeholder="Cargo del titular" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
-                            <input v-model="newCompany.phone" placeholder="Teléfono" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
-                            <input v-model="newCompany.email" placeholder="Correo" class="border rounded-md px-3 py-2 text-sm" />
+                            <input v-model="newCompany.address" aria-label="Domicilio" placeholder="Domicilio" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
+                            <input v-model="newCompany.titular_name" aria-label="Titular / responsable" placeholder="Titular / responsable" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                            <input v-model="newCompany.titular_position" aria-label="Cargo del titular" placeholder="Cargo del titular" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                            <input v-model="newCompany.phone" aria-label="Teléfono" placeholder="Teléfono" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                            <input v-model="newCompany.email" aria-label="Correo" placeholder="Correo" class="border rounded-md px-3 py-2 text-sm" />
                             <div class="sm:col-span-2 flex items-center gap-2">
                                 <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                                     :disabled="!newCompany.name || savingCompany" @click="proposeCompany">Enviar para validación</button>
@@ -138,10 +138,10 @@
                                     :disabled="saving" @click="saveProcess">Guardar</button>
                         </div>
                         <div v-if="showNewAdvisor" class="rounded-lg border bg-slate-50 p-4 grid sm:grid-cols-2 gap-3">
-                            <input v-model="newAdvisor.name" placeholder="Nombre del asesor *" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
-                            <input v-model="newAdvisor.position" placeholder="Cargo / puesto" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
-                            <input v-model="newAdvisor.phone" placeholder="Teléfono" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
-                            <input v-model="newAdvisor.email" placeholder="Correo" class="border rounded-md px-3 py-2 text-sm sm:col-span-2" />
+                            <input v-model="newAdvisor.name" aria-label="Nombre del asesor" placeholder="Nombre del asesor *" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
+                            <input v-model="newAdvisor.position" aria-label="Cargo / puesto" placeholder="Cargo / puesto" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                            <input v-model="newAdvisor.phone" aria-label="Teléfono" placeholder="Teléfono" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                            <input v-model="newAdvisor.email" aria-label="Correo" placeholder="Correo" class="border rounded-md px-3 py-2 text-sm sm:col-span-2" />
                             <div class="sm:col-span-2">
                                 <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                                     :disabled="!newAdvisor.name || savingAdvisor" @click="proposeAdvisor">Enviar para validación</button>

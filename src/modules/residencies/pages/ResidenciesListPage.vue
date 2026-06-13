@@ -4,7 +4,7 @@
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Residentes</h1>
 
             <div class="flex items-center gap-3 flex-wrap">
-                <select v-model="statusFilter" class="border rounded-md px-2 py-1 text-xs" @change="reload">
+                <select v-model="statusFilter" aria-label="Filtrar por estado" class="border rounded-md px-2 py-1 text-xs" @change="reload">
                     <option value="">Todos los estados</option>
                     <option value="pending_activation">PENDIENTE DE ACTIVACIÓN</option>
                     <option value="registered">REGISTRADO</option>
@@ -21,7 +21,7 @@
                     <button type="button" class="text-xs px-3 py-1.5 rounded-md border hover:bg-slate-50 disabled:opacity-50"
                         :disabled="bulkBusy" @click="askBulk('resend')">Reenviar instructivo</button>
                 </template>
-                <select v-model="approvalFilter" class="border rounded-md px-2 py-1 text-xs" @change="reload">
+                <select v-model="approvalFilter" aria-label="Filtrar por aval" class="border rounded-md px-2 py-1 text-xs" @change="reload">
                     <option value="">Aval: todos</option>
                     <option value="pending">PENDIENTE</option>
                     <option value="approved">APROBADO</option>
@@ -29,19 +29,19 @@
                 </select>
 
                 <!-- Filtros por contexto: selector si hay varias opciones, valor fijo si una sola -->
-                <select v-if="campusOptions.length > 1" v-model="campusFilter" class="border rounded-md px-2 py-1 text-xs" @change="reload">
+                <select v-if="campusOptions.length > 1" v-model="campusFilter" aria-label="Filtrar por campus" class="border rounded-md px-2 py-1 text-xs" @change="reload">
                     <option :value="null">Campus: todos</option>
                     <option v-for="c in campusOptions" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
                 <span v-else-if="campusOptions.length === 1" class="text-xs text-slate-600 border rounded-md px-2 py-1 bg-slate-50">Campus: {{ campusOptions[0].name }}</span>
 
-                <select v-if="modalityOptions.length > 1" v-model="modalityFilter" class="border rounded-md px-2 py-1 text-xs" @change="reload">
+                <select v-if="modalityOptions.length > 1" v-model="modalityFilter" aria-label="Filtrar por modalidad" class="border rounded-md px-2 py-1 text-xs" @change="reload">
                     <option :value="null">Modalidad: todas</option>
                     <option v-for="m in modalityOptions" :key="m.id" :value="m.id">{{ m.name }}</option>
                 </select>
                 <span v-else-if="modalityOptions.length === 1" class="text-xs text-slate-600 border rounded-md px-2 py-1 bg-slate-50">Modalidad: {{ modalityOptions[0].name }}</span>
 
-                <select v-if="careerOptions.length > 1" v-model="careerFilter" class="border rounded-md px-2 py-1 text-xs" @change="reload">
+                <select v-if="careerOptions.length > 1" v-model="careerFilter" aria-label="Filtrar por carrera" class="border rounded-md px-2 py-1 text-xs" @change="reload">
                     <option :value="null">Carrera: todas</option>
                     <option v-for="c in careerOptions" :key="c.id" :value="c.id">{{ c.short_name ?? c.name }}</option>
                 </select>
@@ -54,8 +54,6 @@
                 </label>
             </div>
         </div>
-
-        <p v-if="resultMsg" class="text-sm px-3 py-2 rounded-lg" :class="resultErr ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'">{{ resultMsg }}</p>
 
         <DataTable :columns="columns" :rows="rows" :loading="loading" :pagination="pagination" @change="onChange">
             <template #cell-student="{ row }">
@@ -118,6 +116,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
+import { useConfirm } from '@/app/composables/useConfirm'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
@@ -209,24 +209,29 @@ function statusClass(s: ResidencyStatus): string {
 const bulkBusy    = ref(false)
 const confirmOpen = ref(false)
 const confirmAction = ref<'activate' | 'resend' | null>(null)
-const resultMsg   = ref('')
-const resultErr   = ref(false)
 
 async function activateOne(id: number) {
+    if (!await useConfirm().confirm({ title: 'Activar residencia', message: '¿Activar esta residencia pendiente?', confirmText: 'Activar' })) return
     bulkBusy.value = true
-    try { await api.post(R.residency.activate(id), {}); await fetchData() } finally { bulkBusy.value = false }
+    try {
+        await api.post(R.residency.activate(id), {})
+        await fetchData()
+        useToast().success('Residencia activada.')
+    } catch (e: any) {
+        useToast().error(e?.response?.data?.message ?? 'No se pudo activar.')
+    } finally {
+        bulkBusy.value = false
+    }
 }
 
 async function resendOne(id: number) {
+    if (!await useConfirm().confirm({ title: 'Reenviar instructivo', message: '¿Reenviar el instructivo a este residente?', confirmText: 'Reenviar' })) return
     bulkBusy.value = true
-    resultMsg.value = ''
     try {
         await api.post(R.residency.resendInstructions(id), {})
-        resultMsg.value = 'Instructivo reenviado al residente.'
-        resultErr.value = false
+        useToast().success('Instructivo reenviado al residente.')
     } catch (e: any) {
-        resultMsg.value = e?.response?.data?.message ?? 'No se pudo reenviar.'
-        resultErr.value = true
+        useToast().error(e?.response?.data?.message ?? 'No se pudo reenviar.')
     } finally {
         bulkBusy.value = false
     }
@@ -242,20 +247,17 @@ async function runBulk() {
     confirmOpen.value = false
     if (! action) return
     bulkBusy.value = true
-    resultMsg.value = ''
     try {
         if (action === 'activate') {
             const { data } = await api.post(R.residency.activateBulk, {})
             await fetchData()
-            resultMsg.value = `Activadas ${data.activated ?? 0} de ${data.total_pending ?? 0} residencias pendientes.`
+            useToast().success(`Activadas ${data.activated ?? 0} de ${data.total_pending ?? 0} residencias pendientes.`)
         } else {
             const { data } = await api.post(R.residency.resendInstructionsBulk, {})
-            resultMsg.value = `Instructivo enviado a ${data.sent ?? 0} de ${data.total ?? 0} residentes.`
+            useToast().success(`Instructivo enviado a ${data.sent ?? 0} de ${data.total ?? 0} residentes.`)
         }
-        resultErr.value = false
     } catch (e: any) {
-        resultMsg.value = e?.response?.data?.message ?? 'No se pudo completar la acción.'
-        resultErr.value = true
+        useToast().error(e?.response?.data?.message ?? 'No se pudo completar la acción.')
     } finally {
         bulkBusy.value = false
     }
