@@ -19,12 +19,12 @@
         <!-- Filtros -->
         <div class="bg-white border border-slate-200 rounded-lg p-3 grid sm:grid-cols-3 lg:grid-cols-6 gap-2">
             <div class="lg:col-span-2">
-                <label class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Buscar</label>
-                <input v-model="search" type="text" placeholder="Asunto, destinatario, error..." class="w-full border rounded-md px-2 py-1.5 text-sm" />
+                <label for="nlog-search" class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Buscar</label>
+                <input id="nlog-search" v-model="search" type="text" placeholder="Asunto, destinatario, error..." class="w-full border rounded-md px-2 py-1.5 text-sm" />
             </div>
             <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Canal</label>
-                <select v-model="channel" class="w-full border rounded-md px-2 py-1.5 text-sm">
+                <label for="nlog-channel" class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Canal</label>
+                <select id="nlog-channel" v-model="channel" class="w-full border rounded-md px-2 py-1.5 text-sm">
                     <option value="">Todos</option>
                     <option value="in_app">In-app</option>
                     <option value="email">Email</option>
@@ -33,8 +33,8 @@
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Estado</label>
-                <select v-model="status" class="w-full border rounded-md px-2 py-1.5 text-sm">
+                <label for="nlog-status" class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Estado</label>
+                <select id="nlog-status" v-model="status" class="w-full border rounded-md px-2 py-1.5 text-sm">
                     <option value="">Todos</option>
                     <option v-for="(label, key) in STATUS_LABELS" :key="key" :value="key">{{ label }}</option>
                 </select>

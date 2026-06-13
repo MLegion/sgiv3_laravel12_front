@@ -266,6 +266,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { useToast } from '@/app/composables/useToast'
 import { CheckIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -355,6 +356,9 @@ async function performDelete() {
         total.value = Math.max(0, total.value - 1)
         selected.value.delete(id)
         deleteTarget.value = null
+        useToast().success('Notificación eliminada.')
+    } catch (e: any) {
+        useToast().error(e?.response?.data?.message ?? 'No se pudo eliminar la notificación.')
     } finally {
         deleting.value = false
     }
@@ -383,10 +387,15 @@ function clearSelection() {
 async function bulkMarkReadSelected() {
     const ids = Array.from(selected.value)
     if (ids.length === 0) return
-    await store.bulkMarkRead(ids)
-    const now = new Date().toISOString()
-    items.value = items.value.map(i => ids.includes(i.id) && !i.read_at ? { ...i, read_at: now } : i)
-    clearSelection()
+    try {
+        await store.bulkMarkRead(ids)
+        const now = new Date().toISOString()
+        items.value = items.value.map(i => ids.includes(i.id) && !i.read_at ? { ...i, read_at: now } : i)
+        clearSelection()
+        useToast().success('Marcadas como leídas.')
+    } catch (e: any) {
+        useToast().error(e?.response?.data?.message ?? 'No se pudieron marcar como leídas.')
+    }
 }
 
 function confirmBulkDelete() {
@@ -414,6 +423,9 @@ async function performBulkDelete() {
         if (items.value.length === 0 && page.value > 1) {
             page.value--
         }
+        useToast().success(`${affected} notificación(es) eliminada(s).`)
+    } catch (e: any) {
+        useToast().error(e?.response?.data?.message ?? 'No se pudieron eliminar las notificaciones.')
     } finally {
         bulkDeleting.value = false
     }

@@ -31,9 +31,10 @@
             </div>
 
             <div>
-                <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Destinatario</label>
+                <label for="notif-recipient-search" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Destinatario</label>
                 <div class="relative" ref="searchRootRef">
                     <input
+                        id="notif-recipient-search"
                         v-model="recipientQuery"
                         type="text"
                         class="w-full border rounded-md px-2 py-1.5 text-sm"
@@ -125,6 +126,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { useToast } from '@/app/composables/useToast'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type {
@@ -272,6 +274,9 @@ async function searchRecipients() {
             },
         })
         recipients.value = data?.items ?? []
+    } catch (e: any) {
+        recipients.value = []
+        useToast().error(e?.response?.data?.message ?? 'No se pudo buscar destinatarios.')
     } finally {
         searchLoading.value = false
     }
