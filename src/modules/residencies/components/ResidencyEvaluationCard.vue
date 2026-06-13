@@ -15,7 +15,7 @@
                 Calificación enviada al kardex el {{ formatDate(evaluation.kardexSyncedAt) }}. Ya no es editable.
             </p>
 
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                 <thead>
                     <tr class="text-[10px] font-black text-slate-400 uppercase">
                         <th scope="col" class="text-left py-1">Componente</th>
@@ -36,7 +36,7 @@
                         <td class="py-1.5 text-[11px] text-slate-400">{{ c.capturedBy ?? '—' }}</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
 
             <div class="flex items-center justify-between border-t pt-3">
                 <div class="text-sm">

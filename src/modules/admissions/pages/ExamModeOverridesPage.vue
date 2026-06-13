@@ -19,7 +19,7 @@
         </div>
 
         <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                 <thead class="bg-slate-50 border-b">
                     <tr>
                         <th scope="col" class="text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider px-4 py-3">Modalidad</th>
@@ -53,7 +53,7 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </div>
 </template>

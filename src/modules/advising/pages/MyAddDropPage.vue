@@ -56,7 +56,7 @@
                 <div class="border-b px-4 py-3">
                     <h3 class="text-sm font-bold text-slate-700 uppercase">Mi carga actual</h3>
                 </div>
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
                             <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
@@ -94,7 +94,7 @@
                             <td colspan="4" class="px-4 py-6 text-center text-sm text-slate-400">No tienes materias inscritas.</td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
 
             <!-- Altas propuestas -->
@@ -102,7 +102,7 @@
                 <div class="border-b px-4 py-3">
                     <h3 class="text-sm font-bold text-emerald-700 uppercase">Altas solicitadas</h3>
                 </div>
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
                             <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
@@ -125,7 +125,7 @@
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
 
             <!-- Agregar materia -->

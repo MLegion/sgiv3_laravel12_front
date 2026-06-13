@@ -132,7 +132,7 @@
                         <span class="ml-1 text-[10px] uppercase">créditos</span>
                     </div>
                 </div>
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
                             <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
@@ -159,7 +159,7 @@
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
         </div>
 
@@ -548,7 +548,7 @@
             </div>
 
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <table class="min-w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="min-w-full text-sm">
                     <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
                         <tr>
                             <th scope="col" class="px-3 py-2 text-left">Clave</th>
@@ -662,7 +662,7 @@
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
 
             <!-- Footer -->

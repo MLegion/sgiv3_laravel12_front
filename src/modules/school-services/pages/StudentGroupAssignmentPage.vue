@@ -90,7 +90,7 @@
                     </label>
                 </div>
                 <div class="max-h-[560px] overflow-y-auto">
-                    <table class="w-full text-sm">
+                    <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                         <thead class="bg-slate-50 text-slate-500 sticky top-0">
                             <tr>
                                 <th scope="col" class="px-3 py-2 text-left w-8">
@@ -124,7 +124,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
             </div>
 

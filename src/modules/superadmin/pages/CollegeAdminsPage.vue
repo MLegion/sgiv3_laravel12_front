@@ -45,7 +45,7 @@
                 Sin resultados.
             </div>
 
-            <table v-else class="w-full text-sm">
+            <div class="overflow-x-auto w-full"><table v-else class="w-full text-sm">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-600">
                     <tr>
                         <th scope="col" class="px-4 py-2 text-left">Empleado</th>
@@ -109,7 +109,7 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </div>
 </template>

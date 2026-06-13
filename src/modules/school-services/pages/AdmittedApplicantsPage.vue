@@ -85,7 +85,7 @@
             </div>
 
             <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
                             <th scope="col" class="w-10 px-3 py-3"></th>
@@ -157,7 +157,7 @@
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
 
             <!-- Paginación -->

@@ -265,7 +265,7 @@ EFGH789012MDFYYY01,72.0</pre>
                 <div v-if="result.errors.length > 0">
                     <p class="text-xs font-semibold text-slate-600 uppercase mb-2">Detalle de errores</p>
                     <div class="border rounded-lg overflow-hidden text-xs">
-                        <table class="w-full">
+                        <div class="overflow-x-auto w-full"><table class="w-full">
                             <thead class="bg-slate-100">
                                 <tr>
                                     <th scope="col" class="px-3 py-2 text-left font-semibold text-slate-600 uppercase">CURP</th>
@@ -278,7 +278,7 @@ EFGH789012MDFYYY01,72.0</pre>
                                     <td class="px-3 py-2 text-red-600">{{ err.reason }}</td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     </div>
                 </div>
 

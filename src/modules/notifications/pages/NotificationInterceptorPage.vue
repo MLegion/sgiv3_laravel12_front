@@ -42,7 +42,7 @@
                 No hay mensajes capturados.
             </div>
 
-            <table v-else class="w-full text-sm">
+            <div class="overflow-x-auto w-full"><table v-else class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wide">
                     <tr>
                         <th scope="col" class="px-3 py-2 text-left">Fecha</th>
@@ -81,7 +81,7 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <!-- Modal de vista previa por canal -->

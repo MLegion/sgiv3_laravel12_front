@@ -67,7 +67,7 @@
             </div>
 
             <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-50 text-xs text-slate-500 uppercase">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left w-12">
@@ -114,7 +114,7 @@
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
 
                 <div v-if="totalPages > 1" class="flex items-center justify-between text-xs text-slate-500 px-4 py-3 border-t bg-slate-50">
                     <span>Página {{ currentPage }} de {{ totalPages }} — {{ totalItems }} aspirantes</span>
@@ -170,7 +170,7 @@
             </div>
 
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-50 text-xs text-slate-500 uppercase">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left">Aspirante</th>
@@ -202,7 +202,7 @@
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
 
             <div class="flex justify-between gap-3 pt-2">
@@ -247,7 +247,7 @@
                     <div class="px-4 py-3 border-b bg-emerald-50">
                         <p class="text-xs font-bold text-emerald-700 uppercase">Listos para inscribir</p>
                     </div>
-                    <table class="w-full text-xs">
+                    <div class="overflow-x-auto w-full"><table class="w-full text-xs">
                         <thead class="text-slate-500">
                             <tr>
                                 <th scope="col" class="px-4 py-2 text-left">Aspirante</th>
@@ -266,14 +266,14 @@
                                 <td class="px-4 py-2">{{ p.preview.periodName }}</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
 
                 <div v-if="previewFailed.length > 0" class="bg-white border rounded-xl shadow-sm overflow-hidden">
                     <div class="px-4 py-3 border-b bg-rose-50">
                         <p class="text-xs font-bold text-rose-700 uppercase">No se pueden inscribir — corrige antes de continuar</p>
                     </div>
-                    <table class="w-full text-xs">
+                    <div class="overflow-x-auto w-full"><table class="w-full text-xs">
                         <thead class="text-slate-500">
                             <tr>
                                 <th scope="col" class="px-4 py-2 text-left">Aspirante</th>
@@ -288,7 +288,7 @@
                                 <td class="px-4 py-2 text-rose-700">{{ p.reason }}</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
 
                 <div v-if="bulkError" class="bg-rose-50 border-2 border-rose-300 rounded-xl p-4">
@@ -324,7 +324,7 @@
             </div>
 
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-50 text-xs text-slate-500 uppercase">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left">Aspirante</th>
@@ -339,7 +339,7 @@
                             <td class="px-4 py-3 text-xs text-slate-500">{{ r.studentId }}</td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
 
             <div class="flex justify-end gap-2 pt-2">

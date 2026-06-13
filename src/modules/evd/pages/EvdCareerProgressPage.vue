@@ -272,7 +272,7 @@ onMounted(async () => {
                     <div v-else-if="(students[g.teacher_assignment_id] ?? []).length === 0" class="text-xs text-slate-500 italic">
                         Sin estudiantes en esta materia.
                     </div>
-                    <table v-else class="w-full text-sm">
+                    <div class="overflow-x-auto w-full"><table v-else class="w-full text-sm">
                         <thead class="text-[10px] uppercase tracking-wider text-slate-400 border-b">
                             <tr>
                                 <th scope="col" class="text-left py-1.5 w-28">N° Control</th>
@@ -294,7 +294,7 @@ onMounted(async () => {
                                 <td class="py-1.5 text-xs text-slate-500">{{ s.completed_at ?? '—' }}</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
             </li>
         </ul>

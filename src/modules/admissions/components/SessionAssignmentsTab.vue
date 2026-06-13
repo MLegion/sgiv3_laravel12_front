@@ -63,7 +63,7 @@
 
         <!-- Lista -->
         <div v-if="loading" class="text-xs text-slate-400 italic">Cargando...</div>
-        <table v-else-if="assignments.length > 0" class="w-full text-xs border border-slate-200 rounded-md overflow-hidden">
+        <div class="overflow-x-auto w-full"><table v-else-if="assignments.length > 0" class="w-full text-xs border border-slate-200 rounded-md overflow-hidden">
             <thead class="bg-slate-50">
                 <tr class="text-slate-600">
                     <th scope="col" class="px-2 py-1 text-left">#</th>
@@ -107,7 +107,7 @@
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
         <p v-else class="text-xs text-slate-400 italic">Aún no hay aspirantes asignados.</p>
     </div>
 </template>

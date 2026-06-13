@@ -8,7 +8,7 @@
         <div v-if="loading" class="text-sm text-slate-400 italic">Cargando...</div>
 
         <div v-else class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <table class="w-full text-xs">
+            <div class="overflow-x-auto w-full"><table class="w-full text-xs">
                 <thead class="bg-slate-50">
                     <tr class="text-left text-slate-600 uppercase text-[10px] tracking-wide">
                         <th scope="col" class="px-3 py-2">Key</th>
@@ -63,7 +63,7 @@
                         <td colspan="6" class="px-3 py-6 text-center text-slate-400 italic">Sin plantillas.</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </div>
 </template>

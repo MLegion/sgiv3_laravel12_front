@@ -11,7 +11,7 @@
 
         <!-- Tabla -->
         <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-            <table class="w-full text-left">
+            <div class="overflow-x-auto w-full"><table class="w-full text-left">
                 <thead>
                     <tr class="bg-slate-100 border-b text-[10px] font-black text-slate-500 uppercase">
                         <th scope="col" class="px-4 py-2.5 w-16 text-center">ID</th>
@@ -59,7 +59,7 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <!-- Modal de edición -->
@@ -103,7 +103,7 @@
                 <!-- Referencia de variables -->
                 <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
                     <h4 class="text-[10px] font-black text-blue-600 uppercase mb-2">Variables disponibles</h4>
-                    <table class="w-full text-xs">
+                    <div class="overflow-x-auto w-full"><table class="w-full text-xs">
                         <tbody class="divide-y divide-blue-100">
                             <tr>
                                 <td class="py-1.5 pr-3 font-mono font-bold text-blue-700 whitespace-nowrap">[D,numberPeriod]</td>
@@ -156,7 +156,7 @@
                                 <td class="py-1.5 text-slate-400 text-right"><b>A</b>, B, C...</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
 
                 <!-- Botones -->

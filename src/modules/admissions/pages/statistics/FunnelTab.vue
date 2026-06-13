@@ -20,7 +20,7 @@
 
             <!-- Tabla con porcentajes -->
             <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
                             <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Etapa</th>
@@ -39,7 +39,7 @@
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
         </template>
     </div>

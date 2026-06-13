@@ -85,7 +85,7 @@
                     <span class="text-[10px] text-slate-400 uppercase">los más recientes</span>
                 </div>
 
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead>
                         <tr class="text-left text-[10px] text-slate-500 uppercase tracking-wider border-b">
                             <th scope="col" class="py-2 pr-2">#</th>
@@ -127,7 +127,7 @@
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
         </template>
     </div>

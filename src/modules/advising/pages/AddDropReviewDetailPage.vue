@@ -35,7 +35,7 @@
             <!-- Bajas -->
             <div class="bg-white border rounded-xl shadow-sm">
                 <div class="border-b px-4 py-3"><h3 class="text-sm font-bold text-red-700 uppercase">Bajas solicitadas</h3></div>
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <tbody class="divide-y">
                         <tr v-for="it in dropItems" :key="it.id">
                             <td class="px-4 py-2">
@@ -45,13 +45,13 @@
                         </tr>
                         <tr v-if="!dropItems.length"><td class="px-4 py-4 text-center text-xs text-slate-400">Sin bajas.</td></tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
 
             <!-- Altas -->
             <div class="bg-white border rounded-xl shadow-sm">
                 <div class="border-b px-4 py-3"><h3 class="text-sm font-bold text-emerald-700 uppercase">Altas solicitadas</h3></div>
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr><th scope="col" class="px-4 py-2 text-left">MATERIA</th><th scope="col" class="px-4 py-2 text-left">GRUPO</th><th scope="col" class="px-4 py-2 text-left">DOCENTE</th></tr>
                     </thead>
@@ -63,7 +63,7 @@
                         </tr>
                         <tr v-if="!addItems.length"><td colspan="3" class="px-4 py-4 text-center text-xs text-slate-400">Sin altas.</td></tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
 
             <!-- Acciones del jefe -->

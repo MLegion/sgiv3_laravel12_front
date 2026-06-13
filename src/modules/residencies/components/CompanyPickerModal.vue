@@ -19,7 +19,7 @@
                 </div>
 
                 <div class="overflow-y-auto flex-1">
-                    <table class="w-full text-sm">
+                    <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                         <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500 sticky top-0">
                             <tr>
                                 <th scope="col" class="px-4 py-2 text-left">Nombre</th>
@@ -52,7 +52,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
 
                 <footer class="px-5 py-3 border-t flex items-center justify-between">

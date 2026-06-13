@@ -86,7 +86,7 @@
 
         <!-- Tabla -->
         <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-            <table class="min-w-full text-sm">
+            <div class="overflow-x-auto w-full"><table class="min-w-full text-sm">
                 <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
                     <tr>
                         <th scope="col" class="px-4 py-3 text-left">No. Control</th>
@@ -151,7 +151,7 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <!-- Paginación -->

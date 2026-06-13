@@ -20,7 +20,7 @@
         </div>
 
         <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                     <tr>
                         <th scope="col" class="text-left px-4 py-2">MATERIA</th>
@@ -61,7 +61,7 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </div>
 </template>

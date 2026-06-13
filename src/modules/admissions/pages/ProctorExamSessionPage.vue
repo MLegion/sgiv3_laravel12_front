@@ -157,7 +157,7 @@
 
                 <!-- Desktop table -->
                 <div class="hidden sm:block">
-                    <table class="w-full text-xs">
+                    <div class="overflow-x-auto w-full"><table class="w-full text-xs">
                         <thead class="bg-slate-50">
                             <tr class="text-slate-600">
                                 <th scope="col" class="px-2 py-1 text-left">Aspirante</th>
@@ -192,7 +192,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
 
                 <!-- Mobile cards -->

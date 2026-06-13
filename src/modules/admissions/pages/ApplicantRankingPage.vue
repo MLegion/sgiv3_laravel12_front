@@ -122,7 +122,7 @@
 
             <!-- Tabla ranking (con resultado) -->
             <div v-if="tab === 'ranking'" class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
@@ -182,12 +182,12 @@
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
 
             <!-- Tabla pendientes (sin score) -->
             <div v-else class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
@@ -217,7 +217,7 @@
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
 
             <!-- Paginación -->

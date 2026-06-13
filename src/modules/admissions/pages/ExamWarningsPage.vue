@@ -47,7 +47,7 @@
                     </div>
                 </div>
 
-                <table class="w-full text-xs">
+                <div class="overflow-x-auto w-full"><table class="w-full text-xs">
                     <thead class="bg-slate-50">
                         <tr class="text-slate-600">
                             <th scope="col" class="px-3 py-2 text-left">Materia</th>
@@ -91,7 +91,7 @@
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
         </div>
 

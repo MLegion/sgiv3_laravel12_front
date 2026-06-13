@@ -25,7 +25,7 @@
                         <Doughnut :data="sexChartData" :options="sexChartOptions" />
                     </div>
                     <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm self-start">
-                        <table class="w-full text-sm">
+                        <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                             <thead class="bg-slate-100 border-b border-slate-200">
                                 <tr>
                                     <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Sexo</th>
@@ -38,7 +38,7 @@
                                     <td class="px-4 py-2 text-right tabular-nums">{{ b.count }}</td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     </div>
                 </div>
             </section>
@@ -54,7 +54,7 @@
                         <Doughnut :data="modeChartData" :options="modeChartOptions" />
                     </div>
                     <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm self-start">
-                        <table class="w-full text-sm">
+                        <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                             <thead class="bg-slate-100 border-b border-slate-200">
                                 <tr>
                                     <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Modalidad</th>
@@ -67,7 +67,7 @@
                                     <td class="px-4 py-2 text-right tabular-nums">{{ b.count }}</td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     </div>
                 </div>
             </section>

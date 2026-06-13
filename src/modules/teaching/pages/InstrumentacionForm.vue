@@ -143,7 +143,7 @@
                     <h3 class="text-sm font-semibold text-slate-700">Unidad {{ activeUnit.number }} — Atrás (evaluación)</h3>
 
                     <Field label="Indicadores de alcance">
-                            <table class="w-full text-xs border border-slate-200">
+                            <div class="overflow-x-auto w-full"><table class="w-full text-xs border border-slate-200">
                                 <thead class="bg-slate-50"><tr><th scope="col" class="border px-2 py-1 w-8"></th><th scope="col" class="border px-2 py-1 text-left">Indicador</th><th scope="col" class="border px-2 py-1 w-20">Valor</th></tr></thead>
                                 <tbody>
                                     <tr v-for="ind in activeUnit.indicadores" :key="ind.letter">
@@ -152,11 +152,11 @@
                                         <td class="border px-1 py-1"><input v-model.number="ind.value" type="number" class="w-full px-1 py-0.5 border border-slate-200 rounded text-xs text-center" /></td>
                                     </tr>
                                 </tbody>
-                            </table>
+                            </table></div>
                         </Field>
 
                         <Field label="Matriz de evaluación">
-                            <table class="w-full text-xs border border-slate-200">
+                            <div class="overflow-x-auto w-full"><table class="w-full text-xs border border-slate-200">
                                 <thead class="bg-slate-50">
                                     <tr>
                                         <th scope="col" class="border px-2 py-1 text-left">Evidencia de aprendizaje</th>
@@ -177,7 +177,7 @@
                                         <td class="border px-1 py-1 text-center"><button type="button" class="text-red-400 hover:text-red-600" @click="removeEvidence(ev)">✕</button></td>
                                     </tr>
                                 </tbody>
-                            </table>
+                            </table></div>
                             <div class="flex items-center justify-between mt-1">
                                 <button type="button" class="text-xs text-blue-600" @click="addEvidence(activeUnit.number)">+ Evidencia</button>
                                 <span class="text-xs" :class="unitWeight(activeUnit.number) === 100 ? 'text-emerald-600' : 'text-slate-500'">Total unidad: {{ unitWeight(activeUnit.number) }}%</span>
@@ -200,7 +200,7 @@
                         <h3 class="text-sm font-semibold text-slate-700">Calendarización de evaluación</h3>
                         <button type="button" class="text-xs text-blue-600" @click="addWeek">+ Semana</button>
                     </div>
-                    <table class="w-full text-xs border border-slate-200">
+                    <div class="overflow-x-auto w-full"><table class="w-full text-xs border border-slate-200">
                         <thead class="bg-slate-50"><tr><th scope="col" class="border px-2 py-1 w-16">Semana</th><th scope="col" class="border px-2 py-1 w-16">Unidad</th><th scope="col" class="border px-2 py-1">Del</th><th scope="col" class="border px-2 py-1">Al</th><th scope="col" class="border px-2 py-1 w-16">T.P.</th><th scope="col" class="border px-2 py-1 w-16">T.R.</th><th scope="col" class="border px-2 py-1 w-16">S.D.</th><th scope="col" class="border px-1 py-1 w-7"></th></tr></thead>
                         <tbody>
                             <tr v-for="(w, wi) in header.calendar" :key="wi">
@@ -214,7 +214,7 @@
                                 <td class="border px-1 py-1 text-center"><button type="button" class="text-red-400 hover:text-red-600" @click="header.calendar.splice(wi, 1)">✕</button></td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                     <div class="w-56"><FormInput label="Fecha de elaboración" type="date" v-model="header.elaborated_at" /></div>
                 </div>
             </template>

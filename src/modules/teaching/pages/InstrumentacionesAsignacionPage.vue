@@ -17,7 +17,7 @@
         </div>
 
         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
                     <tr>
                         <th scope="col" class="text-left px-4 py-2">#</th>
@@ -43,7 +43,7 @@
                         <td colspan="5" class="px-4 py-6 text-center text-slate-400 text-sm">Sin instrumentaciones. Crea la primera.</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </div>
 </template>

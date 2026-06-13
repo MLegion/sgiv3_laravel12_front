@@ -89,7 +89,7 @@
             </div>
 
             <div ref="tableScrollRef" class="max-h-[65vh] overflow-y-auto">
-                <table class="w-full text-left">
+                <div class="overflow-x-auto w-full"><table class="w-full text-left">
                     <thead class="sticky top-0 z-10">
                         <tr class="bg-slate-100 border-b text-[10px] font-black text-slate-500 uppercase">
                             <th scope="col" class="px-3 py-2.5 w-24">Clave</th>
@@ -288,7 +288,7 @@
                             <td :colspan="usesSpecificDates ? 10 : 9" class="px-4 py-8 text-center text-xs text-slate-400 uppercase font-bold">No hay materias aprobadas para este nivel.</td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
         </div>
 

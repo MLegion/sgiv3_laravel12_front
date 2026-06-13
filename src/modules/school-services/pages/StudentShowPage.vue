@@ -154,7 +154,7 @@
                 <div v-else-if="affiliations.length === 0" class="text-sm text-slate-400 py-6 text-center">Sin afiliaciones registradas.</div>
 
                 <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                    <table class="min-w-full text-sm">
+                    <div class="overflow-x-auto w-full"><table class="min-w-full text-sm">
                         <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
                             <tr>
                                 <th scope="col" class="px-4 py-3 text-left">Carrera / Plan</th>
@@ -191,7 +191,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
 
                 <!-- Modal nueva afiliacion -->

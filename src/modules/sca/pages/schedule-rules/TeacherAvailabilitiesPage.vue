@@ -133,7 +133,7 @@
 
                         <!-- ── Lista de ventanas ── -->
                         <div v-if="loadingAvailabilities" class="p-4 text-sm text-slate-400 text-center">Cargando…</div>
-                        <table v-else-if="availabilities.length" class="w-full text-xs">
+                        <div class="overflow-x-auto w-full"><table v-else-if="availabilities.length" class="w-full text-xs">
                             <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
                                 <tr>
                                     <th scope="col" class="px-3 py-2 text-left">Modalidad</th>
@@ -171,7 +171,7 @@
                                     </td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                         <p v-else class="p-6 text-center text-xs text-slate-400 italic">
                             Sin ventanas configuradas. Agrega una con el formulario de arriba.
                         </p>

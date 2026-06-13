@@ -23,7 +23,7 @@
                     <span class="ml-1 text-[10px] uppercase">{{ rows.length === 1 ? 'alumno' : 'alumnos' }}</span>
                 </span>
             </div>
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                     <tr>
                         <th scope="col" class="text-left px-4 py-2 w-12">#</th>
@@ -48,7 +48,7 @@
                         <td class="px-4 py-2 text-xs text-slate-600">{{ s.career?.short_name ?? s.career?.name ?? '—' }}</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </div>
 </template>

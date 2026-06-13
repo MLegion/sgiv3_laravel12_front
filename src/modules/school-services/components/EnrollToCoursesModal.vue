@@ -73,7 +73,7 @@
                             <div class="px-4 py-2 border-b bg-slate-50">
                                 <p class="text-xs font-bold text-slate-600 uppercase">Materias del semestre</p>
                             </div>
-                            <table class="w-full text-xs">
+                            <div class="overflow-x-auto w-full"><table class="w-full text-xs">
                                 <thead class="text-slate-500">
                                     <tr>
                                         <th scope="col" class="px-3 py-2 text-left">Código</th>
@@ -106,7 +106,7 @@
                                         </td>
                                     </tr>
                                 </tbody>
-                            </table>
+                            </table></div>
                         </div>
 
                         <!-- Alumnos -->

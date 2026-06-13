@@ -66,7 +66,7 @@
                 <div class="border-b px-4 py-3">
                     <h3 class="text-sm font-bold text-slate-700 uppercase">Materias inscritas</h3>
                 </div>
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
                             <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
@@ -84,7 +84,7 @@
                             <td class="px-4 py-2 text-xs text-slate-600">{{ e.teacher?.name ?? '— por asignar —' }}</td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
         </template>
 
@@ -170,7 +170,7 @@
                         <span class="ml-1 text-[10px] uppercase">materias</span>
                     </div>
                 </div>
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
                             <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
@@ -192,7 +192,7 @@
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
         </template>
 

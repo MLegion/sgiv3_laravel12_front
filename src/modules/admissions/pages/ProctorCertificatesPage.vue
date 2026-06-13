@@ -21,7 +21,7 @@
         </div>
 
         <div v-else class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                 <thead class="bg-slate-100 text-slate-600 text-xs">
                     <tr>
                         <th scope="col" class="text-left px-3 py-2">Empleado</th>
@@ -55,7 +55,7 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <p v-if="error" class="text-sm text-rose-700">{{ error }}</p>
