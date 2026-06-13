@@ -87,7 +87,7 @@
                             <div v-for="grp in programGenericas" :key="grp.typeId" class="mb-2 last:mb-0">
                                 <span class="font-medium text-slate-600">{{ grp.typeName }}</span>
                                 <div class="flex flex-wrap gap-1 mt-1">
-                                    <button aria-label="genericaInText(c.description) ? 'Ya agregada' : 'Agregar'" v-for="c in grp.items" :key="c.id" type="button"
+                                    <button :aria-label="genericaInText(c.description) ? 'Ya agregada' : 'Agregar'" v-for="c in grp.items" :key="c.id" type="button"
                                         class="px-2 py-0.5 rounded-full border text-left transition"
                                         :class="genericaInText(c.description)
                                             ? 'border-emerald-300 bg-emerald-50 text-emerald-700'

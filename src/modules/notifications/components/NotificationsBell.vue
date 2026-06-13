@@ -1,6 +1,6 @@
 <template>
     <div class="relative" ref="rootRef">
-        <button aria-label="`${store.unreadCount} sin leer`"
+        <button :aria-label="`${store.unreadCount} sin leer`"
             type="button"
             class="relative p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition-colors"
             :class="{ 'bg-slate-100': open }"
@@ -30,7 +30,7 @@
                 <div class="px-4 py-2.5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between gap-2">
                     <p class="text-xs font-bold uppercase tracking-wide text-slate-700">Notificaciones</p>
                     <div class="flex items-center gap-2">
-                        <button aria-label="pushTitle"
+                        <button :aria-label="pushTitle"
                             v-if="webPush.supported.value"
                             type="button"
                             class="p-1 rounded text-slate-400 hover:bg-slate-200 hover:text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -42,7 +42,7 @@
                             <BellAlertIcon v-if="webPush.status.value === 'subscribed'" class="w-4 h-4" />
                             <BellSlashIcon v-else                                       class="w-4 h-4" />
                         </button>
-                        <button aria-label="store.soundEnabled ? 'Sonido activado (click para silenciar)' : 'Sonido silenciado (click para activar)'"
+                        <button :aria-label="store.soundEnabled ? 'Sonido activado (click para silenciar)' : 'Sonido silenciado (click para activar)'"
                             type="button"
                             class="p-1 rounded text-slate-400 hover:bg-slate-200 hover:text-slate-700"
                             :class="{ 'text-indigo-600': store.soundEnabled }"

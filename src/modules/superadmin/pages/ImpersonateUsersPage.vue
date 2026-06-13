@@ -97,7 +97,7 @@
 
             <template #cell-acciones="{ row }">
                 <div class="flex items-center justify-center">
-                    <button aria-label="'Hay una simulación activa para este usuario. Clic para forzar cierre.'"
+                    <button :aria-label="'Hay una simulación activa para este usuario. Clic para forzar cierre.'"
                         v-if="activeUserIds.has(row.id)"
                         type="button"
                         :disabled="busyUserId === row.id"

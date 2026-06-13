@@ -124,7 +124,7 @@
                         </svg>
                     </button>
 
-                    <button aria-label="row.isActive ? 'Desactivar' : 'Activar'"
+                    <button :aria-label="row.isActive ? 'Desactivar' : 'Activar'"
                         class="border p-1.5 rounded-md cursor-pointer"
                         :class="row.isActive
                             ? 'hover:bg-amber-50 text-amber-700'

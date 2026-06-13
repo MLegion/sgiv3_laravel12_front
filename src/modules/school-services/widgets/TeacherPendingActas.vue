@@ -59,14 +59,14 @@
                     <span v-if="it.actaClosedAt" class="text-[9px] uppercase font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">
                         Cerrada · {{ formatDate(it.actaClosedAt) }}
                     </span>
-                    <button aria-label="closeButtonTitle(it)"
+                    <button :aria-label="closeButtonTitle(it)"
                         v-if="!it.actaClosedAt"
                         :disabled="busyIds.has(it.teacherAssignmentId) || it.coveragePct < 100 || it.enrolled === 0"
                         :title="closeButtonTitle(it)"
                         class="text-[10px] px-2 py-0.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed"
                         @click="closeActa(it.teacherAssignmentId)"
                     >Cerrar acta</button>
-                    <button aria-label="it.capGradesLoadedAt ? 'El periodo ya cerró la carga; no se puede reabrir' : 'Reabrir el acta para corregir capturas'"
+                    <button :aria-label="it.capGradesLoadedAt ? 'El periodo ya cerró la carga; no se puede reabrir' : 'Reabrir el acta para corregir capturas'"
                         v-else
                         :disabled="busyIds.has(it.teacherAssignmentId) || !!it.capGradesLoadedAt"
                         :title="it.capGradesLoadedAt ? 'El periodo ya cerró la carga; no se puede reabrir' : 'Reabrir el acta para corregir capturas'"

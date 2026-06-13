@@ -135,7 +135,7 @@
                                         title="Cancela el solver si está activo">
                                         Cancelar
                                     </button>
-                                    <button aria-label="r.status === 'promoted' ? 'Borrar registro del historial (el horario promovido no se ve afectado)' : 'Borrar'" v-else
+                                    <button :aria-label="r.status === 'promoted' ? 'Borrar registro del historial (el horario promovido no se ve afectado)' : 'Borrar'" v-else
                                         :disabled="busyRunId === r.id"
                                         class="p-1.5 rounded border border-slate-300 text-slate-500 hover:text-red-600 hover:border-red-300 hover:bg-red-50 disabled:opacity-60 transition"
                                         :title="r.status === 'promoted' ? 'Borrar registro del historial (el horario promovido no se ve afectado)' : 'Borrar'"

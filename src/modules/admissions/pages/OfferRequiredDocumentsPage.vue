@@ -138,7 +138,7 @@
                             </li>
                         </ul>
 
-                        <button aria-label="isOfferFull(offer.id) ? 'Todos los tipos de documento ya están configurados para esta oferta' : undefined"
+                        <button :aria-label="isOfferFull(offer.id) ? 'Todos los tipos de documento ya están configurados para esta oferta' : undefined"
                             class="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             :disabled="isOfferFull(offer.id)"
                             :title="isOfferFull(offer.id) ? 'Todos los tipos de documento ya están configurados para esta oferta' : undefined"

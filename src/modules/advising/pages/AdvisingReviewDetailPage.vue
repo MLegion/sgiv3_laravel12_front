@@ -386,7 +386,7 @@
                             </span>
                         </td>
                         <td class="px-4 py-2 text-right">
-                            <button aria-label="!selectedAssignment[entry.subjectId] ? 'Elige un grupo del select de la izquierda' : ''" v-if="!proposedSubjectIds.has(entry.subjectId)"
+                            <button :aria-label="!selectedAssignment[entry.subjectId] ? 'Elige un grupo del select de la izquierda' : ''" v-if="!proposedSubjectIds.has(entry.subjectId)"
                                     :disabled="!selectedAssignment[entry.subjectId] || addingSubject === entry.subjectId"
                                     class="text-[11px] border px-2 py-1 rounded-md hover:bg-emerald-50 hover:border-emerald-300 text-emerald-600 disabled:opacity-40"
                                     :title="!selectedAssignment[entry.subjectId] ? 'Elige un grupo del select de la izquierda' : ''"

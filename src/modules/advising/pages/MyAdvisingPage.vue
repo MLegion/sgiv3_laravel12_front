@@ -599,7 +599,7 @@
                                     >
                                         <!-- Estado: ✓ inscrito / — no permitido (otro grupo elegido) / botón inscribir -->
                                         <template v-if="proposed.get(entry.subjectId)?.teacherAssignmentId === a.id">
-                                            <button aria-label="canEdit ? 'Quitar materia' : 'Inscrita'"
+                                            <button :aria-label="canEdit ? 'Quitar materia' : 'Inscrita'"
                                                 type="button"
                                                 class="mt-0.5 w-5 h-5 rounded-full bg-emerald-600 text-white text-[11px] font-bold flex items-center justify-center hover:bg-red-600 disabled:opacity-50"
                                                 :disabled="!canEdit || inFlightSubjects.has(entry.subjectId)"
@@ -675,7 +675,7 @@
                     Cada materia se guarda automáticamente al inscribirla. Cuando termines, envía la asesoría al asesor.
                 </p>
                 <div class="flex flex-wrap items-center gap-2">
-                    <button aria-label="!isPersonalDataConfirmed ? 'Primero confirma tus datos personales en la pestaña Mis Datos' : ''" v-if="canEdit"
+                    <button :aria-label="!isPersonalDataConfirmed ? 'Primero confirma tus datos personales en la pestaña Mis Datos' : ''" v-if="canEdit"
                             :disabled="submitting || !canSubmit"
                             class="px-4 py-2 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                             :title="!isPersonalDataConfirmed ? 'Primero confirma tus datos personales en la pestaña Mis Datos' : ''"

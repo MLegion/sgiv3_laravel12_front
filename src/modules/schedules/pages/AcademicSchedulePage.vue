@@ -31,7 +31,7 @@
             <section class="bg-white border rounded-xl shadow-sm overflow-hidden">
                 <header class="px-4 py-2 bg-slate-50 border-b flex items-center justify-between gap-2">
                     <h2 class="text-[11px] font-black text-slate-600 uppercase tracking-widest">Filtros</h2>
-                    <button aria-label="'Vaciar los horarios de la carrera ' + (selectedCareerObj?.shortName ?? selectedCareerObj?.name ?? '')" v-if="selectedCareerFilter && resolvedConfigId && phaseActive"
+                    <button :aria-label="'Vaciar los horarios de la carrera ' + (selectedCareerObj?.shortName ?? selectedCareerObj?.name ?? '')" v-if="selectedCareerFilter && resolvedConfigId && phaseActive"
                         type="button"
                         class="px-3 py-1.5 text-[10px] font-bold rounded border border-red-300 text-red-700 hover:bg-red-50 uppercase flex items-center gap-1.5"
                         :title="'Vaciar los horarios de la carrera ' + (selectedCareerObj?.shortName ?? selectedCareerObj?.name ?? '')"
@@ -99,7 +99,7 @@
                     </span>
                 </header>
                 <div class="p-3 flex items-center gap-2 flex-wrap">
-                    <button aria-label="!phaseActive ? 'Fase de horarios cerrada' : (eraserMode ? 'Desactivar borrador' : 'Activar borrador')"
+                    <button :aria-label="!phaseActive ? 'Fase de horarios cerrada' : (eraserMode ? 'Desactivar borrador' : 'Activar borrador')"
                         type="button"
                         class="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border-2 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
                         :class="eraserMode
@@ -115,7 +115,7 @@
                         {{ eraserMode ? 'SALIR DEL BORRADOR' : 'BORRADOR' }}
                     </button>
 
-                    <button aria-label="comparisonMode ? 'Salir de comparación' : 'Comparar horarios'"
+                    <button :aria-label="comparisonMode ? 'Salir de comparación' : 'Comparar horarios'"
                         type="button"
                         class="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border-2 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
                         :class="comparisonMode
@@ -132,7 +132,7 @@
                     </button>
 
                     <!-- Modo lista -->
-                    <button aria-label="listMode ? 'Volver al grid' : 'Ver horario como lista'"
+                    <button :aria-label="listMode ? 'Volver al grid' : 'Ver horario como lista'"
                         type="button"
                         class="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border-2 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
                         :class="listMode
@@ -149,7 +149,7 @@
                     </button>
 
                     <!-- Seleccionar aula por defecto -->
-                    <button aria-label="pinnedPlaceId ? 'Cambiar o quitar aula fija' : 'Fijar aula por defecto'"
+                    <button :aria-label="pinnedPlaceId ? 'Cambiar o quitar aula fija' : 'Fijar aula por defecto'"
                         type="button"
                         class="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border-2 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
                         :class="pinnedPlaceId
@@ -202,7 +202,7 @@
                     </button>
 
                     <!-- Generación automática (jefe de carrera) -->
-                    <button aria-label="generatorDisabledReason || 'Disparar generación automática para la carrera'"
+                    <button :aria-label="generatorDisabledReason || 'Disparar generación automática para la carrera'"
                         v-if="canGenerate"
                         type="button"
                         class="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border-2 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
@@ -529,7 +529,7 @@
 
                                 <!-- Sub-slots clickables individualmente -->
                                 <div class="flex-1 flex flex-col divide-y divide-red-200 bg-red-50/50 min-h-0">
-                                    <button aria-label="`Eliminar solo ${slot.from} - ${slot.to}`"
+                                    <button :aria-label="`Eliminar solo ${slot.from} - ${slot.to}`"
                                         v-for="(slot, idx) in blockSubSlots(block)"
                                         :key="'ss-' + block.id + '-' + idx"
                                         type="button"

@@ -2,7 +2,7 @@
     <div class="space-y-4">
         <div class="flex items-center justify-between">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Documentos Requeridos Globales</h1>
-            <button aria-label="allTypesUsed ? 'Todos los tipos de documento ya están configurados' : undefined"
+            <button :aria-label="allTypesUsed ? 'Todos los tipos de documento ya están configurados' : undefined"
                 class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 :disabled="allTypesUsed"
                 :title="allTypesUsed ? 'Todos los tipos de documento ya están configurados' : undefined"

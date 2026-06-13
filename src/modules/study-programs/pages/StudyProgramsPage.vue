@@ -31,7 +31,7 @@
 
             <template #cell-opciones="{ row }">
                 <div class="flex items-center justify-center gap-2">
-                    <button aria-label="row.subject.programFilePath ? 'Abrir PDF del programa (respaldado)' : 'Abrir enlace al programa'"
+                    <button :aria-label="row.subject.programFilePath ? 'Abrir PDF del programa (respaldado)' : 'Abrir enlace al programa'"
                         v-if="row.subject && (row.subject.programFilePath || row.subject.programUrl)"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer disabled:opacity-50"

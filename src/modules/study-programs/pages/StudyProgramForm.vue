@@ -135,7 +135,7 @@
 
                             <!-- Puntos indicadores -->
                             <div v-if="form.temas.length > 1" class="flex flex-wrap items-center gap-1.5">
-                                <button aria-label="`Ir a la unidad ${i}`" v-for="i in form.temas.length" :key="i" type="button"
+                                <button :aria-label="`Ir a la unidad ${i}`" v-for="i in form.temas.length" :key="i" type="button"
                                     class="w-2.5 h-2.5 rounded-full transition"
                                     :class="(i - 1) === unidadIndex ? 'bg-blue-600' : 'bg-slate-300 hover:bg-slate-400'"
                                     :title="`Ir a la unidad ${i}`"

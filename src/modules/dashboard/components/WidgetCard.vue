@@ -17,7 +17,7 @@
                 >
                     <ArrowPathIcon class="w-4 h-4" :class="{ 'animate-spin': loading }" />
                 </button>
-                <button aria-label="view === 'settings' ? 'Volver a la vista' : 'Configurar widget'"
+                <button :aria-label="view === 'settings' ? 'Volver a la vista' : 'Configurar widget'"
                     v-if="hasSettings"
                     class="transition-colors p-1"
                     :class="view === 'settings' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'"
