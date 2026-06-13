@@ -116,6 +116,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
@@ -195,7 +196,7 @@ async function assign(row: Employee) {
 
 async function revoke(row: Employee) {
     if (!selectedCollegeId.value) return
-    if (!confirm(`¿Revocar rol admin a ${row.names} ${row.first_surname}?`)) return
+    if (!await useConfirm().confirm({ title: 'Revocar rol admin', message: `¿Revocar rol admin a ${row.names} ${row.first_surname}?`, variant: 'danger', confirmText: 'Revocar' })) return
     busyId.value = row.user_id
     try {
         await api.delete(

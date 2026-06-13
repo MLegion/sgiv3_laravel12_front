@@ -196,6 +196,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { XMarkIcon, TrashIcon, LockClosedIcon } from '@heroicons/vue/24/outline'
@@ -410,7 +411,7 @@ async function assign() {
 }
 
 async function revoke(a: Assignment) {
-    if (!confirm(`¿Revocar el rol "${a.role_name}" de este usuario?`)) return
+    if (!await useConfirm().confirm({ title: 'Revocar rol', message: `¿Revocar el rol "${a.role_name}" de este usuario?`, variant: 'danger', confirmText: 'Revocar' })) return
     revokingId.value = a.id
     try {
         const { data } = await api.delete(API.COLLEGE_API.users.revoke(props.user.id, a.id))

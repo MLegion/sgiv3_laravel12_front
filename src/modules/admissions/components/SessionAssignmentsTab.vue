@@ -114,6 +114,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -201,7 +202,7 @@ async function assignApplicant(a: ApplicantResult) {
 }
 
 async function unassign(a: ApplicantExamAssignment) {
-    if (!confirm(`¿Quitar a ${a.applicant?.firstSurname} ${a.applicant?.names} de esta sesión?`)) return
+    if (!await useConfirm().confirm({ title: 'Quitar de la sesión', message: `¿Quitar a ${a.applicant?.firstSurname} ${a.applicant?.names} de esta sesión?`, variant: 'danger', confirmText: 'Quitar' })) return
     await api.delete(API.ADMISSIONS_API.examSessions.assignments.delete(props.session.id, a.id))
     await load()
     emit('changed')

@@ -256,6 +256,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import {
     ArrowTopRightOnSquareIcon,
     CheckCircleIcon,
@@ -398,7 +399,7 @@ async function onChoose(mode: 'online' | 'presencial') {
 }
 
 async function onChange(mode: 'online' | 'presencial') {
-    if (!confirm(`¿Cambiar a modalidad ${mode === 'online' ? 'EN LÍNEA' : 'PRESENCIAL'}?`)) return
+    if (!await useConfirm().confirm({ title: 'Cambiar modalidad', message: `¿Cambiar a modalidad ${mode === 'online' ? 'EN LÍNEA' : 'PRESENCIAL'}?`, confirmText: 'Cambiar' })) return
     await onChoose(mode)
 }
 

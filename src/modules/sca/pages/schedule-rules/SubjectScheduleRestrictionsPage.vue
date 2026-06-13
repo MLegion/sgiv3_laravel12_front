@@ -158,6 +158,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
@@ -314,7 +315,7 @@ async function createRule() {
 }
 
 async function deleteRule(r: Restriction) {
-    if (!confirm('¿Eliminar esta restricción?')) return
+    if (!await useConfirm().confirm({ title: 'Eliminar restricción', message: '¿Eliminar esta restricción?', variant: 'danger', confirmText: 'Eliminar' })) return
     try {
         await api.delete(API.SCA_API.scheduleRules.subjectRestriction.delete(r.id))
         restrictions.value = restrictions.value.filter(x => x.id !== r.id)

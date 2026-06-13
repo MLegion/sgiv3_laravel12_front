@@ -4,6 +4,9 @@
         <!-- Host global de notificaciones efímeras (toasts) -->
         <ToastHost />
 
+        <!-- Host global de confirmaciones (useConfirm) -->
+        <ConfirmHost />
+
         <!-- Banner de Impersonación (solo visible en modo simulación) -->
         <ImpersonationBanner />
 
@@ -80,6 +83,7 @@ import AppSidebar from '@/app/components/AppSidebar.vue';
 import Breadcrumbs from '@/app/components/Breadcrumbs.vue';
 import ImpersonationBanner from '@/app/components/ImpersonationBanner.vue';
 import ToastHost from '@/app/components/ui/ToastHost.vue';
+import ConfirmHost from '@/app/components/ui/modal/ConfirmHost.vue';
 import { useLayoutStore } from '@/app/stores/layout.store';
 import { useBrandingStore } from '@/modules/auth/stores/branding.store';
 

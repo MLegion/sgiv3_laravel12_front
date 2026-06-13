@@ -184,6 +184,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 
@@ -353,7 +354,7 @@ async function createRule() {
 }
 
 async function deleteRule(a: Availability) {
-    if (!confirm('¿Eliminar esta ventana de disponibilidad?')) return
+    if (!await useConfirm().confirm({ title: 'Eliminar ventana', message: '¿Eliminar esta ventana de disponibilidad?', variant: 'danger', confirmText: 'Eliminar' })) return
     try {
         await api.delete(API.SCA_API.scheduleRules.teacherAvailability.delete(a.id))
         availabilities.value = availabilities.value.filter(x => x.id !== a.id)

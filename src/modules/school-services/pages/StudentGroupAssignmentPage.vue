@@ -268,6 +268,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import EnrollToCoursesModal from '@/modules/school-services/components/EnrollToCoursesModal.vue'
@@ -486,7 +487,7 @@ async function loadStudentsOfGroup(groupId: number) {
 }
 
 async function removeFromGroup(g: CohortGroup, s: { id: number, full_name: string }) {
-    if (!confirm(`¿Quitar a "${s.full_name}" del grupo ${g.name}?`)) return
+    if (!await useConfirm().confirm({ title: 'Quitar del grupo', message: `¿Quitar a "${s.full_name}" del grupo ${g.name}?`, variant: 'danger', confirmText: 'Quitar' })) return
     removingStudentId.value = s.id
     banner.message = ''
     try {

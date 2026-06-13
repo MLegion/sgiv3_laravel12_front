@@ -113,6 +113,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useConfirm } from '@/app/composables/useConfirm'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
 
 /* ── Period (compartido SCA) ───────────────────────────────────── */
@@ -267,7 +268,7 @@ async function reassign(assignmentId: number, force = false) {
         const errors = e?.response?.data?.errors
         if (errors?.conflicts && errors?._conflictDetails) {
             const count = (errors._conflictDetails as any[]).length
-            if (confirm(`La asignación provocaría ${count} choque(s) de horario.\n\nLos horarios en conflicto serán eliminados para reasignación.\n\n¿Desea continuar?`)) {
+            if (await useConfirm().confirm({ title: 'Choques de horario', message: `La asignación provocaría ${count} choque(s) de horario.\n\nLos horarios en conflicto serán eliminados para reasignación.\n\n¿Desea continuar?`, variant: 'warning', confirmText: 'Continuar' })) {
                 await reassign(assignmentId, true)
                 return
             }

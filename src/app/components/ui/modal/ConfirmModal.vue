@@ -116,7 +116,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 
-type Variant = 'warning' | 'info' | 'success'
+type Variant = 'warning' | 'info' | 'success' | 'danger'
 
 const titleId = `confirm-modal-${Math.floor(Math.random() * 1e9)}`
 const modalEl = ref<HTMLElement | null>(null)
@@ -144,6 +144,7 @@ const iconWrapperClass = computed(() => {
     switch (props.variant) {
         case 'info':    return 'bg-blue-100 text-blue-600'
         case 'success': return 'bg-emerald-100 text-emerald-600'
+        case 'danger':  return 'bg-red-100 text-red-600'
         default:        return 'bg-amber-100 text-amber-600'
     }
 })
@@ -152,6 +153,7 @@ const confirmBtnClass = computed(() => {
     switch (props.variant) {
         case 'success': return 'bg-emerald-600 hover:bg-emerald-700'
         case 'info':    return 'bg-blue-600 hover:bg-blue-700'
+        case 'danger':  return 'bg-red-600 hover:bg-red-700'
         default:        return 'bg-blue-600 hover:bg-blue-700'
     }
 })

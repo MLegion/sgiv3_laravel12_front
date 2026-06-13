@@ -177,6 +177,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -282,7 +283,7 @@ async function submit(forceActivate = false) {
         const errors = e?.response?.data?.errors
         if (errors?._conflict && errors?.status) {
             const msg = Array.isArray(errors.status) ? errors.status[0] : errors.status
-            if (confirm(msg)) {
+            if (await useConfirm().confirm({ title: 'Confirmar', message: msg, confirmText: 'Continuar' })) {
                 await submit(true)
                 return
             }

@@ -115,6 +115,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
@@ -220,7 +221,7 @@ async function doSwap(force = false) {
         if (errors?.conflicts && errors?._conflictDetails) {
             const count = (errors._conflictDetails as any[]).length
             const msg = `El intercambio provocaría ${count} choque(s) de horario.\n\nLos horarios en conflicto serán eliminados para reasignación posterior.\n\n¿Desea continuar?`
-            if (confirm(msg)) {
+            if (await useConfirm().confirm({ title: 'Choques de horario', message: msg, variant: 'warning', confirmText: 'Continuar' })) {
                 await doSwap(true)
                 return
             }

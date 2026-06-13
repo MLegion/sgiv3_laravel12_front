@@ -177,6 +177,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
@@ -414,7 +415,7 @@ async function save(row: GroupRow) {
 
 async function clear(row: GroupRow) {
     if (!row.id) return
-    if (!confirm(`¿Quitar el aula preferida del grupo ${row.groupName}?`)) return
+    if (!await useConfirm().confirm({ title: 'Quitar aula preferida', message: `¿Quitar el aula preferida del grupo ${row.groupName}?`, variant: 'danger', confirmText: 'Quitar' })) return
     row.saving = true
     row.error = null
     try {

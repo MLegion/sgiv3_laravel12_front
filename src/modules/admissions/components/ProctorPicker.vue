@@ -135,6 +135,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -243,7 +244,7 @@ async function addProctor() {
 }
 
 async function removeProctor(p: ExamSessionProctor) {
-    if (!confirm(`¿Quitar a ${p.user?.name || p.user?.email} como cuidador?`)) return
+    if (!await useConfirm().confirm({ title: 'Quitar cuidador', message: `¿Quitar a ${p.user?.name || p.user?.email} como cuidador?`, variant: 'danger', confirmText: 'Quitar' })) return
     await api.delete(API.ADMISSIONS_API.examSessions.proctors.delete(props.sessionId, p.id))
     await loadProctors()
 }

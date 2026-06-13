@@ -456,6 +456,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -606,7 +607,7 @@ async function saveContact() {
 }
 
 async function deleteContact(id: number) {
-    if (!confirm('¿Eliminar este contacto?')) return
+    if (!await useConfirm().confirm({ title: 'Eliminar contacto', message: '¿Eliminar este contacto?', variant: 'danger', confirmText: 'Eliminar' })) return
     await api.delete(API.SCHOOL_SERVICES_API.students.contacts.delete(route.params.id as string, id))
     await fetchContacts()
 }
@@ -650,7 +651,7 @@ async function saveAffiliation() {
 }
 
 async function deleteAffiliation(id: number) {
-    if (!confirm('Eliminar esta afiliacion?')) return
+    if (!await useConfirm().confirm({ title: 'Eliminar afiliación', message: '¿Eliminar esta afiliación?', variant: 'danger', confirmText: 'Eliminar' })) return
     await api.delete(API.SCHOOL_SERVICES_API.students.affiliations.delete(route.params.id as string, id))
     await fetchAffiliations()
 }

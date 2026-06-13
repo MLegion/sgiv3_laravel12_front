@@ -111,6 +111,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { renderAsync } from 'docx-preview'
@@ -206,7 +207,7 @@ async function download() {
 }
 
 async function remove() {
-    if (!confirm('¿Eliminar la plantilla asociada a este reporte?')) return
+    if (!await useConfirm().confirm({ title: 'Eliminar plantilla', message: '¿Eliminar la plantilla asociada a este reporte?', variant: 'danger', confirmText: 'Eliminar' })) return
     error.value = null
     busy.value = true
     busyMessage.value = 'Eliminando plantilla...'

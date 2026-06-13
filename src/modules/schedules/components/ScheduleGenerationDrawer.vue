@@ -319,6 +319,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type {
@@ -821,9 +822,12 @@ async function deleteRun(r: RunListItem) {
     // los bloques activos, aunque el horario en sí no se toque. Pedimos
     // confirmación explícita; para los demás estados terminales no.
     if (r.status === 'promoted') {
-        const ok = window.confirm(
-            `El borrador #${r.id} ya fue promovido. Borrarlo solo elimina el registro histórico; los bloques en el horario activo permanecen sin cambios.\n\n¿Continuar?`,
-        )
+        const ok = await useConfirm().confirm({
+            title: 'Borrar borrador promovido',
+            message: `El borrador #${r.id} ya fue promovido. Borrarlo solo elimina el registro histórico; los bloques en el horario activo permanecen sin cambios.\n\n¿Continuar?`,
+            variant: 'warning',
+            confirmText: 'Continuar',
+        })
         if (!ok) return
     }
     await discard(r.id)
