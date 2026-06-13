@@ -252,6 +252,16 @@
         </section>
 
         <p v-if="error" class="text-xs text-red-600">{{ error }}</p>
+
+        <!-- ¿Qué sigue? — orientación tras el examen (último paso del portal) -->
+        <section v-if="!loading" class="bg-slate-50 border border-slate-200 rounded-xl p-4 print:hidden">
+            <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">¿Qué sigue?</p>
+            <p class="text-sm text-slate-600">
+                Este es el último paso. Cuando se libere tu calificación, aparecerá aquí mismo.
+                Si resultas <strong>admitido</strong>, Servicios Escolares te contactará para tu
+                inscripción y la asignación de tu grupo. Mantén tus datos de contacto actualizados.
+            </p>
+        </section>
     </div>
 </template>
 

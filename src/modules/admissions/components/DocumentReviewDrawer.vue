@@ -36,6 +36,25 @@
 
                         <!-- Document list (left) -->
                         <div class="w-64 shrink-0 border-r overflow-y-auto">
+                            <!-- Resumen por estado + ir al siguiente pendiente -->
+                            <div v-if="!loadingDocs && documents.length" class="sticky top-0 z-10 bg-white border-b px-3 py-2 space-y-2">
+                                <div class="flex items-center gap-1 text-[10px] font-bold">
+                                    <span class="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">{{ counts.pending }} pend.</span>
+                                    <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{{ counts.approved }} aprob.</span>
+                                    <span class="px-1.5 py-0.5 rounded-full bg-red-100 text-red-700">{{ counts.rejected }} rech.</span>
+                                </div>
+                                <button
+                                    type="button"
+                                    :disabled="counts.pending === 0"
+                                    class="w-full inline-flex items-center justify-center gap-1 rounded-md bg-blue-600 px-2 py-1.5 text-[11px] font-semibold text-white transition hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                                    @click="nextPending"
+                                >
+                                    {{ counts.pending === 0 ? 'Sin pendientes' : 'Siguiente pendiente' }}
+                                    <svg v-if="counts.pending > 0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                    </svg>
+                                </button>
+                            </div>
                             <div v-if="loadingDocs" class="flex items-center justify-center h-32 text-slate-400 text-sm">
                                 Cargando...
                             </div>
@@ -239,7 +258,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 
@@ -288,6 +307,31 @@ const documents    = ref<DocItem[]>([])
 const loadingDocs  = ref(false)
 const selected     = ref<DocItem | null>(null)
 const selectedIndex = ref(-1)
+
+/** Conteo por estado para el resumen del listado. */
+const counts = computed(() => {
+    const out = { pending: 0, approved: 0, rejected: 0 }
+    for (const d of documents.value) {
+        if (d.status === 'approved') out.approved++
+        else if (d.status === 'rejected') out.rejected++
+        else out.pending++ // pending / reviewing / sin decidir
+    }
+    return out
+})
+
+/** Selecciona el siguiente documento sin decidir (pendiente), con wrap. */
+function nextPending(): void {
+    const n = documents.value.length
+    if (!n) return
+    for (let step = 1; step <= n; step++) {
+        const i = (selectedIndex.value + step) % n
+        const d = documents.value[i]
+        if (d.status !== 'approved' && d.status !== 'rejected') {
+            selectDoc(d)
+            return
+        }
+    }
+}
 
 const previewType    = ref<'image' | 'pdf' | 'other' | null>(null)
 const previewBlobUrl = ref<string | null>(null)

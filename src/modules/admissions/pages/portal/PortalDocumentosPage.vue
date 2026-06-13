@@ -20,6 +20,15 @@
             <p class="text-sm text-amber-600">
                 Complete los campos requeridos en <strong>Mi Expediente</strong> y obtenga su Preficha para poder cargar sus documentos.
             </p>
+            <router-link
+                :to="{ name: 'admissions.portal.inscripcion' }"
+                class="inline-flex items-center gap-2 mt-3 px-5 py-2.5 text-sm font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition"
+            >
+                IR A PREFICHA
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+            </router-link>
         </div>
 
         <!-- Con preficha (FICHA o superior) -->
