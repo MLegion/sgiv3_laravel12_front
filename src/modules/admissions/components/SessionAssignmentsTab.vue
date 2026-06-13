@@ -66,13 +66,13 @@
         <table v-else-if="assignments.length > 0" class="w-full text-xs border border-slate-200 rounded-md overflow-hidden">
             <thead class="bg-slate-50">
                 <tr class="text-slate-600">
-                    <th class="px-2 py-1 text-left">#</th>
-                    <th class="px-2 py-1 text-left">Aspirante</th>
-                    <th class="px-2 py-1 text-left">Folio</th>
-                    <th class="px-2 py-1 text-left">Asignación</th>
-                    <th class="px-2 py-1 text-center">Asiento</th>
-                    <th class="px-2 py-1 text-center">Asistencia</th>
-                    <th class="px-2 py-1 text-center">Acciones</th>
+                    <th scope="col" class="px-2 py-1 text-left">#</th>
+                    <th scope="col" class="px-2 py-1 text-left">Aspirante</th>
+                    <th scope="col" class="px-2 py-1 text-left">Folio</th>
+                    <th scope="col" class="px-2 py-1 text-left">Asignación</th>
+                    <th scope="col" class="px-2 py-1 text-center">Asiento</th>
+                    <th scope="col" class="px-2 py-1 text-center">Asistencia</th>
+                    <th scope="col" class="px-2 py-1 text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -97,7 +97,7 @@
                         </span>
                     </td>
                     <td class="px-2 py-1 text-center">
-                        <button
+                        <button aria-label="Quitar"
                             class="border p-1 rounded text-slate-500 hover:text-red-600 hover:bg-red-50"
                             title="Quitar"
                             @click="unassign(a)"

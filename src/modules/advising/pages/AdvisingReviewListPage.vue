@@ -54,7 +54,7 @@
             </template>
 
             <template #cell-opciones="{ row }">
-                <button type="button"
+                <button aria-label="rowActionLabel(row.status)" type="button"
                     class="border w-8 h-8 inline-flex items-center justify-center rounded-md hover:bg-slate-50 transition"
                     :class="rowActionClass(row.status)"
                     :title="rowActionLabel(row.status)"

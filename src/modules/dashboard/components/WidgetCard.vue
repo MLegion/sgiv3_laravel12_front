@@ -8,7 +8,7 @@
                 {{ widget.title }}
             </h3>
             <div class="flex items-center gap-1">
-                <button
+                <button aria-label="Actualizar"
                     v-if="widget.refresh === 'live' && view === 'data'"
                     class="text-slate-400 hover:text-slate-600 transition-colors p-1"
                     title="Actualizar"
@@ -17,7 +17,7 @@
                 >
                     <ArrowPathIcon class="w-4 h-4" :class="{ 'animate-spin': loading }" />
                 </button>
-                <button
+                <button aria-label="view === 'settings' ? 'Volver a la vista' : 'Configurar widget'"
                     v-if="hasSettings"
                     class="transition-colors p-1"
                     :class="view === 'settings' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'"
@@ -26,7 +26,7 @@
                 >
                     <Cog6ToothIcon class="w-4 h-4" />
                 </button>
-                <button
+                <button aria-label="Quitar del dashboard"
                     class="text-slate-300 hover:text-rose-600 transition-colors p-1"
                     title="Quitar del dashboard"
                     @click="askRemove"

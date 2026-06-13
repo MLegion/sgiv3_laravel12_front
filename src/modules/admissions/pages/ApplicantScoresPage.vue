@@ -205,7 +205,7 @@ EFGH789012MDFYYY01,72.0</pre>
                             class="field w-28"
                         />
                         </div>
-                        <button
+                        <button aria-label="Eliminar fila"
                             type="button"
                             class="mt-1 p-1.5 rounded-md border text-slate-400 hover:text-red-500 hover:border-red-300 transition"
                             title="Eliminar fila"
@@ -268,8 +268,8 @@ EFGH789012MDFYYY01,72.0</pre>
                         <table class="w-full">
                             <thead class="bg-slate-100">
                                 <tr>
-                                    <th class="px-3 py-2 text-left font-semibold text-slate-600 uppercase">CURP</th>
-                                    <th class="px-3 py-2 text-left font-semibold text-slate-600 uppercase">Motivo</th>
+                                    <th scope="col" class="px-3 py-2 text-left font-semibold text-slate-600 uppercase">CURP</th>
+                                    <th scope="col" class="px-3 py-2 text-left font-semibold text-slate-600 uppercase">Motivo</th>
                                 </tr>
                             </thead>
                             <tbody>

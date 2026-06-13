@@ -88,13 +88,13 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
-                            <th class="w-10 px-3 py-3"></th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-10">#</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nombre Completo</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-44">CURP</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-64">Carrera / Plan de Estudio</th>
-                            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase w-20">Puntaje</th>
-                            <th class="px-4 py-3 w-16"></th>
+                            <th scope="col" class="w-10 px-3 py-3"></th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-10">#</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nombre Completo</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-44">CURP</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-64">Carrera / Plan de Estudio</th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase w-20">Puntaje</th>
+                            <th scope="col" class="px-4 py-3 w-16"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -144,7 +144,7 @@
 
                             <!-- Ver detalle -->
                             <td class="px-4 py-3 text-center">
-                                <button
+                                <button aria-label="Ver detalle"
                                     class="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition"
                                     title="Ver detalle"
                                     @click="openDrawer(item)"

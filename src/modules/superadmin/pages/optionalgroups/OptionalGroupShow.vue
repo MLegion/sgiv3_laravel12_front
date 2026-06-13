@@ -125,11 +125,11 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                             <tr class="bg-slate-50/80 text-[10px] uppercase text-slate-400 font-black border-b border-slate-100">
-                                <th class="px-6 py-4 w-32">Clave</th>
-                                <th class="px-6 py-4">Asignatura</th>
-                                <th class="px-6 py-4 text-center">Créditos</th>
-                                <th class="px-6 py-4 text-center">Horas</th>
-                                <th class="px-6 py-4 text-right">Detalles</th>
+                                <th scope="col" class="px-6 py-4 w-32">Clave</th>
+                                <th scope="col" class="px-6 py-4">Asignatura</th>
+                                <th scope="col" class="px-6 py-4 text-center">Créditos</th>
+                                <th scope="col" class="px-6 py-4 text-center">Horas</th>
+                                <th scope="col" class="px-6 py-4 text-right">Detalles</th>
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">

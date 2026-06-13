@@ -80,17 +80,17 @@
             </template>
             <template #cell-opciones="{ row }">
                 <div class="flex items-center gap-1.5">
-                    <button v-if="autoAcceptVisible && row.status === 'pending_activation'" type="button"
+                    <button aria-label="Activar residencia" v-if="autoAcceptVisible && row.status === 'pending_activation'" type="button"
                         class="text-[10px] font-bold px-2 h-8 inline-flex items-center rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                         :disabled="bulkBusy" title="Activar residencia"
                         @click="activateOne(row.id)">Activar</button>
-                    <button v-else-if="autoAcceptVisible && (row.status === 'registered' || row.status === 'in_progress')" type="button"
+                    <button aria-label="Reenviar instructivo" v-else-if="autoAcceptVisible && (row.status === 'registered' || row.status === 'in_progress')" type="button"
                         class="border w-8 h-8 inline-flex items-center justify-center rounded-md hover:bg-slate-50 text-slate-600 disabled:opacity-50"
                         :disabled="bulkBusy" title="Reenviar instructivo"
                         @click="resendOne(row.id)">
                         <EnvelopeIcon class="w-4 h-4" />
                     </button>
-                    <button type="button"
+                    <button aria-label="Ver detalle" type="button"
                         class="border w-8 h-8 inline-flex items-center justify-center rounded-md hover:bg-blue-50 text-blue-600"
                         title="Ver detalle"
                         @click="router.push({ name: 'residencies.detail', params: { id: row.id } })">

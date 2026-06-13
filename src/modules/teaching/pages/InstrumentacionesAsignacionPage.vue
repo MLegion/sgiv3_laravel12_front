@@ -20,11 +20,11 @@
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
                     <tr>
-                        <th class="text-left px-4 py-2">#</th>
-                        <th class="text-left px-4 py-2">Título</th>
-                        <th class="text-left px-4 py-2">Programa</th>
-                        <th class="text-left px-4 py-2">Estado</th>
-                        <th class="text-right px-4 py-2">Opciones</th>
+                        <th scope="col" class="text-left px-4 py-2">#</th>
+                        <th scope="col" class="text-left px-4 py-2">Título</th>
+                        <th scope="col" class="text-left px-4 py-2">Programa</th>
+                        <th scope="col" class="text-left px-4 py-2">Estado</th>
+                        <th scope="col" class="text-right px-4 py-2">Opciones</th>
                     </tr>
                 </thead>
                 <tbody>

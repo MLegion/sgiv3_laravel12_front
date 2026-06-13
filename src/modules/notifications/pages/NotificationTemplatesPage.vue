@@ -11,12 +11,12 @@
             <table class="w-full text-xs">
                 <thead class="bg-slate-50">
                     <tr class="text-left text-slate-600 uppercase text-[10px] tracking-wide">
-                        <th class="px-3 py-2">Key</th>
-                        <th class="px-3 py-2">Canal</th>
-                        <th class="px-3 py-2">Asunto</th>
-                        <th class="px-3 py-2 w-1/2">Cuerpo</th>
-                        <th class="px-3 py-2">Origen</th>
-                        <th class="px-3 py-2"></th>
+                        <th scope="col" class="px-3 py-2">Key</th>
+                        <th scope="col" class="px-3 py-2">Canal</th>
+                        <th scope="col" class="px-3 py-2">Asunto</th>
+                        <th scope="col" class="px-3 py-2 w-1/2">Cuerpo</th>
+                        <th scope="col" class="px-3 py-2">Origen</th>
+                        <th scope="col" class="px-3 py-2"></th>
                     </tr>
                 </thead>
                 <tbody>

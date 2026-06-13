@@ -24,12 +24,12 @@
             <table class="w-full text-sm">
                 <thead class="bg-slate-100 text-slate-600 text-xs">
                     <tr>
-                        <th class="text-left px-3 py-2">Empleado</th>
-                        <th class="text-left px-3 py-2">Periodo</th>
-                        <th class="text-right px-3 py-2">Sesiones</th>
-                        <th class="text-right px-3 py-2">Aspirantes</th>
-                        <th class="text-left px-3 py-2">Cerrado</th>
-                        <th class="text-right px-3 py-2"></th>
+                        <th scope="col" class="text-left px-3 py-2">Empleado</th>
+                        <th scope="col" class="text-left px-3 py-2">Periodo</th>
+                        <th scope="col" class="text-right px-3 py-2">Sesiones</th>
+                        <th scope="col" class="text-right px-3 py-2">Aspirantes</th>
+                        <th scope="col" class="text-left px-3 py-2">Cerrado</th>
+                        <th scope="col" class="text-right px-3 py-2"></th>
                     </tr>
                 </thead>
                 <tbody>

@@ -46,7 +46,7 @@
                 class="flex justify-center items-center gap-1.5 p-1.5 bg-slate-50"
             >
                 <!-- 1. Acción Quitar (Borrador) -->
-                <button
+                <button aria-label="Quitar de la currícula"
                     v-if="canRemove"
                     @click.stop="$emit('remove', item)"
                     class="p-1.5 border border-slate-300 rounded bg-white text-slate-500 hover:text-red-600 hover:border-red-200 transition-colors"
@@ -59,7 +59,7 @@
                 <div v-if="canRemove && (canLink || canMove)" class="w-[1px] h-4 bg-slate-200 mx-0.5"></div>
 
                 <!-- 2. Acción Enlazar (Hipervínculo) -->
-                <button
+                <button aria-label="Gestionar requisitos"
                     v-if="canLink"
                     @click.stop="$emit('link', item)"
                     class="p-1.5 border border-slate-300 rounded bg-white text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-colors"
@@ -69,7 +69,7 @@
                 </button>
 
                 <!-- 3. Acción Mover (Flechas) -->
-                <button
+                <button aria-label="Actualizar periodo/nivel"
                     v-if="canMove"
                     @click.stop="$emit('move', item)"
                     class="p-1.5 border border-slate-300 rounded bg-white text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-colors"

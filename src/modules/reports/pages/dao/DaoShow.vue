@@ -60,12 +60,12 @@
                     <table class="w-full text-xs border-collapse">
                         <thead>
                             <tr class="bg-slate-100 border-b-2 border-slate-300">
-                                <th class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Nombre</th>
-                                <th class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Origen</th>
-                                <th class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Key</th>
-                                <th class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Tipo</th>
-                                <th class="px-3 py-2 text-center text-[10px] font-black text-slate-600 uppercase">Req.</th>
-                                <th class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Default</th>
+                                <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Nombre</th>
+                                <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Origen</th>
+                                <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Key</th>
+                                <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Tipo</th>
+                                <th scope="col" class="px-3 py-2 text-center text-[10px] font-black text-slate-600 uppercase">Req.</th>
+                                <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Default</th>
                             </tr>
                         </thead>
                         <tbody>

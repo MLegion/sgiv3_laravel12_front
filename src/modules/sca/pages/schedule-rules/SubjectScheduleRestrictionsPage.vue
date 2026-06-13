@@ -117,12 +117,12 @@
                 <table v-else-if="restrictions.length" class="w-full text-xs">
                     <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
                         <tr>
-                            <th class="px-3 py-2 text-left">Modalidad</th>
-                            <th class="px-3 py-2 text-left">Día / Fecha</th>
-                            <th class="px-3 py-2 text-center">Rango</th>
-                            <th class="px-3 py-2 text-center">Tipo</th>
-                            <th class="px-3 py-2 text-left">Motivo</th>
-                            <th class="px-3 py-2"></th>
+                            <th scope="col" class="px-3 py-2 text-left">Modalidad</th>
+                            <th scope="col" class="px-3 py-2 text-left">Día / Fecha</th>
+                            <th scope="col" class="px-3 py-2 text-center">Rango</th>
+                            <th scope="col" class="px-3 py-2 text-center">Tipo</th>
+                            <th scope="col" class="px-3 py-2 text-left">Motivo</th>
+                            <th scope="col" class="px-3 py-2"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -139,7 +139,7 @@
                             </td>
                             <td class="px-3 py-2 text-slate-500">{{ r.reason || '—' }}</td>
                             <td class="px-3 py-2 text-right">
-                                <button type="button" class="text-red-600 hover:text-red-800" title="Eliminar" @click="deleteRule(r)">
+                                <button aria-label="Eliminar" type="button" class="text-red-600 hover:text-red-800" title="Eliminar" @click="deleteRule(r)">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 7.5h12m-10.5 0v10.125A1.875 1.875 0 009.375 19.5h5.25A1.875 1.875 0 0016.5 17.625V7.5M9.75 4.875A1.875 1.875 0 0111.625 3h.75A1.875 1.875 0 0114.25 4.875L15 7.5h-6l.75-2.625z" />
                                     </svg>

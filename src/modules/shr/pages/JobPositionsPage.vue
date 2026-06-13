@@ -60,7 +60,7 @@
             <template #cell-opciones="{ row }">
                 <div class="flex items-center justify-center gap-2">
                     <!-- Ver -->
-                    <button
+                    <button aria-label="Ver"
                         class="border p-1.5 rounded-md
                                cursor-pointer
                                text-slate-500
@@ -90,7 +90,7 @@
                     </button>
 
                     <!-- Editar -->
-                    <button
+                    <button aria-label="Editar"
                         class="border p-1.5 rounded-md
                                cursor-pointer
                                text-slate-500
@@ -115,7 +115,7 @@
                     </button>
 
                     <!-- Eliminar -->
-                    <button
+                    <button aria-label="Eliminar"
                         class="border p-1.5 rounded-md
                                cursor-pointer
                                text-slate-500

@@ -11,9 +11,9 @@
                     <table class="w-full text-sm">
                         <thead class="bg-slate-100 border-b border-slate-200">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Escuela</th>
-                                <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Aspirantes</th>
+                                <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
+                                <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Escuela</th>
+                                <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Aspirantes</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -44,10 +44,10 @@
                     <table class="w-full text-sm">
                         <thead class="bg-slate-100 border-b border-slate-200">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Municipio</th>
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Estado</th>
-                                <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Aspirantes</th>
+                                <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
+                                <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Municipio</th>
+                                <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Estado</th>
+                                <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Aspirantes</th>
                             </tr>
                         </thead>
                         <tbody>

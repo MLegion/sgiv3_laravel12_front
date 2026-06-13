@@ -79,7 +79,7 @@
 
             <template #cell-opciones="{ row }">
                 <div class="flex items-center justify-center gap-1">
-                    <button
+                    <button aria-label="Editar"
                         v-if="row.status === 'SCHEDULED'"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition"
@@ -88,7 +88,7 @@
                     >
                         <PencilIcon class="w-4 h-4" />
                     </button>
-                    <button
+                    <button aria-label="Reagendar"
                         v-if="row.status === 'SCHEDULED' || row.status === 'IN_PROGRESS'"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-purple-600 hover:bg-purple-50 transition"
@@ -104,7 +104,7 @@
                     >
                         <UsersIcon class="w-4 h-4" />
                     </RouterLink>
-                    <button
+                    <button aria-label="Eliminar"
                         v-if="row.status === 'SCHEDULED'"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition"

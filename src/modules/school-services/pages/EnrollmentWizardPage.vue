@@ -70,7 +70,7 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 text-xs text-slate-500 uppercase">
                         <tr>
-                            <th class="px-4 py-3 text-left w-12">
+                            <th scope="col" class="px-4 py-3 text-left w-12">
                                 <input
                                     type="checkbox"
                                     :checked="allSelected"
@@ -78,10 +78,10 @@
                                     class="rounded border-slate-300"
                                 />
                             </th>
-                            <th class="px-4 py-3 text-left">Aspirante</th>
-                            <th class="px-4 py-3 text-left">CURP</th>
-                            <th class="px-4 py-3 text-left">Puntaje</th>
-                            <th class="px-4 py-3 text-left">Opciones</th>
+                            <th scope="col" class="px-4 py-3 text-left">Aspirante</th>
+                            <th scope="col" class="px-4 py-3 text-left">CURP</th>
+                            <th scope="col" class="px-4 py-3 text-left">Puntaje</th>
+                            <th scope="col" class="px-4 py-3 text-left">Opciones</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -173,9 +173,9 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 text-xs text-slate-500 uppercase">
                         <tr>
-                            <th class="px-4 py-3 text-left">Aspirante</th>
-                            <th class="px-4 py-3 text-left">Plan de estudio / Modalidad</th>
-                            <th class="px-4 py-3 text-right w-12">×</th>
+                            <th scope="col" class="px-4 py-3 text-left">Aspirante</th>
+                            <th scope="col" class="px-4 py-3 text-left">Plan de estudio / Modalidad</th>
+                            <th scope="col" class="px-4 py-3 text-right w-12">×</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -196,7 +196,7 @@
                                 </select>
                             </td>
                             <td class="px-4 py-3 text-right">
-                                <button class="p-1.5 rounded-lg text-slate-300 hover:text-rose-600 transition" @click="removeFromSelection(row.applicant.id)" title="Quitar">
+                                <button aria-label="Quitar" class="p-1.5 rounded-lg text-slate-300 hover:text-rose-600 transition" @click="removeFromSelection(row.applicant.id)" title="Quitar">
                                     <TrashIcon class="w-4 h-4" />
                                 </button>
                             </td>
@@ -250,11 +250,11 @@
                     <table class="w-full text-xs">
                         <thead class="text-slate-500">
                             <tr>
-                                <th class="px-4 py-2 text-left">Aspirante</th>
-                                <th class="px-4 py-2 text-left">Núm. Control (tentativo)</th>
-                                <th class="px-4 py-2 text-left">Carrera</th>
-                                <th class="px-4 py-2 text-left">Modalidad</th>
-                                <th class="px-4 py-2 text-left">Periodo de Ingreso</th>
+                                <th scope="col" class="px-4 py-2 text-left">Aspirante</th>
+                                <th scope="col" class="px-4 py-2 text-left">Núm. Control (tentativo)</th>
+                                <th scope="col" class="px-4 py-2 text-left">Carrera</th>
+                                <th scope="col" class="px-4 py-2 text-left">Modalidad</th>
+                                <th scope="col" class="px-4 py-2 text-left">Periodo de Ingreso</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -276,8 +276,8 @@
                     <table class="w-full text-xs">
                         <thead class="text-slate-500">
                             <tr>
-                                <th class="px-4 py-2 text-left">Aspirante</th>
-                                <th class="px-4 py-2 text-left">Razón</th>
+                                <th scope="col" class="px-4 py-2 text-left">Aspirante</th>
+                                <th scope="col" class="px-4 py-2 text-left">Razón</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -327,9 +327,9 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 text-xs text-slate-500 uppercase">
                         <tr>
-                            <th class="px-4 py-3 text-left">Aspirante</th>
-                            <th class="px-4 py-3 text-left">Núm. Control asignado</th>
-                            <th class="px-4 py-3 text-left">Student ID</th>
+                            <th scope="col" class="px-4 py-3 text-left">Aspirante</th>
+                            <th scope="col" class="px-4 py-3 text-left">Núm. Control asignado</th>
+                            <th scope="col" class="px-4 py-3 text-left">Student ID</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">

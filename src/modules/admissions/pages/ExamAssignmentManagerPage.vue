@@ -66,13 +66,13 @@
             <table v-else-if="sessions.length > 0" class="w-full text-xs border border-slate-200 rounded-md overflow-hidden">
                 <thead class="bg-slate-50">
                     <tr class="text-slate-600">
-                        <th class="px-2 py-1 text-left">#</th>
-                        <th class="px-2 py-1 text-left">Fecha</th>
-                        <th class="px-2 py-1 text-left">Horario</th>
-                        <th class="px-2 py-1 text-left">Aula</th>
-                        <th class="px-2 py-1 text-left">Ocupación</th>
-                        <th class="px-2 py-1 text-center">Estado</th>
-                        <th class="px-2 py-1 text-center"></th>
+                        <th scope="col" class="px-2 py-1 text-left">#</th>
+                        <th scope="col" class="px-2 py-1 text-left">Fecha</th>
+                        <th scope="col" class="px-2 py-1 text-left">Horario</th>
+                        <th scope="col" class="px-2 py-1 text-left">Aula</th>
+                        <th scope="col" class="px-2 py-1 text-left">Ocupación</th>
+                        <th scope="col" class="px-2 py-1 text-center">Estado</th>
+                        <th scope="col" class="px-2 py-1 text-center"></th>
                     </tr>
                 </thead>
                 <tbody>

@@ -65,7 +65,7 @@
                 <template #cell-opciones="{ row }">
                     <div class="flex justify-center items-center gap-1.5">
                         <!-- Validar -->
-                        <button
+                        <button aria-label="Validar Grupo"
                             class="p-2 rounded-lg border border-slate-100 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-100 transition-all disabled:opacity-20"
                             title="Validar Grupo"
                             :disabled="!canApprove(row)"
@@ -75,7 +75,7 @@
                         </button>
 
                         <!-- Configurar Currícula -->
-                        <button
+                        <button aria-label="Configurar Materias del Grupo"
                             class="p-2 rounded-lg border border-slate-100 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-100 transition-all"
                             title="Configurar Materias del Grupo"
                             @click="openEditorCurriculum(row)"

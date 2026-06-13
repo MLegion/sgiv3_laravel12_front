@@ -92,16 +92,16 @@
                 <table class="w-full text-left">
                     <thead class="sticky top-0 z-10">
                         <tr class="bg-slate-100 border-b text-[10px] font-black text-slate-500 uppercase">
-                            <th class="px-3 py-2.5 w-24">Clave</th>
-                            <th class="px-3 py-2.5">Materia</th>
-                            <th class="px-3 py-2.5 w-20 text-center"># Grupos</th>
-                            <th class="px-3 py-2.5 w-10 text-center">Sel.</th>
-                            <th class="px-3 py-2.5 w-20 text-center">Turno</th>
-                            <th class="px-3 py-2.5 w-32">Grupo</th>
-                            <th class="px-3 py-2.5">Docente</th>
-                            <th class="px-3 py-2.5 w-20 text-center">Cap.</th>
-                            <th v-if="usesSpecificDates" class="px-3 py-2.5 w-20 text-center">Sesiones</th>
-                            <th class="px-3 py-2.5 w-10"></th>
+                            <th scope="col" class="px-3 py-2.5 w-24">Clave</th>
+                            <th scope="col" class="px-3 py-2.5">Materia</th>
+                            <th scope="col" class="px-3 py-2.5 w-20 text-center"># Grupos</th>
+                            <th scope="col" class="px-3 py-2.5 w-10 text-center">Sel.</th>
+                            <th scope="col" class="px-3 py-2.5 w-20 text-center">Turno</th>
+                            <th scope="col" class="px-3 py-2.5 w-32">Grupo</th>
+                            <th scope="col" class="px-3 py-2.5">Docente</th>
+                            <th scope="col" class="px-3 py-2.5 w-20 text-center">Cap.</th>
+                            <th scope="col" v-if="usesSpecificDates" class="px-3 py-2.5 w-20 text-center">Sesiones</th>
+                            <th scope="col" class="px-3 py-2.5 w-10"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -388,7 +388,7 @@
                                 <option value="support">SOPORTE</option>
                             </select>
                         </div>
-                        <button
+                        <button aria-label="Quitar"
                             type="button"
                             class="text-red-500 hover:text-red-700"
                             title="Quitar"
@@ -504,12 +504,12 @@
                                 <table v-if="drawerRequested.length" class="w-full text-xs">
                                     <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
                                         <tr>
-                                            <th class="px-3 py-2 text-left">Materia</th>
-                                            <th class="px-3 py-2 text-left">Clave</th>
-                                            <th class="px-3 py-2 text-left">Carrera</th>
-                                            <th class="px-3 py-2 text-left">Modalidad</th>
-                                            <th class="px-3 py-2 text-center">Sem.</th>
-                                            <th class="px-3 py-2 text-center"># Grupos</th>
+                                            <th scope="col" class="px-3 py-2 text-left">Materia</th>
+                                            <th scope="col" class="px-3 py-2 text-left">Clave</th>
+                                            <th scope="col" class="px-3 py-2 text-left">Carrera</th>
+                                            <th scope="col" class="px-3 py-2 text-left">Modalidad</th>
+                                            <th scope="col" class="px-3 py-2 text-center">Sem.</th>
+                                            <th scope="col" class="px-3 py-2 text-center"># Grupos</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
@@ -542,14 +542,14 @@
                                 <table v-if="drawerAssigned.length" class="w-full text-xs">
                                     <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
                                         <tr>
-                                            <th class="px-3 py-2 text-left">Materia</th>
-                                            <th class="px-3 py-2 text-left">Clave</th>
-                                            <th class="px-3 py-2 text-left">Carrera</th>
-                                            <th class="px-3 py-2 text-left">Modalidad</th>
-                                            <th class="px-3 py-2 text-center">Grupo</th>
-                                            <th class="px-3 py-2 text-center">HT</th>
-                                            <th class="px-3 py-2 text-center">HP</th>
-                                            <th class="px-3 py-2 text-center">Créd.</th>
+                                            <th scope="col" class="px-3 py-2 text-left">Materia</th>
+                                            <th scope="col" class="px-3 py-2 text-left">Clave</th>
+                                            <th scope="col" class="px-3 py-2 text-left">Carrera</th>
+                                            <th scope="col" class="px-3 py-2 text-left">Modalidad</th>
+                                            <th scope="col" class="px-3 py-2 text-center">Grupo</th>
+                                            <th scope="col" class="px-3 py-2 text-center">HT</th>
+                                            <th scope="col" class="px-3 py-2 text-center">HP</th>
+                                            <th scope="col" class="px-3 py-2 text-center">Créd.</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">

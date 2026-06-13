@@ -52,7 +52,7 @@
 
         <!-- Footer: Acción de Salida -->
         <div class="flex flex-col border-t border-slate-50 p-2">
-            <button
+            <button aria-label="Cerrar Sesión"
                 @click="handleLogout"
                 class="w-full flex items-center gap-3 py-3 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group"
                 :class="isExpanded ? 'px-4' : 'justify-center'"

@@ -89,14 +89,14 @@
             <table class="min-w-full text-sm">
                 <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
                     <tr>
-                        <th class="px-4 py-3 text-left">No. Control</th>
-                        <th class="px-4 py-3 text-left">Nombre</th>
-                        <th class="px-4 py-3 text-left">CURP</th>
-                        <th class="px-4 py-3 text-left">Carrera / Plan</th>
-                        <th class="px-4 py-3 text-left">Modalidad</th>
-                        <th class="px-4 py-3 text-left">Estatus</th>
-                        <th class="px-4 py-3 text-left">Semestre</th>
-                        <th class="px-4 py-3"></th>
+                        <th scope="col" class="px-4 py-3 text-left">No. Control</th>
+                        <th scope="col" class="px-4 py-3 text-left">Nombre</th>
+                        <th scope="col" class="px-4 py-3 text-left">CURP</th>
+                        <th scope="col" class="px-4 py-3 text-left">Carrera / Plan</th>
+                        <th scope="col" class="px-4 py-3 text-left">Modalidad</th>
+                        <th scope="col" class="px-4 py-3 text-left">Estatus</th>
+                        <th scope="col" class="px-4 py-3 text-left">Semestre</th>
+                        <th scope="col" class="px-4 py-3"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">

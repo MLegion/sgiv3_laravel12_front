@@ -99,13 +99,13 @@
             <table v-else class="min-w-full text-sm">
                 <thead class="bg-slate-50 border-b text-[10px] uppercase text-slate-500 font-semibold tracking-wide">
                     <tr>
-                        <th class="px-3 py-2 text-left w-32">Grupo</th>
-                        <th class="px-3 py-2 text-center w-16">Sem.</th>
-                        <th class="px-3 py-2 text-left w-20 text-center">Turno</th>
-                        <th class="px-3 py-2 text-left">Aula preferida</th>
-                        <th class="px-3 py-2 text-left w-28 text-center">Desde</th>
-                        <th class="px-3 py-2 text-left w-28 text-center">Hasta</th>
-                        <th class="px-3 py-2 text-right w-32">Acción</th>
+                        <th scope="col" class="px-3 py-2 text-left w-32">Grupo</th>
+                        <th scope="col" class="px-3 py-2 text-center w-16">Sem.</th>
+                        <th scope="col" class="px-3 py-2 text-left w-20 text-center">Turno</th>
+                        <th scope="col" class="px-3 py-2 text-left">Aula preferida</th>
+                        <th scope="col" class="px-3 py-2 text-left w-28 text-center">Desde</th>
+                        <th scope="col" class="px-3 py-2 text-left w-28 text-center">Hasta</th>
+                        <th scope="col" class="px-3 py-2 text-right w-32">Acción</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -148,7 +148,7 @@
                                     @click="save(row)">
                                     {{ row.saving ? '...' : 'Guardar' }}
                                 </button>
-                                <button v-if="row.id"
+                                <button aria-label="Quitar aula preferida" v-if="row.id"
                                     type="button" :disabled="row.saving"
                                     class="px-2 py-1 text-[10px] rounded border border-red-300 text-red-600 hover:bg-red-50 disabled:opacity-50"
                                     title="Quitar aula preferida"

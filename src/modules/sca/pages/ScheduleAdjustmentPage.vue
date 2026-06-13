@@ -61,10 +61,10 @@
                     <table class="w-full text-sm">
                         <thead class="bg-slate-50 text-slate-500">
                             <tr>
-                                <th class="px-4 py-2 text-left text-[10px] font-black uppercase tracking-widest">#</th>
-                                <th class="px-4 py-2 text-left text-[10px] font-black uppercase tracking-widest">Día</th>
-                                <th class="px-4 py-2 text-left text-[10px] font-black uppercase tracking-widest">Fecha</th>
-                                <th class="px-4 py-2 text-left text-[10px] font-black uppercase tracking-widest">Estado</th>
+                                <th scope="col" class="px-4 py-2 text-left text-[10px] font-black uppercase tracking-widest">#</th>
+                                <th scope="col" class="px-4 py-2 text-left text-[10px] font-black uppercase tracking-widest">Día</th>
+                                <th scope="col" class="px-4 py-2 text-left text-[10px] font-black uppercase tracking-widest">Fecha</th>
+                                <th scope="col" class="px-4 py-2 text-left text-[10px] font-black uppercase tracking-widest">Estado</th>
                             </tr>
                         </thead>
                         <tbody>

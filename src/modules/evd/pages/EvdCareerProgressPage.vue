@@ -275,10 +275,10 @@ onMounted(async () => {
                     <table v-else class="w-full text-sm">
                         <thead class="text-[10px] uppercase tracking-wider text-slate-400 border-b">
                             <tr>
-                                <th class="text-left py-1.5 w-28">N° Control</th>
-                                <th class="text-left py-1.5">Estudiante</th>
-                                <th class="text-left py-1.5 w-32">Estado</th>
-                                <th class="text-left py-1.5 w-36">Fecha</th>
+                                <th scope="col" class="text-left py-1.5 w-28">N° Control</th>
+                                <th scope="col" class="text-left py-1.5">Estudiante</th>
+                                <th scope="col" class="text-left py-1.5 w-32">Estado</th>
+                                <th scope="col" class="text-left py-1.5 w-36">Fecha</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">

@@ -159,10 +159,10 @@
                             <table class="w-full text-xs">
                                 <thead class="bg-slate-50 sticky top-0">
                                     <tr>
-                                        <th class="px-4 py-2 text-left text-[10px] font-black text-slate-400 uppercase w-16">SESIÓN</th>
-                                        <th class="px-4 py-2 text-left text-[10px] font-black text-slate-400 uppercase">FECHA</th>
-                                        <th class="px-4 py-2 text-left text-[10px] font-black text-slate-400 uppercase w-20">DÍA</th>
-                                        <th class="px-4 py-2 text-center text-[10px] font-black text-slate-400 uppercase w-24">HABILITADA</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-[10px] font-black text-slate-400 uppercase w-16">SESIÓN</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-[10px] font-black text-slate-400 uppercase">FECHA</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-[10px] font-black text-slate-400 uppercase w-20">DÍA</th>
+                                        <th scope="col" class="px-4 py-2 text-center text-[10px] font-black text-slate-400 uppercase w-24">HABILITADA</th>
                                     </tr>
                                 </thead>
                                 <tbody>

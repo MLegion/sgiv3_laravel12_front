@@ -152,7 +152,7 @@
                         <div class="text-center text-xs text-orange-500 font-bold">{{ item.subjectPackage?.demand ?? 0 }}</div>
                         <!-- Quitar -->
                         <div class="flex justify-center">
-                            <button class="text-red-400 hover:text-red-600 transition" @click="removeRequest(item.id)" title="Quitar solicitud">
+                            <button aria-label="Quitar solicitud" class="text-red-400 hover:text-red-600 transition" @click="removeRequest(item.id)" title="Quitar solicitud">
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
                         </div>

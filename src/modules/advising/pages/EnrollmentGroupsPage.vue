@@ -77,12 +77,12 @@
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                     <tr>
-                        <th class="text-left px-4 py-2 w-24">GRUPO</th>
-                        <th class="text-left px-4 py-2 w-20">TURNO</th>
-                        <th class="text-left px-4 py-2">CARRERAS</th>
-                        <th class="text-right px-4 py-2 w-32">MATERIAS</th>
-                        <th class="text-right px-4 py-2 w-32">INSCRITOS</th>
-                        <th class="text-right px-4 py-2 w-24"></th>
+                        <th scope="col" class="text-left px-4 py-2 w-24">GRUPO</th>
+                        <th scope="col" class="text-left px-4 py-2 w-20">TURNO</th>
+                        <th scope="col" class="text-left px-4 py-2">CARRERAS</th>
+                        <th scope="col" class="text-right px-4 py-2 w-32">MATERIAS</th>
+                        <th scope="col" class="text-right px-4 py-2 w-32">INSCRITOS</th>
+                        <th scope="col" class="text-right px-4 py-2 w-24"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">

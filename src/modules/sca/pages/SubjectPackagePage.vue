@@ -10,7 +10,7 @@
             </div>
 
             <!-- Botón candado -->
-            <button
+            <button aria-label="periodLocked ? 'Desbloquear periodo' : 'Bloquear periodo'"
                 class="w-12 h-[46px] border-2 rounded-xl flex items-center justify-center transition"
                 :class="periodLocked ? 'border-slate-300 bg-slate-50 text-slate-500 hover:bg-slate-100' : 'border-blue-500 bg-blue-50 text-blue-600 hover:bg-blue-100'"
                 :disabled="!selectedPeriodId && !periodLocked"
@@ -364,13 +364,13 @@
                                     </div>
                                     <!-- Duplicar a otro semestre -->
                                     <div class="flex justify-center">
-                                        <button class="text-blue-400 hover:text-blue-600 transition" @click="openDuplicateModal(item)" title="Agregar en otro semestre">
+                                        <button aria-label="Agregar en otro semestre" class="text-blue-400 hover:text-blue-600 transition" @click="openDuplicateModal(item)" title="Agregar en otro semestre">
                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                                         </button>
                                     </div>
                                     <!-- Quitar -->
                                     <div class="flex justify-center">
-                                        <button class="text-red-400 hover:text-red-600 transition" @click="removeFromPackage(item.id)" title="Quitar">
+                                        <button aria-label="Quitar" class="text-red-400 hover:text-red-600 transition" @click="removeFromPackage(item.id)" title="Quitar">
                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                         </button>
                                     </div>

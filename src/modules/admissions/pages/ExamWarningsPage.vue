@@ -50,11 +50,11 @@
                 <table class="w-full text-xs">
                     <thead class="bg-slate-50">
                         <tr class="text-slate-600">
-                            <th class="px-3 py-2 text-left">Materia</th>
-                            <th class="px-3 py-2 text-left">Docente</th>
-                            <th class="px-3 py-2 text-left">Carrera</th>
-                            <th class="px-3 py-2 text-center">Estado</th>
-                            <th class="px-3 py-2 text-center">Acción</th>
+                            <th scope="col" class="px-3 py-2 text-left">Materia</th>
+                            <th scope="col" class="px-3 py-2 text-left">Docente</th>
+                            <th scope="col" class="px-3 py-2 text-left">Carrera</th>
+                            <th scope="col" class="px-3 py-2 text-center">Estado</th>
+                            <th scope="col" class="px-3 py-2 text-center">Acción</th>
                         </tr>
                     </thead>
                     <tbody>

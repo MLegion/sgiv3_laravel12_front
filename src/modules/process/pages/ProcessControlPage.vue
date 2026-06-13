@@ -53,7 +53,7 @@
                             <span v-if="exceptionalFor(s)" class="text-[9px] px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded font-bold">
                                 EXCEPCIONAL
                             </span>
-                            <button
+                            <button aria-label="isBlocked(s) ? s.prerequisite?.message : (s.open ? 'Cerrar' : 'Abrir')"
                                 type="button"
                                 :disabled="busy || isBlocked(s)"
                                 class="relative inline-flex h-6 w-11 items-center rounded-full transition disabled:opacity-40"

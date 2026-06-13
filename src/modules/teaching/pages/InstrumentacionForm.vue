@@ -87,7 +87,7 @@
                             <div v-for="grp in programGenericas" :key="grp.typeId" class="mb-2 last:mb-0">
                                 <span class="font-medium text-slate-600">{{ grp.typeName }}</span>
                                 <div class="flex flex-wrap gap-1 mt-1">
-                                    <button v-for="c in grp.items" :key="c.id" type="button"
+                                    <button aria-label="genericaInText(c.description) ? 'Ya agregada' : 'Agregar'" v-for="c in grp.items" :key="c.id" type="button"
                                         class="px-2 py-0.5 rounded-full border text-left transition"
                                         :class="genericaInText(c.description)
                                             ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
@@ -144,7 +144,7 @@
 
                     <Field label="Indicadores de alcance">
                             <table class="w-full text-xs border border-slate-200">
-                                <thead class="bg-slate-50"><tr><th class="border px-2 py-1 w-8"></th><th class="border px-2 py-1 text-left">Indicador</th><th class="border px-2 py-1 w-20">Valor</th></tr></thead>
+                                <thead class="bg-slate-50"><tr><th scope="col" class="border px-2 py-1 w-8"></th><th scope="col" class="border px-2 py-1 text-left">Indicador</th><th scope="col" class="border px-2 py-1 w-20">Valor</th></tr></thead>
                                 <tbody>
                                     <tr v-for="ind in activeUnit.indicadores" :key="ind.letter">
                                         <td class="border px-2 py-1 text-center font-semibold uppercase">{{ ind.letter }}</td>
@@ -159,11 +159,11 @@
                             <table class="w-full text-xs border border-slate-200">
                                 <thead class="bg-slate-50">
                                     <tr>
-                                        <th class="border px-2 py-1 text-left">Evidencia de aprendizaje</th>
-                                        <th class="border px-2 py-1 w-14">%</th>
-                                        <th v-for="ind in activeUnit.indicadores" :key="ind.letter" class="border px-1 py-1 w-7 uppercase">{{ ind.letter }}</th>
-                                        <th class="border px-2 py-1 text-left">Instrumento</th>
-                                        <th class="border px-1 py-1 w-7"></th>
+                                        <th scope="col" class="border px-2 py-1 text-left">Evidencia de aprendizaje</th>
+                                        <th scope="col" class="border px-2 py-1 w-14">%</th>
+                                        <th scope="col" v-for="ind in activeUnit.indicadores" :key="ind.letter" class="border px-1 py-1 w-7 uppercase">{{ ind.letter }}</th>
+                                        <th scope="col" class="border px-2 py-1 text-left">Instrumento</th>
+                                        <th scope="col" class="border px-1 py-1 w-7"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -201,7 +201,7 @@
                         <button type="button" class="text-xs text-blue-600" @click="addWeek">+ Semana</button>
                     </div>
                     <table class="w-full text-xs border border-slate-200">
-                        <thead class="bg-slate-50"><tr><th class="border px-2 py-1 w-16">Semana</th><th class="border px-2 py-1 w-16">Unidad</th><th class="border px-2 py-1">Del</th><th class="border px-2 py-1">Al</th><th class="border px-2 py-1 w-16">T.P.</th><th class="border px-2 py-1 w-16">T.R.</th><th class="border px-2 py-1 w-16">S.D.</th><th class="border px-1 py-1 w-7"></th></tr></thead>
+                        <thead class="bg-slate-50"><tr><th scope="col" class="border px-2 py-1 w-16">Semana</th><th scope="col" class="border px-2 py-1 w-16">Unidad</th><th scope="col" class="border px-2 py-1">Del</th><th scope="col" class="border px-2 py-1">Al</th><th scope="col" class="border px-2 py-1 w-16">T.P.</th><th scope="col" class="border px-2 py-1 w-16">T.R.</th><th scope="col" class="border px-2 py-1 w-16">S.D.</th><th scope="col" class="border px-1 py-1 w-7"></th></tr></thead>
                         <tbody>
                             <tr v-for="(w, wi) in header.calendar" :key="wi">
                                 <td class="border px-1 py-1"><input v-model.number="w.week" type="number" class="w-full px-1 py-0.5 border border-slate-200 rounded text-center" /></td>

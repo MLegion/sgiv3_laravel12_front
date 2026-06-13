@@ -157,7 +157,7 @@
                                     class="ml-0.5 px-1.5 py-0.5 rounded bg-white/25 text-[9px] font-semibold uppercase"
                                     :title="`Solo aplica a: ${modalityLabelOf(event)}`"
                                 >→ {{ modalityShortOf(event) }}</span>
-                                <button
+                                <button aria-label="Eliminar evento"
                                     @click="deleteEvent(event.id)"
                                     class="ml-1 w-4 h-4 flex items-center justify-center rounded-full bg-white/30 hover:bg-white/60 text-white hover:text-red-700 transition-colors"
                                     title="Eliminar evento"

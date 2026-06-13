@@ -88,12 +88,12 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="text-left text-[10px] text-slate-500 uppercase tracking-wider border-b">
-                            <th class="py-2 pr-2">#</th>
-                            <th class="py-2 pr-2">Nombre</th>
-                            <th class="py-2 pr-2">Razón</th>
-                            <th class="py-2 pr-2">Ofertas elegidas</th>
-                            <th class="py-2 pr-2">Nota</th>
-                            <th class="py-2 pr-2 text-right">Score</th>
+                            <th scope="col" class="py-2 pr-2">#</th>
+                            <th scope="col" class="py-2 pr-2">Nombre</th>
+                            <th scope="col" class="py-2 pr-2">Razón</th>
+                            <th scope="col" class="py-2 pr-2">Ofertas elegidas</th>
+                            <th scope="col" class="py-2 pr-2">Nota</th>
+                            <th scope="col" class="py-2 pr-2 text-right">Score</th>
                         </tr>
                     </thead>
                     <tbody>

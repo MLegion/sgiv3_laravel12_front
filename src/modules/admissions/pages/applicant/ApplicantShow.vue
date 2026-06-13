@@ -3,7 +3,7 @@
         <div class="flex items-center justify-between flex-wrap gap-2">
             <h1 class="text-xl font-semibold text-slate-800">DETALLE - ASPIRANTE</h1>
             <div class="flex gap-2 flex-wrap">
-                <button
+                <button aria-label="Aspirante anterior (alfabético)"
                     class="flex items-center gap-1 px-3 py-2 text-sm border rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
                     :disabled="!neighbors.prevId"
                     title="Aspirante anterior (alfabético)"
@@ -14,7 +14,7 @@
                     </svg>
                     ANTERIOR
                 </button>
-                <button
+                <button aria-label="Aspirante siguiente (alfabético)"
                     class="flex items-center gap-1 px-3 py-2 text-sm border rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
                     :disabled="!neighbors.nextId"
                     title="Aspirante siguiente (alfabético)"

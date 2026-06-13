@@ -124,11 +124,11 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                             <tr class="bg-slate-50 text-[10px] uppercase text-slate-400 font-black border-b">
-                                <th class="px-4 py-4 w-24">Clave</th>
-                                <th class="px-4 py-4">Asignatura</th>
-                                <th class="px-4 py-4 text-center">Créditos</th>
-                                <th class="px-4 py-4 text-center">Horas (T-P)</th>
-                                <th class="px-4 py-4 text-right">Opciones</th>
+                                <th scope="col" class="px-4 py-4 w-24">Clave</th>
+                                <th scope="col" class="px-4 py-4">Asignatura</th>
+                                <th scope="col" class="px-4 py-4 text-center">Créditos</th>
+                                <th scope="col" class="px-4 py-4 text-center">Horas (T-P)</th>
+                                <th scope="col" class="px-4 py-4 text-right">Opciones</th>
                             </tr>
                             </thead>
                             <tbody class="divide-y text-sm">
@@ -154,7 +154,7 @@
                                 </td>
                                 <td class="px-4 py-3 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <button
+                                        <button aria-label="Editar Materia"
                                             @click="editSubject(subject.id)"
                                             class="flex items-center justify-center p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-100 transition-all"
                                             title="Editar Materia"
@@ -163,7 +163,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </button>
-                                        <button
+                                        <button aria-label="Desvincular Materia"
                                             @click="openUnlinkModal(subject)"
                                             class="flex items-center justify-center p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-100 transition-all"
                                             title="Desvincular Materia"

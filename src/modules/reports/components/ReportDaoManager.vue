@@ -41,7 +41,7 @@
                     <button type="button" class="flex items-center gap-1 px-2 py-1.5 text-[11px] font-semibold border rounded text-slate-600 hover:bg-white" @click="toggleScripts(idx)">
                         {{ expanded[idx] ? 'OCULTAR SCRIPTS' : 'SCRIPTS' }}
                     </button>
-                    <button type="button" class="p-1.5 text-red-400 hover:text-red-600" @click="remove(idx)" title="Quitar DAO">
+                    <button aria-label="Quitar DAO" type="button" class="p-1.5 text-red-400 hover:text-red-600" @click="remove(idx)" title="Quitar DAO">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
                         </svg>

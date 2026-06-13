@@ -137,11 +137,11 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                             <tr class="bg-slate-50/80 text-[10px] uppercase text-slate-400 font-black border-b border-slate-100">
-                                <th class="px-6 py-4">Clave</th>
-                                <th class="px-6 py-4">Asignatura Optativa</th>
-                                <th class="px-6 py-4 text-center">Créditos</th>
-                                <th class="px-6 py-4 text-center">Horas</th>
-                                <th class="px-6 py-4 text-right">Gestión</th>
+                                <th scope="col" class="px-6 py-4">Clave</th>
+                                <th scope="col" class="px-6 py-4">Asignatura Optativa</th>
+                                <th scope="col" class="px-6 py-4 text-center">Créditos</th>
+                                <th scope="col" class="px-6 py-4 text-center">Horas</th>
+                                <th scope="col" class="px-6 py-4 text-right">Gestión</th>
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
@@ -176,7 +176,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button
+                                        <button aria-label="Editar Materia"
                                             @click="editSubject(subject.id)"
                                             class="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all"
                                             title="Editar Materia"
@@ -185,7 +185,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                             </svg>
                                         </button>
-                                        <button
+                                        <button aria-label="Eliminar del Grupo"
                                             @click="openUnlinkModal(subject)"
                                             class="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all"
                                             title="Eliminar del Grupo"

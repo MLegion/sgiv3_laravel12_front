@@ -292,7 +292,7 @@ onMounted(load)
                 <!-- Stepper + progreso -->
                 <div class="bg-white border border-slate-200 rounded p-3 sticky top-0 z-10 space-y-3">
                     <div class="flex items-center gap-1.5 overflow-x-auto pb-1">
-                        <button
+                        <button aria-label="s.title"
                             v-for="(s, i) in data.sections"
                             :key="s.id"
                             type="button"

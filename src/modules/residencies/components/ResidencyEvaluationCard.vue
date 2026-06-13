@@ -18,10 +18,10 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="text-[10px] font-black text-slate-400 uppercase">
-                        <th class="text-left py-1">Componente</th>
-                        <th class="text-center py-1 w-16">Peso</th>
-                        <th class="text-center py-1 w-24">Calif.</th>
-                        <th class="text-left py-1">Capturó</th>
+                        <th scope="col" class="text-left py-1">Componente</th>
+                        <th scope="col" class="text-center py-1 w-16">Peso</th>
+                        <th scope="col" class="text-center py-1 w-24">Calif.</th>
+                        <th scope="col" class="text-left py-1">Capturó</th>
                     </tr>
                 </thead>
                 <tbody>

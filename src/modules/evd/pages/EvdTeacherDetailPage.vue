@@ -180,11 +180,11 @@ onMounted(load)
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                         <tr>
-                            <th class="text-left px-4 py-2 w-16">ÁREA</th>
-                            <th class="text-left px-4 py-2">ASPECTO</th>
-                            <th class="text-right px-4 py-2 w-32">RESPUESTAS</th>
-                            <th class="text-right px-4 py-2 w-28">PROMEDIO</th>
-                            <th class="text-left px-4 py-2 w-36">NIVEL</th>
+                            <th scope="col" class="text-left px-4 py-2 w-16">ÁREA</th>
+                            <th scope="col" class="text-left px-4 py-2">ASPECTO</th>
+                            <th scope="col" class="text-right px-4 py-2 w-32">RESPUESTAS</th>
+                            <th scope="col" class="text-right px-4 py-2 w-28">PROMEDIO</th>
+                            <th scope="col" class="text-left px-4 py-2 w-36">NIVEL</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -219,9 +219,9 @@ onMounted(load)
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                         <tr>
-                            <th class="text-left  px-4 py-2">MATERIA</th>
-                            <th class="text-left  px-4 py-2 w-32">GRUPO</th>
-                            <th class="text-right px-4 py-2 w-48">AVANCE</th>
+                            <th scope="col" class="text-left  px-4 py-2">MATERIA</th>
+                            <th scope="col" class="text-left  px-4 py-2 w-32">GRUPO</th>
+                            <th scope="col" class="text-right px-4 py-2 w-48">AVANCE</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">

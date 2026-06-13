@@ -117,7 +117,7 @@
                             <p class="text-[10px] text-slate-400 mt-1">{{ formatDateTime(n.created_at) }}</p>
                         </div>
                         <div class="flex items-start gap-1">
-                            <button
+                            <button aria-label="Marcar como leída"
                                 v-if="!n.read_at"
                                 class="p-1.5 rounded-md text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                                 title="Marcar como leída"
@@ -125,7 +125,7 @@
                             >
                                 <CheckIcon class="w-4 h-4" />
                             </button>
-                            <button
+                            <button aria-label="Eliminar de mi bandeja"
                                 class="p-1.5 rounded-md text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
                                 title="Eliminar de mi bandeja"
                                 @click="confirmDelete(n.id)"

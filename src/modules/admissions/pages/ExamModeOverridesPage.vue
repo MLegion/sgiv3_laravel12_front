@@ -22,8 +22,8 @@
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 border-b">
                     <tr>
-                        <th class="text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider px-4 py-3">Modalidad</th>
-                        <th class="text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider px-4 py-3 w-72">Modalidad de examen</th>
+                        <th scope="col" class="text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider px-4 py-3">Modalidad</th>
+                        <th scope="col" class="text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider px-4 py-3 w-72">Modalidad de examen</th>
                     </tr>
                 </thead>
                 <tbody>

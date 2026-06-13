@@ -18,9 +18,9 @@
                     <table class="w-full text-sm">
                         <thead class="bg-slate-100 border-b border-slate-200">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Estado</th>
-                                <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Cantidad</th>
-                                <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">%</th>
+                                <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Estado</th>
+                                <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Cantidad</th>
+                                <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">%</th>
                             </tr>
                         </thead>
                         <tbody>

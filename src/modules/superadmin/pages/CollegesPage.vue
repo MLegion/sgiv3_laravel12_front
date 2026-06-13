@@ -69,7 +69,7 @@
             <template #cell-opciones="{ row }">
                 <div class="flex items-center justify-center gap-2">
                     <!-- Ver -->
-                    <button
+                    <button aria-label="Ver institución educativa"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500
                                hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer"
@@ -99,7 +99,7 @@
                     </button>
 
                     <!-- Editar -->
-                    <button
+                    <button aria-label="Editar institución educativa"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500
                                hover:text-amber-600 hover:bg-amber-50 transition cursor-pointer"
@@ -124,7 +124,7 @@
                     </button>
 
                     <!-- Eliminar -->
-                    <button
+                    <button aria-label="Eliminar institución educativa"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500
                                hover:text-red-600 hover:bg-red-50 transition cursor-pointer"

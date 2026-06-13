@@ -125,11 +125,11 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nombre Completo</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-44">CURP</th>
-                            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase w-24">Puntaje</th>
-                            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase w-28">¿Admitido?</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nombre Completo</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-44">CURP</th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase w-24">Puntaje</th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase w-28">¿Admitido?</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -190,10 +190,10 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nombre Completo</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-44">CURP</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-36">Folio Preficha</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nombre Completo</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-44">CURP</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-36">Folio Preficha</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -272,7 +272,7 @@
                                 <span class="font-medium text-slate-700 flex-1 min-w-0 truncate">{{ fullName(exc) }}</span>
                                 <span class="font-mono text-slate-400 hidden sm:inline">{{ exc.curp || '—' }}</span>
                                 <span class="font-bold text-red-600 w-12 text-right">{{ exc.entranceScore ?? '—' }}</span>
-                                <button
+                                <button aria-label="Volver a admitir"
                                     class="text-slate-400 hover:text-green-600 transition shrink-0"
                                     title="Volver a admitir"
                                     @click="toggleAdmitted(exc.id)"

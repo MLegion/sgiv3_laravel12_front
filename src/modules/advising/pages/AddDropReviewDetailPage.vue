@@ -53,7 +53,7 @@
                 <div class="border-b px-4 py-3"><h3 class="text-sm font-bold text-emerald-700 uppercase">Altas solicitadas</h3></div>
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
-                        <tr><th class="px-4 py-2 text-left">MATERIA</th><th class="px-4 py-2 text-left">GRUPO</th><th class="px-4 py-2 text-left">DOCENTE</th></tr>
+                        <tr><th scope="col" class="px-4 py-2 text-left">MATERIA</th><th scope="col" class="px-4 py-2 text-left">GRUPO</th><th scope="col" class="px-4 py-2 text-left">DOCENTE</th></tr>
                     </thead>
                     <tbody class="divide-y">
                         <tr v-for="it in addItems" :key="it.id">

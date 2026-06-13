@@ -69,7 +69,7 @@
                             </div>
                             <div class="flex items-center gap-2 ml-2">
                                 <span v-if="place.capacity" class="text-[10px] text-slate-400 font-bold">{{ place.capacity }} cap.</span>
-                                <button
+                                <button aria-label="Asignar"
                                     type="button"
                                     class="border p-1.5 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-100 hover:border-blue-300 transition disabled:opacity-40"
                                     title="Asignar"
@@ -132,7 +132,7 @@
                             class="flex items-center justify-between px-4 py-3 hover:bg-red-50 transition"
                         >
                             <div class="flex items-center gap-2">
-                                <button
+                                <button aria-label="Desasignar"
                                     type="button"
                                     class="border p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-100 hover:border-red-300 transition disabled:opacity-40"
                                     title="Desasignar"

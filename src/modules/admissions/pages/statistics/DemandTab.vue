@@ -17,11 +17,11 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
-                            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Carrera</th>
-                            <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">1ª opción</th>
-                            <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">2ª opción</th>
-                            <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">3ª opción</th>
-                            <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Total</th>
+                            <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Carrera</th>
+                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">1ª opción</th>
+                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">2ª opción</th>
+                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">3ª opción</th>
+                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Total</th>
                         </tr>
                     </thead>
                     <tbody>

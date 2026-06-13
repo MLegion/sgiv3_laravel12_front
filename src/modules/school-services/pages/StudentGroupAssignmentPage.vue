@@ -93,12 +93,12 @@
                     <table class="w-full text-sm">
                         <thead class="bg-slate-50 text-slate-500 sticky top-0">
                             <tr>
-                                <th class="px-3 py-2 text-left w-8">
+                                <th scope="col" class="px-3 py-2 text-left w-8">
                                     <input type="checkbox" :checked="allSelected" @change="toggleAllSelection" class="rounded border-slate-300" />
                                 </th>
-                                <th class="px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest">No. CONTROL</th>
-                                <th class="px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest">NOMBRE</th>
-                                <th class="px-3 py-2 text-center text-[10px] font-black uppercase tracking-widest">GRUPOS</th>
+                                <th scope="col" class="px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest">No. CONTROL</th>
+                                <th scope="col" class="px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest">NOMBRE</th>
+                                <th scope="col" class="px-3 py-2 text-center text-[10px] font-black uppercase tracking-widest">GRUPOS</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -194,7 +194,7 @@
                                 {{ expandedGroupIds.has(g.id) ? 'Ocultar estudiantes' : 'Ver estudiantes asignados' }}
                             </button>
                             <div class="flex items-center gap-2">
-                                <button
+                                <button aria-label="Inscribir a TODOS los alumnos del grupo a las materias del semestre"
                                     type="button"
                                     class="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
                                     title="Inscribir a TODOS los alumnos del grupo a las materias del semestre"
@@ -237,7 +237,7 @@
                                             :class="s.source === 'INSCRIPCION' ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-700'"
                                         >{{ s.source }}</span>
                                     </div>
-                                    <button
+                                    <button aria-label="Quitar estudiante del grupo"
                                         :disabled="removingStudentId === s.id"
                                         class="p-1 rounded-md text-red-500 hover:bg-red-50 hover:text-red-700 disabled:opacity-50 transition"
                                         title="Quitar estudiante del grupo"

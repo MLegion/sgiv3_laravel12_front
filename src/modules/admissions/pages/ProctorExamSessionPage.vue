@@ -160,10 +160,10 @@
                     <table class="w-full text-xs">
                         <thead class="bg-slate-50">
                             <tr class="text-slate-600">
-                                <th class="px-2 py-1 text-left">Aspirante</th>
-                                <th class="px-2 py-1 text-left">Folio</th>
-                                <th class="px-2 py-1 text-center">Estado</th>
-                                <th class="px-2 py-1 text-center">Acción</th>
+                                <th scope="col" class="px-2 py-1 text-left">Aspirante</th>
+                                <th scope="col" class="px-2 py-1 text-left">Folio</th>
+                                <th scope="col" class="px-2 py-1 text-center">Estado</th>
+                                <th scope="col" class="px-2 py-1 text-center">Acción</th>
                             </tr>
                         </thead>
                         <tbody>

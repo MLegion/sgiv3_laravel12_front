@@ -76,13 +76,13 @@
                             <table class="w-full text-xs">
                                 <thead class="text-slate-500">
                                     <tr>
-                                        <th class="px-3 py-2 text-left">Código</th>
-                                        <th class="px-3 py-2 text-left">Materia</th>
-                                        <th class="px-3 py-2 text-left">Docente</th>
-                                        <th class="px-3 py-2 text-center">Cupo</th>
-                                        <th class="px-3 py-2 text-center">Ocupado</th>
-                                        <th class="px-3 py-2 text-center">Disponible</th>
-                                        <th class="px-3 py-2 text-center">A inscribir</th>
+                                        <th scope="col" class="px-3 py-2 text-left">Código</th>
+                                        <th scope="col" class="px-3 py-2 text-left">Materia</th>
+                                        <th scope="col" class="px-3 py-2 text-left">Docente</th>
+                                        <th scope="col" class="px-3 py-2 text-center">Cupo</th>
+                                        <th scope="col" class="px-3 py-2 text-center">Ocupado</th>
+                                        <th scope="col" class="px-3 py-2 text-center">Disponible</th>
+                                        <th scope="col" class="px-3 py-2 text-center">A inscribir</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">

@@ -51,7 +51,7 @@
         </span>
 
         <!-- Clear -->
-        <button
+        <button aria-label="Todos los periodos"
             v-if="store.selectedPeriodId"
             class="shrink-0 text-slate-300 hover:text-slate-500 transition"
             title="Todos los periodos"

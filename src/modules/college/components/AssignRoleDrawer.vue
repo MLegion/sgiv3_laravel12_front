@@ -64,7 +64,7 @@
                                             </span>
                                         </div>
                                     </div>
-                                    <button
+                                    <button aria-label="Revocar rol"
                                         v-if="a.belongs_to_current_college !== false && !isProtectedRole(a.role_code)"
                                         :disabled="revokingId === a.id"
                                         class="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 disabled:opacity-60 transition"
@@ -145,7 +145,7 @@
                                                         >{{ opt.label }}</option>
                                                     </select>
                                                 </div>
-                                                <button
+                                                <button aria-label="Quitar combinación"
                                                     type="button"
                                                     class="p-1.5 text-slate-400 hover:text-red-600 rounded transition"
                                                     :disabled="contextRows.length === 1"

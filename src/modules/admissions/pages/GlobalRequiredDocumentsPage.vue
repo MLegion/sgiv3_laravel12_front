@@ -2,7 +2,7 @@
     <div class="space-y-4">
         <div class="flex items-center justify-between">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Documentos Requeridos Globales</h1>
-            <button
+            <button aria-label="allTypesUsed ? 'Todos los tipos de documento ya están configurados' : undefined"
                 class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 :disabled="allTypesUsed"
                 :title="allTypesUsed ? 'Todos los tipos de documento ya están configurados' : undefined"
@@ -38,7 +38,7 @@
 
             <template #cell-opciones="{ row }">
                 <div class="flex items-center justify-center gap-2">
-                    <button
+                    <button aria-label="Ver"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition"
                         title="Ver"
@@ -49,7 +49,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </button>
-                    <button
+                    <button aria-label="Editar"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition"
                         title="Editar"
@@ -59,7 +59,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l2.651 2.651M7.5 13.85l-.75 3.75 3.75-.75L19.513 7.138a2.121 2.121 0 00-3-3L7.5 13.85z" />
                         </svg>
                     </button>
-                    <button
+                    <button aria-label="Eliminar"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition"
                         title="Eliminar"

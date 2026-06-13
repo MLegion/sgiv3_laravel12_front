@@ -69,9 +69,9 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
-                            <th class="px-4 py-2 text-left">MATERIA</th>
-                            <th class="px-4 py-2 text-left">GRUPO</th>
-                            <th class="px-4 py-2 text-left">DOCENTE</th>
+                            <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
+                            <th scope="col" class="px-4 py-2 text-left">GRUPO</th>
+                            <th scope="col" class="px-4 py-2 text-left">DOCENTE</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -173,9 +173,9 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
-                            <th class="px-4 py-2 text-left">MATERIA</th>
-                            <th class="px-4 py-2 text-left">GRUPO / TURNO</th>
-                            <th class="px-4 py-2 text-left">DOCENTE</th>
+                            <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
+                            <th scope="col" class="px-4 py-2 text-left">GRUPO / TURNO</th>
+                            <th scope="col" class="px-4 py-2 text-left">DOCENTE</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">

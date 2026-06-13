@@ -36,7 +36,7 @@
                     {{ activeUserIds.size }}
                 </span>
             </label>
-            <button
+            <button aria-label="Refrescar lista de sesiones activas"
                 type="button"
                 class="text-xs px-3 py-1 rounded border hover:bg-gray-50"
                 :disabled="loading"
@@ -97,7 +97,7 @@
 
             <template #cell-acciones="{ row }">
                 <div class="flex items-center justify-center">
-                    <button
+                    <button aria-label="'Hay una simulación activa para este usuario. Clic para forzar cierre.'"
                         v-if="activeUserIds.has(row.id)"
                         type="button"
                         :disabled="busyUserId === row.id"

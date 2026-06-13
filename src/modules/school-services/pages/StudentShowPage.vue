@@ -157,15 +157,15 @@
                     <table class="min-w-full text-sm">
                         <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
                             <tr>
-                                <th class="px-4 py-3 text-left">Carrera / Plan</th>
-                                <th class="px-4 py-3 text-left">Campus</th>
-                                <th class="px-4 py-3 text-left">Modalidad</th>
-                                <th class="px-4 py-3 text-left">Especialidad</th>
-                                <th class="px-4 py-3 text-left">Grupo Optativa</th>
-                                <th class="px-4 py-3 text-left">Estatus</th>
-                                <th class="px-4 py-3 text-left">Periodo Ingreso</th>
-                                <th class="px-4 py-3 text-left">Semestre</th>
-                                <th class="px-4 py-3 text-center">Acciones</th>
+                                <th scope="col" class="px-4 py-3 text-left">Carrera / Plan</th>
+                                <th scope="col" class="px-4 py-3 text-left">Campus</th>
+                                <th scope="col" class="px-4 py-3 text-left">Modalidad</th>
+                                <th scope="col" class="px-4 py-3 text-left">Especialidad</th>
+                                <th scope="col" class="px-4 py-3 text-left">Grupo Optativa</th>
+                                <th scope="col" class="px-4 py-3 text-left">Estatus</th>
+                                <th scope="col" class="px-4 py-3 text-left">Periodo Ingreso</th>
+                                <th scope="col" class="px-4 py-3 text-left">Semestre</th>
+                                <th scope="col" class="px-4 py-3 text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -293,14 +293,14 @@
                     <table class="min-w-full text-sm">
                         <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
                             <tr>
-                                <th class="px-3 py-3 text-left">Materia</th>
-                                <th class="px-3 py-3 text-left">Tipo Aprob.</th>
-                                <th class="px-3 py-3 text-center">Calificacion</th>
-                                <th class="px-3 py-3 text-center">No. Per. 1</th>
-                                <th class="px-3 py-3 text-center">No. Per. 2</th>
-                                <th class="px-3 py-3 text-center">No. Per. 3</th>
-                                <th class="px-3 py-3 text-center">Aprob.</th>
-                                <th class="px-3 py-3 text-center">Acciones</th>
+                                <th scope="col" class="px-3 py-3 text-left">Materia</th>
+                                <th scope="col" class="px-3 py-3 text-left">Tipo Aprob.</th>
+                                <th scope="col" class="px-3 py-3 text-center">Calificacion</th>
+                                <th scope="col" class="px-3 py-3 text-center">No. Per. 1</th>
+                                <th scope="col" class="px-3 py-3 text-center">No. Per. 2</th>
+                                <th scope="col" class="px-3 py-3 text-center">No. Per. 3</th>
+                                <th scope="col" class="px-3 py-3 text-center">Aprob.</th>
+                                <th scope="col" class="px-3 py-3 text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">

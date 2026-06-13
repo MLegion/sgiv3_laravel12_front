@@ -120,7 +120,7 @@
                         <p v-if="p.exceptionReason" class="text-[11px] text-amber-700 italic mt-0.5">{{ p.exceptionReason }}</p>
                     </div>
                 </div>
-                <button
+                <button aria-label="Quitar"
                     class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition"
                     title="Quitar"
                     @click="removeProctor(p)"

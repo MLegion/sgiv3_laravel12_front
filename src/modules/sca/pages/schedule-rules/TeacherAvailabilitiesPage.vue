@@ -136,12 +136,12 @@
                         <table v-else-if="availabilities.length" class="w-full text-xs">
                             <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
                                 <tr>
-                                    <th class="px-3 py-2 text-left">Modalidad</th>
-                                    <th class="px-3 py-2 text-left">Día / Fecha</th>
-                                    <th class="px-3 py-2 text-center">Rango</th>
-                                    <th class="px-3 py-2 text-center">Tipo</th>
-                                    <th class="px-3 py-2 text-left">Nota</th>
-                                    <th class="px-3 py-2"></th>
+                                    <th scope="col" class="px-3 py-2 text-left">Modalidad</th>
+                                    <th scope="col" class="px-3 py-2 text-left">Día / Fecha</th>
+                                    <th scope="col" class="px-3 py-2 text-center">Rango</th>
+                                    <th scope="col" class="px-3 py-2 text-center">Tipo</th>
+                                    <th scope="col" class="px-3 py-2 text-left">Nota</th>
+                                    <th scope="col" class="px-3 py-2"></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
@@ -158,7 +158,7 @@
                                     </td>
                                     <td class="px-3 py-2 text-slate-500">{{ a.note || '—' }}</td>
                                     <td class="px-3 py-2 text-right">
-                                        <button
+                                        <button aria-label="Eliminar"
                                             type="button"
                                             class="text-red-600 hover:text-red-800"
                                             title="Eliminar"

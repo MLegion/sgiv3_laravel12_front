@@ -83,18 +83,18 @@
             <table class="w-full text-xs border-collapse">
                 <thead>
                     <tr>
-                        <th rowspan="2" class="border border-slate-300 bg-slate-100 px-2 py-1 text-left">#</th>
-                        <th rowspan="2" class="border border-slate-300 bg-slate-100 px-2 py-1 text-left">CARRERA</th>
+                        <th scope="col" rowspan="2" class="border border-slate-300 bg-slate-100 px-2 py-1 text-left">#</th>
+                        <th scope="col" rowspan="2" class="border border-slate-300 bg-slate-100 px-2 py-1 text-left">CARRERA</th>
                         <template v-for="m in data.modalities" :key="m.id">
-                            <th colspan="2" class="border border-slate-300 bg-slate-100 px-2 py-1 text-center uppercase">
+                            <th scope="col" colspan="2" class="border border-slate-300 bg-slate-100 px-2 py-1 text-center uppercase">
                                 {{ (m.shortName ?? m.name) }} {{ currentYear }}
                             </th>
                         </template>
                     </tr>
                     <tr>
                         <template v-for="m in data.modalities" :key="`sub-${m.id}`">
-                            <th class="border border-slate-300 bg-slate-50 px-2 py-1 text-center font-medium">FICHAS</th>
-                            <th class="border border-slate-300 bg-slate-50 px-2 py-1 text-center font-medium text-slate-500">
+                            <th scope="col" class="border border-slate-300 bg-slate-50 px-2 py-1 text-center font-medium">FICHAS</th>
+                            <th scope="col" class="border border-slate-300 bg-slate-50 px-2 py-1 text-center font-medium text-slate-500">
                                 FICHAS {{ compareYear ?? '—' }}
                             </th>
                         </template>

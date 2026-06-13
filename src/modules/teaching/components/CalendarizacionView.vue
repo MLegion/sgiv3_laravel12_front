@@ -51,8 +51,8 @@
                 <table class="border-collapse text-sm">
                     <thead>
                         <tr class="bg-slate-100 text-slate-600">
-                            <th class="border border-slate-300 px-2 py-1 w-12">Sem</th>
-                            <th v-for="d in columns" :key="d" class="border border-slate-300 px-2 py-1 w-28"
+                            <th scope="col" class="border border-slate-300 px-2 py-1 w-12">Sem</th>
+                            <th scope="col" v-for="d in columns" :key="d" class="border border-slate-300 px-2 py-1 w-28"
                                 :class="isClassDay(d) ? '' : 'text-slate-400 font-normal'">
                                 {{ WD[d] }}
                             </th>

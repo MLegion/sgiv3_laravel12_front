@@ -14,13 +14,13 @@
             <table class="w-full text-left">
                 <thead>
                     <tr class="bg-slate-100 border-b text-[10px] font-black text-slate-500 uppercase">
-                        <th class="px-4 py-2.5 w-16 text-center">ID</th>
-                        <th class="px-4 py-2.5 w-24">Clave</th>
-                        <th class="px-4 py-2.5">Carrera</th>
-                        <th class="px-4 py-2.5 w-56">Formato de Grupo</th>
-                        <th class="px-4 py-2.5 w-24 text-center">Color</th>
-                        <th class="px-4 py-2.5 w-24 text-center">Preview</th>
-                        <th class="px-4 py-2.5 w-20 text-center">Acción</th>
+                        <th scope="col" class="px-4 py-2.5 w-16 text-center">ID</th>
+                        <th scope="col" class="px-4 py-2.5 w-24">Clave</th>
+                        <th scope="col" class="px-4 py-2.5">Carrera</th>
+                        <th scope="col" class="px-4 py-2.5 w-56">Formato de Grupo</th>
+                        <th scope="col" class="px-4 py-2.5 w-24 text-center">Color</th>
+                        <th scope="col" class="px-4 py-2.5 w-24 text-center">Preview</th>
+                        <th scope="col" class="px-4 py-2.5 w-20 text-center">Acción</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">

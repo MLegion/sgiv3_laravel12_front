@@ -45,12 +45,12 @@
             <table v-else class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wide">
                     <tr>
-                        <th class="px-3 py-2 text-left">Fecha</th>
-                        <th class="px-3 py-2 text-left">Canal</th>
-                        <th class="px-3 py-2 text-left">Plantilla / Evento</th>
-                        <th class="px-3 py-2 text-left">Destinatario</th>
-                        <th class="px-3 py-2 text-left">Asunto / Cuerpo</th>
-                        <th class="px-3 py-2 text-right">Vista previa</th>
+                        <th scope="col" class="px-3 py-2 text-left">Fecha</th>
+                        <th scope="col" class="px-3 py-2 text-left">Canal</th>
+                        <th scope="col" class="px-3 py-2 text-left">Plantilla / Evento</th>
+                        <th scope="col" class="px-3 py-2 text-left">Destinatario</th>
+                        <th scope="col" class="px-3 py-2 text-left">Asunto / Cuerpo</th>
+                        <th scope="col" class="px-3 py-2 text-right">Vista previa</th>
                     </tr>
                 </thead>
                 <tbody>

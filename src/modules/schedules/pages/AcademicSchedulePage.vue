@@ -31,7 +31,7 @@
             <section class="bg-white border rounded-xl shadow-sm overflow-hidden">
                 <header class="px-4 py-2 bg-slate-50 border-b flex items-center justify-between gap-2">
                     <h2 class="text-[11px] font-black text-slate-600 uppercase tracking-widest">Filtros</h2>
-                    <button v-if="selectedCareerFilter && resolvedConfigId && phaseActive"
+                    <button aria-label="'Vaciar los horarios de la carrera ' + (selectedCareerObj?.shortName ?? selectedCareerObj?.name ?? '')" v-if="selectedCareerFilter && resolvedConfigId && phaseActive"
                         type="button"
                         class="px-3 py-1.5 text-[10px] font-bold rounded border border-red-300 text-red-700 hover:bg-red-50 uppercase flex items-center gap-1.5"
                         :title="'Vaciar los horarios de la carrera ' + (selectedCareerObj?.shortName ?? selectedCareerObj?.name ?? '')"
@@ -99,7 +99,7 @@
                     </span>
                 </header>
                 <div class="p-3 flex items-center gap-2 flex-wrap">
-                    <button
+                    <button aria-label="!phaseActive ? 'Fase de horarios cerrada' : (eraserMode ? 'Desactivar borrador' : 'Activar borrador')"
                         type="button"
                         class="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border-2 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
                         :class="eraserMode
@@ -115,7 +115,7 @@
                         {{ eraserMode ? 'SALIR DEL BORRADOR' : 'BORRADOR' }}
                     </button>
 
-                    <button
+                    <button aria-label="comparisonMode ? 'Salir de comparación' : 'Comparar horarios'"
                         type="button"
                         class="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border-2 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
                         :class="comparisonMode
@@ -132,7 +132,7 @@
                     </button>
 
                     <!-- Modo lista -->
-                    <button
+                    <button aria-label="listMode ? 'Volver al grid' : 'Ver horario como lista'"
                         type="button"
                         class="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border-2 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
                         :class="listMode
@@ -149,7 +149,7 @@
                     </button>
 
                     <!-- Seleccionar aula por defecto -->
-                    <button
+                    <button aria-label="pinnedPlaceId ? 'Cambiar o quitar aula fija' : 'Fijar aula por defecto'"
                         type="button"
                         class="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border-2 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
                         :class="pinnedPlaceId
@@ -202,7 +202,7 @@
                     </button>
 
                     <!-- Generación automática (jefe de carrera) -->
-                    <button
+                    <button aria-label="generatorDisabledReason || 'Disparar generación automática para la carrera'"
                         v-if="canGenerate"
                         type="button"
                         class="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border-2 transition uppercase disabled:opacity-50 disabled:cursor-not-allowed"
@@ -472,7 +472,7 @@
                                     </template>
                                     <div class="flex items-center justify-between w-full mt-0.5 px-0.5">
                                         <span class="text-[10px] font-bold text-slate-600 truncate">{{ block.teacherAssignment?.group?.name || '' }}</span>
-                                        <button
+                                        <button aria-label="Eliminar"
                                             v-if="phaseActive"
                                             class="text-red-600 hover:text-red-800 ml-1 flex-shrink-0"
                                             title="Eliminar"
@@ -517,7 +517,7 @@
                                 </div>
 
                                 <!-- Botón ELIMINAR TODO -->
-                                <button
+                                <button aria-label="Eliminar bloque completo"
                                     type="button"
                                     class="px-1 py-0.5 bg-red-600 hover:bg-red-700 text-white text-[9px] font-black uppercase flex-shrink-0 border-b-2 border-red-800"
                                     title="Eliminar bloque completo"
@@ -529,7 +529,7 @@
 
                                 <!-- Sub-slots clickables individualmente -->
                                 <div class="flex-1 flex flex-col divide-y divide-red-200 bg-red-50/50 min-h-0">
-                                    <button
+                                    <button aria-label="`Eliminar solo ${slot.from} - ${slot.to}`"
                                         v-for="(slot, idx) in blockSubSlots(block)"
                                         :key="'ss-' + block.id + '-' + idx"
                                         type="button"
@@ -567,7 +567,7 @@
                                         {{ complementaryPlaceShort(c) }}
                                     </div>
                                     <div class="flex items-center justify-end w-full mt-0.5 px-0.5">
-                                        <button
+                                        <button aria-label="Eliminar descarga"
                                             v-if="phaseActive"
                                             class="text-red-600 hover:text-red-800 flex-shrink-0"
                                             title="Eliminar descarga"
@@ -605,14 +605,14 @@
                         <table class="w-full text-xs border-collapse">
                             <thead class="sticky top-0 z-10">
                                 <tr class="bg-slate-100 border-b-2 border-slate-300">
-                                    <th class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">
+                                    <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">
                                         {{ usesSpecificDates ? 'Fecha' : 'Día' }}
                                     </th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Hora</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Grupo</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Materia</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Docente</th>
-                                    <th class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Aula</th>
+                                    <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Hora</th>
+                                    <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Grupo</th>
+                                    <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Materia</th>
+                                    <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Docente</th>
+                                    <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Aula</th>
                                 </tr>
                             </thead>
                             <tbody>

@@ -105,14 +105,14 @@
                 <table v-else class="w-full text-xs">
                     <thead class="bg-slate-100 text-slate-600">
                         <tr>
-                            <th class="text-left px-3 py-2">Grupo</th>
-                            <th class="text-left px-3 py-2">Materia</th>
-                            <th class="text-left px-3 py-2">Docente</th>
-                            <th class="text-right px-3 py-2">Inscritos</th>
-                            <th class="text-right px-3 py-2">Calificados</th>
-                            <th class="text-right px-3 py-2">Faltan</th>
-                            <th class="text-center px-3 py-2">Estado</th>
-                            <th class="text-right px-3 py-2">Acción</th>
+                            <th scope="col" class="text-left px-3 py-2">Grupo</th>
+                            <th scope="col" class="text-left px-3 py-2">Materia</th>
+                            <th scope="col" class="text-left px-3 py-2">Docente</th>
+                            <th scope="col" class="text-right px-3 py-2">Inscritos</th>
+                            <th scope="col" class="text-right px-3 py-2">Calificados</th>
+                            <th scope="col" class="text-right px-3 py-2">Faltan</th>
+                            <th scope="col" class="text-center px-3 py-2">Estado</th>
+                            <th scope="col" class="text-right px-3 py-2">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -199,12 +199,12 @@
                     <table class="w-full text-xs">
                         <thead class="bg-slate-100 text-slate-600">
                             <tr>
-                                <th class="text-left px-3 py-2">Núm. control</th>
-                                <th class="text-left px-3 py-2">Alumno</th>
-                                <th class="text-left px-3 py-2">Status actual</th>
-                                <th class="text-left px-3 py-2">Status nuevo</th>
-                                <th class="text-left px-3 py-2">Regla</th>
-                                <th class="text-right px-3 py-2">Sem.</th>
+                                <th scope="col" class="text-left px-3 py-2">Núm. control</th>
+                                <th scope="col" class="text-left px-3 py-2">Alumno</th>
+                                <th scope="col" class="text-left px-3 py-2">Status actual</th>
+                                <th scope="col" class="text-left px-3 py-2">Status nuevo</th>
+                                <th scope="col" class="text-left px-3 py-2">Regla</th>
+                                <th scope="col" class="text-right px-3 py-2">Sem.</th>
                             </tr>
                         </thead>
                         <tbody>

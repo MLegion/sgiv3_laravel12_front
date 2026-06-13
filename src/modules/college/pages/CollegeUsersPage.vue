@@ -96,7 +96,7 @@
                         <AdjustmentsHorizontalIcon class="w-4 h-4" />
                         Gestionar
                     </button>
-                    <button
+                    <button aria-label="Restablecer contraseña — genera una temporal"
                         v-if="!row.isDisabled"
                         type="button"
                         class="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 transition"
@@ -106,7 +106,7 @@
                         <KeyIcon class="w-4 h-4" />
                         Contraseña
                     </button>
-                    <button
+                    <button aria-label="Deshabilitar usuario — lo desconectará al instante"
                         v-if="!row.isDisabled && !isSelf(row)"
                         type="button"
                         class="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-300 text-red-700 hover:bg-red-50 transition"

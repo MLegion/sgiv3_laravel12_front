@@ -37,7 +37,7 @@
                     </div>
                 </div>
 
-                <button
+                <button aria-label="¿Cómo configuro esto?"
                     v-if="data.schema.instructions"
                     type="button"
                     class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full border border-gray-300 text-gray-500 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-400 transition"

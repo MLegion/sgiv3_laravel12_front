@@ -208,9 +208,9 @@ onMounted(load)
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                     <tr>
-                        <th class="text-left px-4 py-2 w-64">PERÍODO</th>
-                        <th class="text-left px-4 py-2">APERTURA POR MODALIDAD</th>
-                        <th class="text-right px-4 py-2 w-48"></th>
+                        <th scope="col" class="text-left px-4 py-2 w-64">PERÍODO</th>
+                        <th scope="col" class="text-left px-4 py-2">APERTURA POR MODALIDAD</th>
+                        <th scope="col" class="text-right px-4 py-2 w-48"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">

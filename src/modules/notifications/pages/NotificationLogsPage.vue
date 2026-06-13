@@ -65,12 +65,12 @@
                 <table class="w-full text-xs">
                     <thead class="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wide">
                         <tr>
-                            <th class="px-3 py-2 text-left">Fecha</th>
-                            <th class="px-3 py-2 text-left">Canal</th>
-                            <th class="px-3 py-2 text-left">Estado</th>
-                            <th class="px-3 py-2 text-left">Plantilla / Evento</th>
-                            <th class="px-3 py-2 text-left">Destinatario</th>
-                            <th class="px-3 py-2 text-left">Asunto / Error</th>
+                            <th scope="col" class="px-3 py-2 text-left">Fecha</th>
+                            <th scope="col" class="px-3 py-2 text-left">Canal</th>
+                            <th scope="col" class="px-3 py-2 text-left">Estado</th>
+                            <th scope="col" class="px-3 py-2 text-left">Plantilla / Evento</th>
+                            <th scope="col" class="px-3 py-2 text-left">Destinatario</th>
+                            <th scope="col" class="px-3 py-2 text-left">Asunto / Error</th>
                         </tr>
                     </thead>
                     <tbody>

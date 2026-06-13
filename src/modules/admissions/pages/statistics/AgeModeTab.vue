@@ -28,8 +28,8 @@
                         <table class="w-full text-sm">
                             <thead class="bg-slate-100 border-b border-slate-200">
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Sexo</th>
-                                    <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Cantidad</th>
+                                    <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Sexo</th>
+                                    <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Cantidad</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -57,8 +57,8 @@
                         <table class="w-full text-sm">
                             <thead class="bg-slate-100 border-b border-slate-200">
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Modalidad</th>
-                                    <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Cantidad</th>
+                                    <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Modalidad</th>
+                                    <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Cantidad</th>
                                 </tr>
                             </thead>
                             <tbody>

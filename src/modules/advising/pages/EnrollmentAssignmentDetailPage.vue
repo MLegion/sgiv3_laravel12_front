@@ -26,10 +26,10 @@
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                     <tr>
-                        <th class="text-left px-4 py-2 w-12">#</th>
-                        <th class="text-left px-4 py-2 w-36">NUM CONTROL</th>
-                        <th class="text-left px-4 py-2">NOMBRE</th>
-                        <th class="text-left px-4 py-2">CARRERA</th>
+                        <th scope="col" class="text-left px-4 py-2 w-12">#</th>
+                        <th scope="col" class="text-left px-4 py-2 w-36">NUM CONTROL</th>
+                        <th scope="col" class="text-left px-4 py-2">NOMBRE</th>
+                        <th scope="col" class="text-left px-4 py-2">CARRERA</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">

@@ -114,7 +114,7 @@
                     class="px-3 py-1.5 text-xs rounded-md bg-red-600 text-white hover:bg-red-700"
                     @click="openRejectModal">RECHAZAR</button>
 
-            <button v-if="canReopenApproved"
+            <button aria-label="Reabrir como excepción una asesoría ya aprobada" v-if="canReopenApproved"
                     class="px-3 py-1.5 text-xs rounded-md bg-amber-600 text-white hover:bg-amber-700 ml-auto"
                     @click="openReopenModal"
                     title="Reabrir como excepción una asesoría ya aprobada">
@@ -242,12 +242,12 @@
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                     <tr>
-                        <th class="px-4 py-2 text-left">MATERIA</th>
-                        <th class="px-4 py-2 text-left">SEM</th>
-                        <th class="px-4 py-2 text-left">TIPO</th>
-                        <th class="px-4 py-2 text-left">GRUPO / TURNO</th>
-                        <th class="px-4 py-2 text-left">DECISIÓN</th>
-                        <th class="px-4 py-2"></th>
+                        <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
+                        <th scope="col" class="px-4 py-2 text-left">SEM</th>
+                        <th scope="col" class="px-4 py-2 text-left">TIPO</th>
+                        <th scope="col" class="px-4 py-2 text-left">GRUPO / TURNO</th>
+                        <th scope="col" class="px-4 py-2 text-left">DECISIÓN</th>
+                        <th scope="col" class="px-4 py-2"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">
@@ -307,7 +307,7 @@
                                     @click="saveDecision(item.id)">
                                 {{ savingItem === item.id ? '…' : 'GUARDAR' }}
                             </button>
-                            <button v-if="canDecide"
+                            <button aria-label="Quitar de la sesión" v-if="canDecide"
                                     :disabled="removingSubject === item.subjectId"
                                     class="text-[11px] border px-2 py-1 rounded-md hover:bg-red-50 hover:border-red-300 text-red-600 disabled:opacity-50"
                                     title="Quitar de la sesión"
@@ -342,11 +342,11 @@
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                     <tr>
-                        <th class="px-4 py-2 text-left">MATERIA</th>
-                        <th class="px-4 py-2 text-left">SEM</th>
-                        <th class="px-4 py-2 text-left">TIPO</th>
-                        <th class="px-4 py-2 text-left">GRUPO</th>
-                        <th class="px-4 py-2"></th>
+                        <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
+                        <th scope="col" class="px-4 py-2 text-left">SEM</th>
+                        <th scope="col" class="px-4 py-2 text-left">TIPO</th>
+                        <th scope="col" class="px-4 py-2 text-left">GRUPO</th>
+                        <th scope="col" class="px-4 py-2"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">
@@ -386,7 +386,7 @@
                             </span>
                         </td>
                         <td class="px-4 py-2 text-right">
-                            <button v-if="!proposedSubjectIds.has(entry.subjectId)"
+                            <button aria-label="!selectedAssignment[entry.subjectId] ? 'Elige un grupo del select de la izquierda' : ''" v-if="!proposedSubjectIds.has(entry.subjectId)"
                                     :disabled="!selectedAssignment[entry.subjectId] || addingSubject === entry.subjectId"
                                     class="text-[11px] border px-2 py-1 rounded-md hover:bg-emerald-50 hover:border-emerald-300 text-emerald-600 disabled:opacity-40"
                                     :title="!selectedAssignment[entry.subjectId] ? 'Elige un grupo del select de la izquierda' : ''"

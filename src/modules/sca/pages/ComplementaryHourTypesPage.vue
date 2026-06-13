@@ -36,14 +36,14 @@
 
             <template #cell-opciones="{ row }">
                 <div class="flex items-center justify-center gap-2">
-                    <button type="button" class="border p-1.5 rounded-md transition"
+                    <button aria-label="row.collegeId === null ? 'No puede editar catálogos globales' : 'Editar'" type="button" class="border p-1.5 rounded-md transition"
                         :class="row.collegeId === null ? 'text-slate-300 cursor-not-allowed' : 'text-slate-500 hover:text-amber-600 hover:bg-amber-50'"
                         :disabled="row.collegeId === null"
                         :title="row.collegeId === null ? 'No puede editar catálogos globales' : 'Editar'"
                         @click="row.collegeId !== null && openEdit(row)">
                         <PencilSquareIcon class="w-4 h-4" />
                     </button>
-                    <button type="button" class="border p-1.5 rounded-md transition"
+                    <button aria-label="row.collegeId === null ? 'No puede eliminar catálogos globales' : 'Eliminar'" type="button" class="border p-1.5 rounded-md transition"
                         :class="row.collegeId === null ? 'text-slate-300 cursor-not-allowed' : 'text-slate-500 hover:text-red-600 hover:bg-red-50'"
                         :disabled="row.collegeId === null"
                         :title="row.collegeId === null ? 'No puede eliminar catálogos globales' : 'Eliminar'"

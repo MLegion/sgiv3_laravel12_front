@@ -31,11 +31,11 @@
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
                     <tr>
-                        <th class="text-left px-3 py-2">Clave</th>
-                        <th class="text-left px-3 py-2">Materia</th>
-                        <th class="text-center px-3 py-2">Alumnos</th>
-                        <th class="text-left px-3 py-2">Programa oficial</th>
-                        <th class="text-right px-3 py-2">Acciones</th>
+                        <th scope="col" class="text-left px-3 py-2">Clave</th>
+                        <th scope="col" class="text-left px-3 py-2">Materia</th>
+                        <th scope="col" class="text-center px-3 py-2">Alumnos</th>
+                        <th scope="col" class="text-left px-3 py-2">Programa oficial</th>
+                        <th scope="col" class="text-right px-3 py-2">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>

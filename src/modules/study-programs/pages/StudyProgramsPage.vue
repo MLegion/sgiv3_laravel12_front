@@ -31,7 +31,7 @@
 
             <template #cell-opciones="{ row }">
                 <div class="flex items-center justify-center gap-2">
-                    <button
+                    <button aria-label="row.subject.programFilePath ? 'Abrir PDF del programa (respaldado)' : 'Abrir enlace al programa'"
                         v-if="row.subject && (row.subject.programFilePath || row.subject.programUrl)"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer disabled:opacity-50"
@@ -41,22 +41,22 @@
                     >
                         <DocumentTextIcon class="w-4 h-4" />
                     </button>
-                    <button type="button" class="border p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition cursor-pointer" title="Editar"
+                    <button aria-label="Editar" type="button" class="border p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition cursor-pointer" title="Editar"
                         @click="router.push({ name: 'study-programs.edit', params: { id: row.id } })">
                         <PencilSquareIcon class="w-4 h-4" />
                     </button>
                     <!-- Flujo de aprobación -->
-                    <button v-if="row.approvalStatus === 'draft' || row.approvalStatus === 'rejected'" type="button"
+                    <button aria-label="Enviar a revisión" v-if="row.approvalStatus === 'draft' || row.approvalStatus === 'rejected'" type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer"
                         title="Enviar a revisión" @click="openAction('submit', row)">
                         <PaperAirplaneIcon class="w-4 h-4" />
                     </button>
-                    <button v-if="row.approvalStatus === 'pending'" type="button"
+                    <button aria-label="Aprobar" v-if="row.approvalStatus === 'pending'" type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-green-600 hover:bg-green-50 transition cursor-pointer"
                         title="Aprobar" @click="openAction('approve', row)">
                         <CheckIcon class="w-4 h-4" />
                     </button>
-                    <button v-if="row.approvalStatus === 'pending'" type="button"
+                    <button aria-label="Rechazar" v-if="row.approvalStatus === 'pending'" type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
                         title="Rechazar" @click="openAction('reject', row)">
                         <XMarkIcon class="w-4 h-4" />

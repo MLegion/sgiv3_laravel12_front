@@ -119,10 +119,10 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                             <tr class="bg-slate-50 text-[10px] uppercase text-slate-400 font-black border-b">
-                                <th class="px-4 py-4 w-24">Clave</th>
-                                <th class="px-4 py-4">Asignatura</th>
-                                <th class="px-4 py-4 text-center">Créditos</th>
-                                <th class="px-4 py-4 text-center">Horas (T-P)</th>
+                                <th scope="col" class="px-4 py-4 w-24">Clave</th>
+                                <th scope="col" class="px-4 py-4">Asignatura</th>
+                                <th scope="col" class="px-4 py-4 text-center">Créditos</th>
+                                <th scope="col" class="px-4 py-4 text-center">Horas (T-P)</th>
                             </tr>
                             </thead>
                             <tbody class="divide-y text-sm">

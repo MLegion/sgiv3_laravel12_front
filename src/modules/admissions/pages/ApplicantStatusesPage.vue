@@ -33,7 +33,7 @@
                 </div>
 
                 <!-- Botón editar -->
-                <button
+                <button aria-label="Editar"
                     type="button"
                     class="shrink-0 border p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition"
                     title="Editar"

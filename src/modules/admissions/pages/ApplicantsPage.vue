@@ -52,7 +52,7 @@
             <template #cell-opciones="{ row }">
                 <div class="flex items-center justify-center gap-2">
                     <!-- Revisar documentos -->
-                    <button
+                    <button aria-label="Revisar documentos"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-purple-600 hover:bg-purple-50 transition"
                         title="Revisar documentos"
@@ -62,7 +62,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </button>
-                    <button
+                    <button aria-label="Ver"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition"
                         title="Ver"
@@ -73,7 +73,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </button>
-                    <button
+                    <button aria-label="Editar"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition"
                         title="Editar"
@@ -83,7 +83,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l2.651 2.651M7.5 13.85l-.75 3.75 3.75-.75L19.513 7.138a2.121 2.121 0 00-3-3L7.5 13.85z" />
                         </svg>
                     </button>
-                    <button
+                    <button aria-label="Eliminar"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition"
                         title="Eliminar"

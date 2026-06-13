@@ -23,10 +23,10 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
-                            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Etapa</th>
-                            <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Aspirantes</th>
-                            <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">% acumulado</th>
-                            <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Conversión vs etapa anterior</th>
+                            <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Etapa</th>
+                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Aspirantes</th>
+                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">% acumulado</th>
+                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Conversión vs etapa anterior</th>
                         </tr>
                     </thead>
                     <tbody>

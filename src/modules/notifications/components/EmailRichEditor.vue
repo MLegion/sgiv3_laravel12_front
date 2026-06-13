@@ -15,16 +15,16 @@
 
             <span class="w-px h-5 bg-slate-300 mx-1" />
 
-            <button type="button" :class="btnClass(editor?.isActive('bold'))" title="Negrita" @click="editor?.chain().focus().toggleBold().run()">
+            <button aria-label="Negrita" type="button" :class="btnClass(editor?.isActive('bold'))" title="Negrita" @click="editor?.chain().focus().toggleBold().run()">
                 <span class="font-bold text-base">B</span>
             </button>
-            <button type="button" :class="btnClass(editor?.isActive('italic'))" title="Cursiva" @click="editor?.chain().focus().toggleItalic().run()">
+            <button aria-label="Cursiva" type="button" :class="btnClass(editor?.isActive('italic'))" title="Cursiva" @click="editor?.chain().focus().toggleItalic().run()">
                 <span class="italic font-serif text-base">I</span>
             </button>
-            <button type="button" :class="btnClass(editor?.isActive('underline'))" title="Subrayado" @click="editor?.chain().focus().toggleUnderline().run()">
+            <button aria-label="Subrayado" type="button" :class="btnClass(editor?.isActive('underline'))" title="Subrayado" @click="editor?.chain().focus().toggleUnderline().run()">
                 <span class="underline text-base">U</span>
             </button>
-            <button type="button" :class="btnClass(editor?.isActive('strike'))" title="Tachado" @click="editor?.chain().focus().toggleStrike().run()">
+            <button aria-label="Tachado" type="button" :class="btnClass(editor?.isActive('strike'))" title="Tachado" @click="editor?.chain().focus().toggleStrike().run()">
                 <span class="line-through text-base">S</span>
             </button>
 
@@ -42,32 +42,32 @@
 
             <span class="w-px h-5 bg-slate-300 mx-1" />
 
-            <button type="button" :class="btnClass(editor?.isActive('bulletList'))" title="Lista con viñetas" @click="editor?.chain().focus().toggleBulletList().run()">•</button>
-            <button type="button" :class="btnClass(editor?.isActive('orderedList'))" title="Lista numerada" @click="editor?.chain().focus().toggleOrderedList().run()">1.</button>
+            <button aria-label="Lista con viñetas" type="button" :class="btnClass(editor?.isActive('bulletList'))" title="Lista con viñetas" @click="editor?.chain().focus().toggleBulletList().run()">•</button>
+            <button aria-label="Lista numerada" type="button" :class="btnClass(editor?.isActive('orderedList'))" title="Lista numerada" @click="editor?.chain().focus().toggleOrderedList().run()">1.</button>
 
             <span class="w-px h-5 bg-slate-300 mx-1" />
 
-            <button type="button" :class="btnClass(editor?.isActive({ textAlign: 'left' }))" title="Alinear izquierda" @click="editor?.chain().focus().setTextAlign('left').run()">
+            <button aria-label="Alinear izquierda" type="button" :class="btnClass(editor?.isActive({ textAlign: 'left' }))" title="Alinear izquierda" @click="editor?.chain().focus().setTextAlign('left').run()">
                 <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h12M3 18h18"/></svg>
             </button>
-            <button type="button" :class="btnClass(editor?.isActive({ textAlign: 'center' }))" title="Centrar" @click="editor?.chain().focus().setTextAlign('center').run()">
+            <button aria-label="Centrar" type="button" :class="btnClass(editor?.isActive({ textAlign: 'center' }))" title="Centrar" @click="editor?.chain().focus().setTextAlign('center').run()">
                 <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M6 12h12M3 18h18"/></svg>
             </button>
-            <button type="button" :class="btnClass(editor?.isActive({ textAlign: 'right' }))" title="Alinear derecha" @click="editor?.chain().focus().setTextAlign('right').run()">
+            <button aria-label="Alinear derecha" type="button" :class="btnClass(editor?.isActive({ textAlign: 'right' }))" title="Alinear derecha" @click="editor?.chain().focus().setTextAlign('right').run()">
                 <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M9 12h12M3 18h18"/></svg>
             </button>
 
             <span class="w-px h-5 bg-slate-300 mx-1" />
 
-            <button type="button" :class="btnClass(editor?.isActive('link'))" title="Enlace" @click="promptLink">
+            <button aria-label="Enlace" type="button" :class="btnClass(editor?.isActive('link'))" title="Enlace" @click="promptLink">
                 <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 14a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1m-2 6a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg>
             </button>
-            <button v-if="editor?.isActive('link')" type="button" :class="btnClass(false) + ' text-red-600'" title="Quitar enlace" @click="editor?.chain().focus().unsetLink().run()">×</button>
+            <button aria-label="Quitar enlace" v-if="editor?.isActive('link')" type="button" :class="btnClass(false) + ' text-red-600'" title="Quitar enlace" @click="editor?.chain().focus().unsetLink().run()">×</button>
 
             <span class="w-px h-5 bg-slate-300 mx-1" />
 
-            <button type="button" :class="btnClass(false)" title="Deshacer" @click="editor?.chain().focus().undo().run()">↶</button>
-            <button type="button" :class="btnClass(false)" title="Rehacer" @click="editor?.chain().focus().redo().run()">↷</button>
+            <button aria-label="Deshacer" type="button" :class="btnClass(false)" title="Deshacer" @click="editor?.chain().focus().undo().run()">↶</button>
+            <button aria-label="Rehacer" type="button" :class="btnClass(false)" title="Rehacer" @click="editor?.chain().focus().redo().run()">↷</button>
 
             <span class="flex-1" />
 

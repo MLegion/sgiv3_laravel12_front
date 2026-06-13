@@ -18,8 +18,8 @@
                 <table class="w-full text-xs">
                     <thead class="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wide">
                         <tr>
-                            <th class="px-3 py-2 text-left sticky left-0 bg-slate-50">Evento</th>
-                            <th v-for="ch in data.channels" :key="ch.key" class="px-3 py-2 text-center min-w-[180px]">
+                            <th scope="col" class="px-3 py-2 text-left sticky left-0 bg-slate-50">Evento</th>
+                            <th scope="col" v-for="ch in data.channels" :key="ch.key" class="px-3 py-2 text-center min-w-[180px]">
                                 {{ ch.label }}
                                 <span v-if="!ch.configured" class="block text-[9px] text-red-600 normal-case font-semibold">falta configurar</span>
                             </th>

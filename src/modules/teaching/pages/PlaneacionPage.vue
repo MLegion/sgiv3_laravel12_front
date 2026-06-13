@@ -20,12 +20,12 @@
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
                     <tr>
-                        <th class="text-left px-4 py-2">Asignatura</th>
-                        <th class="text-left px-4 py-2">Grupo</th>
-                        <th class="text-left px-4 py-2">Campus</th>
-                        <th class="text-left px-4 py-2">Modalidad</th>
-                        <th class="text-left px-4 py-2">Periodo</th>
-                        <th class="text-right px-4 py-2"></th>
+                        <th scope="col" class="text-left px-4 py-2">Asignatura</th>
+                        <th scope="col" class="text-left px-4 py-2">Grupo</th>
+                        <th scope="col" class="text-left px-4 py-2">Campus</th>
+                        <th scope="col" class="text-left px-4 py-2">Modalidad</th>
+                        <th scope="col" class="text-left px-4 py-2">Periodo</th>
+                        <th scope="col" class="text-right px-4 py-2"></th>
                     </tr>
                 </thead>
                 <tbody>

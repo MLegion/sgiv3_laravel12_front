@@ -38,12 +38,12 @@
             <table v-else class="w-full text-sm">
                 <thead class="bg-slate-50 border-b">
                     <tr>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">TIPO DE DOCUMENTO</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">ARCHIVO</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">TAMAÑO</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">ESTADO</th>
-                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">FECHA</th>
-                        <th class="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">OPCIONES</th>
+                        <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">TIPO DE DOCUMENTO</th>
+                        <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">ARCHIVO</th>
+                        <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">TAMAÑO</th>
+                        <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">ESTADO</th>
+                        <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">FECHA</th>
+                        <th scope="col" class="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">OPCIONES</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">
@@ -71,7 +71,7 @@
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-center gap-2">
                                 <!-- Ver -->
-                                <button
+                                <button aria-label="Ver"
                                     type="button"
                                     class="border p-1.5 rounded-md text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition"
                                     title="Ver"
@@ -83,7 +83,7 @@
                                     </svg>
                                 </button>
                                 <!-- Revisar -->
-                                <button
+                                <button aria-label="Revisar"
                                     type="button"
                                     class="border p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition"
                                     title="Revisar"
@@ -94,7 +94,7 @@
                                     </svg>
                                 </button>
                                 <!-- Eliminar -->
-                                <button
+                                <button aria-label="Eliminar"
                                     type="button"
                                     class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition"
                                     title="Eliminar"

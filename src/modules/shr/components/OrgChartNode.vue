@@ -4,7 +4,7 @@
             class="org-card"
             :class="node.status ? 'org-card--active' : 'org-card--inactive'"
         >
-            <button
+            <button aria-label="Editar jerarquía"
                 type="button"
                 class="org-card-edit"
                 title="Editar jerarquía"

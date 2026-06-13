@@ -36,14 +36,14 @@
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
                     <tr>
-                        <th class="text-left px-3 py-2">#</th>
-                        <th class="text-left px-3 py-2">Núm. control</th>
-                        <th class="text-left px-3 py-2">A. paterno</th>
-                        <th class="text-left px-3 py-2">A. materno</th>
-                        <th class="text-left px-3 py-2">Nombre(s)</th>
-                        <th class="text-left px-3 py-2">Teléfono</th>
-                        <th class="text-left px-3 py-2">Email</th>
-                        <th class="text-center px-3 py-2">Curso</th>
+                        <th scope="col" class="text-left px-3 py-2">#</th>
+                        <th scope="col" class="text-left px-3 py-2">Núm. control</th>
+                        <th scope="col" class="text-left px-3 py-2">A. paterno</th>
+                        <th scope="col" class="text-left px-3 py-2">A. materno</th>
+                        <th scope="col" class="text-left px-3 py-2">Nombre(s)</th>
+                        <th scope="col" class="text-left px-3 py-2">Teléfono</th>
+                        <th scope="col" class="text-left px-3 py-2">Email</th>
+                        <th scope="col" class="text-center px-3 py-2">Curso</th>
                     </tr>
                 </thead>
                 <tbody>

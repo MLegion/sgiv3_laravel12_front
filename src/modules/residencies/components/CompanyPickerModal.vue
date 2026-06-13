@@ -22,10 +22,10 @@
                     <table class="w-full text-sm">
                         <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500 sticky top-0">
                             <tr>
-                                <th class="px-4 py-2 text-left">Nombre</th>
-                                <th class="px-4 py-2 text-left">Lugar</th>
-                                <th class="px-4 py-2 text-left">RFC</th>
-                                <th class="px-4 py-2"></th>
+                                <th scope="col" class="px-4 py-2 text-left">Nombre</th>
+                                <th scope="col" class="px-4 py-2 text-left">Lugar</th>
+                                <th scope="col" class="px-4 py-2 text-left">RFC</th>
+                                <th scope="col" class="px-4 py-2"></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">

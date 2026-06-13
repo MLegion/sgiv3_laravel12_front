@@ -143,13 +143,13 @@ onMounted(loadCaps)
             <table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                     <tr>
-                        <th class="text-left  px-3 py-2">MATERIA</th>
-                        <th class="text-left  px-3 py-2 w-28">GRUPO</th>
-                        <th class="text-left  px-3 py-2">DOCENTE</th>
-                        <th class="text-left  px-3 py-2 w-32">MODALIDAD</th>
-                        <th class="text-right px-3 py-2 w-36">AVANCE</th>
-                        <th class="text-center px-3 py-2 w-32">VISIBLE<br/>ALUMNOS</th>
-                        <th class="text-center px-3 py-2 w-32">EN REPORTE<br/>CONJUNTO</th>
+                        <th scope="col" class="text-left  px-3 py-2">MATERIA</th>
+                        <th scope="col" class="text-left  px-3 py-2 w-28">GRUPO</th>
+                        <th scope="col" class="text-left  px-3 py-2">DOCENTE</th>
+                        <th scope="col" class="text-left  px-3 py-2 w-32">MODALIDAD</th>
+                        <th scope="col" class="text-right px-3 py-2 w-36">AVANCE</th>
+                        <th scope="col" class="text-center px-3 py-2 w-32">VISIBLE<br/>ALUMNOS</th>
+                        <th scope="col" class="text-center px-3 py-2 w-32">EN REPORTE<br/>CONJUNTO</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">

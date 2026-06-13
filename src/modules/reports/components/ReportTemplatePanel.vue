@@ -75,7 +75,7 @@
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <p class="text-[11px] font-bold uppercase text-slate-600">Vista previa</p>
-                        <button
+                        <button aria-label="Recargar vista previa"
                             class="px-3 py-1 text-xs font-semibold rounded border hover:bg-slate-50 text-slate-700"
                             @click="loadPreview"
                             :disabled="busy"

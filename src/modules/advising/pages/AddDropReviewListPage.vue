@@ -46,7 +46,7 @@
             </template>
 
             <template #cell-opciones="{ row }">
-                <button type="button"
+                <button aria-label="Revisar" type="button"
                     class="border w-8 h-8 inline-flex items-center justify-center rounded-md hover:bg-blue-50 text-blue-600 hover:border-blue-300 transition"
                     title="Revisar"
                     @click="router.push({ name: 'advising.add-drop.review.detail', params: { id: row.id } })">

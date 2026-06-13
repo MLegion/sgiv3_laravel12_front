@@ -48,11 +48,11 @@
             <table v-else class="w-full text-sm">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-600">
                     <tr>
-                        <th class="px-4 py-2 text-left">Empleado</th>
-                        <th class="px-4 py-2 text-left">Email</th>
-                        <th class="px-4 py-2 text-center">Estado</th>
-                        <th class="px-4 py-2 text-center">Rol Admin</th>
-                        <th class="px-4 py-2 text-center">Acción</th>
+                        <th scope="col" class="px-4 py-2 text-left">Empleado</th>
+                        <th scope="col" class="px-4 py-2 text-left">Email</th>
+                        <th scope="col" class="px-4 py-2 text-center">Estado</th>
+                        <th scope="col" class="px-4 py-2 text-center">Rol Admin</th>
+                        <th scope="col" class="px-4 py-2 text-center">Acción</th>
                     </tr>
                 </thead>
                 <tbody>

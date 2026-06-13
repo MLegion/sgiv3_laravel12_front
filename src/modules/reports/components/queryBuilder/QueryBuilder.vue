@@ -564,7 +564,7 @@
                             <table class="w-full text-xs border-collapse">
                                 <thead class="sticky top-0">
                                     <tr class="bg-slate-100 border-b-2 border-slate-300">
-                                        <th
+                                        <th scope="col"
                                             v-for="col in previewResult.columns"
                                             :key="'th-' + col"
                                             class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider border-r border-slate-200 whitespace-nowrap"

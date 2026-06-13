@@ -34,11 +34,11 @@
                     <table class="w-full text-left border-collapse min-w-[400px]">
                         <thead class="bg-slate-50/50 text-[10px] text-slate-400 uppercase font-black border-b">
                         <tr>
-                            <th class="p-3">Materia</th>
-                            <th class="p-3 text-center">HT</th>
-                            <th class="p-3 text-center">HP</th>
-                            <th class="p-3 text-center">Créditos</th>
-                            <th class="p-3 text-right">Acción</th>
+                            <th scope="col" class="p-3">Materia</th>
+                            <th scope="col" class="p-3 text-center">HT</th>
+                            <th scope="col" class="p-3 text-center">HP</th>
+                            <th scope="col" class="p-3 text-center">Créditos</th>
+                            <th scope="col" class="p-3 text-right">Acción</th>
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">

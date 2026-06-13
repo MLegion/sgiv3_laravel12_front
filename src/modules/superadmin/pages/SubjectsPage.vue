@@ -64,7 +64,7 @@
             <template #cell-opciones="{ row }">
                 <div class="flex justify-center gap-2">
 
-                    <button
+                    <button aria-label="Aprobar materia"
                         class="border p-1.5 rounded-md cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                         :disabled="!canApprove(row)"
                         title="Aprobar materia"
@@ -73,7 +73,7 @@
                         ✔
                     </button>
 
-                    <button
+                    <button aria-label="Ver detalles"
                         class="border p-1.5 rounded-md hover:bg-blue-50 cursor-pointer"
                         title="Ver detalles"
                         @click="show(row)"
@@ -81,7 +81,7 @@
                         👁
                     </button>
 
-                    <button
+                    <button aria-label="Editar"
                         class="border p-1.5 rounded-md hover:bg-amber-50 cursor-pointer"
                         title="Editar"
                         @click="edit(row)"
@@ -89,7 +89,7 @@
                         ✏️
                     </button>
 
-                    <button
+                    <button aria-label="Programa de estudio"
                         class="border p-1.5 rounded-md cursor-pointer"
                         :class="(row.programIsLocal || row.programUrl) ? 'hover:bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-400'"
                         title="Programa de estudio"
@@ -98,7 +98,7 @@
                         📄
                     </button>
 
-                    <button
+                    <button aria-label="Eliminar"
                         class="border p-1.5 rounded-md hover:bg-red-50 cursor-pointer"
                         title="Eliminar"
                         @click="remove(row)"

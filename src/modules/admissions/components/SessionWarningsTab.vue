@@ -9,7 +9,7 @@
                     Estas son las clases escolarizadas que coinciden con la sesión y que el jefe de carrera deberá reubicar.
                 </p>
             </div>
-            <button
+            <button aria-label="Vuelve a calcular las clases afectadas usando los datos actuales de la sesión"
                 type="button"
                 class="text-[11px] font-semibold uppercase tracking-wide px-3 py-1.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-100 disabled:opacity-50"
                 :disabled="loading || regenerating"

@@ -38,7 +38,7 @@
             <!-- Opciones -->
             <template #cell-opciones="{ row }">
                 <div class="flex justify-center gap-2">
-                    <button
+                    <button aria-label="Validar"
                         class="border p-1.5 rounded-md  cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Validar"
                         :disabled="!canApprove(row)"
@@ -49,7 +49,7 @@
                         </svg>
                     </button>
 
-                    <button
+                    <button aria-label="Editor de curricula"
                         class="border p-1.5 rounded-md cursor-pointer"
                         title="Editor de curricula"
                         @click="openEditorCurriculum(row)"
@@ -59,7 +59,7 @@
                         </svg>
                     </button>
 
-                    <button
+                    <button aria-label="Ver"
                         class="border p-1.5 rounded-md cursor-pointer"
                         title="Ver"
                         @click="show(row)"
@@ -86,7 +86,7 @@
                         </svg>
                     </button>
 
-                    <button
+                    <button aria-label="Editar"
                         class="border p-1.5 rounded-md cursor-pointer"
                         title="Editar"
                         @click="edit(row)"
@@ -109,7 +109,7 @@
                     </button>
 
 
-                    <button
+                    <button aria-label="Eliminar"
                         class="border p-1.5 rounded-md hover:bg-red-50 cursor-pointer"
                         title="Eliminar"
                         @click="remove(row)"
