@@ -1,5 +1,6 @@
 <template>
     <div class="max-w-2xl space-y-4">
+        <PortalStepper />
         <PortalEditHeader
             title="INFORMACIÓN GENERAL"
             :editing="editing"
@@ -152,6 +153,7 @@
 </template>
 
 <script setup lang="ts">
+import PortalStepper from '@/modules/admissions/components/PortalStepper.vue'
 import { ref, reactive, watch, onMounted, onUnmounted } from 'vue'
 import { QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'

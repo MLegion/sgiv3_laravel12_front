@@ -1,5 +1,6 @@
 <template>
     <div class="max-w-2xl space-y-4">
+        <PortalStepper />
         <PortalEditHeader
             title="DATOS PREVENTIVOS"
             :editing="editing" :submitting="submitting" :has-draft="hasDraft" :save-error="saveError"
@@ -73,6 +74,7 @@
 </template>
 
 <script setup lang="ts">
+import PortalStepper from '@/modules/admissions/components/PortalStepper.vue'
 import { ref, reactive, watch, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'

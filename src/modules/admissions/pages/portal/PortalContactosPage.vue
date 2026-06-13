@@ -1,5 +1,6 @@
 <template>
     <div class="max-w-2xl space-y-4">
+        <PortalStepper />
         <h1 class="text-xl font-semibold text-slate-800">CONTACTOS</h1>
         <PortalRequiredNotice />
 
@@ -143,6 +144,7 @@
 </template>
 
 <script setup lang="ts">
+import PortalStepper from '@/modules/admissions/components/PortalStepper.vue'
 import { ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'

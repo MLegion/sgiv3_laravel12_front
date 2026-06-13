@@ -1,5 +1,6 @@
 <template>
     <div class="max-w-4xl space-y-4">
+        <PortalStepper />
         <h1 class="text-xl font-semibold text-slate-800">FICHA</h1>
 
         <PortalHelpDrawer title="Cómo obtener tu Preficha">
@@ -30,5 +31,6 @@
 </template>
 
 <script setup lang="ts">
+import PortalStepper from '@/modules/admissions/components/PortalStepper.vue'
 import PortalHelpDrawer from './PortalHelpDrawer.vue'
 </script>

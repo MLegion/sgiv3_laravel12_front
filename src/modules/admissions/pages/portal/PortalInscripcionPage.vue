@@ -1,5 +1,6 @@
 <template>
     <div class="max-w-2xl space-y-4">
+        <PortalStepper />
         <h2 class="text-lg font-bold text-slate-700 uppercase tracking-widest">PREFICHA</h2>
 
         <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
@@ -183,6 +184,7 @@
 </template>
 
 <script setup lang="ts">
+import PortalStepper from '@/modules/admissions/components/PortalStepper.vue'
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { apiUrl } from '@/shared/api/config'

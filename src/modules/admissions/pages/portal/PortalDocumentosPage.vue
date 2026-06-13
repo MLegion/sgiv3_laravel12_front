@@ -1,6 +1,7 @@
 <template>
     <div>
         <div class="max-w-4xl space-y-6">
+        <PortalStepper />
             <h1 class="text-xl font-semibold text-slate-800">CARGA DE DOCUMENTOS</h1>
 
         <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
@@ -282,6 +283,7 @@
 </template>
 
 <script setup lang="ts">
+import PortalStepper from '@/modules/admissions/components/PortalStepper.vue'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
