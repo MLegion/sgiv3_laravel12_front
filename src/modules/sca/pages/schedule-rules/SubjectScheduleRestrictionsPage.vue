@@ -114,7 +114,7 @@
 
                 <!-- Lista -->
                 <div v-if="loading" class="p-4 text-sm text-slate-400 text-center">Cargando…</div>
-                <div class="overflow-x-auto w-full"><table v-else-if="restrictions.length" class="w-full text-xs">
+                <div v-else-if="restrictions.length" class="overflow-x-auto w-full"><table class="w-full text-xs">
                     <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
                         <tr>
                             <th scope="col" class="px-3 py-2 text-left">Modalidad</th>

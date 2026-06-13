@@ -102,7 +102,7 @@
                 <div v-if="data.actas.length === 0" class="px-3 py-4 text-sm text-slate-500 italic">
                     No hay asignaciones docentes con inscripciones para este periodo.
                 </div>
-                <div class="overflow-x-auto w-full"><table v-else class="w-full text-xs">
+                <div v-else class="overflow-x-auto w-full"><table class="w-full text-xs">
                     <thead class="bg-slate-100 text-slate-600">
                         <tr>
                             <th scope="col" class="text-left px-3 py-2">Grupo</th>

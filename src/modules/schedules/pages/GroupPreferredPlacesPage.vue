@@ -96,7 +96,7 @@
                 No hay grupos que coincidan.
             </div>
 
-            <div class="overflow-x-auto w-full"><table v-else class="min-w-full text-sm">
+            <div v-else class="overflow-x-auto w-full"><table class="min-w-full text-sm">
                 <thead class="bg-slate-50 border-b text-[10px] uppercase text-slate-500 font-semibold tracking-wide">
                     <tr>
                         <th scope="col" class="px-3 py-2 text-left w-32">Grupo</th>

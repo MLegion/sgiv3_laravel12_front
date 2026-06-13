@@ -35,7 +35,7 @@
                 Sin documentos registrados para este aspirante.
             </div>
 
-            <div class="overflow-x-auto w-full"><table v-else class="w-full text-sm">
+            <div v-else class="overflow-x-auto w-full"><table class="w-full text-sm">
                 <thead class="bg-slate-50 border-b">
                     <tr>
                         <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">TIPO DE DOCUMENTO</th>

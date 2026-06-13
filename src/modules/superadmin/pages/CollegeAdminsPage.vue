@@ -45,7 +45,7 @@
                 Sin resultados.
             </div>
 
-            <div class="overflow-x-auto w-full"><table v-else class="w-full text-sm">
+            <div v-else class="overflow-x-auto w-full"><table class="w-full text-sm">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-600">
                     <tr>
                         <th scope="col" class="px-4 py-2 text-left">Empleado</th>

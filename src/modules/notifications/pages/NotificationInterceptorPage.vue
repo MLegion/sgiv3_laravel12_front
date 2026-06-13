@@ -42,7 +42,7 @@
                 No hay mensajes capturados.
             </div>
 
-            <div class="overflow-x-auto w-full"><table v-else class="w-full text-sm">
+            <div v-else class="overflow-x-auto w-full"><table class="w-full text-sm">
                 <thead class="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wide">
                     <tr>
                         <th scope="col" class="px-3 py-2 text-left">Fecha</th>

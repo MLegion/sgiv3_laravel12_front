@@ -63,7 +63,7 @@
             </h2>
 
             <div v-if="loadingSessions" class="text-xs text-slate-400 italic">Cargando...</div>
-            <div class="overflow-x-auto w-full"><table v-else-if="sessions.length > 0" class="w-full text-xs border border-slate-200 rounded-md overflow-hidden">
+            <div v-else-if="sessions.length > 0" class="overflow-x-auto w-full"><table class="w-full text-xs border border-slate-200 rounded-md overflow-hidden">
                 <thead class="bg-slate-50">
                     <tr class="text-slate-600">
                         <th scope="col" class="px-2 py-1 text-left">#</th>
