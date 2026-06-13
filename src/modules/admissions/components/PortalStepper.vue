@@ -36,37 +36,36 @@
             </div>
         </div>
 
-        <!-- Línea de progreso: círculos numerados con conectores que llenan el
-             ancho (flex-1) — nunca se desborda ni se corta. Sin labels por paso
-             (el del paso actual va en el encabezado). -->
+        <!-- Línea de progreso: círculos (fijos) y conectores (flex-1) como
+             HERMANOS al mismo nivel → todos los tramos quedan exactamente
+             iguales y nada crece entre pasos. Sin labels por paso (el del paso
+             actual va en el encabezado). -->
         <ol class="flex items-center">
-            <li
-                v-for="(s, i) in steps"
-                :key="s.name"
-                class="flex items-center"
-                :class="i < steps.length - 1 ? 'flex-1' : 'shrink-0'"
-            >
-                <button
-                    type="button"
-                    :aria-label="`Ir al paso ${i + 1}: ${s.label}`"
-                    :aria-current="i === currentIndex ? 'step' : undefined"
-                    :title="s.label"
-                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold transition focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-400"
-                    :class="circleClass(i)"
-                    @click="go(i)"
-                >
-                    <svg v-if="i < currentIndex" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="h-3.5 w-3.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                    <template v-else>{{ i + 1 }}</template>
-                </button>
-                <!-- conector que estira (mismo grosor/estilo entre todos) -->
-                <span
+            <template v-for="(s, i) in steps" :key="s.name">
+                <li class="shrink-0">
+                    <button
+                        type="button"
+                        :aria-label="`Ir al paso ${i + 1}: ${s.label}`"
+                        :aria-current="i === currentIndex ? 'step' : undefined"
+                        :title="s.label"
+                        class="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold transition focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-400"
+                        :class="circleClass(i)"
+                        @click="go(i)"
+                    >
+                        <svg v-if="i < currentIndex" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="h-3.5 w-3.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                        <template v-else>{{ i + 1 }}</template>
+                    </button>
+                </li>
+                <!-- conector (un hermano flex-1 por cada par de círculos) -->
+                <li
                     v-if="i < steps.length - 1"
-                    class="mx-0.5 h-0.5 flex-1 rounded-full"
+                    aria-hidden="true"
+                    class="mx-1 h-0.5 flex-1 rounded-full"
                     :class="i < currentIndex ? 'bg-emerald-400' : 'bg-slate-200'"
                 />
-            </li>
+            </template>
         </ol>
     </nav>
 </template>
