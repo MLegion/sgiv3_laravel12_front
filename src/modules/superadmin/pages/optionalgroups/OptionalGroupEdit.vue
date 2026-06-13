@@ -73,7 +73,7 @@
                             <FormInput label="Siglas" v-model="form.shortName" uppercase required />
                         </div>
 
-                        <div class="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
                             <FormInput label="Min Mat" type="number" v-model.number="form.minSubjects" required />
                             <FormInput label="Max Mat" type="number" v-model.number="form.maxSubjects" required />
                             <FormInput label="Créditos" type="number" v-model.number="form.minCredits" required />

@@ -10,9 +10,9 @@
 
         <!-- Filtros -->
         <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-wrap items-end gap-3">
-            <div class="w-48"><FormSelect label="CAMPUS" v-model="campusFilter" :options="campusOptions" /></div>
-            <div class="w-48"><FormSelect label="MODALIDAD" v-model="modalityFilter" :options="modalityOptions" /></div>
-            <div class="w-72"><FormSelect label="GRUPO / MATERIA" v-model="selectedAssignment" :options="assignmentOptions" /></div>
+            <div class="w-full sm:w-48"><FormSelect label="CAMPUS" v-model="campusFilter" :options="campusOptions" /></div>
+            <div class="w-full sm:w-48"><FormSelect label="MODALIDAD" v-model="modalityFilter" :options="modalityOptions" /></div>
+            <div class="w-full sm:w-72"><FormSelect label="GRUPO / MATERIA" v-model="selectedAssignment" :options="assignmentOptions" /></div>
             <button
                 type="button"
                 class="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-50"

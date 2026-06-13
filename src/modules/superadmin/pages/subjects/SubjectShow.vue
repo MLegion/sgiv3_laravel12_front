@@ -70,7 +70,7 @@
                             <span class="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
                             Carga Académica
                         </h3>
-                        <div class="grid grid-cols-3 gap-6">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
                             <InfoItem label="HT" :value="subject?.ht" :loading="loading" />
                             <InfoItem label="HP" :value="subject?.hp" :loading="loading" />
                             <InfoItem label="CRÉDITOS" :value="subject?.credits" :loading="loading" class="font-bold text-slate-900" />

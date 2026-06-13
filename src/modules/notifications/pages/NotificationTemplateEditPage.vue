@@ -80,7 +80,7 @@
                 <div v-if="data.default.availableVariables" class="bg-slate-50 border border-slate-200 rounded-md p-3">
                     <p class="text-[11px] font-bold uppercase text-slate-600 mb-2">Valores de prueba para la vista previa</p>
                     <div class="space-y-2">
-                        <div v-for="(desc, key) in data.default.availableVariables" :key="key" class="grid grid-cols-3 gap-2 items-start">
+                        <div v-for="(desc, key) in data.default.availableVariables" :key="key" class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-start">
                             <code class="text-[11px] text-slate-700 font-mono">{{ varToken(key) }}</code>
                             <input
                                 :value="getVar(key)"

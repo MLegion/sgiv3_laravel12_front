@@ -80,7 +80,7 @@
                 <p class="text-[11px] font-bold uppercase text-slate-600 mb-1">Variables disponibles</p>
                 <div v-if="!hasVariables" class="text-xs text-slate-400 italic">Esta plantilla no declara variables.</div>
                 <div v-else class="space-y-2">
-                    <div v-for="(desc, key) in currentTemplate.availableVariables" :key="key" class="grid grid-cols-3 gap-2 items-start">
+                    <div v-for="(desc, key) in currentTemplate.availableVariables" :key="key" class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-start">
                         <code class="text-[11px] text-slate-600 font-mono">{{ key }}</code>
                         <input
                             :value="getVar(key)"

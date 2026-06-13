@@ -30,7 +30,7 @@
 
         <div v-if="loading" class="text-sm text-slate-500">Cargando…</div>
 
-        <div v-else class="flex gap-4">
+        <div v-else class="flex flex-col lg:flex-row gap-4">
             <div class="flex-1 min-w-0">
                 <Tabs v-model="activeTab" :tabs="tabs">
                     <!-- DATOS GENERALES -->
@@ -41,7 +41,7 @@
                                 <FormInput label="ASIGNATURA (ID)" type="number" v-model="form.subject_id" required :error="errors.subject_id" />
                             </div>
                             <FormInput label="NOMBRE" v-model="form.name" required :error="errors.name" />
-                            <div class="grid grid-cols-3 gap-4">
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                 <FormInput label="SATCA T (horas teoría)" type="number" v-model="form.satca_t" />
                                 <FormInput label="SATCA P (horas práctica)" type="number" v-model="form.satca_p" />
                                 <FormInput label="SATCA C (créditos)" type="number" v-model="form.satca_c" />
@@ -204,7 +204,7 @@
             </div>
 
             <!-- Panel lateral de ayuda -->
-            <aside v-if="helpOpen" class="w-80 shrink-0">
+            <aside v-if="helpOpen" class="w-full lg:w-80 shrink-0">
                 <div class="sticky top-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm">
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="font-semibold text-amber-800">¿De dónde lo saco?</h3>

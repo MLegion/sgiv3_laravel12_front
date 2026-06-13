@@ -7,10 +7,10 @@
 
         <!-- Filtros -->
         <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-wrap items-end gap-3">
-            <div class="w-56">
+            <div class="w-full sm:w-56">
                 <FormSelect label="CAMPUS" v-model="campusFilter" :options="campusOptions" />
             </div>
-            <div class="w-56">
+            <div class="w-full sm:w-56">
                 <FormSelect label="MODALIDAD" v-model="modalityFilter" :options="modalityOptions" />
             </div>
             <div v-if="loading" class="text-sm text-slate-400 pb-2">Cargando…</div>

@@ -376,7 +376,7 @@
 
                         <div class="border-t pt-4 space-y-3">
                             <p class="text-xs font-semibold text-slate-500 uppercase">Oportunidades</p>
-                            <div v-for="n in 3" :key="n" class="grid grid-cols-3 gap-3 items-end">
+                            <div v-for="n in 3" :key="n" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                                 <FormInput :label="`NO. PERIODO ${n}`" v-model="gradeForm[`number_period_${n}`]" type="number" />
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">PERIODO {{ n }}</label>

@@ -67,7 +67,7 @@
                 <FormInput label="NOMBRE CORTO" v-model="form.shortName" required uppercase />
 
                 <!-- Datos Numéricos -->
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <FormInput label="HT" type="number" v-model.number="form.ht" required />
                     <FormInput label="HP" type="number" v-model.number="form.hp" required />
                     <FormInput label="CRÉDITOS" type="number" v-model.number="form.credits" required />
