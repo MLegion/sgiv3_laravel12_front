@@ -107,10 +107,12 @@
                     <!-- Button -->
                     <button
                         type="submit"
+                        :disabled="submitting"
                         class="w-full mt-4 h-12 bg-indigo-600 hover:bg-indigo-700
-                   text-white font-semibold rounded-lg transition shadow-md"
+                   text-white font-semibold rounded-lg transition shadow-md
+                   disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                        INGRESAR
+                        {{ submitting ? 'INGRESANDO…' : 'INGRESAR' }}
                     </button>
 
                 </form>
@@ -133,6 +135,7 @@ const collegeId = ref<number | null>(null)
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
+const submitting = ref(false)
 
 const rememberMe = ref(false)
 
@@ -168,6 +171,8 @@ async function submit() {
         return
     }
 
+    if (submitting.value) return
+    submitting.value = true
     try {
         await authStore.login({
             email: email.value,
@@ -176,8 +181,9 @@ async function submit() {
             rememberMe: rememberMe.value,
         })
     } catch (error) {
-        console.log(error)
         errors.value.general = 'Usuario o contraseña incorrectos'
+    } finally {
+        submitting.value = false
     }
 }
 

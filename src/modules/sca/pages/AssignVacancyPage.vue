@@ -112,6 +112,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
 
 /* ── Period (compartido SCA) ───────────────────────────────────── */
@@ -259,7 +260,7 @@ async function reassign(assignmentId: number, force = false) {
     try {
         const { data } = await api.put(API.SCA_API.teacherAssignments.reassign(assignmentId), { teacher_id: teacherId, force })
         const removed = data?.removedSchedules ?? 0
-        if (removed > 0) alert(`Docente asignado. Se eliminaron ${removed} horario(s) en conflicto para reasignación.`)
+        if (removed > 0) useToast().success(`Docente asignado. Se eliminaron ${removed} horario(s) en conflicto para reasignación.`)
         delete selectedTeachers[assignmentId]
         await fetchVacancies()
     } catch (e: any) {

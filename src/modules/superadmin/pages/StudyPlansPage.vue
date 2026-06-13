@@ -185,6 +185,7 @@ import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFet
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { API } from '@/shared/api'
 import { api } from '@/shared/services/api'
+import { useToast } from '@/app/composables/useToast'
 import ApprovalStatusBadge from '@/app/components/ui/ApprovalStatusBadge.vue'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 import { ApprovalStatusEnum } from '@/shared/enums/approval-status.enum.ts'
@@ -281,7 +282,7 @@ async function doToggleActive() {
         await api.post(API.SUPERADMIN_API.studyPlans.toggleActive(row.id))
         await fetchData()
     } catch (e: any) {
-        alert(e?.response?.data?.message ?? 'No se pudo cambiar el estado.')
+        useToast().error(e?.response?.data?.message ?? 'No se pudo cambiar el estado.')
     } finally {
         togglingId.value  = null
         toggleTarget.value = null

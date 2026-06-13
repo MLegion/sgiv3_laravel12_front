@@ -113,6 +113,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
+import { useToast } from '@/app/composables/useToast'
 import { useDashboardStore } from '@/modules/dashboard/stores/dashboard.store'
 import {
     XMarkIcon,
@@ -149,10 +150,20 @@ function close(): void {
 }
 
 async function onAdd(id: string): Promise<void> {
-    await store.add(id)
+    try {
+        await store.add(id)
+        useToast().success('Widget agregado al tablero.')
+    } catch (e: any) {
+        useToast().error(e?.response?.data?.message ?? 'No se pudo agregar el widget.')
+    }
 }
 
 async function onRemove(id: string): Promise<void> {
-    await store.remove(id)
+    try {
+        await store.remove(id)
+        useToast().success('Widget quitado del tablero.')
+    } catch (e: any) {
+        useToast().error(e?.response?.data?.message ?? 'No se pudo quitar el widget.')
+    }
 }
 </script>

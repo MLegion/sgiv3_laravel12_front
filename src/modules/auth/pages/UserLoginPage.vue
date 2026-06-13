@@ -154,10 +154,11 @@
                     <!-- Button -->
                     <button
                         type="submit"
-                        class="w-full mt-4 h-12 text-white font-semibold rounded-lg transition shadow-md"
+                        :disabled="submitting"
+                        class="w-full mt-4 h-12 text-white font-semibold rounded-lg transition shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
                         :style="brandedButtonStyle"
                     >
-                        INGRESAR
+                        {{ submitting ? 'INGRESANDO…' : 'INGRESAR' }}
                     </button>
 
                     <!-- Google Workspace (solo si el college lo tiene configurado) -->
@@ -251,6 +252,7 @@ const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const googleLoading = ref(false)
+const submitting = ref(false)
 
 const rememberMe = ref(false)
 
@@ -370,6 +372,8 @@ async function submit() {
         return
     }
 
+    if (submitting.value) return
+    submitting.value = true
     try {
         await authStore.login({
             email: email.value,
@@ -378,7 +382,6 @@ async function submit() {
             rememberMe: rememberMe.value,
         })
     } catch (error: any) {
-        console.log(error)
         // El backend devuelve {code:'USER_DISABLED', ...} con HTTP 403
         // cuando el admin marcó la cuenta como deshabilitada.
         const data = error?.response?.data
@@ -387,6 +390,8 @@ async function submit() {
             return
         }
         errors.value.general = 'Usuario o contraseña incorrectos'
+    } finally {
+        submitting.value = false
     }
 }
 

@@ -118,6 +118,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 
 interface Employee {
     user_id: number
@@ -186,7 +187,7 @@ async function assign(row: Employee) {
         )
         await loadEmployees()
     } catch (e: any) {
-        alert(e?.response?.data?.message || 'Error al asignar admin.')
+        useToast().error(e?.response?.data?.message || 'Error al asignar admin.')
     } finally {
         busyId.value = null
     }
@@ -202,7 +203,7 @@ async function revoke(row: Employee) {
         )
         await loadEmployees()
     } catch (e: any) {
-        alert(e?.response?.data?.message || 'Error al revocar admin.')
+        useToast().error(e?.response?.data?.message || 'Error al revocar admin.')
     } finally {
         busyId.value = null
     }

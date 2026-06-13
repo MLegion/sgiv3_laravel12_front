@@ -179,6 +179,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 
 interface CareerSetting {
     careerId: number
@@ -248,7 +249,7 @@ async function saveModal() {
         }
         modal.open = false
     } catch (e: any) {
-        alert(e?.response?.data?.message ?? 'Error al guardar')
+        useToast().error(e?.response?.data?.message ?? 'Error al guardar')
     } finally {
         saving.value = false
     }

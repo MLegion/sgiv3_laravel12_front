@@ -199,6 +199,7 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 import InfoItem from '@/app/components/ui/InfoItem.vue'
 import Skeleton from '@/app/components/ui/Skeleton.vue'
 import ApplicantAvatar from '@/app/components/ui/ApplicantAvatar.vue'
@@ -275,7 +276,7 @@ async function resetPassword() {
         const { data } = await api.post(API.ADMISSIONS_API.applicants.resetPassword(route.params.id as string))
         resetCredentials.value = { email: data.email, password: data.password }
     } catch (e: any) {
-        alert(e?.response?.data?.message ?? 'Error al restablecer la contraseña.')
+        useToast().error(e?.response?.data?.message ?? 'Error al restablecer la contraseña.')
     } finally {
         resetting.value = false
     }

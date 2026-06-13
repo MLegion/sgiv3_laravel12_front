@@ -114,6 +114,7 @@ import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFet
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { API } from '@/shared/api'
 import { api } from '@/shared/services/api'
+import { useToast } from '@/app/composables/useToast'
 import type { AcademicLoadConfig } from '@/modules/sca/types/academicLoadConfig.type'
 import { STATUS_OPTIONS as PERIOD_STATUS_OPTIONS } from '@/modules/school-services/types/college-academic-period.type'
 
@@ -235,7 +236,7 @@ async function confirmDelete(row: AcademicLoadConfig) {
         await api.delete(API.SCA_API.academicLoadConfigs.delete(row.id))
         await fetchData()
     } catch (e: any) {
-        alert(e?.response?.data?.message ?? 'Error al eliminar.')
+        useToast().error(e?.response?.data?.message ?? 'Error al eliminar.')
     }
 }
 </script>

@@ -173,6 +173,7 @@ import { ref, reactive, computed, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import ReportGenerateButton from '@/modules/reports/components/ReportGenerateButton.vue'
 import ResidencyEvaluationCard from '@/modules/residencies/components/ResidencyEvaluationCard.vue'
@@ -266,8 +267,13 @@ async function resendInstructions() {
 }
 
 async function approveProject() {
-    await api.post(R.residency.approveProject(props.id), {})
-    await load()
+    try {
+        await api.post(R.residency.approveProject(props.id), {})
+        await load()
+        useToast().success('Proyecto aprobado.')
+    } catch (e: any) {
+        useToast().error(e?.response?.data?.message ?? 'No se pudo aprobar el proyecto.')
+    }
 }
 async function assignAdvisor() {
     if (!advisorUserId.value) return
@@ -284,12 +290,22 @@ async function assignAdvisor() {
     } finally { assigning.value = false }
 }
 async function removeAdvisor(advisorRowId: number) {
-    await api.delete(R.residency.removeAdvisor(props.id, advisorRowId))
-    await load()
+    try {
+        await api.delete(R.residency.removeAdvisor(props.id, advisorRowId))
+        await load()
+        useToast().success('Asesor removido.')
+    } catch (e: any) {
+        useToast().error(e?.response?.data?.message ?? 'No se pudo remover al asesor.')
+    }
 }
 async function approveDoc(id: number) {
-    await api.post(R.documents.approve(id), {})
-    await load()
+    try {
+        await api.post(R.documents.approve(id), {})
+        await load()
+        useToast().success('Documento aprobado.')
+    } catch (e: any) {
+        useToast().error(e?.response?.data?.message ?? 'No se pudo aprobar el documento.')
+    }
 }
 
 function openReason(mode: 'project' | 'doc', docId: number | null = null) {

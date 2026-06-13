@@ -59,19 +59,23 @@
             <section class="bg-white border rounded-xl shadow-sm overflow-hidden">
                 <div class="p-6">
                     <SchemaForm
+                        ref="formRef"
                         :schema="data.schema"
                         :values="data.values"
                         @change="onFormChange"
                     />
                 </div>
                 <div class="px-6 py-4 bg-slate-50 border-t flex items-center justify-end gap-2">
-                    <span v-if="savedFlash" class="text-[10px] text-emerald-600 font-bold uppercase">
+                    <span v-if="hasJsonErrors" class="text-[10px] text-red-600 font-bold uppercase">
+                        Corrige el JSON inválido para poder guardar
+                    </span>
+                    <span v-else-if="savedFlash" class="text-[10px] text-emerald-600 font-bold uppercase">
                         ✓ Guardado
                     </span>
                     <button
                         type="button"
-                        :disabled="saving"
-                        class="px-5 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 uppercase"
+                        :disabled="saving || hasJsonErrors"
+                        class="px-5 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed uppercase"
                         @click="save"
                     >
                         {{ saving ? 'Guardando…' : 'Guardar configuración' }}
@@ -105,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -120,6 +124,8 @@ const saving  = ref(false)
 const savedFlash = ref(false)
 const data = ref<AppConfigResponse | null>(null)
 const payload = ref<Record<string, unknown>>({})
+const formRef = ref<InstanceType<typeof SchemaForm> | null>(null)
+const hasJsonErrors = computed(() => formRef.value?.hasJsonErrors ?? false)
 const globalMsg = reactive<{ ok: boolean; message: string }>({ ok: true, message: '' })
 const helpOpen = ref(false)
 
@@ -146,6 +152,10 @@ function onFormChange(values: Record<string, unknown>) {
 }
 
 async function save() {
+    if (hasJsonErrors.value) {
+        flash(false, 'Corrige el JSON inválido antes de guardar.')
+        return
+    }
     saving.value = true
     try {
         const { data: resp } = await api.put(

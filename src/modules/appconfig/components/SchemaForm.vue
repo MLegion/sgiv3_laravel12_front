@@ -91,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import type { ConfigSchemaDef, ConfigKeyDef, ConfigValueResponse } from '@/modules/appconfig/types/appconfig.type'
 import { isSecretPlaceholder } from '@/modules/appconfig/types/appconfig.type'
 
@@ -107,6 +107,11 @@ const emit = defineEmits<{
 const model = reactive<Record<string, unknown>>({})
 const secretInput = reactive<Record<string, string>>({})
 const jsonErrors = reactive<Record<string, boolean>>({})
+
+/** Indica si algún campo JSON tiene contenido inválido (para que el padre
+ *  bloquee el guardado en vez de descartar el valor en silencio). */
+const hasJsonErrors = computed(() => Object.values(jsonErrors).some(Boolean))
+defineExpose({ hasJsonErrors })
 
 function isVisible(_keyName: string, keyDef: ConfigKeyDef): boolean {
     if (!keyDef.requires) return true

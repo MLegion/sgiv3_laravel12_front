@@ -55,6 +55,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useToast } from '@/app/composables/useToast'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { useDashboardStore } from '@/modules/dashboard/stores/dashboard.store'
 import WidgetCard from '@/modules/dashboard/components/WidgetCard.vue'
@@ -69,6 +70,11 @@ const catalogOpen = ref(false)
 onMounted(() => { store.loadActive() })
 
 async function onRemove(id: string): Promise<void> {
-    await store.remove(id)
+    try {
+        await store.remove(id)
+        useToast().success('Widget quitado del tablero.')
+    } catch (e: any) {
+        useToast().error(e?.response?.data?.message ?? 'No se pudo quitar el widget.')
+    }
 }
 </script>
