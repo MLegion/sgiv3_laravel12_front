@@ -1,6 +1,9 @@
 <template>
     <div class="h-screen flex flex-col bg-slate-50 overflow-hidden text-slate-900">
 
+        <!-- Host global de notificaciones efímeras (toasts) -->
+        <ToastHost />
+
         <!-- Banner de Impersonación (solo visible en modo simulación) -->
         <ImpersonationBanner />
 
@@ -76,6 +79,7 @@ import AppNavbar from '@/app/components/AppNavbar.vue';
 import AppSidebar from '@/app/components/AppSidebar.vue';
 import Breadcrumbs from '@/app/components/Breadcrumbs.vue';
 import ImpersonationBanner from '@/app/components/ImpersonationBanner.vue';
+import ToastHost from '@/app/components/ui/ToastHost.vue';
 import { useLayoutStore } from '@/app/stores/layout.store';
 import { useBrandingStore } from '@/modules/auth/stores/branding.store';
 

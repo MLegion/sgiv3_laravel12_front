@@ -12,8 +12,14 @@
 
             <!-- Modal -->
             <div
+                ref="modalEl"
+                role="dialog"
+                aria-modal="true"
+                :aria-labelledby="titleId"
+                tabindex="-1"
                 class="relative bg-white rounded-xl shadow-lg
-                       w-full max-w-md p-6 space-y-4 z-10"
+                       w-full max-w-md p-6 space-y-4 z-10 focus:outline-none"
+                @keydown.esc.stop="cancel"
             >
                 <!-- Icon -->
                 <div class="flex items-center gap-3">
@@ -72,7 +78,7 @@
                         </svg>
                     </div>
 
-                    <h3 class="text-sm font-semibold text-slate-800">
+                    <h3 :id="titleId" class="text-sm font-semibold text-slate-800">
                         {{ title }}
                     </h3>
                 </div>
@@ -94,7 +100,8 @@
                     </button>
 
                     <button
-                        class="px-4 py-2 text-sm rounded-lg text-white"
+                        ref="confirmBtn"
+                        class="px-4 py-2 text-sm rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-offset-1"
                         :class="confirmBtnClass"
                         @click="confirm"
                     >
@@ -107,9 +114,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 type Variant = 'warning' | 'info' | 'success'
+
+const titleId = `confirm-modal-${Math.floor(Math.random() * 1e9)}`
+const modalEl = ref<HTMLElement | null>(null)
+const confirmBtn = ref<HTMLElement | null>(null)
 
 const props = withDefaults(defineProps<{
     modelValue: boolean
@@ -142,6 +153,12 @@ const confirmBtnClass = computed(() => {
         case 'success': return 'bg-emerald-600 hover:bg-emerald-700'
         case 'info':    return 'bg-blue-600 hover:bg-blue-700'
         default:        return 'bg-blue-600 hover:bg-blue-700'
+    }
+})
+
+watch(() => props.modelValue, (open) => {
+    if (open) {
+        nextTick(() => (confirmBtn.value ?? modalEl.value)?.focus())
     }
 })
 
