@@ -3,6 +3,7 @@
         <!-- Label -->
         <label
             v-if="label"
+            :id="fieldId"
             class="text-sm font-medium text-slate-700"
         >
             {{ label }}
@@ -13,6 +14,7 @@
             type="button"
             role="switch"
             :aria-checked="modelValue"
+            :aria-labelledby="label ? fieldId : undefined"
             class="relative inline-flex h-6 w-11 items-center
                    rounded-full transition-colors
                    focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -33,6 +35,8 @@
 </template>
 
 <script setup lang="ts">
+const fieldId = `fld-${Math.random().toString(36).slice(2, 9)}`
+
 /* -------------------------------------------------------------------------- */
 /* PROPS */
 /* -------------------------------------------------------------------------- */

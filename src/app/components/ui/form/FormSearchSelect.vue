@@ -3,6 +3,7 @@
         <!-- Label -->
         <label
             v-if="label"
+            :for="fieldId"
             class="text-xs font-medium text-slate-600"
         >
             {{ label }}
@@ -11,6 +12,7 @@
         <!-- Input -->
         <div class="relative">
             <input
+                :id="fieldId"
                 type="text"
                 class="w-full px-3 py-2 text-sm rounded-lg border
                        focus:outline-none focus:ring-2
@@ -81,6 +83,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+
+const fieldId = `fld-${Math.random().toString(36).slice(2, 9)}`
 
 /* -------------------------------------------------------------------------- */
 /* PROPS */

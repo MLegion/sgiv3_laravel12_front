@@ -1,10 +1,11 @@
 <template>
     <div class="space-y-1">
-        <label v-if="label" class="text-xs font-medium text-slate-600">
+        <label v-if="label" :for="fieldId" class="text-xs font-medium text-slate-600">
             {{ label }}
         </label>
 
         <input
+            :id="fieldId"
             :type="type"
             :value="localValue"
             :placeholder="placeholder"
@@ -26,6 +27,8 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
+
+const fieldId = `fld-${Math.random().toString(36).slice(2, 9)}`
 
 const props = defineProps<{
     modelValue: string | number | null | undefined

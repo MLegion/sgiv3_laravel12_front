@@ -2,6 +2,7 @@
     <div class="space-y-1.5 relative w-full" ref="containerRef">
         <label
             v-if="label"
+            :for="fieldId"
             class="text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider"
         >
             {{ label }}
@@ -9,6 +10,7 @@
 
         <div class="relative">
             <input
+                :id="fieldId"
                 type="text"
                 :value="search"
                 :placeholder="placeholder"
@@ -90,6 +92,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onBeforeUnmount, onMounted } from 'vue'
+
+const fieldId = `fld-${Math.random().toString(36).slice(2, 9)}`
 import { CheckCircleIcon } from '@heroicons/vue/24/solid'
 import { api } from '@/shared/services/api'
 
