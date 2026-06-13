@@ -36,13 +36,12 @@
             </div>
         </div>
 
-        <!-- Línea de progreso: círculos (fijos) y conectores (flex-1) como
-             HERMANOS al mismo nivel → todos los tramos quedan exactamente
-             iguales y nada crece entre pasos. Sin labels por paso (el del paso
-             actual va en el encabezado). -->
-        <ol class="flex items-center">
+        <!-- Línea de progreso en CSS Grid: columnas 'auto' para los círculos y
+             'minmax(0,1fr)' para los 9 conectores → por definición todos los
+             tramos miden EXACTAMENTE igual; nada crece entre pasos. -->
+        <ol class="grid items-center gap-x-1" :style="{ gridTemplateColumns: gridCols }">
             <template v-for="(s, i) in steps" :key="s.name">
-                <li class="shrink-0">
+                <li class="contents">
                     <button
                         type="button"
                         :aria-label="`Ir al paso ${i + 1}: ${s.label}`"
@@ -57,14 +56,14 @@
                         </svg>
                         <template v-else>{{ i + 1 }}</template>
                     </button>
+                    <!-- conector: ocupa la columna 1fr completa -->
+                    <span
+                        v-if="i < steps.length - 1"
+                        aria-hidden="true"
+                        class="h-0.5 w-full rounded-full"
+                        :class="i < currentIndex ? 'bg-emerald-400' : 'bg-slate-200'"
+                    />
                 </li>
-                <!-- conector (un hermano flex-1 por cada par de círculos) -->
-                <li
-                    v-if="i < steps.length - 1"
-                    aria-hidden="true"
-                    class="mx-1 h-0.5 flex-1 rounded-full"
-                    :class="i < currentIndex ? 'bg-emerald-400' : 'bg-slate-200'"
-                />
             </template>
         </ol>
     </nav>
@@ -100,6 +99,10 @@ const route  = useRoute()
 const router = useRouter()
 
 const currentIndex = computed(() => steps.findIndex(s => s.name === route.name))
+
+// Columnas del grid: 'auto' por cada círculo + 'minmax(0,1fr)' por cada
+// conector → los (n-1) tramos son idénticos por construcción.
+const gridCols = computed(() => 'auto' + ' minmax(0, 1fr) auto'.repeat(steps.length - 1))
 
 function go(index: number): void {
     if (index < 0 || index >= steps.length || index === currentIndex.value) return
