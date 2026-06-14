@@ -100,8 +100,8 @@ const onExport = (type: DataTableExportType) => {
     <div class="w-full flex flex-col bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
 
         <!-- Toolbar: Búsqueda y Exportación -->
-        <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
-            <div class="relative w-full sm:max-w-sm">
+        <div v-if="!hideSearch || exportable?.length" class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
+            <div v-if="!hideSearch" class="relative w-full sm:max-w-sm">
                 <span class="absolute inset-y-0 left-3 flex items-center text-slate-400">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </span>

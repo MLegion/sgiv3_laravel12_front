@@ -43,8 +43,9 @@ export const STATUS_OPTIONS = [
     { value: 2, label: 'PROSPECTO' },
     { value: 3, label: 'PREFICHA' },
     { value: 4, label: 'FICHA' },
-    { value: 5, label: 'ADMITIDO' },
-    { value: 6, label: 'INSCRITO' },
+    { value: 5, label: 'CON RESULTADO' },
+    { value: 6, label: 'ADMITIDO' },
+    { value: 7, label: 'INSCRITO' },
 ]
 
 export const STATUS_CLASSES: Record<number, string> = {
@@ -53,6 +54,7 @@ export const STATUS_CLASSES: Record<number, string> = {
     2: 'bg-slate-100 text-slate-600',
     3: 'bg-orange-100 text-orange-700',
     4: 'bg-blue-100 text-blue-700',
-    5: 'bg-green-100 text-green-700',
-    6: 'bg-emerald-100 text-emerald-700',
+    5: 'bg-purple-100 text-purple-700',
+    6: 'bg-green-100 text-green-700',
+    7: 'bg-emerald-100 text-emerald-700',
 }

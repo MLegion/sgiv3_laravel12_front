@@ -11,34 +11,63 @@
             </button>
         </div>
 
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <AdmissionPeriodSelector @change="onPeriodChange" />
+        <div class="space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <AdmissionPeriodSelector @change="onPeriodChange" />
 
-            <button
-                type="button"
-                @click="toggleDocsFilter"
-                :class="docsToReview
-                    ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
-                class="inline-flex items-center gap-2 px-3.5 py-1.5 text-sm font-medium rounded-full border transition self-start sm:self-auto"
-                title="Mostrar solo aspirantes con documentos pendientes o rechazados"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-                Documentos por revisar
-                <span
-                    v-if="docsCount > 0"
-                    :class="docsToReview ? 'bg-white/25 text-white' : 'bg-amber-100 text-amber-700'"
-                    class="px-1.5 py-0.5 text-xs font-bold rounded-full"
-                >{{ docsCount }}</span>
-            </button>
+                <button
+                    type="button"
+                    @click="toggleDocsFilter"
+                    :class="docsToReview
+                        ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+                    class="inline-flex items-center gap-2 px-3.5 py-1.5 text-sm font-medium rounded-full border transition self-start sm:self-auto"
+                    title="Mostrar solo aspirantes con documentos pendientes o rechazados"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    Documentos por revisar
+                    <span
+                        v-if="docsCount > 0"
+                        :class="docsToReview ? 'bg-white/25 text-white' : 'bg-amber-100 text-amber-700'"
+                        class="px-1.5 py-0.5 text-xs font-bold rounded-full"
+                    >{{ docsCount }}</span>
+                </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                <!-- Búsqueda global (nombre/apellidos/CURP/folio/email) -->
+                <div class="relative w-full sm:max-w-xs">
+                    <span class="absolute inset-y-0 left-3 flex items-center text-slate-400">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </span>
+                    <input
+                        v-model="searchTerm"
+                        @input="onSearchInput"
+                        type="text"
+                        placeholder="Buscar por nombre, CURP, folio o email..."
+                        class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition"
+                    />
+                </div>
+
+                <!-- Filtro por estado -->
+                <select
+                    v-model="statusFilter"
+                    @change="onStatusChange"
+                    class="w-full sm:w-52 py-2 px-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition"
+                >
+                    <option :value="null">Todos los estados</option>
+                    <option v-for="s in STATUS_OPTIONS" :key="s.value" :value="s.value">{{ s.label }}</option>
+                </select>
+            </div>
         </div>
 
         <DataTable
             :columns="columns"
             :rows="rows"
             :loading="loading"
+            :hide-search="true"
             :pagination="pagination"
             @change="handleChange"
         >
@@ -109,7 +138,7 @@
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition"
                         title="Eliminar"
-                        @click="router.push({ name: 'admissions.applicants.delete', params: { id: row.id } })"
+                        @click="deleteApplicant(row)"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 7.5h12m-10.5 0v10.125A1.875 1.875 0 009.375 19.5h5.25A1.875 1.875 0 0016.5 17.625V7.5M9.75 4.875A1.875 1.875 0 0111.625 3h.75A1.875 1.875 0 0114.25 4.875L15 7.5h-6l.75-2.625z" />
@@ -144,18 +173,29 @@ import DocumentReviewDrawer from '@/modules/admissions/components/DocumentReview
 import { useAdmissionPeriodStore } from '@/modules/admissions/stores/admission-period.store'
 import { api } from '@/shared/services/api'
 import { useMenuStore } from '@/app/stores/menu.store'
+import { useConfirm } from '@/app/composables/useConfirm'
+import { useToast } from '@/app/composables/useToast'
 
 const router = useRouter()
 const periodStore = useAdmissionPeriodStore()
 const menuStore = useMenuStore()
+const { confirm } = useConfirm()
+const toast = useToast()
 
 // Filtro "Documentos por revisar": aspirantes con docs pending/rejected.
 const docsToReview = ref(false)
 const docsCount    = ref(0)
 
+// Búsqueda global + filtro por estado.
+const searchTerm   = ref('')
+const statusFilter = ref<number | null>(null)
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
+
 const searchFilter = computed(() => ({
     ...(periodStore.selectedPeriodId !== null ? { academic_period_id: periodStore.selectedPeriodId } : {}),
     ...(docsToReview.value ? { has_docs_to_review: 1 } : {}),
+    ...(statusFilter.value !== null ? { status: statusFilter.value } : {}),
+    ...(searchTerm.value.trim() ? { q: searchTerm.value.trim() } : {}),
 }))
 
 const columns: DataTableColumn<Applicant>[] = [
@@ -196,6 +236,36 @@ function toggleDocsFilter() {
 function onPeriodChange() {
     fetchData()
     loadDocsCount()
+}
+
+function onSearchInput() {
+    if (searchTimeout) clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => fetchData(), 400)
+}
+
+function onStatusChange() {
+    fetchData()
+}
+
+async function deleteApplicant(row: Applicant) {
+    const name = [row.firstSurname, row.secondSurname, row.names].filter(Boolean).join(' ') || 'este aspirante'
+    const ok = await confirm({
+        title: 'Eliminar aspirante',
+        message: `¿Eliminar a ${name}? Esta acción no se puede deshacer.`,
+        variant: 'danger',
+        confirmText: 'Eliminar',
+    })
+    if (!ok) return
+
+    try {
+        await api.delete(API.ADMISSIONS_API.applicants.delete(row.id))
+        toast.success('Aspirante eliminado.')
+        fetchData()
+        loadDocsCount()
+        menuStore.loadBadges()
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo eliminar el aspirante.')
+    }
 }
 
 // Review drawer

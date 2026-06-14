@@ -155,6 +155,12 @@ export interface DataTableProps<T = any> {
      * Solo se usa al montar; después el input maneja su propio estado.
      */
     initialSearch?: string
+
+    /**
+     * Oculta la caja de búsqueda integrada. Útil cuando la página provee su
+     * propio buscador (p. ej. búsqueda global server-side multi-campo).
+     */
+    hideSearch?: boolean
 }
 
 /**
