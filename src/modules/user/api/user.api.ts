@@ -8,5 +8,7 @@ export default {
         profile: apiUrl('/user/profile'),
         avatar: apiUrl('/user/avatar'),
         updateProfile: apiUrl('/user/profile/update'),
+        profileContact: apiUrl('/user/profile/contact'),
+        changePassword: apiUrl('/user/change-password'),
     },
 } satisfies ApiModule
