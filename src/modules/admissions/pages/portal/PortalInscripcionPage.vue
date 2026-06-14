@@ -396,6 +396,9 @@ async function obtainPreFicha() {
         savedOffer1.value         = form.offer_option_1_id as number | null
         savedOffer2.value         = form.offer_option_2_id as number | null
         savedOffer3.value         = form.offer_option_3_id as number | null
+        // El estado avanzó (PREFICHA→FICHA): avisa al stepper para que
+        // re-evalúe los candados (p.ej. desbloquear Documentos) sin navegar.
+        window.dispatchEvent(new Event('portal:progress'))
     } catch (e: any) {
         saveError.value = e?.response?.data?.message ?? 'Error al procesar la Preficha.'
     } finally {

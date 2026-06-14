@@ -76,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -199,5 +199,15 @@ async function load(): Promise<void> {
     }
 }
 
-onMounted(load)
+// Evento global de progreso del portal: cualquier página que cambie el estado
+// del aspirante (obtener preficha, completar expediente, etc.) dispara
+// `window.dispatchEvent(new Event('portal:progress'))` y el stepper re-evalúa
+// los candados sin necesidad de navegar.
+onMounted(() => {
+    load()
+    window.addEventListener('portal:progress', load)
+})
+onUnmounted(() => {
+    window.removeEventListener('portal:progress', load)
+})
 </script>
