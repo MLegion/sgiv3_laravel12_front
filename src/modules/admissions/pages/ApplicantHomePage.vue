@@ -198,6 +198,30 @@ const nextStep = computed<NextStep>(() => {
     return { title: 'Estás inscrito', message: 'Tu proceso de admisión concluyó. ¡Bienvenido!', tone: 'success' }
 })
 
+const STEP_NAMES = [
+    'admissions.portal.personal', 'admissions.portal.ext-personal', 'admissions.portal.estudios',
+    'admissions.portal.contactos', 'admissions.portal.preventivos', 'admissions.portal.otros',
+    'admissions.portal.inscripcion', 'admissions.portal.documentos', 'admissions.portal.ficha',
+    'admissions.portal.examen',
+]
+
+/**
+ * Siembra el paso de reanudación según el estado (cross-device): así, si el
+ * aspirante llega al portal por el menú "Mi Expediente" desde un equipo nuevo,
+ * PortalResume lo dirige al paso accionable. Solo siembra si NO hay uno ya
+ * guardado, para no pisar la sección exacta que el stepper recuerda al navegar.
+ */
+function seedResumeStep() {
+    const existing = localStorage.getItem('portal:lastStep')
+    if (existing && STEP_NAMES.includes(existing)) return
+    const s = status.value
+    const step = s >= STATUS.CON_RESULTADO ? 'admissions.portal.examen'
+        : s === STATUS.FICHA    ? 'admissions.portal.documentos'
+        : s === STATUS.PREFICHA ? 'admissions.portal.inscripcion'
+        : 'admissions.portal.personal'
+    localStorage.setItem('portal:lastStep', step)
+}
+
 async function load() {
     loading.value = true
     try {
@@ -209,6 +233,7 @@ async function load() {
                 documents.value = docs.data
             } catch { /* sin documentos aún */ }
         }
+        seedResumeStep()
     } catch { /* fuera del flujo */ } finally {
         loading.value = false
     }
