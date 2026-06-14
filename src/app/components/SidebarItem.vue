@@ -20,6 +20,10 @@
             >
                 {{ item.label }}
             </span>
+            <span
+                v-if="displayBadge > 0"
+                class="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded-full leading-none bg-amber-100 text-amber-700"
+            >{{ badgeText }}</span>
             <svg
                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                 class="w-3 h-3 transition-transform duration-300 shrink-0 brand-hover-color"
@@ -53,7 +57,7 @@
             ></div>
 
             <!-- Icono -->
-            <div class="flex items-center justify-center w-6 h-6 shrink-0 transition-transform duration-300" :class="collapsed ? 'scale-110' : ''">
+            <div class="relative flex items-center justify-center w-6 h-6 shrink-0 transition-transform duration-300" :class="collapsed ? 'scale-110' : ''">
                 <component
                     v-if="Icon"
                     :is="Icon"
@@ -63,6 +67,11 @@
                         depth > 0 ? 'w-4 h-4' : 'w-5 h-5'
                     ]"
                 />
+                <!-- Punto indicador cuando el sidebar está colapsado -->
+                <span
+                    v-if="collapsed && displayBadge > 0"
+                    class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-500 ring-2 ring-white"
+                ></span>
             </div>
 
             <!-- Etiqueta -->
@@ -75,6 +84,13 @@
                     {{ item.label }}
                 </span>
             </transition>
+
+            <!-- Badge de conteo (no colapsado) -->
+            <span
+                v-if="!collapsed && displayBadge > 0"
+                class="ml-auto shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded-full leading-none"
+                :class="isActive ? 'bg-white/25 text-white' : 'bg-amber-100 text-amber-700'"
+            >{{ badgeText }}</span>
 
             <!-- Chevron (solo nivel 0 con children) -->
             <div
@@ -129,6 +145,28 @@ const iconMap: any = HeroIcons
 const Icon = computed(() =>
     props.item.icon ? iconMap[props.item.icon] : null
 )
+
+/** Suma el badge propio + el de todos los descendientes (roll-up). */
+function sumBadges(item: any): number {
+    let total = menuStore.badges?.[item.code] ?? 0
+    if (item.children) {
+        for (const child of item.children) total += sumBadges(child)
+    }
+    return total
+}
+
+/**
+ * Badge a mostrar: en un padre se hace roll-up de los descendientes mientras
+ * el submenú esté cerrado o el sidebar colapsado; al abrirlo, el conteo se ve
+ * directamente en los hijos.
+ */
+const displayBadge = computed(() => {
+    const n = props.item.children ? sumBadges(props.item) : (menuStore.badges?.[props.item.code] ?? 0)
+    if (n <= 0) return 0
+    if (props.item.children && open.value && !props.collapsed) return 0
+    return n
+})
+const badgeText = computed(() => (displayBadge.value > 99 ? '99+' : String(displayBadge.value)))
 
 /** Solo las hojas (items con ruta y sin children) se marcan como activos */
 const isActive = computed(() => {

@@ -143,9 +143,11 @@ import AdmissionPeriodSelector from '@/modules/admissions/components/AdmissionPe
 import DocumentReviewDrawer from '@/modules/admissions/components/DocumentReviewDrawer.vue'
 import { useAdmissionPeriodStore } from '@/modules/admissions/stores/admission-period.store'
 import { api } from '@/shared/services/api'
+import { useMenuStore } from '@/app/stores/menu.store'
 
 const router = useRouter()
 const periodStore = useAdmissionPeriodStore()
+const menuStore = useMenuStore()
 
 // Filtro "Documentos por revisar": aspirantes con docs pending/rejected.
 const docsToReview = ref(false)
@@ -210,6 +212,7 @@ function openReview(row: Applicant) {
 function onReviewed() {
     fetchData()
     loadDocsCount()
+    menuStore.loadBadges()
 }
 
 onMounted(() => {
