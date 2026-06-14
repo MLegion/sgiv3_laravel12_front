@@ -47,6 +47,8 @@ export default {
             neighbors:     (id: string | number) => apiUrl(`/admissions/applicants/${id}/neighbors`),
             releaseResult: (id: string | number) => apiUrl(`/admissions/applicants/${id}/release-result`),
             bulkRelease:   apiUrl('/admissions/applicants/release-results-bulk'),
+            scoresOverview: apiUrl('/admissions/applicants/scores-overview'),
+            setScore:      (id: string | number) => apiUrl(`/admissions/applicants/${id}/score`),
             myExamResult:  apiUrl('/admissions/applicants/me/exam-result'),
         },
         admissionProcess: {

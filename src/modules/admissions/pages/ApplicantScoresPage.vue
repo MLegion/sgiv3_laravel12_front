@@ -25,13 +25,34 @@
 
                 <!-- Liberar resultados al portal -->
                 <button
-                    :disabled="releasing"
-                    class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                    :disabled="releaseDisabled"
+                    :title="(overview?.pendingRelease ?? 0) === 0 ? 'No hay resultados pendientes de liberar' : ''"
+                    class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     @click="confirmRelease"
                 >
                     <PaperAirplaneIcon class="w-4 h-4" />
-                    {{ releasing ? 'LIBERANDO...' : 'LIBERAR RESULTADOS A ASPIRANTES' }}
+                    {{ releasing ? 'LIBERANDO...' : `LIBERAR RESULTADOS (${overview?.pendingRelease ?? 0})` }}
                 </button>
+            </div>
+        </div>
+
+        <!-- Tira de estado del proceso -->
+        <div v-if="overview" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="rounded-lg border border-slate-200 bg-white p-3 text-center">
+                <p class="text-2xl font-bold text-amber-600">{{ overview.pendingEvaluation }}</p>
+                <p class="text-[11px] text-slate-500 uppercase mt-0.5">Por evaluar</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-3 text-center">
+                <p class="text-2xl font-bold text-purple-700">{{ overview.withScore }}</p>
+                <p class="text-[11px] text-slate-500 uppercase mt-0.5">Con calificación</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-3 text-center">
+                <p class="text-2xl font-bold text-indigo-700">{{ overview.pendingRelease }}</p>
+                <p class="text-[11px] text-slate-500 uppercase mt-0.5">Por liberar</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-3 text-center">
+                <p class="text-2xl font-bold text-emerald-700">{{ overview.released }}</p>
+                <p class="text-[11px] text-slate-500 uppercase mt-0.5">Liberados</p>
             </div>
         </div>
 
@@ -46,9 +67,9 @@
         <ConfirmModal
             v-model="confirmOpen"
             title="Liberar resultados a aspirantes"
-            message="Esta acción permitirá que TODOS los aspirantes con calificación capturada (status ≥ Con Resultado) vean su resultado en el portal. La acción es por colegio y queda auditada."
+            :message="releaseConfirmMessage"
             confirm-text="Liberar"
-            variant="warning"
+            variant="danger"
             @confirm="onRelease"
         />
 
@@ -98,6 +119,87 @@
                 </svg>
                 Carga Manual (JSON)
             </button>
+            <button
+                class="tab-btn"
+                :class="tab === 'individual' ? 'tab-active' : 'tab-inactive'"
+                @click="tab = 'individual'"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+                Asignar individual
+            </button>
+        </div>
+
+        <!-- Panel Asignar individual -->
+        <div v-if="tab === 'individual'" class="space-y-4 max-w-xl">
+            <p class="text-xs text-slate-500">
+                Busca un aspirante por nombre, CURP o folio y asígnale su calificación directamente.
+            </p>
+
+            <!-- Buscador -->
+            <div class="relative">
+                <span class="absolute inset-y-0 left-3 flex items-center text-slate-400">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                </span>
+                <input
+                    v-model="indivQuery"
+                    @input="onIndivSearchInput"
+                    type="text"
+                    placeholder="Buscar aspirante..."
+                    class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition"
+                />
+            </div>
+
+            <!-- Resultados de búsqueda -->
+            <div v-if="indivSearching" class="text-xs text-slate-400 italic">Buscando...</div>
+            <ul v-else-if="indivResults.length" class="border border-slate-200 rounded-lg divide-y divide-slate-100 overflow-hidden">
+                <li
+                    v-for="hit in indivResults"
+                    :key="hit.id"
+                    class="px-3 py-2 flex items-center justify-between gap-2 hover:bg-blue-50 cursor-pointer transition"
+                    @click="selectIndiv(hit)"
+                >
+                    <div class="min-w-0">
+                        <p class="text-sm font-medium text-slate-800 truncate">{{ indivName(hit) }}</p>
+                        <p class="text-[11px] text-slate-400 font-mono truncate">{{ hit.curp || hit.applicationFolio || '—' }}</p>
+                    </div>
+                    <span
+                        class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                        :class="hit.entranceScore ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-500'"
+                    >{{ hit.entranceScore ? `Nota: ${hit.entranceScore}` : 'Sin nota' }}</span>
+                </li>
+            </ul>
+            <p v-else-if="indivQuery.trim().length >= 2" class="text-xs text-slate-400 italic">Sin coincidencias.</p>
+
+            <!-- Aspirante seleccionado -->
+            <div v-if="indivSelected" class="border border-blue-200 bg-blue-50/40 rounded-xl p-4 space-y-3">
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <p class="text-sm font-bold text-slate-800">{{ indivName(indivSelected) }}</p>
+                        <p class="text-[11px] text-slate-500 font-mono">{{ indivSelected.curp || indivSelected.applicationFolio || '—' }}</p>
+                    </div>
+                    <button class="text-xs text-slate-400 hover:text-red-500 transition" @click="indivSelected = null">Cambiar</button>
+                </div>
+                <div class="flex items-end gap-2">
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Calificación</label>
+                        <input
+                            v-model="indivScore"
+                            type="number" min="0" max="999.99" step="0.01"
+                            placeholder="Ej. 85.5"
+                            class="field w-full"
+                        />
+                    </div>
+                    <button
+                        class="px-5 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition font-medium uppercase tracking-wide"
+                        :disabled="indivSaving"
+                        @click="saveIndivScore"
+                    >
+                        {{ indivSaving ? 'Guardando...' : 'Guardar' }}
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Panel CSV -->
@@ -144,19 +246,52 @@ EFGH789012MDFYYY01,72.0</pre>
                     </span>
                     <input type="file" accept=".csv,text/csv" class="hidden" @change="onCsvSelected" />
                 </label>
-                <button v-if="csvFile" class="mt-1 text-xs text-slate-400 hover:text-red-500 transition" @click="csvFile = null">
+                <button v-if="csvFile" class="mt-1 text-xs text-slate-400 hover:text-red-500 transition" @click="csvFile = null; csvPreview = []">
                     Quitar archivo
                 </button>
+            </div>
+
+            <!-- Vista previa del CSV -->
+            <div v-if="csvPreview.length" class="border border-slate-200 rounded-lg overflow-hidden">
+                <div class="flex items-center justify-between px-3 py-2 bg-slate-50 border-b border-slate-200 text-xs">
+                    <span class="font-semibold text-slate-600 uppercase tracking-wide">Vista previa</span>
+                    <span class="flex items-center gap-2">
+                        <span class="text-green-700 font-semibold">{{ csvValidCount }} válidas</span>
+                        <span v-if="csvErrorCount" class="text-red-600 font-semibold">{{ csvErrorCount }} con error</span>
+                    </span>
+                </div>
+                <div class="max-h-60 overflow-y-auto">
+                    <table class="w-full text-xs">
+                        <thead class="bg-white sticky top-0 border-b border-slate-100">
+                            <tr>
+                                <th scope="col" class="px-3 py-1.5 text-left font-semibold text-slate-500 uppercase">CURP</th>
+                                <th scope="col" class="px-3 py-1.5 text-left font-semibold text-slate-500 uppercase">Calif.</th>
+                                <th scope="col" class="px-3 py-1.5 text-left font-semibold text-slate-500 uppercase">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="r in csvPreview.slice(0, 100)" :key="r.line" class="border-t border-slate-50" :class="r.error ? 'bg-red-50/50' : ''">
+                                <td class="px-3 py-1.5 font-mono text-slate-700">{{ r.curp || '—' }}</td>
+                                <td class="px-3 py-1.5 text-slate-700">{{ r.score || '—' }}</td>
+                                <td class="px-3 py-1.5">
+                                    <span v-if="r.error" class="text-red-600">{{ r.error }}</span>
+                                    <span v-else class="text-green-600">✓</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p v-if="csvPreview.length > 100" class="px-3 py-1.5 text-[11px] text-slate-400 italic border-t border-slate-100">Mostrando las primeras 100 filas de {{ csvPreview.length }}.</p>
             </div>
 
             <p v-if="csvError" class="text-xs text-red-600">{{ csvError }}</p>
 
             <button
                 class="px-5 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition font-medium uppercase tracking-wide"
-                :disabled="submittingCsv || !csvFile"
+                :disabled="submittingCsv || !csvFile || (csvPreview.length > 0 && csvValidCount === 0)"
                 @click="submitCsv"
             >
-                {{ submittingCsv ? 'Procesando...' : 'Cargar Resultados' }}
+                {{ submittingCsv ? 'Procesando...' : `Cargar Resultados${csvPreview.length ? ` (${csvValidCount})` : ''}` }}
             </button>
         </div>
 
@@ -298,10 +433,98 @@ import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
+import { useToast } from '@/app/composables/useToast'
+
+const toast = useToast()
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 
-const tab = ref<'csv' | 'manual'>('csv')
+const tab = ref<'csv' | 'manual' | 'individual'>('csv')
+
+// ── Contadores del proceso (tira de estado) ──────────────────────────────────
+interface Overview { pendingEvaluation: number; withScore: number; released: number; pendingRelease: number }
+const overview = ref<Overview | null>(null)
+
+async function loadOverview() {
+    try {
+        const { data } = await api.get<Overview>(API.ADMISSIONS_API.applicants.scoresOverview)
+        overview.value = data
+    } catch {
+        overview.value = null
+    }
+}
+
+// ── Captura individual (buscar aspirante → asignar nota) ─────────────────────
+interface SearchHit {
+    id: number
+    names: string
+    firstSurname: string
+    secondSurname: string | null
+    applicationFolio: string | null
+    curp: string | null
+    status: number
+    entranceScore: string | null
+}
+const indivQuery     = ref('')
+const indivResults   = ref<SearchHit[]>([])
+const indivSearching = ref(false)
+const indivSelected  = ref<SearchHit | null>(null)
+const indivScore     = ref('')
+const indivSaving    = ref(false)
+let indivTimeout: ReturnType<typeof setTimeout> | null = null
+
+function indivName(h: SearchHit): string {
+    return [h.firstSurname, h.secondSurname, h.names].filter(Boolean).join(' ')
+}
+
+function onIndivSearchInput() {
+    if (indivTimeout) clearTimeout(indivTimeout)
+    indivTimeout = setTimeout(runIndivSearch, 400)
+}
+
+async function runIndivSearch() {
+    const term = indivQuery.value.trim()
+    if (term.length < 2) { indivResults.value = []; return }
+    indivSearching.value = true
+    try {
+        const { data } = await api.get(API.ADMISSIONS_API.applicants.list, {
+            params: { per_page: 8, search: { q: term } },
+        })
+        indivResults.value = data.items ?? data.data ?? []
+    } catch {
+        indivResults.value = []
+    } finally {
+        indivSearching.value = false
+    }
+}
+
+function selectIndiv(hit: SearchHit) {
+    indivSelected.value = hit
+    indivScore.value    = hit.entranceScore ?? ''
+    indivResults.value  = []
+    indivQuery.value    = ''
+}
+
+async function saveIndivScore() {
+    if (!indivSelected.value) return
+    const score = indivScore.value.trim()
+    if (score === '' || isNaN(Number(score)) || Number(score) < 0 || Number(score) > 999.99) {
+        toast.error('Ingresa una calificación válida (0 a 999.99).')
+        return
+    }
+    indivSaving.value = true
+    try {
+        await api.post(API.ADMISSIONS_API.applicants.setScore(indivSelected.value.id), { score })
+        toast.success(`Calificación ${score} asignada a ${indivName(indivSelected.value)}.`)
+        indivSelected.value = null
+        indivScore.value    = ''
+        loadOverview()
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo asignar la calificación.')
+    } finally {
+        indivSaving.value = false
+    }
+}
 
 // ── Sincronización con sistema externo ────────────────────────────────────────
 
@@ -330,6 +553,12 @@ const releasing     = ref(false)
 const releaseBanner = ref<string | null>(null)
 const releaseError  = ref<string | null>(null)
 
+const releaseDisabled = computed(() => releasing.value || (overview.value?.pendingRelease ?? 0) === 0)
+const releaseConfirmMessage = computed(() => {
+    const n = overview.value?.pendingRelease ?? 0
+    return `Se liberarán ${n} resultado(s) al portal de los aspirantes (todos los que tienen calificación capturada y aún no se habían liberado). Es por colegio, queda auditada y NO se puede deshacer.`
+})
+
 function confirmRelease(): void {
     confirmOpen.value = true
 }
@@ -344,6 +573,7 @@ async function onRelease(): Promise<void> {
             {},
         )
         releaseBanner.value = `✓ Se liberaron ${data.released} resultados.`
+        loadOverview()
     } catch (e: unknown) {
         releaseError.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error
             ?? 'No se pudo liberar.'
@@ -375,7 +605,10 @@ async function onSync() {
     }
 }
 
-onMounted(loadSyncStatus)
+onMounted(() => {
+    loadSyncStatus()
+    loadOverview()
+})
 
 // ── Resultado compartido ──────────────────────────────────────────────────────
 
@@ -394,11 +627,45 @@ const csvPeriodId  = ref<number | null>(null)
 const csvError     = ref<string | null>(null)
 const submittingCsv = ref(false)
 
+// Preview client-side del CSV (curp, calificación) antes de cargar.
+interface CsvPreviewRow { line: number; curp: string; score: string; error: string | null }
+const csvPreview = ref<CsvPreviewRow[]>([])
+const csvValidCount = computed(() => csvPreview.value.filter(r => !r.error).length)
+const csvErrorCount = computed(() => csvPreview.value.filter(r => r.error).length)
+
+function parseCsvPreview(text: string) {
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '')
+    const rows: CsvPreviewRow[] = []
+    const seen = new Set<string>()
+    // Salta la cabecera si la primera línea menciona "curp".
+    const start = lines.length && /curp/i.test(lines[0]) ? 1 : 0
+    for (let i = start; i < lines.length; i++) {
+        const parts = lines[i].split(/[,;]/).map(p => p.trim())
+        const curp  = (parts[0] ?? '').toUpperCase()
+        const score = parts[1] ?? ''
+        let error: string | null = null
+        if (!curp)                                       error = 'CURP vacía'
+        else if (curp.length !== 18)                     error = 'CURP inválida (18 caracteres)'
+        else if (seen.has(curp))                         error = 'CURP duplicada'
+        else if (score === '' || isNaN(Number(score)))   error = 'Calificación inválida'
+        else if (Number(score) < 0 || Number(score) > 999.99) error = 'Calificación fuera de rango'
+        if (curp) seen.add(curp)
+        rows.push({ line: i + 1, curp, score, error })
+    }
+    csvPreview.value = rows
+}
+
 function onCsvSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0] ?? null
     csvFile.value  = file
     csvError.value = null
     result.value   = null
+    csvPreview.value = []
+    if (file) {
+        const reader = new FileReader()
+        reader.onload = () => parseCsvPreview(String(reader.result ?? ''))
+        reader.readAsText(file)
+    }
 }
 
 async function submitCsv() {
@@ -413,8 +680,10 @@ async function submitCsv() {
         if (csvPeriodId.value) fd.append('academic_period_id', String(csvPeriodId.value))
 
         const { data } = await api.post(API.ADMISSIONS_API.applicantScores.csv, fd)
-        result.value  = data
-        csvFile.value = null
+        result.value     = data
+        csvFile.value    = null
+        csvPreview.value = []
+        loadOverview()
     } catch (e: any) {
         csvError.value = e?.response?.data?.message ?? 'Error al procesar el archivo.'
     } finally {
@@ -477,6 +746,7 @@ async function submitManual() {
         const { data } = await api.post(API.ADMISSIONS_API.applicantScores.json, payload)
         result.value   = data
         manualRows.value = [{ curp: '', score: '' }]
+        loadOverview()
     } catch (e: any) {
         manualError.value = e?.response?.data?.message ?? 'Error al cargar los resultados.'
     } finally {
