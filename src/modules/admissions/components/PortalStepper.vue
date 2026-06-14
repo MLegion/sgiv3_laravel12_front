@@ -204,6 +204,11 @@ async function load(): Promise<void> {
 // `window.dispatchEvent(new Event('portal:progress'))` y el stepper re-evalúa
 // los candados sin necesidad de navegar.
 onMounted(() => {
+    // Recuerda el último paso visitado para poder reanudar desde la entrada
+    // del portal (PortalResume).
+    if (currentIndex.value !== -1 && route.name) {
+        localStorage.setItem('portal:lastStep', String(route.name))
+    }
     load()
     window.addEventListener('portal:progress', load)
 })

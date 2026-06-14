@@ -11,11 +11,12 @@ export default [
     { path: 'admissions/portal/ficha',        name: 'admissions.portal.ficha',        component: () => import('@/modules/admissions/pages/portal/PortalFichaPage.vue'),        meta: { title: 'Ficha' } },
     { path: 'admissions/portal/examen',       name: 'admissions.portal.examen',       component: () => import('@/modules/admissions/pages/portal/PortalExamenPage.vue'),       meta: { title: 'Examen de Admisión' } },
     { path: 'admissions/portal/password',     name: 'admissions.portal.password',     component: () => import('@/modules/admissions/pages/portal/PortalPasswordPage.vue'),     meta: { title: 'Cambiar Contraseña' } },
-    // Ruta base del portal → redirige a personal
+    // Ruta base del portal → reanuda al último paso visitado (o al accionable)
     {
         path: 'admissions/portal',
         name: 'admissions.portal',
-        redirect: { name: 'admissions.portal.personal' },
+        component: () => import('@/modules/admissions/pages/portal/PortalResume.vue'),
+        meta: { title: 'Mi Expediente' },
     },
 
     // Admission Config
