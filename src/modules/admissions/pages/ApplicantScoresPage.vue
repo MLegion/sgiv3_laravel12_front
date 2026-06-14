@@ -44,7 +44,7 @@
             </div>
             <div class="rounded-lg border border-slate-200 bg-white p-3 text-center">
                 <p class="text-2xl font-bold text-purple-700">{{ overview.withScore }}</p>
-                <p class="text-[11px] text-slate-500 uppercase mt-0.5">Con calificación</p>
+                <p class="text-[11px] text-slate-500 uppercase mt-0.5">Con resultado</p>
             </div>
             <div class="rounded-lg border border-slate-200 bg-white p-3 text-center">
                 <p class="text-2xl font-bold text-indigo-700">{{ overview.pendingRelease }}</p>
