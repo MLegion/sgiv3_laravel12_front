@@ -166,7 +166,7 @@ const displayBadge = computed(() => {
     if (props.item.children && open.value && !props.collapsed) return 0
     return n
 })
-const badgeText = computed(() => (displayBadge.value > 99 ? '99+' : String(displayBadge.value)))
+const badgeText = computed(() => String(displayBadge.value))
 
 /** Solo las hojas (items con ruta y sin children) se marcan como activos */
 const isActive = computed(() => {
