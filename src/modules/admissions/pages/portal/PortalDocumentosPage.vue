@@ -124,6 +124,53 @@
                     <h2 class="text-base font-bold text-slate-700 uppercase tracking-wide">Documentos Requeridos</h2>
                 </div>
 
+                <!-- Banner de estado global de la revisión -->
+                <div
+                    v-if="!loadingDocs && docStats.total > 0"
+                    class="rounded-xl border p-4 flex items-start gap-3"
+                    :class="{
+                        'bg-emerald-50 border-emerald-200': overallState === 'approved',
+                        'bg-red-50 border-red-200':         overallState === 'rejected',
+                        'bg-amber-50 border-amber-200':     overallState === 'review',
+                        'bg-blue-50 border-blue-200':       overallState === 'incomplete',
+                    }"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 shrink-0 mt-0.5"
+                         :class="{
+                            'text-emerald-500': overallState === 'approved',
+                            'text-red-500':     overallState === 'rejected',
+                            'text-amber-500':   overallState === 'review',
+                            'text-blue-500':    overallState === 'incomplete',
+                         }">
+                        <path v-if="overallState === 'approved'" fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
+                        <path v-else-if="overallState === 'review'" fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clip-rule="evenodd" />
+                        <path v-else fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+                    </svg>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm font-bold"
+                           :class="{
+                                'text-emerald-800': overallState === 'approved',
+                                'text-red-800':     overallState === 'rejected',
+                                'text-amber-800':   overallState === 'review',
+                                'text-blue-800':    overallState === 'incomplete',
+                           }">{{ bannerTitle }}</p>
+                        <p class="text-xs mt-0.5 text-slate-600">{{ bannerMessage }}</p>
+
+                        <!-- Lista de documentos por corregir, con su motivo -->
+                        <ul v-if="overallState === 'rejected'" class="mt-2 space-y-1">
+                            <li v-for="s in rejectedSlots" :key="s.documentTypeId" class="text-xs text-red-700">
+                                <span class="font-semibold">{{ s.name }}</span>
+                                <span v-if="s.doc?.rejectionReason"> — {{ s.doc.rejectionReason }}</span>
+                            </li>
+                        </ul>
+
+                        <!-- Contador de avance -->
+                        <p class="text-[11px] font-semibold mt-2 text-slate-500">
+                            {{ docStats.approved }} de {{ docStats.total }} documentos obligatorios aprobados
+                        </p>
+                    </div>
+                </div>
+
                 <div v-if="loadingDocs" class="text-sm text-slate-400 py-4 text-center">Cargando documentos...</div>
                 <div v-else-if="docSlots.length === 0" class="text-sm text-slate-400 italic text-center py-4">
                     No hay documentos requeridos configurados.
@@ -171,7 +218,7 @@
                                     @click="triggerUpload(slot.documentTypeId, slot.acceptsFormats)"
                                 >
                                     <span v-if="uploading === slot.documentTypeId">SUBIENDO...</span>
-                                    <span v-else>{{ slot.doc ? 'REEMPLAZAR' : 'SUBIR' }} {{ slot.name }}</span>
+                                    <span v-else>{{ slot.doc?.status === 'rejected' ? 'CORREGIR' : (slot.doc ? 'REEMPLAZAR' : 'SUBIR') }} {{ slot.name }}</span>
                                 </button>
 
                                 <!-- Ver documento (solo si hay uno subido) -->
@@ -217,6 +264,14 @@
                                     </svg>
                                     <span v-if="slot.doc?.status === 'rejected'" class="text-[10px] font-semibold text-red-600 uppercase">Rechazado</span>
                                 </template>
+                            </div>
+
+                            <!-- Motivo de rechazo -->
+                            <div
+                                v-if="slot.doc?.status === 'rejected' && slot.doc?.rejectionReason"
+                                class="w-full bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-[11px] text-red-700 text-center"
+                            >
+                                <span class="font-semibold">Motivo del rechazo:</span> {{ slot.doc.rejectionReason }}
                             </div>
                         </div>
                     </div>
@@ -341,6 +396,48 @@ const previewIsImage = computed(() => previewMime.value !== null && PREVIEWABLE_
 const previewIsPdf   = computed(() => previewMime.value === 'application/pdf')
 
 const applicantStatus = computed(() => applicantData.value?.status ?? 0)
+
+/* ── Estado de la revisión de documentos (Fase A) ─────────────────────────── */
+const requiredSlots = computed(() => docSlots.value.filter(s => s.isRequired))
+const rejectedSlots = computed(() => requiredSlots.value.filter(s => s.doc?.status === 'rejected'))
+
+const docStats = computed(() => {
+    const req = requiredSlots.value
+    return {
+        total:    req.length,
+        approved: req.filter(s => s.doc?.status === 'approved').length,
+        rejected: req.filter(s => s.doc?.status === 'rejected').length,
+        pending:  req.filter(s => s.doc?.status === 'pending').length,
+        missing:  req.filter(s => !s.doc).length,
+    }
+})
+
+/** approved | rejected | review | incomplete (según los obligatorios). */
+const overallState = computed<'approved' | 'rejected' | 'review' | 'incomplete'>(() => {
+    const s = docStats.value
+    if (s.approved === s.total && s.total > 0) return 'approved'
+    if (s.rejected > 0)                        return 'rejected'
+    if (s.missing > 0)                         return 'incomplete'
+    return 'review' // todos subidos, ninguno rechazado, alguno en revisión
+})
+
+const bannerTitle = computed(() => ({
+    approved:   '✅ Documentos aprobados',
+    rejected:   '⚠️ Tienes documentos por corregir',
+    review:     '🕓 Tus documentos están en revisión',
+    incomplete: 'Aún te faltan documentos obligatorios',
+}[overallState.value]))
+
+const bannerMessage = computed(() => {
+    const s = docStats.value
+    switch (overallState.value) {
+        case 'approved':   return 'Todos tus documentos obligatorios fueron aprobados. Ya puedes continuar con tu proceso.'
+        case 'rejected':   return `Corrige y vuelve a subir ${s.rejected} documento(s). Revisa el motivo de cada uno:`
+        case 'review':     return 'Recibimos tus documentos y los estamos revisando. Te avisaremos cuando termine la revisión.'
+        case 'incomplete': return `Sube los ${s.missing} documento(s) obligatorio(s) que faltan para iniciar tu revisión.`
+        default:           return ''
+    }
+})
 
 const fullName = computed(() => {
     const d = applicantData.value
