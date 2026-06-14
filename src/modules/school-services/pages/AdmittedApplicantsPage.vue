@@ -4,7 +4,13 @@
         <!-- Encabezado -->
         <div class="flex items-start justify-between flex-wrap gap-3">
             <div>
-                <h1 class="text-xl font-semibold text-slate-800 uppercase">Aspirantes Admitidos</h1>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl font-semibold text-slate-800 uppercase">Aspirantes Admitidos</h1>
+                    <span
+                        v-if="filterPeriodId && !loading"
+                        class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold"
+                    >{{ totalItems }} por inscribir</span>
+                </div>
                 <p class="mt-1 text-sm text-slate-500">
                     Selecciona los aspirantes a inscribir, confirma el plan de estudio y presiona <strong>Inscribir Seleccionados</strong>.
                 </p>
@@ -76,11 +82,19 @@
         <!-- Tabla -->
         <div v-else class="space-y-3">
             <!-- Seleccionar todos -->
-            <div class="flex items-center gap-3 text-xs text-slate-500">
+            <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                 <label class="flex items-center gap-1.5 cursor-pointer">
                     <input type="checkbox" :checked="allSelected" :indeterminate="someSelected && !allSelected" class="w-4 h-4 rounded accent-green-600" @change="toggleAll" />
-                    <span>Seleccionar todos ({{ items.length }})</span>
+                    <span>Seleccionar esta página ({{ items.length }})</span>
                 </label>
+                <button
+                    v-if="totalItems > items.length"
+                    type="button"
+                    class="text-green-700 font-semibold underline hover:text-green-800 transition"
+                    @click="selectWholeCohort"
+                >
+                    Seleccionar todo el cohorte ({{ totalItems }})
+                </button>
                 <span v-if="selected.size > 0" class="text-green-600 font-semibold">{{ selected.size }} seleccionado(s)</span>
             </div>
 
@@ -268,7 +282,7 @@
         <Teleport to="body">
             <Transition enter-active-class="transition-opacity duration-150" enter-from-class="opacity-0">
                 <div v-if="enrollModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 p-4">
-                    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+                    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4">
                         <h2 class="text-base font-bold text-slate-800 uppercase tracking-wide">Confirmar Inscripción</h2>
 
                         <!-- Selección de periodo de ingreso -->
@@ -285,37 +299,64 @@
                             />
                         </div>
 
-                        <!-- Resumen -->
-                        <div class="text-sm text-slate-600 space-y-1">
-                            <p>Se inscribirá a <strong class="text-green-700">{{ selected.size }} aspirante(s)</strong> con el plan de estudio actualmente seleccionado en cada uno.</p>
-                            <p class="text-xs text-slate-400">Los aspirantes sin plan de estudio válido seleccionado serán omitidos y se reportarán errores.</p>
-                        </div>
-
-                        <p v-if="enrollError" class="text-xs text-red-600 font-medium">{{ enrollError }}</p>
-
-                        <!-- Resultados de inscripción -->
-                        <div v-if="enrollResults.length > 0" class="border rounded-lg overflow-hidden text-xs max-h-40 overflow-y-auto">
-                            <div v-for="r in enrollResults" :key="r.applicantId" class="flex items-center gap-2 px-3 py-2 border-b last:border-0" :class="r.ok ? 'bg-green-50' : 'bg-red-50'">
-                                <svg v-if="r.ok" class="w-3.5 h-3.5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                                <svg v-else class="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                                <span class="font-medium">{{ r.name }}</span>
-                                <span v-if="!r.ok" class="text-red-600 text-[10px]">{{ r.error }}</span>
+                        <!-- ÉXITO: resumen + siguiente paso -->
+                        <template v-if="enrollSummary !== null">
+                            <div class="rounded-lg bg-green-50 border border-green-200 p-4 text-center space-y-1">
+                                <p class="text-3xl font-bold text-green-700">{{ enrollSummary }}</p>
+                                <p class="text-sm text-green-700">aspirante(s) inscrito(s) correctamente.</p>
                             </div>
-                        </div>
+                            <p class="text-xs text-slate-500 text-center">El siguiente paso es asignarlos a un grupo (su carga académica de nuevo ingreso).</p>
+                            <div class="flex gap-2 justify-end pt-1">
+                                <button class="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition" @click="enrollModal = false">Cerrar</button>
+                                <button class="px-5 py-2 text-sm rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition" @click="goToGroups">Asignar a grupos →</button>
+                            </div>
+                        </template>
 
-                        <div class="flex gap-2 justify-end pt-1">
-                            <button class="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition" :disabled="enrolling" @click="enrollModal = false; enrollResults = []">
-                                {{ enrollResults.length > 0 ? 'Cerrar' : 'Cancelar' }}
-                            </button>
-                            <button
-                                v-if="enrollResults.length === 0"
-                                class="px-5 py-2 text-sm rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 disabled:opacity-50 transition"
-                                :disabled="enrolling || !enrollPeriodId"
-                                @click="doEnroll"
-                            >
-                                {{ enrolling ? 'Inscribiendo...' : 'Confirmar' }}
-                            </button>
-                        </div>
+                        <!-- PREVIEW: validación previa antes de comprometer -->
+                        <template v-else>
+                            <div v-if="previewing" class="flex items-center gap-2 text-sm text-slate-400 italic py-4 justify-center">
+                                <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                                Validando inscripción...
+                            </div>
+
+                            <template v-else>
+                                <!-- Resumen de validación -->
+                                <div class="flex items-center gap-2 text-sm">
+                                    <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold">{{ previewOk.length }} a inscribir</span>
+                                    <span v-if="previewFail.length" class="px-2 py-0.5 rounded-full bg-red-100 text-red-600 font-semibold">{{ previewFail.length }} con problema</span>
+                                </div>
+
+                                <!-- Lista -->
+                                <div v-if="previewItems.length" class="border rounded-lg overflow-hidden text-xs max-h-56 overflow-y-auto">
+                                    <div v-for="p in previewItems" :key="p.applicantId" class="flex items-start gap-2 px-3 py-2 border-b last:border-0" :class="p.ok ? 'bg-green-50' : 'bg-red-50'">
+                                        <svg v-if="p.ok" class="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                        <svg v-else class="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="font-medium text-slate-700 truncate">{{ p.preview.fullName || ('Aspirante #' + p.applicantId) }}</p>
+                                            <p v-if="p.ok" class="text-[10px] text-slate-500">
+                                                <span class="font-mono font-semibold text-slate-700">{{ p.preview.numControl }}</span>
+                                                · {{ p.preview.careerName }} · {{ p.preview.modalityName }}
+                                            </p>
+                                            <p v-else class="text-[10px] text-red-600">{{ p.reason }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p v-if="previewFail.length" class="text-[11px] text-slate-400">Solo se inscribirán los válidos; los que tienen problema quedan pendientes para corregir.</p>
+                                <p v-if="enrollError" class="text-xs text-red-600 font-medium">{{ enrollError }}</p>
+
+                                <div class="flex gap-2 justify-end pt-1">
+                                    <button class="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition" :disabled="enrolling" @click="enrollModal = false">Cancelar</button>
+                                    <button
+                                        class="px-5 py-2 text-sm rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 disabled:opacity-50 transition"
+                                        :disabled="enrolling || !enrollPeriodId || previewOk.length === 0"
+                                        @click="doEnroll"
+                                    >
+                                        {{ enrolling ? 'Inscribiendo...' : `Inscribir ${previewOk.length}` }}
+                                    </button>
+                                </div>
+                            </template>
+                        </template>
                     </div>
                 </div>
             </Transition>
@@ -326,9 +367,14 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
+
+const router = useRouter()
+const toast  = useToast()
 
 // ── Sub-componentes inline ─────────────────────────────────────────────────
 
@@ -504,11 +550,22 @@ const someSelected      = computed(() => items.value.some(i => selected.value.ha
 const drawerItem = ref<AdmittedApplicant | null>(null)
 
 // Enroll modal
-const enrollModal   = ref(false)
-const enrollPeriodId = ref<number | null>(null)
-const enrolling     = ref(false)
-const enrollError   = ref<string | null>(null)
-const enrollResults = ref<{ applicantId: number; name: string; ok: boolean; error?: string }[]>([])
+interface PreviewItem {
+    applicantId: number
+    ok: boolean
+    reason: string | null
+    preview: { numControl?: string | null; fullName?: string | null; careerName?: string | null; modalityName?: string | null; periodName?: string | null; currentPeriodNumber?: number }
+}
+const enrollModal    = ref(false)
+const enrollPeriodId  = ref<number | null>(null)
+const previewing     = ref(false)
+const enrolling      = ref(false)
+const enrollError    = ref<string | null>(null)
+const previewItems   = ref<PreviewItem[]>([])
+const enrollSummary  = ref<number | null>(null)   // # inscritos tras confirmar
+
+const previewOk   = computed(() => previewItems.value.filter(p => p.ok))
+const previewFail = computed(() => previewItems.value.filter(p => !p.ok))
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -590,51 +647,122 @@ function openDrawer(item: AdmittedApplicant) {
 
 // ── Inscripción ────────────────────────────────────────────────────────────
 
-function openEnrollModal() {
-    enrollError.value   = null
-    enrollResults.value = []
-    enrollPeriodId.value = filterPeriodId.value
-    enrollModal.value   = true
+/** Construye los items para preview/bulk; separa los inválidos del lado cliente. */
+function buildEnrollItems(): {
+    valid: Array<{ applicant_id: number; study_plan_id: number; modality_id: number; current_period_number: number }>
+    invalid: PreviewItem[]
+} {
+    const sel = items.value.filter(i => selected.value.has(i.id))
+    const valid: Array<{ applicant_id: number; study_plan_id: number; modality_id: number; current_period_number: number }> = []
+    const invalid: PreviewItem[] = []
+    for (const i of sel) {
+        const o = offerSelections.value.get(i.id)
+        if (!o || !o.studyPlanId) {
+            invalid.push({ applicantId: i.id, ok: false, reason: 'Sin plan de estudio seleccionado', preview: { fullName: fullName(i) } })
+            continue
+        }
+        if (!o.modalityId) {
+            invalid.push({ applicantId: i.id, ok: false, reason: 'La oferta no tiene modalidad', preview: { fullName: fullName(i) } })
+            continue
+        }
+        valid.push({ applicant_id: i.id, study_plan_id: o.studyPlanId, modality_id: o.modalityId, current_period_number: 1 })
+    }
+    return { valid, invalid }
 }
 
-async function doEnroll() {
+function openEnrollModal() {
+    enrollError.value   = null
+    enrollSummary.value = null
+    previewItems.value  = []
+    enrollPeriodId.value = filterPeriodId.value
+    enrollModal.value   = true
+    runPreview()
+}
+
+/** Llama a /enroll/preview para mostrar qué pasará antes de comprometer. */
+async function runPreview() {
     if (!enrollPeriodId.value) return
-    enrolling.value  = true
-    enrollError.value = null
-    enrollResults.value = []
-
-    const selectedItems = items.value.filter(i => selected.value.has(i.id))
-    const results: typeof enrollResults.value = []
-
-    for (const item of selectedItems) {
-        const sel = offerSelections.value.get(item.id) ?? null
-        if (!sel || !sel.studyPlanId) {
-            results.push({ applicantId: item.id, name: fullName(item), ok: false, error: 'Sin plan de estudio seleccionado' })
-            continue
-        }
-        if (!sel.modalityId) {
-            results.push({ applicantId: item.id, name: fullName(item), ok: false, error: 'La oferta no tiene modalidad definida' })
-            continue
-        }
-        try {
-            await api.post(API.SCHOOL_SERVICES_API.students.enroll(item.id), {
-                study_plan_id:         sel.studyPlanId,
-                modality_id:           sel.modalityId,
-                entry_period_id:       enrollPeriodId.value,
-                current_period_number: 1,
-            })
-            results.push({ applicantId: item.id, name: fullName(item), ok: true })
-        } catch (e: any) {
-            results.push({ applicantId: item.id, name: fullName(item), ok: false, error: e?.response?.data?.message ?? 'Error' })
-        }
+    enrollError.value   = null
+    enrollSummary.value = null
+    const { valid, invalid } = buildEnrollItems()
+    if (!valid.length) { previewItems.value = invalid; return }
+    previewing.value = true
+    try {
+        const { data } = await api.post(API.SCHOOL_SERVICES_API.students.enrollPreview, {
+            entry_period_id: enrollPeriodId.value,
+            items:           valid,
+        })
+        previewItems.value = [...(data as PreviewItem[]), ...invalid]
+    } catch (e: any) {
+        enrollError.value  = e?.response?.data?.message ?? 'No se pudo validar la inscripción.'
+        previewItems.value = invalid
+    } finally {
+        previewing.value = false
     }
+}
 
-    enrolling.value     = false
-    enrollResults.value = results
+/** Inscribe en bloque (atómico) solo los items válidos del preview. */
+async function doEnroll() {
+    if (!enrollPeriodId.value || previewOk.value.length === 0) return
+    enrolling.value   = true
+    enrollError.value = null
+    try {
+        const payloadItems = previewOk.value.map(p => {
+            const sel = offerSelections.value.get(p.applicantId)!
+            return {
+                applicant_id:          p.applicantId,
+                study_plan_id:         sel!.studyPlanId,
+                modality_id:           sel!.modalityId,
+                current_period_number: p.preview.currentPeriodNumber ?? 1,
+            }
+        })
+        const { data } = await api.post(API.SCHOOL_SERVICES_API.students.enrollBulk, {
+            entry_period_id: enrollPeriodId.value,
+            items:           payloadItems,
+        })
+        enrollSummary.value = data.enrolled ?? payloadItems.length
+        toast.success(`Se inscribieron ${enrollSummary.value} aspirante(s).`)
 
-    // Limpiar seleccionados exitosos y recargar
-    const failedIds = new Set(results.filter(r => !r.ok).map(r => r.applicantId))
-    selected.value = new Set([...selected.value].filter(id => failedIds.has(id)))
-    await loadPage(currentPage.value)
+        const enrolledIds = new Set(previewOk.value.map(p => p.applicantId))
+        selected.value = new Set([...selected.value].filter(id => !enrolledIds.has(id)))
+        await loadPage(currentPage.value)
+    } catch (e: any) {
+        if (e?.response?.status === 422 && Array.isArray(e.response.data?.failed)) {
+            enrollError.value = e.response.data.message ?? 'Ningún aspirante fue inscrito.'
+            await runPreview()
+        } else {
+            enrollError.value = e?.response?.data?.message ?? 'No se pudo inscribir.'
+        }
+    } finally {
+        enrolling.value = false
+    }
+}
+
+function goToGroups() {
+    router.push({ name: 'school-services.group-assignment' })
+}
+
+// Re-valida cuando cambia el periodo de ingreso con el modal abierto.
+watch(enrollPeriodId, () => { if (enrollModal.value) runPreview() })
+
+/** Selecciona TODOS los admitidos del periodo (todas las páginas). */
+async function selectWholeCohort() {
+    if (!filterPeriodId.value) return
+    loading.value = true
+    try {
+        const params = new URLSearchParams({
+            page:               '1',
+            per_page:           String(Math.max(totalItems.value, perPage)),
+            academic_period_id: String(filterPeriodId.value),
+        })
+        if (search.value) params.set('search', search.value)
+        const { data } = await api.get(`${API.SCHOOL_SERVICES_API.admittedApplicants.list}?${params}`)
+        items.value       = data.data ?? []
+        totalItems.value  = data.meta?.total ?? items.value.length
+        currentPage.value = 1
+        selected.value    = new Set(items.value.map((i: AdmittedApplicant) => i.id))
+    } finally {
+        loading.value = false
+    }
 }
 </script>
