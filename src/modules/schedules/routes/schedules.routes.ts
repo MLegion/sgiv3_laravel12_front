@@ -1,5 +1,11 @@
 export default [
     {
+        path: 'my-schedule',
+        name: 'schedules.my-schedule',
+        component: () => import('@/modules/schedules/pages/MyHorarioPage.vue'),
+        meta: { title: 'Mi Horario' },
+    },
+    {
         path: 'schedules/academic',
         name: 'schedules.academic',
         component: () => import('@/modules/schedules/pages/AcademicSchedulePage.vue'),

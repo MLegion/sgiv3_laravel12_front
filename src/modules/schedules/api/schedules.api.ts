@@ -4,6 +4,7 @@ import type { ApiModule } from '@/shared/api/types'
 export default {
     name: 'SCHEDULES_API',
     api: {
+        mySchedule: apiUrl('/schedules/my-schedule'),
         academic: {
             byConfig:        (configId: string | number) => apiUrl(`/schedules/academic/${configId}`),
             assignable:      (configId: string | number) => apiUrl(`/schedules/academic/${configId}/assignable`),
