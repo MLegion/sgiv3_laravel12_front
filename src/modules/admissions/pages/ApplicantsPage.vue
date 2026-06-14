@@ -100,6 +100,15 @@
                 </span>
             </template>
 
+            <template #cell-docs="{ row }">
+                <div v-if="docSummary[row.id] && docSummary[row.id].total" class="flex flex-wrap items-center gap-1">
+                    <span v-if="docSummary[row.id].approved" class="px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-semibold" title="Aprobados">{{ docSummary[row.id].approved }} ✓</span>
+                    <span v-if="docSummary[row.id].pending" class="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold" title="Pendientes">{{ docSummary[row.id].pending }} pend.</span>
+                    <span v-if="docSummary[row.id].rejected" class="px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-semibold" title="Rechazados">{{ docSummary[row.id].rejected }} rech.</span>
+                </div>
+                <span v-else class="text-xs text-slate-300">—</span>
+            </template>
+
             <template #cell-opciones="{ row }">
                 <div class="flex items-center justify-center gap-2">
                     <!-- Revisar documentos -->
@@ -159,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
@@ -206,14 +215,33 @@ const columns: DataTableColumn<Applicant>[] = [
     { key: 'oferta',   label: 'OFERTA' },
     { key: 'periodo',  label: 'PERIODO' },
     { key: 'status',   label: 'ESTADO' },
+    { key: 'docs',     label: 'DOCS' },
     { key: 'opciones', label: 'OPCIONES' },
 ]
+
+// Resumen de documentos por aspirante (id -> conteos), de la página visible.
+type DocSummary = { pending: number; approved: number; rejected: number; reviewing: number; total: number }
+const docSummary = ref<Record<number, DocSummary>>({})
+
+async function loadDocSummary() {
+    const ids = rows.value.map(r => r.id)
+    if (!ids.length) { docSummary.value = {}; return }
+    try {
+        const res = await api.get(`${API.ADMISSIONS_API.applicants.documentsSummary}?ids=${ids.join(',')}`)
+        docSummary.value = res.data ?? {}
+    } catch {
+        docSummary.value = {}
+    }
+}
 
 const { rows, loading, pagination, handleChange, fetchData } =
     useDataTableFetch<Applicant>({
         endpoint: API.ADMISSIONS_API.applicants.list,
         extraSearch: searchFilter,
     })
+
+// Cuando cambia la página visible, recarga el resumen de documentos.
+watch(rows, () => loadDocSummary())
 
 async function loadDocsCount() {
     try {
@@ -282,6 +310,7 @@ function openReview(row: Applicant) {
 function onReviewed() {
     fetchData()
     loadDocsCount()
+    loadDocSummary()
     menuStore.loadBadges()
 }
 

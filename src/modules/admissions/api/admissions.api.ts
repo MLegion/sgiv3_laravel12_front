@@ -36,6 +36,7 @@ export default {
         applicants: {
             list:          apiUrl('/admissions/applicants'),
             docsToReviewCount: apiUrl('/admissions/applicants/docs-to-review-count'),
+            documentsSummary:  apiUrl('/admissions/applicants/documents-summary'),
             byId:          (id: string | number) => apiUrl(`/admissions/applicants/${id}`),
             create:        apiUrl('/admissions/applicants'),
             update:        (id: string | number) => apiUrl(`/admissions/applicants/${id}`),
