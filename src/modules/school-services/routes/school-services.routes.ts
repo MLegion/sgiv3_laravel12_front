@@ -1,4 +1,11 @@
 export default [
+    // Alumno
+    {
+        path: 'school-services/my-kardex',
+        name: 'school-services.my-kardex',
+        component: () => import('@/modules/school-services/pages/MyKardexPage.vue'),
+        meta: { title: 'Mi Kardex' },
+    },
     // Students
     {
         path: 'school-services/students',

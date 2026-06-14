@@ -108,6 +108,7 @@ export default {
             delete:   (studentId: string | number, id: string | number) => apiUrl(`/school-services/students/${studentId}/grades/${id}`),
             audits:   (studentId: string | number, id: string | number) => apiUrl(`/school-services/students/${studentId}/grades/${id}/audits`),
             subjects: (studentId: string | number) => apiUrl(`/school-services/students/${studentId}/subjects`),
+            myKardex: apiUrl('/school-services/my-kardex'),
         },
         gradeImport: {
             json: apiUrl('/school-services/grades/import'),
