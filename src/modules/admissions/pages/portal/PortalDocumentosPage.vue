@@ -414,13 +414,23 @@ async function uploadDoc(event: Event, documentTypeId: number) {
         fd.append('file', file)
         fd.append('document_type_id', String(documentTypeId))
         await api.post(API.ADMISSIONS_API.portal.upload, fd)
-        await fetchAll()
+        // Actualiza SOLO el slot que cambió (sin recargar toda la página).
+        await refreshSlot(documentTypeId)
         success.value = 'Documento subido correctamente.'
     } catch (e: any) {
         error.value = e?.response?.data?.message ?? 'Error al subir el documento.'
     } finally {
         uploading.value = null
     }
+}
+
+/** Refresca en su lugar únicamente el documento del slot indicado. */
+async function refreshSlot(documentTypeId: number) {
+    const { data } = await api.get(API.ADMISSIONS_API.portal.documents)
+    const uploaded: ApplicantDocument[] = data?.uploaded ?? []
+    const found = uploaded.find(d => d.documentTypeId === documentTypeId) ?? null
+    const i = docSlots.value.findIndex(s => s.documentTypeId === documentTypeId)
+    if (i !== -1) docSlots.value[i] = { ...docSlots.value[i], doc: found }
 }
 
 // ── Lógica de previsualización / descarga ─────────────────────────────────────
