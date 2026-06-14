@@ -11,7 +11,29 @@
             </button>
         </div>
 
-        <AdmissionPeriodSelector @change="fetchData()" />
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <AdmissionPeriodSelector @change="onPeriodChange" />
+
+            <button
+                type="button"
+                @click="toggleDocsFilter"
+                :class="docsToReview
+                    ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+                class="inline-flex items-center gap-2 px-3.5 py-1.5 text-sm font-medium rounded-full border transition self-start sm:self-auto"
+                title="Mostrar solo aspirantes con documentos pendientes o rechazados"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                Documentos por revisar
+                <span
+                    v-if="docsCount > 0"
+                    :class="docsToReview ? 'bg-white/25 text-white' : 'bg-amber-100 text-amber-700'"
+                    class="px-1.5 py-0.5 text-xs font-bold rounded-full"
+                >{{ docsCount }}</span>
+            </button>
+        </div>
 
         <DataTable
             :columns="columns"
@@ -102,7 +124,7 @@
             :applicant-id="reviewApplicantId"
             :applicant-name="reviewApplicantName"
             @close="reviewDrawerOpen = false"
-            @reviewed="fetchData()"
+            @reviewed="onReviewed"
         />
     </div>
 </template>
@@ -120,13 +142,19 @@ import { STATUS_OPTIONS, STATUS_CLASSES } from '@/modules/admissions/types/appli
 import AdmissionPeriodSelector from '@/modules/admissions/components/AdmissionPeriodSelector.vue'
 import DocumentReviewDrawer from '@/modules/admissions/components/DocumentReviewDrawer.vue'
 import { useAdmissionPeriodStore } from '@/modules/admissions/stores/admission-period.store'
+import { api } from '@/shared/services/api'
 
 const router = useRouter()
 const periodStore = useAdmissionPeriodStore()
 
-const periodFilter = computed(() =>
-    periodStore.selectedPeriodId !== null ? { academic_period_id: periodStore.selectedPeriodId } : {}
-)
+// Filtro "Documentos por revisar": aspirantes con docs pending/rejected.
+const docsToReview = ref(false)
+const docsCount    = ref(0)
+
+const searchFilter = computed(() => ({
+    ...(periodStore.selectedPeriodId !== null ? { academic_period_id: periodStore.selectedPeriodId } : {}),
+    ...(docsToReview.value ? { has_docs_to_review: 1 } : {}),
+}))
 
 const columns: DataTableColumn<Applicant>[] = [
     { key: 'id',       label: '#',       field: 'id',    sortable: true },
@@ -142,8 +170,31 @@ const columns: DataTableColumn<Applicant>[] = [
 const { rows, loading, pagination, handleChange, fetchData } =
     useDataTableFetch<Applicant>({
         endpoint: API.ADMISSIONS_API.applicants.list,
-        extraSearch: periodFilter,
+        extraSearch: searchFilter,
     })
+
+async function loadDocsCount() {
+    try {
+        const base = API.ADMISSIONS_API.applicants.docsToReviewCount
+        const url = periodStore.selectedPeriodId !== null
+            ? `${base}?academic_period_id=${periodStore.selectedPeriodId}`
+            : base
+        const res = await api.get(url)
+        docsCount.value = res.data?.count ?? 0
+    } catch {
+        docsCount.value = 0
+    }
+}
+
+function toggleDocsFilter() {
+    docsToReview.value = !docsToReview.value
+    fetchData()
+}
+
+function onPeriodChange() {
+    fetchData()
+    loadDocsCount()
+}
 
 // Review drawer
 const reviewDrawerOpen    = ref(false)
@@ -156,5 +207,13 @@ function openReview(row: Applicant) {
     reviewDrawerOpen.value    = true
 }
 
-onMounted(() => fetchData())
+function onReviewed() {
+    fetchData()
+    loadDocsCount()
+}
+
+onMounted(() => {
+    fetchData()
+    loadDocsCount()
+})
 </script>
