@@ -5,10 +5,14 @@
         <div class="flex items-start justify-between gap-4 flex-wrap">
             <div>
                 <h1 class="text-xl font-semibold text-slate-800 uppercase">Cuadro de Resultados</h1>
-                <p v-if="tab === 'ranking'" class="mt-1 text-sm text-slate-500">
+                <p v-if="tab === 'ranking' && !includeAdmitted" class="mt-1 text-sm text-slate-500">
                     Aspirantes con resultado de examen ordenados por puntaje.
                     Activa o desactiva el switch <span class="font-semibold">¿Admitido?</span> y presiona
                     <span class="font-semibold text-blue-700">Confirmar Admisión</span> para aplicar los cambios.
+                </p>
+                <p v-else-if="tab === 'ranking' && includeAdmitted" class="mt-1 text-sm text-slate-500">
+                    Vista de consulta: incluye aspirantes ya <span class="font-semibold text-green-700">admitidos/inscritos</span>.
+                    Solo lectura — no modifica la admisión.
                 </p>
                 <p v-else class="mt-1 text-sm text-slate-500">
                     Aspirantes con ficha que aún <span class="font-semibold text-amber-700">no tienen calificación cargada</span>.
@@ -17,7 +21,7 @@
             </div>
 
             <button
-                v-if="tab === 'ranking'"
+                v-if="tab === 'ranking' && !includeAdmitted"
                 class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold uppercase tracking-wide hover:bg-blue-700 disabled:opacity-50 transition shadow-sm"
                 :disabled="confirming || !periodId || items.length === 0"
                 @click="openConfirm"
@@ -70,6 +74,20 @@
             />
         </div>
 
+        <!-- Toggle: incluir admitidos (consulta histórica) -->
+        <label
+            v-if="tab === 'ranking' && periodId"
+            class="inline-flex items-center gap-2 cursor-pointer select-none"
+        >
+            <input
+                type="checkbox"
+                v-model="includeAdmitted"
+                @change="onIncludeAdmittedChange"
+                class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span class="text-sm text-slate-600">Incluir admitidos <span class="text-slate-400">(consulta histórica, solo lectura)</span></span>
+        </label>
+
         <!-- Sin periodo -->
         <div v-if="!periodId" class="flex flex-col items-center justify-center py-16 text-slate-400 text-sm gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 opacity-40">
@@ -98,8 +116,16 @@
         <!-- Tabla de resultados -->
         <div v-else class="space-y-4">
 
+            <!-- Estadística (consulta histórica) -->
+            <div v-if="tab === 'ranking' && includeAdmitted" class="grid grid-cols-1 gap-3 max-w-[12rem]">
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-center">
+                    <p class="text-xl font-bold text-slate-800">{{ totalItems }}</p>
+                    <p class="text-[11px] text-slate-500 uppercase mt-0.5">Con resultado o más</p>
+                </div>
+            </div>
+
             <!-- Estadísticas rápidas -->
-            <div v-if="tab === 'ranking'" class="grid grid-cols-3 gap-3 max-w-sm">
+            <div v-else-if="tab === 'ranking'" class="grid grid-cols-3 gap-3 max-w-sm">
                 <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-center">
                     <p class="text-xl font-bold text-slate-800">{{ totalItems }}</p>
                     <p class="text-[11px] text-slate-500 uppercase mt-0.5">Total</p>
@@ -129,7 +155,7 @@
                             <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nombre Completo</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-44">CURP</th>
                             <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase w-24">Puntaje</th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase w-28">¿Admitido?</th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase w-28">{{ includeAdmitted ? 'Estado' : '¿Admitido?' }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -162,23 +188,32 @@
                                 </span>
                             </td>
 
-                            <!-- Switch admitido -->
+                            <!-- Switch admitido / Estado (consulta) -->
                             <td class="px-4 py-3 text-center">
-                                <button
-                                    type="button"
-                                    class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
-                                    :class="excludedIds.has(item.id) ? 'bg-slate-300' : 'bg-green-500'"
-                                    :aria-pressed="!excludedIds.has(item.id)"
-                                    @click="toggleAdmitted(item.id)"
+                                <template v-if="!includeAdmitted">
+                                    <button
+                                        type="button"
+                                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+                                        :class="excludedIds.has(item.id) ? 'bg-slate-300' : 'bg-green-500'"
+                                        :aria-pressed="!excludedIds.has(item.id)"
+                                        @click="toggleAdmitted(item.id)"
+                                    >
+                                        <span
+                                            class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
+                                            :class="excludedIds.has(item.id) ? 'translate-x-1' : 'translate-x-6'"
+                                        />
+                                    </button>
+                                    <p class="text-[10px] mt-0.5" :class="excludedIds.has(item.id) ? 'text-red-500 font-semibold' : 'text-green-600'">
+                                        {{ excludedIds.has(item.id) ? 'NO' : 'SÍ' }}
+                                    </p>
+                                </template>
+                                <span
+                                    v-else
+                                    class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold"
+                                    :class="statusBadgeClass(item.status)"
                                 >
-                                    <span
-                                        class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
-                                        :class="excludedIds.has(item.id) ? 'translate-x-1' : 'translate-x-6'"
-                                    />
-                                </button>
-                                <p class="text-[10px] mt-0.5" :class="excludedIds.has(item.id) ? 'text-red-500 font-semibold' : 'text-green-600'">
-                                    {{ excludedIds.has(item.id) ? 'NO' : 'SÍ' }}
-                                </p>
+                                    {{ statusLabel(item.status) }}
+                                </span>
                             </td>
                         </tr>
                     </tbody>
@@ -416,6 +451,9 @@ type Tab = 'ranking' | 'pending'
 
 const tab         = ref<Tab>('ranking')
 const periodId    = ref<number | null>(null)
+// "Incluir admitidos": vista de consulta histórica (status >= CON_RESULTADO),
+// solo lectura — no permite admitir/excluir.
+const includeAdmitted = ref(false)
 
 const loading     = ref(false)
 const items       = ref<ApplicantRow[]>([])
@@ -513,6 +551,20 @@ function scoreBadgeClass(score: string | null): string {
     return 'bg-red-100 text-red-600'
 }
 
+const STATUS_LABELS: Record<number, string> = {
+    5: 'Con resultado',
+    6: 'Admitido',
+    7: 'Inscrito',
+}
+function statusLabel(status: number): string {
+    return STATUS_LABELS[status] ?? `Estado ${status}`
+}
+function statusBadgeClass(status: number): string {
+    if (status >= 7) return 'bg-indigo-100 text-indigo-700'
+    if (status === 6) return 'bg-green-100 text-green-700'
+    return 'bg-slate-100 text-slate-600'
+}
+
 // ── Carga de datos ────────────────────────────────────────────────────────────
 
 async function loadPage(page: number) {
@@ -524,6 +576,9 @@ async function loadPage(page: number) {
             per_page:           String(perPage),
             academic_period_id: String(periodId.value),
         })
+        if (tab.value === 'ranking' && includeAdmitted.value) {
+            params.set('include_admitted', '1')
+        }
         const url = tab.value === 'pending'
             ? API.ADMISSIONS_API.applicantRanking.pendingEvaluation(params.toString())
             : API.ADMISSIONS_API.applicantRanking.list(params.toString())
@@ -567,9 +622,15 @@ function onTabChange(next: Tab) {
     if (periodId.value) loadPage(1)
 }
 
+function onIncludeAdmittedChange() {
+    resetListState()
+    if (periodId.value) loadPage(1)
+}
+
 // ── Switches ──────────────────────────────────────────────────────────────────
 
 function toggleAdmitted(id: number) {
+    if (includeAdmitted.value) return // vista de consulta: solo lectura
     const next = new Set(excludedIds.value)
     const nextReasons = new Map(excludedReasons.value)
     if (next.has(id)) {
