@@ -2,7 +2,7 @@
     <nav
         v-if="currentIndex !== -1"
         aria-label="Progreso del registro de admisión"
-        class="bg-white border border-slate-200 rounded-xl shadow-sm p-3 sm:p-4 print:hidden max-w-2xl"
+        class="bg-white border border-slate-200 rounded-xl shadow-sm p-3 sm:p-4 print:hidden max-w-4xl"
     >
         <!-- Cabecera: paso actual + navegación -->
         <div class="flex items-center justify-between gap-3 mb-3">

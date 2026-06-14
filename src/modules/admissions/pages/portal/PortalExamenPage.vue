@@ -1,5 +1,5 @@
 <template>
-    <div class="max-w-3xl space-y-4">
+    <div class="max-w-4xl space-y-4">
         <PortalStepper />
         <h1 class="text-xl font-semibold text-slate-800 print:hidden">EXAMEN DE ADMISIÓN</h1>
 

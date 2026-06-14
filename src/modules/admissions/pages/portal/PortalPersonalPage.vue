@@ -1,5 +1,5 @@
 <template>
-    <div class="max-w-2xl space-y-4">
+    <div class="max-w-4xl space-y-4">
         <PortalStepper />
         <PortalEditHeader
             title="INFORMACIÓN GENERAL"

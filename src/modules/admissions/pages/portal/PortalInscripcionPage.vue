@@ -1,5 +1,5 @@
 <template>
-    <div class="max-w-2xl space-y-4">
+    <div class="max-w-4xl space-y-4">
         <PortalStepper />
         <h2 class="text-lg font-bold text-slate-700 uppercase tracking-widest">PREFICHA</h2>
 
