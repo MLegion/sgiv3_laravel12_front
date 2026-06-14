@@ -24,7 +24,8 @@
                 </button>
                 <button
                     type="button"
-                    :disabled="currentIndex === steps.length - 1"
+                    :disabled="currentIndex === steps.length - 1 || isLocked(currentIndex + 1)"
+                    :title="isLocked(currentIndex + 1) ? lockReason(currentIndex + 1) : undefined"
                     class="inline-flex w-[6.5rem] items-center justify-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
                     @click="go(currentIndex + 1)"
                 >
@@ -37,21 +38,26 @@
         </div>
 
         <!-- Línea de progreso en CSS Grid: columnas 'auto' para los círculos y
-             'minmax(0,1fr)' para los 9 conectores → por definición todos los
-             tramos miden EXACTAMENTE igual; nada crece entre pasos. -->
+             'minmax(0,1fr)' para los conectores → todos los tramos iguales. -->
         <ol class="grid items-center gap-x-1" :style="{ gridTemplateColumns: gridCols }">
             <template v-for="(s, i) in steps" :key="s.name">
                 <li class="contents">
                     <button
                         type="button"
-                        :aria-label="`Ir al paso ${i + 1}: ${s.label}`"
+                        :disabled="isLocked(i)"
+                        :aria-label="isLocked(i) ? `Paso ${i + 1} bloqueado: ${lockReason(i)}` : `Ir al paso ${i + 1}: ${s.label}`"
                         :aria-current="i === currentIndex ? 'step' : undefined"
-                        :title="s.label"
-                        class="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold transition focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-400"
+                        :title="isLocked(i) ? lockReason(i) : s.label"
+                        class="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold transition focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-400 disabled:cursor-not-allowed"
                         :class="circleClass(i)"
                         @click="go(i)"
                     >
-                        <svg v-if="i < currentIndex" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="h-3.5 w-3.5">
+                        <!-- candado en pasos bloqueados -->
+                        <svg v-if="isLocked(i)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-3.5 w-3.5">
+                            <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clip-rule="evenodd" />
+                        </svg>
+                        <!-- check en pasos completados -->
+                        <svg v-else-if="i < currentIndex" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="h-3.5 w-3.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                         </svg>
                         <template v-else>{{ i + 1 }}</template>
@@ -61,7 +67,7 @@
                         v-if="i < steps.length - 1"
                         aria-hidden="true"
                         class="h-0.5 w-full rounded-full"
-                        :class="i < currentIndex ? 'bg-emerald-400' : 'bg-slate-200'"
+                        :class="i < currentIndex && !isLocked(i + 1) ? 'bg-emerald-400' : 'bg-slate-200'"
                     />
                 </li>
             </template>
@@ -70,17 +76,31 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { api } from '@/shared/services/api'
+import { API } from '@/shared/api'
 
 /**
- * Indicador de progreso del portal del aspirante (10 pasos).
- * Resuelve la fricción "portal de 10 pasos sin stepper ni Anterior/Siguiente"
- * del journey de admisión. Se inserta al tope de cada página-paso del portal;
- * detecta el paso actual por el nombre de la ruta.
+ * Indicador de progreso del portal del aspirante (10 pasos) con GATING.
+ *
+ * Estados del aspirante: PROSPECTO=2, PREFICHA=3, FICHA=4, ...
+ * Desbloqueo por paso:
+ *  - 1..6 (expediente): siempre.
+ *  - 7 Preficha:   estado >= PREFICHA (3) — el expediente debe estar completo.
+ *  - 8 Documentos: estado >= FICHA (4).
+ *  - 9 Ficha:      todos los documentos requeridos en estado 'approved'.
+ *  - 10 Examen:    igual que el 9 (documentos aprobados).
+ *
+ * Además de mostrar el candado y deshabilitar la navegación, si el aspirante
+ * cae (por URL directa) en un paso bloqueado, se le redirige al último paso
+ * disponible.
  */
 
 interface Step { name: string; label: string }
+
+const STATUS_PREFICHA = 3
+const STATUS_FICHA    = 4
 
 const steps: Step[] = [
     { name: 'admissions.portal.personal',     label: 'General' },
@@ -98,20 +118,86 @@ const steps: Step[] = [
 const route  = useRoute()
 const router = useRouter()
 
+const status       = ref(0)
+const docsApproved = ref(false)
+const loaded       = ref(false)
+
 const currentIndex = computed(() => steps.findIndex(s => s.name === route.name))
 
-// Columnas del grid: 'auto' por cada círculo + 'minmax(0,1fr)' por cada
-// conector → los (n-1) tramos son idénticos por construcción.
+// Columnas del grid: 'auto' por círculo + 'minmax(0,1fr)' por conector.
 const gridCols = computed(() => 'auto' + ' minmax(0, 1fr) auto'.repeat(steps.length - 1))
+
+/** ¿El paso (0-based) está bloqueado según el avance del aspirante? */
+function isLocked(i: number): boolean {
+    if (!loaded.value) return false // sin datos aún, no bloqueamos (evita parpadeo)
+    switch (i) {
+        case 6:  return status.value < STATUS_PREFICHA   // 7 Preficha
+        case 7:  return status.value < STATUS_FICHA      // 8 Documentos
+        case 8:  return !docsApproved.value              // 9 Ficha
+        case 9:  return !docsApproved.value              // 10 Examen
+        default: return false                            // 1-6
+    }
+}
+
+function lockReason(i: number): string {
+    switch (i) {
+        case 6:  return 'Completa y guarda tu expediente para generar la preficha.'
+        case 7:  return 'Obtén tu preficha para poder cargar documentos.'
+        case 8:  return 'Disponible cuando todos tus documentos requeridos estén aprobados.'
+        case 9:  return 'Disponible cuando todos tus documentos requeridos estén aprobados.'
+        default: return ''
+    }
+}
 
 function go(index: number): void {
     if (index < 0 || index >= steps.length || index === currentIndex.value) return
+    if (isLocked(index)) return
     router.push({ name: steps[index].name })
 }
 
 function circleClass(i: number): string {
+    if (isLocked(i))              return 'bg-slate-100 text-slate-300 ring-1 ring-slate-200'
     if (i < currentIndex.value)   return 'bg-emerald-500 text-white hover:bg-emerald-600'
     if (i === currentIndex.value) return 'bg-blue-600 text-white hover:bg-blue-700'
     return 'bg-slate-100 text-slate-400 hover:bg-slate-200'
 }
+
+/** Trae estado + completitud de documentos y, si hace falta, redirige. */
+async function load(): Promise<void> {
+    try {
+        const { data } = await api.get(API.ADMISSIONS_API.portal.me)
+        status.value = data?.status ?? 0
+
+        if (status.value >= STATUS_FICHA) {
+            try {
+                const docs = await api.get(API.ADMISSIONS_API.portal.documents)
+                const required: any[] = docs.data?.required ?? []
+                const uploaded: any[] = docs.data?.uploaded ?? []
+                const approved = new Set(
+                    uploaded.filter(u => u.status === 'approved').map(u => u.documentTypeId)
+                )
+                const mandatory = required.filter(r => r.isRequired)
+                docsApproved.value = mandatory.length > 0
+                    && mandatory.every(r => approved.has(r.documentTypeId))
+            } catch {
+                docsApproved.value = false
+            }
+        }
+        // Solo damos por cargado el gating cuando el fetch fue exitoso; ante un
+        // error NO bloqueamos nada (loaded queda en false).
+        loaded.value = true
+    } catch {
+        return
+    }
+
+    // Si el aspirante entró por URL directa a un paso bloqueado, mandarlo al
+    // último paso disponible.
+    if (currentIndex.value !== -1 && isLocked(currentIndex.value)) {
+        let target = currentIndex.value
+        while (target > 0 && isLocked(target)) target--
+        router.replace({ name: steps[target].name })
+    }
+}
+
+onMounted(load)
 </script>
