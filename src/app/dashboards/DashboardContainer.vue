@@ -8,17 +8,26 @@
 <script setup lang="ts">
 import { onMounted, shallowRef, type Component } from 'vue'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
+import { useMenuStore } from '@/app/stores/menu.store'
 import { resolveDashboard } from '@/app/dashboards/DashboardResolver'
+import type { MenuItem } from '@/shared/types/menu'
 
 const auth = useAuthStore()
+const menu = useMenuStore()
 const activeDashboard = shallowRef<Component | null>(null)
 
-onMounted(async () => {
-    // 1. Obtenemos el tipo desde la entidad user (ej. 'admin', 'seller')
-    // Si el backend no envía nada, resolveDashboard usará 'default'
-    const dashboardType = auth.user?.dashboard || 'default'
+/** El aspirante (rol APPLICANT) es el único con el menú del portal 'adm.portal'. */
+function isApplicant(items: MenuItem[]): boolean {
+    return items.some(i => i.code === 'adm.portal' || (!!i.children && isApplicant(i.children)))
+}
 
-    // 2. Usamos tu lógica de autodescubrimiento para traer el componente
+onMounted(async () => {
+    // El aspirante recibe su Inicio dedicado; el resto, el tipo del backend
+    // (o 'default' = tablero de widgets).
+    const dashboardType = isApplicant(menu.menus ?? [])
+        ? 'applicant'
+        : (auth.user?.dashboard || 'default')
+
     activeDashboard.value = await resolveDashboard(dashboardType)
 })
 </script>
