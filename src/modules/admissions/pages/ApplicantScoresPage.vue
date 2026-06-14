@@ -37,10 +37,14 @@
         </div>
 
         <!-- Tira de estado del proceso -->
-        <div v-if="overview" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div v-if="overview" class="grid grid-cols-2 sm:grid-cols-5 gap-3">
             <div class="rounded-lg border border-slate-200 bg-white p-3 text-center">
                 <p class="text-2xl font-bold text-amber-600">{{ overview.pendingEvaluation }}</p>
                 <p class="text-[11px] text-slate-500 uppercase mt-0.5">Por evaluar</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-3 text-center" title="Presentaron pero no terminaron el examen (calificación capturada, sin pasar a Con Resultado)">
+                <p class="text-2xl font-bold text-rose-600">{{ overview.notFinished }}</p>
+                <p class="text-[11px] text-slate-500 uppercase mt-0.5">No terminó</p>
             </div>
             <div class="rounded-lg border border-slate-200 bg-white p-3 text-center">
                 <p class="text-2xl font-bold text-purple-700">{{ overview.withScore }}</p>
@@ -442,7 +446,7 @@ const toast = useToast()
 const tab = ref<'csv' | 'manual' | 'individual'>('csv')
 
 // ── Contadores del proceso (tira de estado) ──────────────────────────────────
-interface Overview { pendingEvaluation: number; withScore: number; released: number; pendingRelease: number }
+interface Overview { pendingEvaluation: number; notFinished: number; withScore: number; released: number; pendingRelease: number }
 const overview = ref<Overview | null>(null)
 
 async function loadOverview() {
