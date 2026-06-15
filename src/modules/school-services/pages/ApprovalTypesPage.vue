@@ -5,7 +5,7 @@
             <button
                 type="button"
                 class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-                @click="router.push({ name: 'school-services.approval-types.create' })"
+                @click="openCreate"
             >
                 <PlusIcon class="w-4 h-4" />
                 REGISTRAR TIPO
@@ -34,33 +34,71 @@
 
             <template #cell-opciones="{ row }">
                 <div class="flex items-center justify-center gap-2">
-                    <button aria-label="Ver" type="button" class="border p-1.5 rounded-md text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer" title="Ver"
-                        @click="router.push({ name: 'school-services.approval-types.show', params: { id: row.id } })">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-7.5 9.75-7.5S21.75 12 21.75 12s-3.75 7.5-9.75 7.5S2.25 12 2.25 12z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    </button>
                     <button aria-label="Editar" type="button" class="border p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition cursor-pointer" title="Editar"
-                        @click="router.push({ name: 'school-services.approval-types.edit', params: { id: row.id } })">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l2.651 2.651M7.5 13.85l-.75 3.75 3.75-.75L19.513 7.138a2.121 2.121 0 00-3-3L7.5 13.85z" /></svg>
+                        @click="openEdit(row)">
+                        <PencilSquareIcon class="w-4 h-4" />
                     </button>
                     <button aria-label="Eliminar" type="button" class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition cursor-pointer" title="Eliminar"
-                        @click="router.push({ name: 'school-services.approval-types.delete', params: { id: row.id } })">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 7.5h12m-10.5 0v10.125A1.875 1.875 0 009.375 19.5h5.25A1.875 1.875 0 0016.5 17.625V7.5M9.75 4.875A1.875 1.875 0 0111.625 3h.75A1.875 1.875 0 0114.25 4.875L15 7.5h-6l.75-2.625z" /></svg>
+                        @click="confirmDelete(row)">
+                        <TrashIcon class="w-4 h-4" />
                     </button>
                 </div>
             </template>
         </DataTable>
+
+        <BaseModal
+            v-model="modalOpen"
+            :title="editing ? 'Editar Tipo de Aprobacion' : 'Registrar Tipo de Aprobacion'"
+            size="lg"
+            persistent
+        >
+            <div class="space-y-6">
+                <FormInput label="NOMBRE" v-model="form.name" required uppercase />
+                <FormInput label="CLAVE CORTA" v-model="form.shortName" required uppercase />
+
+                <div class="grid grid-cols-2 gap-4">
+                    <FormInput label="CURSO" v-model="form.course" type="number" required />
+                    <FormInput label="OPORTUNIDAD" v-model="form.opportunity" type="number" required />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <FormInput label="CLASE" v-model="form.class" type="number" required />
+                    <FormInput label="ORDEN" v-model="form.order" type="number" required />
+                </div>
+
+                <FormSwitch label="ACTIVO" v-model="form.isActive" />
+
+                <p v-if="formError" class="text-sm text-red-600">{{ formError }}</p>
+            </div>
+
+            <template #footer>
+                <button type="button" class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="modalOpen = false">
+                    CANCELAR
+                </button>
+                <button type="button" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50" :disabled="submitting" @click="submitForm">
+                    {{ submitting ? 'GUARDANDO...' : 'GUARDAR' }}
+                </button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import { PlusIcon } from '@heroicons/vue/24/outline'
+import { reactive, ref } from 'vue'
+import { PlusIcon, PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import FormInput from '@/app/components/ui/form/FormInput.vue'
+import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
+import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
+import { useConfirm } from '@/app/composables/useConfirm'
 
-const router = useRouter()
+const toast = useToast()
+const { confirm } = useConfirm()
 
 const columns: DataTableColumn<any>[] = [
     { key: 'id',          label: '#',          field: 'id',        sortable: true },
@@ -75,6 +113,105 @@ const columns: DataTableColumn<any>[] = [
 const { rows, loading, pagination, handleChange, fetchData } = useDataTableFetch<any>({
     endpoint: API.SCHOOL_SERVICES_API.approvalTypes.list,
 })
+
+/* ---------- Alta / edición en modal ---------- */
+const modalOpen = ref(false)
+const editing = ref<any | null>(null)
+const submitting = ref(false)
+const formError = ref<string | null>(null)
+
+const form = reactive({
+    name: '',
+    shortName: '',
+    course: 1,
+    opportunity: 1,
+    class: 1,
+    order: 1,
+    isActive: true,
+})
+
+function resetForm() {
+    form.name = ''
+    form.shortName = ''
+    form.course = 1
+    form.opportunity = 1
+    form.class = 1
+    form.order = 1
+    form.isActive = true
+    formError.value = null
+}
+
+function openCreate() {
+    editing.value = null
+    resetForm()
+    modalOpen.value = true
+}
+
+async function openEdit(row: any) {
+    editing.value = row
+    resetForm()
+    try {
+        const { data } = await api.get(API.SCHOOL_SERVICES_API.approvalTypes.byId(row.id))
+        form.name        = data.name
+        form.shortName   = data.shortName
+        form.course      = data.course
+        form.opportunity = data.opportunity
+        form.class       = data.class
+        form.order       = data.order
+        form.isActive    = data.isActive
+    } catch {
+        toast.error('No se pudo cargar el tipo de aprobación.')
+        return
+    }
+    modalOpen.value = true
+}
+
+async function submitForm() {
+    formError.value = null
+    submitting.value = true
+    try {
+        const payload = {
+            name:        form.name,
+            short_name:  form.shortName,
+            course:      Number(form.course),
+            opportunity: Number(form.opportunity),
+            class:       Number(form.class),
+            order:       Number(form.order),
+            is_active:   form.isActive,
+        }
+        if (editing.value) {
+            await api.put(API.SCHOOL_SERVICES_API.approvalTypes.update(editing.value.id), payload)
+            toast.success('Tipo de aprobación actualizado.')
+        } else {
+            await api.post(API.SCHOOL_SERVICES_API.approvalTypes.create, payload)
+            toast.success('Tipo de aprobación guardado.')
+        }
+        modalOpen.value = false
+        fetchData()
+    } catch (e: any) {
+        formError.value = e?.response?.data?.message ?? 'Error al guardar.'
+    } finally {
+        submitting.value = false
+    }
+}
+
+/* ---------- Eliminar ---------- */
+async function confirmDelete(row: any) {
+    const ok = await confirm({
+        title: 'Eliminar tipo de aprobación',
+        message: `¿Eliminar "${row.name}"? Esta acción no se puede deshacer.`,
+        variant: 'danger',
+        confirmText: 'Eliminar',
+    })
+    if (!ok) return
+    try {
+        await api.delete(API.SCHOOL_SERVICES_API.approvalTypes.delete(row.id))
+        toast.success('Tipo de aprobación eliminado.')
+        fetchData()
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo eliminar.')
+    }
+}
 
 fetchData()
 </script>

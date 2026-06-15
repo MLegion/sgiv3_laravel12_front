@@ -48,126 +48,36 @@ export default [
         meta: { title: 'Inscripción asistida' },
     },
 
-    // Modalities
+    // Modalities (alta/edición/eliminación en modal dentro del listado)
     {
         path: 'school-services/modalities',
         name: 'school-services.modalities',
         component: () => import('@/modules/school-services/pages/ModalitiesPage.vue'),
         meta: { title: 'Modalidades' },
     },
-    {
-        path: 'school-services/modalities/create',
-        name: 'school-services.modalities.create',
-        component: () => import('@/modules/school-services/pages/modality/ModalityCreate.vue'),
-        meta: { title: 'Registrar - Modalidad' },
-    },
-    {
-        path: 'school-services/modalities/:id',
-        name: 'school-services.modalities.show',
-        component: () => import('@/modules/school-services/pages/modality/ModalityShow.vue'),
-        meta: { title: 'Detalle - Modalidad' },
-    },
-    {
-        path: 'school-services/modalities/:id/edit',
-        name: 'school-services.modalities.edit',
-        component: () => import('@/modules/school-services/pages/modality/ModalityEdit.vue'),
-        meta: { title: 'Editar - Modalidad' },
-    },
-    {
-        path: 'school-services/modalities/:id/delete',
-        name: 'school-services.modalities.delete',
-        component: () => import('@/modules/school-services/pages/modality/ModalityDelete.vue'),
-        meta: { title: 'Eliminar - Modalidad' },
-    },
 
-    // Campuses
+    // Campuses (alta/edición/eliminación en modal dentro del listado)
     {
         path: 'school-services/campuses',
         name: 'school-services.campuses',
         component: () => import('@/modules/school-services/pages/CampusesPage.vue'),
         meta: { title: 'Planteles' },
     },
-    {
-        path: 'school-services/campuses/create',
-        name: 'school-services.campuses.create',
-        component: () => import('@/modules/school-services/pages/campus/CampusCreate.vue'),
-        meta: { title: 'Registrar - Plantel' },
-    },
-    {
-        path: 'school-services/campuses/:id',
-        name: 'school-services.campuses.show',
-        component: () => import('@/modules/school-services/pages/campus/CampusShow.vue'),
-        meta: { title: 'Detalle - Plantel' },
-    },
-    {
-        path: 'school-services/campuses/:id/edit',
-        name: 'school-services.campuses.edit',
-        component: () => import('@/modules/school-services/pages/campus/CampusEdit.vue'),
-        meta: { title: 'Editar - Plantel' },
-    },
-    {
-        path: 'school-services/campuses/:id/delete',
-        name: 'school-services.campuses.delete',
-        component: () => import('@/modules/school-services/pages/campus/CampusDelete.vue'),
-        meta: { title: 'Eliminar - Plantel' },
-    },
 
-    // Buildings
+    // Buildings (alta/edición/eliminación en modal dentro del listado)
     {
         path: 'school-services/buildings',
         name: 'school-services.buildings',
         component: () => import('@/modules/school-services/pages/BuildingsPage.vue'),
         meta: { title: 'Edificios' },
     },
-    {
-        path: 'school-services/buildings/create',
-        name: 'school-services.buildings.create',
-        component: () => import('@/modules/school-services/pages/building/BuildingCreate.vue'),
-        meta: { title: 'Registrar - Edificio' },
-    },
-    {
-        path: 'school-services/buildings/:id',
-        name: 'school-services.buildings.show',
-        component: () => import('@/modules/school-services/pages/building/BuildingShow.vue'),
-        meta: { title: 'Detalle - Edificio' },
-    },
-    {
-        path: 'school-services/buildings/:id/edit',
-        name: 'school-services.buildings.edit',
-        component: () => import('@/modules/school-services/pages/building/BuildingEdit.vue'),
-        meta: { title: 'Editar - Edificio' },
-    },
-    {
-        path: 'school-services/buildings/:id/delete',
-        name: 'school-services.buildings.delete',
-        component: () => import('@/modules/school-services/pages/building/BuildingDelete.vue'),
-        meta: { title: 'Eliminar - Edificio' },
-    },
 
-    // Places
+    // Places (alta/edición/eliminación en modal dentro del listado)
     {
         path: 'school-services/places',
         name: 'school-services.places',
         component: () => import('@/modules/school-services/pages/PlacesPage.vue'),
         meta: { title: 'Espacios' },
-    },
-    {
-        path: 'school-services/places/create',
-        name: 'school-services.places.create',
-        component: () => import('@/modules/school-services/pages/place/PlaceCreate.vue'),
-        meta: { title: 'Registrar - Espacio' },
-    },
-    {
-        path: 'school-services/places/:id/edit',
-        name: 'school-services.places.edit',
-        component: () => import('@/modules/school-services/pages/place/PlaceEdit.vue'),
-        meta: { title: 'Editar - Espacio' },
-    },
-    {
-        path: 'school-services/places/:id/delete',
-        name: 'school-services.places.delete',
-        component: () => import('@/modules/school-services/pages/place/PlaceDelete.vue'),
-        meta: { title: 'Eliminar - Espacio' },
     },
 
     // College Academic Periods (institución adopta y ajusta un periodo global)
@@ -254,36 +164,12 @@ export default [
         meta: { title: 'Eliminar Plan de Estudio' },
     },
 
-    // Approval Types
+    // Approval Types (alta/edición/eliminación en modal dentro del listado)
     {
         path: 'school-services/approval-types',
         name: 'school-services.approval-types',
         component: () => import('@/modules/school-services/pages/ApprovalTypesPage.vue'),
         meta: { title: 'Tipos de Aprobacion' },
-    },
-    {
-        path: 'school-services/approval-types/create',
-        name: 'school-services.approval-types.create',
-        component: () => import('@/modules/school-services/pages/approval-type/ApprovalTypeCreate.vue'),
-        meta: { title: 'Registrar - Tipo de Aprobacion' },
-    },
-    {
-        path: 'school-services/approval-types/:id',
-        name: 'school-services.approval-types.show',
-        component: () => import('@/modules/school-services/pages/approval-type/ApprovalTypeShow.vue'),
-        meta: { title: 'Detalle - Tipo de Aprobacion' },
-    },
-    {
-        path: 'school-services/approval-types/:id/edit',
-        name: 'school-services.approval-types.edit',
-        component: () => import('@/modules/school-services/pages/approval-type/ApprovalTypeEdit.vue'),
-        meta: { title: 'Editar - Tipo de Aprobacion' },
-    },
-    {
-        path: 'school-services/approval-types/:id/delete',
-        name: 'school-services.approval-types.delete',
-        component: () => import('@/modules/school-services/pages/approval-type/ApprovalTypeDelete.vue'),
-        meta: { title: 'Eliminar - Tipo de Aprobacion' },
     },
 
     // Grade Import
