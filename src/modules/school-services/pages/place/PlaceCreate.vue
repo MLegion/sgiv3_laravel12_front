@@ -31,6 +31,8 @@
 
                 <FormSwitch label="ACTIVO" v-model="form.status" />
 
+                <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+
                 <div class="flex justify-end gap-2 pt-4 border-t">
                     <button type="button" class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="router.back()">CANCELAR</button>
                     <button type="submit" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700" :disabled="submitting">GUARDAR</button>
@@ -48,10 +50,13 @@ import { API } from '@/shared/api'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
+import { useToast } from '@/app/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const submitting = ref(false)
+const error = ref<string | null>(null)
 
 const form = reactive({
     buildingId: route.query.buildingId ? Number(route.query.buildingId) : null as number | null,
@@ -62,6 +67,7 @@ const form = reactive({
 })
 
 async function submit() {
+    error.value = null
     submitting.value = true
     try {
         await api.post(API.SCHOOL_SERVICES_API.places.create, {
@@ -71,7 +77,10 @@ async function submit() {
             capacity:    form.capacity,
             status:      form.status,
         })
+        toast.success('Espacio guardado.')
         router.push({ name: 'school-services.places' })
+    } catch (e: any) {
+        error.value = e?.response?.data?.message ?? 'Error al guardar.'
     } finally { submitting.value = false }
 }
 </script>

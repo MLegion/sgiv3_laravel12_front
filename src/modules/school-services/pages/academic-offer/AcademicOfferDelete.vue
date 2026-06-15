@@ -27,10 +27,12 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 import type { AcademicOfferType } from '@/modules/school-services/types/academic-offer.type'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const loading = ref(true)
 const submitting = ref(false)
 const offer = ref<AcademicOfferType | null>(null)
@@ -40,6 +42,8 @@ async function fetchOffer() {
     try {
         const { data } = await api.get(API.SCHOOL_SERVICES_API.academicOffers.byId(route.params.id as string))
         offer.value = data
+    } catch {
+        toast.error('No se pudo cargar la oferta académica.')
     } finally { loading.value = false }
 }
 
@@ -47,7 +51,10 @@ async function confirmDelete() {
     submitting.value = true
     try {
         await api.delete(API.SCHOOL_SERVICES_API.academicOffers.delete(route.params.id as string))
+        toast.success('Oferta eliminada.')
         router.push({ name: 'school-services.academic-offers' })
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'Error al eliminar la oferta.')
     } finally { submitting.value = false }
 }
 

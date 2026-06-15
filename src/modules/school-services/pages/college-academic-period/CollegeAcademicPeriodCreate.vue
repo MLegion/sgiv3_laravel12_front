@@ -71,9 +71,11 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
+import { useToast } from '@/app/composables/useToast'
 import { STATUS_OPTIONS } from '@/modules/school-services/types/college-academic-period.type'
 
 const router = useRouter()
+const toast = useToast()
 const submitting = ref(false)
 const error = ref<string | null>(null)
 const selectedPeriod = ref<any>(null)
@@ -114,6 +116,7 @@ async function submit() {
             actual_end_date:     form.actualEndDate,
             status:              form.status,
         })
+        toast.success('Periodo adoptado.')
         router.push({ name: 'school-services.college-academic-periods' })
     } catch (e: any) {
         error.value = e?.response?.data?.message ?? 'Error al adoptar el periodo.'

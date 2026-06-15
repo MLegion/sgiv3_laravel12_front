@@ -31,9 +31,11 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const loading = ref(false)
 const name = ref('')
 
@@ -47,7 +49,10 @@ async function remove() {
     loading.value = true
     try {
         await api.delete(API.SCHOOL_SERVICES_API.collegeAcademicPeriods.delete(route.params.id))
+        toast.success('Periodo eliminado.')
         router.push({ name: 'school-services.college-academic-periods' })
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo eliminar el periodo.')
     } finally {
         loading.value = false
     }

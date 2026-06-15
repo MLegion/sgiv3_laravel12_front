@@ -87,12 +87,14 @@ import { useRoute, useRouter } from 'vue-router'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import type { AcademicOfferType } from '@/modules/school-services/types/academic-offer.type'
 import type { AcademicOfferStudyPlanType } from '@/modules/school-services/types/academic-offer-study-plan.type'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const loading = ref(true)
 const loadingPlans = ref(true)
 const linking = ref(false)
@@ -106,6 +108,8 @@ async function fetchOffer() {
     try {
         const { data } = await api.get(API.SCHOOL_SERVICES_API.academicOffers.byId(route.params.id as string))
         offer.value = data
+    } catch {
+        toast.error('No se pudo cargar la oferta académica.')
     } finally { loading.value = false }
 }
 
@@ -114,6 +118,8 @@ async function fetchStudyPlans() {
     try {
         const { data } = await api.get(API.SCHOOL_SERVICES_API.academicOffers.studyPlans(route.params.id as string))
         studyPlans.value = data.data ?? data
+    } catch {
+        toast.error('No se pudieron cargar los planes vinculados.')
     } finally { loadingPlans.value = false }
 }
 
@@ -126,13 +132,21 @@ async function linkStudyPlan() {
         })
         showLinkModal.value = false
         selectedStudyPlanId.value = null
+        toast.success('Plan vinculado.')
         await fetchStudyPlans()
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'Error al vincular el plan.')
     } finally { linking.value = false }
 }
 
 async function unlink(id: number) {
-    await api.delete(API.SCHOOL_SERVICES_API.academicOffers.unlinkStudyPlan(route.params.id as string, id))
-    await fetchStudyPlans()
+    try {
+        await api.delete(API.SCHOOL_SERVICES_API.academicOffers.unlinkStudyPlan(route.params.id as string, id))
+        toast.success('Plan desvinculado.')
+        await fetchStudyPlans()
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'Error al desvincular el plan.')
+    }
 }
 
 onMounted(() => {

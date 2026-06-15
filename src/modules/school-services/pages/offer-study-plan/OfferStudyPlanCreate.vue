@@ -46,11 +46,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import type { AcademicOfferType } from '@/modules/school-services/types/academic-offer.type'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const submitting = ref(false)
 const error = ref<string | null>(null)
 const studyPlanId = ref<number | null>(null)
@@ -71,6 +73,7 @@ async function submit() {
             API.SCHOOL_SERVICES_API.academicOffers.linkStudyPlan(route.params.offerId as string),
             { study_plan_id: studyPlanId.value }
         )
+        toast.success('Plan vinculado.')
         router.push({ name: 'school-services.offer-study-plans' })
     } catch (e: any) {
         const data = e?.response?.data

@@ -103,9 +103,11 @@ import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFet
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 import type { AcademicOfferType } from '@/modules/school-services/types/academic-offer.type'
 
 const router = useRouter()
+const toast = useToast()
 
 const columns: DataTableColumn<AcademicOfferType>[] = [
     { key: 'id',                 label: '#',                field: 'id',       sortable: true },
@@ -187,6 +189,7 @@ async function loadCatalogs() {
     } catch {
         campuses.value = []
         modalityTypes.value = []
+        toast.error('No se pudieron cargar los catálogos.')
     }
 }
 

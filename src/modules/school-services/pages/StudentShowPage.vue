@@ -457,6 +457,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useConfirm } from '@/app/composables/useConfirm'
+import { useToast } from '@/app/composables/useToast'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -466,6 +467,7 @@ import ReadField from '@/modules/admissions/pages/portal/ReadField.vue'
 
 const route  = useRoute()
 const router = useRouter()
+const toast  = useToast()
 
 const loading  = ref(true)
 const student  = ref<any>(null)
@@ -599,6 +601,7 @@ async function saveContact() {
         } else {
             await api.post(API.SCHOOL_SERVICES_API.students.contacts.create(sid), contactForm)
         }
+        toast.success('Contacto guardado.')
         contactModal.value = false
         await fetchContacts()
     } catch (e: any) {
@@ -643,6 +646,7 @@ async function saveAffiliation() {
     savingAffiliation.value = true; affiliationError.value = null
     try {
         await api.post(API.SCHOOL_SERVICES_API.students.affiliations.create(route.params.id as string), affiliationForm)
+        toast.success('Afiliación guardada.')
         affiliationModal.value = false
         await fetchAffiliations()
     } catch (e: any) {
@@ -735,6 +739,7 @@ async function saveGrade() {
         } else {
             await api.post(API.SCHOOL_SERVICES_API.studentGrades.create(sid), payload)
         }
+        toast.success('Calificación guardada.')
         gradeModal.value = false
         await fetchGrades()
     } catch (e: any) {

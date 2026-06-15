@@ -14,8 +14,21 @@
             Cada periodo se cierra cuando todas las actas docentes están cerradas y la cobertura de calificaciones es 100%.
         </p>
 
+        <div
+            v-if="errorMsg"
+            role="alert"
+            class="flex items-center gap-3 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2"
+        >
+            <span class="flex-1">{{ errorMsg }}</span>
+            <button
+                class="text-xs px-2 py-1 rounded bg-rose-100 hover:bg-rose-200 text-rose-700 font-semibold"
+                :disabled="loading"
+                @click="load"
+            >Reintentar</button>
+        </div>
+
         <div v-if="loading && items.length === 0" class="text-sm text-slate-500 italic">Cargando…</div>
-        <div v-else-if="items.length === 0" class="text-sm text-slate-500 italic">No hay periodos.</div>
+        <div v-else-if="!errorMsg && items.length === 0" class="text-sm text-slate-500 italic">No hay periodos.</div>
 
         <div v-else class="bg-white border border-slate-200 rounded-lg overflow-hidden">
             <div class="overflow-x-auto w-full"><table class="w-full text-xs">
@@ -95,14 +108,18 @@ interface SummaryItem {
     openActasCount:          number
 }
 
-const loading = ref(false)
-const items   = ref<SummaryItem[]>([])
+const loading  = ref(false)
+const items    = ref<SummaryItem[]>([])
+const errorMsg = ref('')
 
 async function load(): Promise<void> {
     loading.value = true
+    errorMsg.value = ''
     try {
         const { data } = await api.get(API.SCHOOL_SERVICES_API.periodClosure.summary)
         items.value = data.items ?? []
+    } catch (e: any) {
+        errorMsg.value = e?.response?.data?.message ?? 'No se pudieron cargar los periodos.'
     } finally {
         loading.value = false
     }

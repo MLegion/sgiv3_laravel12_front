@@ -30,25 +30,31 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const loading = ref(false)
 const planName = ref('')
 const offerName = ref('')
 
 async function fetchNames() {
-    const [offerRes, plansRes] = await Promise.all([
-        api.get(API.SCHOOL_SERVICES_API.academicOffers.byId(route.params.offerId as string)),
-        api.get(API.SCHOOL_SERVICES_API.academicOffers.studyPlans(route.params.offerId as string)),
-    ])
+    try {
+        const [offerRes, plansRes] = await Promise.all([
+            api.get(API.SCHOOL_SERVICES_API.academicOffers.byId(route.params.offerId as string)),
+            api.get(API.SCHOOL_SERVICES_API.academicOffers.studyPlans(route.params.offerId as string)),
+        ])
 
-    const offer = offerRes.data
-    offerName.value = offer.career?.name ?? `Oferta #${offer.id}`
+        const offer = offerRes.data
+        offerName.value = offer.career?.name ?? `Oferta #${offer.id}`
 
-    const plans: any[] = plansRes.data.data ?? plansRes.data
-    const plan = plans.find((p: any) => String(p.id) === String(route.params.id))
-    planName.value = plan?.studyPlan?.name ?? `Plan #${route.params.id}`
+        const plans: any[] = plansRes.data.data ?? plansRes.data
+        const plan = plans.find((p: any) => String(p.id) === String(route.params.id))
+        planName.value = plan?.studyPlan?.name ?? `Plan #${route.params.id}`
+    } catch {
+        toast.error('No se pudieron cargar los datos.')
+    }
 }
 
 async function remove() {
@@ -60,7 +66,10 @@ async function remove() {
                 route.params.id as string
             )
         )
+        toast.success('Plan desvinculado.')
         router.push({ name: 'school-services.offer-study-plans' })
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'Error al desvincular el plan.')
     } finally {
         loading.value = false
     }

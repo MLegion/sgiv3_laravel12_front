@@ -32,6 +32,8 @@
                     required
                 />
 
+                <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+
                 <div class="flex justify-end gap-2 pt-4 border-t">
                     <button type="button" class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="router.back()">CANCELAR</button>
                     <button type="submit" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700" :disabled="submitting">GUARDAR</button>
@@ -46,10 +48,13 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 
 const router = useRouter()
+const toast = useToast()
 const submitting = ref(false)
+const error = ref<string | null>(null)
 
 const form = reactive({
     modalityId: null as number | null,
@@ -57,6 +62,7 @@ const form = reactive({
 })
 
 async function submit() {
+    error.value = null
     submitting.value = true
     try {
         await api.post(API.SCHOOL_SERVICES_API.academicOffers.create, {
@@ -64,7 +70,10 @@ async function submit() {
             career_id:   form.careerId,
             status:      0,
         })
+        toast.success('Oferta creada.')
         router.push({ name: 'school-services.academic-offers' })
+    } catch (e: any) {
+        error.value = e?.response?.data?.message ?? 'Error al guardar.'
     } finally { submitting.value = false }
 }
 </script>

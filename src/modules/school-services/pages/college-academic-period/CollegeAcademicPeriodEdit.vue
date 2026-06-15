@@ -61,10 +61,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
+import { useToast } from '@/app/composables/useToast'
 import { STATUS_OPTIONS } from '@/modules/school-services/types/college-academic-period.type'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const submitting = ref(false)
 const error = ref<string | null>(null)
 const globalPeriod = ref<any>(null)
@@ -98,6 +100,7 @@ async function submit() {
             actual_end_date:    form.actualEndDate,
             status:             form.status,
         })
+        toast.success('Periodo actualizado.')
         router.push({ name: 'school-services.college-academic-periods.show', params: { id: route.params.id } })
     } catch (e: any) {
         error.value = e?.response?.data?.message ?? 'Error al actualizar el periodo.'

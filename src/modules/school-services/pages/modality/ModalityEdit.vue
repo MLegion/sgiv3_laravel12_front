@@ -53,9 +53,11 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
+import { useToast } from '@/app/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const loading = ref(true)
 const submitting = ref(false)
 const error = ref<string | null>(null)
@@ -87,6 +89,7 @@ async function submit() {
             modality_type_id: form.modalityTypeId,
             status:           form.status,
         })
+        toast.success('Modalidad actualizada.')
         router.push({ name: 'school-services.modalities.show', params: { id: route.params.id } })
     } catch (e: any) {
         error.value = e?.response?.data?.message ?? 'Error al actualizar.'

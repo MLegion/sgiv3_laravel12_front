@@ -28,6 +28,8 @@
 
                 <FormSwitch label="ACTIVO" v-model="form.status" />
 
+                <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+
                 <div class="flex justify-end gap-2 pt-4 border-t">
                     <button type="button" class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="router.back()">
                         CANCELAR
@@ -49,11 +51,14 @@ import { API } from '@/shared/api'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
 import GeoAddressFields from '@/app/components/ui/form/GeoAddressFields.vue'
+import { useToast } from '@/app/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const loading = ref(true)
 const submitting = ref(false)
+const error = ref<string | null>(null)
 const initialPostalCode = ref<string | null>(null)
 
 const form = reactive({
@@ -83,6 +88,7 @@ async function fetchCampus() {
 }
 
 async function submit() {
+    error.value = null
     submitting.value = true
     try {
         await api.put(API.SCHOOL_SERVICES_API.campuses.update(route.params.id as string), {
@@ -92,7 +98,10 @@ async function submit() {
             geo_settlement_id: form.geoSettlementId,
             status:            form.status,
         })
+        toast.success('Campus actualizado.')
         router.push({ name: 'school-services.campuses.show', params: { id: route.params.id } })
+    } catch (e: any) {
+        error.value = e?.response?.data?.message ?? 'Error al guardar.'
     } finally {
         submitting.value = false
     }

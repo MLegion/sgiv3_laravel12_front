@@ -74,11 +74,13 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import InfoItem from '@/app/components/ui/InfoItem.vue'
 import Skeleton from '@/app/components/ui/Skeleton.vue'
+import { useToast } from '@/app/composables/useToast'
 import type { CollegeAcademicPeriod } from '@/modules/school-services/types/college-academic-period.type'
 import { STATUS_CLASSES } from '@/modules/school-services/types/college-academic-period.type'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const loading = ref(true)
 const period = ref<CollegeAcademicPeriod>({} as CollegeAcademicPeriod)
 
@@ -87,6 +89,8 @@ async function fetchData() {
     try {
         const { data } = await api.get(API.SCHOOL_SERVICES_API.collegeAcademicPeriods.byId(route.params.id))
         period.value = data
+    } catch {
+        toast.error('No se pudo cargar el periodo.')
     } finally {
         setTimeout(() => { loading.value = false }, 300)
     }

@@ -26,6 +26,8 @@
                     </select>
                 </div>
 
+                <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+
                 <div class="flex justify-end gap-2 pt-4 border-t">
                     <button type="button" class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="router.back()">CANCELAR</button>
                     <button type="submit" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700" :disabled="submitting">ACTUALIZAR</button>
@@ -40,11 +42,14 @@ import { reactive, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const loading = ref(true)
 const submitting = ref(false)
+const error = ref<string | null>(null)
 const form = reactive({ modalityId: null as number | null, careerId: null as number | null, status: 0 })
 
 async function fetchOffer() {
@@ -54,10 +59,13 @@ async function fetchOffer() {
         form.modalityId = data.modalityId
         form.careerId   = data.careerId
         form.status     = data.status
+    } catch {
+        toast.error('No se pudo cargar la oferta académica.')
     } finally { loading.value = false }
 }
 
 async function submit() {
+    error.value = null
     submitting.value = true
     try {
         await api.put(API.SCHOOL_SERVICES_API.academicOffers.update(route.params.id as string), {
@@ -65,7 +73,10 @@ async function submit() {
             career_id:   form.careerId,
             status:      form.status,
         })
+        toast.success('Oferta actualizada.')
         router.push({ name: 'school-services.academic-offers.show', params: { id: route.params.id } })
+    } catch (e: any) {
+        error.value = e?.response?.data?.message ?? 'Error al guardar.'
     } finally { submitting.value = false }
 }
 

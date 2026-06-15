@@ -10,7 +10,7 @@
 
             <template v-else-if="item">
                 <p class="text-sm text-slate-600">
-                    Estas seguro de que deseas eliminar el tipo de aprobacion
+                    ¿Estás seguro de que deseas eliminar el tipo de aprobacion
                     <strong class="text-slate-800">{{ item.name }} ({{ item.shortName }})</strong>?
                     Esta accion no se puede deshacer.
                 </p>
@@ -38,9 +38,11 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const loading = ref(true)
 const submitting = ref(false)
 const item = ref<any>(null)
@@ -59,7 +61,10 @@ async function confirmDelete() {
     submitting.value = true
     try {
         await api.delete(API.SCHOOL_SERVICES_API.approvalTypes.delete(route.params.id as string))
+        toast.success('Tipo de aprobación eliminado.')
         router.push({ name: 'school-services.approval-types' })
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo eliminar.')
     } finally {
         submitting.value = false
     }

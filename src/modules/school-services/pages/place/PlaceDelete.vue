@@ -25,9 +25,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { PlaceType } from '@/modules/school-services/types/place.type'
+import { useToast } from '@/app/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const loading = ref(true)
 const submitting = ref(false)
 const place = ref<PlaceType | null>(null)
@@ -44,7 +46,10 @@ async function confirmDelete() {
     submitting.value = true
     try {
         await api.delete(API.SCHOOL_SERVICES_API.places.delete(route.params.id as string))
+        toast.success('Espacio eliminado.')
         router.push({ name: 'school-services.places' })
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo eliminar.')
     } finally { submitting.value = false }
 }
 

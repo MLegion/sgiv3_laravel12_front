@@ -132,10 +132,12 @@ import { useRouter } from 'vue-router'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useToast } from '@/app/composables/useToast'
 import type { AcademicOfferType } from '@/modules/school-services/types/academic-offer.type'
 import type { AcademicOfferStudyPlanType } from '@/modules/school-services/types/academic-offer-study-plan.type'
 
 const router = useRouter()
+const toast = useToast()
 const loading = ref(true)
 const offers = ref<AcademicOfferType[]>([])
 const expanded = ref<Set<number>>(new Set())
@@ -197,6 +199,9 @@ async function fetchOffers() {
             },
         })
         offers.value = data.items ?? []
+    } catch {
+        offers.value = []
+        toast.error('No se pudieron cargar las ofertas.')
     } finally {
         loading.value = false
     }
@@ -213,6 +218,7 @@ async function loadCatalogs() {
     } catch {
         campuses.value = []
         modalityTypes.value = []
+        toast.error('No se pudieron cargar los catálogos.')
     }
 }
 
@@ -225,6 +231,8 @@ async function fetchStudyPlans(offerId: number, careerId: number) {
         ])
         studyPlansMap[offerId] = linkedRes.data.items ?? linkedRes.data
         totalAvailableMap[offerId] = availableRes.data.total ?? 0
+    } catch {
+        toast.error('No se pudieron cargar los planes de la oferta.')
     } finally {
         loadingPlans.value.delete(offerId)
     }

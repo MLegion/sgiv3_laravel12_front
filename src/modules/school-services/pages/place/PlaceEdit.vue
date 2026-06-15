@@ -11,12 +11,24 @@
             </div>
 
             <form v-if="!loading" class="space-y-6" @submit.prevent="submit">
+                <FormRemoteSelect
+                    label="EDIFICIO"
+                    v-model="form.buildingId"
+                    :endpoint="API.SCHOOL_SERVICES_API.buildings.list"
+                    :endpoint-by-id="API.SCHOOL_SERVICES_API.buildings.byId"
+                    item-label="name"
+                    item-value="id"
+                    required
+                />
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormInput label="NOMBRE DEL ESPACIO" v-model="form.name" required />
                     <FormInput label="NOMBRE CORTO" v-model="form.shortName" />
                 </div>
                 <FormInput label="CAPACIDAD" type="number" v-model.number="form.capacity" required />
                 <FormSwitch label="ACTIVO" v-model="form.status" />
+
+                <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
 
                 <div class="flex justify-end gap-2 pt-4 border-t">
                     <button type="button" class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="router.back()">CANCELAR</button>
@@ -33,12 +45,16 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
+import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
+import { useToast } from '@/app/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const loading = ref(true)
 const submitting = ref(false)
+const error = ref<string | null>(null)
 const form = reactive({ buildingId: null as number | null, name: '', shortName: '', capacity: 40, status: true })
 
 async function fetchPlace() {
@@ -54,6 +70,7 @@ async function fetchPlace() {
 }
 
 async function submit() {
+    error.value = null
     submitting.value = true
     try {
         await api.put(API.SCHOOL_SERVICES_API.places.update(route.params.id as string), {
@@ -63,7 +80,10 @@ async function submit() {
             capacity:    form.capacity,
             status:      form.status,
         })
+        toast.success('Espacio actualizado.')
         router.push({ name: 'school-services.places' })
+    } catch (e: any) {
+        error.value = e?.response?.data?.message ?? 'Error al guardar.'
     } finally { submitting.value = false }
 }
 

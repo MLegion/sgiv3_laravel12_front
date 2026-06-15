@@ -52,8 +52,10 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
+import { useToast } from '@/app/composables/useToast'
 
 const router = useRouter()
+const toast = useToast()
 const submitting = ref(false)
 const error = ref<string | null>(null)
 
@@ -72,6 +74,7 @@ async function submit() {
             modality_type_id: form.modalityTypeId,
             status:           form.status,
         })
+        toast.success('Modalidad guardada.')
         router.push({ name: 'school-services.modalities.show', params: { id: data.id } })
     } catch (e: any) {
         error.value = e?.response?.data?.message ?? 'Error al guardar.'
