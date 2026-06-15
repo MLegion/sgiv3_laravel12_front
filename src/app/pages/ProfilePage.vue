@@ -259,20 +259,18 @@
                             class="w-full sm:w-80 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
                         />
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1">Nueva contraseña</label>
-                            <input
-                                v-model="form.password"
-                                type="password"
-                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                            />
-                        </div>
+                    <div class="space-y-4 max-w-xl">
+                        <PasswordStrengthField
+                            v-model="form.password"
+                            label="Nueva contraseña"
+                            placeholder="Nueva contraseña"
+                        />
                         <div>
                             <label class="block text-xs font-semibold text-slate-500 mb-1">Confirmar contraseña</label>
                             <input
                                 v-model="form.password_confirmation"
                                 type="password"
+                                autocomplete="new-password"
                                 class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
                             />
                         </div>
@@ -306,6 +304,7 @@ import { API } from '@/shared/api'
 /* ── Sub-componentes inline ── */
 import ProfileSection from '@/app/components/ProfileSection.vue'
 import ProfileField from '@/app/components/ProfileField.vue'
+import PasswordStrengthField from '@/app/components/ui/form/PasswordStrengthField.vue'
 
 interface ProctorRecord {
     id:                       number
