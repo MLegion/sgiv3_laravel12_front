@@ -64,10 +64,12 @@
 
                     <!-- College: oculto cuando ya viene fijado por shortname -->
                     <div v-if="!brandedCollegeLocked">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="login-college" class="block text-sm font-medium text-gray-700 mb-1">
                             Institución
                         </label>
                         <select
+                            id="login-college"
+                            name="college"
                             v-model="collegeId"
                             @change="onCollegeChange"
                             class="w-full h-12 rounded-lg border border-gray-300 px-4"
@@ -87,15 +89,19 @@
                         </span>
                     </div>
 
-                    <!-- Usuario -->
+                    <!-- Usuario / correo -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Usuario
+                        <label for="login-user" class="block text-sm font-medium text-gray-700 mb-1">
+                            Usuario o correo
                         </label>
                         <input
+                            id="login-user"
+                            name="username"
                             v-model="email"
                             type="text"
-                            placeholder="Usuario"
+                            autocomplete="username"
+                            autofocus
+                            placeholder="Usuario o correo"
                             class="form-control"
                         />
                         <span v-if="errors.user" class="text-sm text-red-600">
@@ -105,13 +111,16 @@
 
                     <!-- Contraseña -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">
                             Contraseña
                         </label>
                         <div class="relative">
                             <input
+                                id="login-password"
+                                name="password"
                                 v-model="password"
                                 :type="showPassword ? 'text' : 'password'"
+                                autocomplete="current-password"
                                 placeholder="Contraseña"
                                 class="form-control pr-10"
                             />

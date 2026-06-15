@@ -48,8 +48,10 @@
 
                         <!-- Institución -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Institución</label>
+                            <label for="reg-college" class="block text-sm font-medium text-gray-700 mb-1">Institución</label>
                             <select
+                                id="reg-college"
+                                name="college"
                                 v-model="collegeId"
                                 class="w-full h-12 rounded-lg border border-gray-300 px-4"
                                 @change="onCollegeChange"
@@ -85,10 +87,13 @@
 
                         <!-- Email -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+                            <label for="reg-email" class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
                             <input
+                                id="reg-email"
+                                name="email"
                                 v-model="email"
                                 type="email"
+                                autocomplete="email"
                                 placeholder="correo@ejemplo.com"
                                 class="form-control"
                             />
@@ -107,13 +112,31 @@
 
                         <!-- Confirmar contraseña -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña</label>
-                            <input
-                                v-model="passwordConfirmation"
-                                type="password"
-                                placeholder="Repite tu contraseña"
-                                class="form-control"
-                            />
+                            <label for="reg-password-confirm" class="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña</label>
+                            <div class="relative">
+                                <input
+                                    id="reg-password-confirm"
+                                    name="password_confirmation"
+                                    v-model="passwordConfirmation"
+                                    :type="showConfirm ? 'text' : 'password'"
+                                    autocomplete="new-password"
+                                    placeholder="Repite tu contraseña"
+                                    class="form-control pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    tabindex="-1"
+                                    class="absolute inset-y-0 right-2 flex items-center text-slate-400 hover:text-slate-600"
+                                    :aria-label="showConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                                    @click="showConfirm = !showConfirm"
+                                >
+                                    <svg v-if="!showConfirm" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243L9.88 9.88"/></svg>
+                                </button>
+                            </div>
+                            <p v-if="passwordConfirmation" class="mt-1 text-[11px] font-medium" :class="passwordsMatch ? 'text-green-600' : 'text-red-500'">
+                                {{ passwordsMatch ? '✓ Las contraseñas coinciden' : 'Las contraseñas no coinciden' }}
+                            </p>
                             <span v-if="errors.password_confirmation" class="text-sm text-red-600">{{ errors.password_confirmation }}</span>
                         </div>
 
@@ -127,11 +150,12 @@
 
                         <button
                             type="submit"
-                            :disabled="loading"
-                            class="w-full mt-4 h-12 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50
+                            :disabled="loading || registrationClosed"
+                            :title="registrationClosed ? 'El periodo de registro está cerrado' : ''"
+                            class="w-full mt-4 h-12 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed
                                    text-white font-semibold rounded-lg transition shadow-md"
                         >
-                            {{ loading ? 'REGISTRANDO...' : 'CREAR CUENTA' }}
+                            {{ loading ? 'REGISTRANDO...' : (registrationClosed ? 'REGISTRO CERRADO' : 'CREAR CUENTA') }}
                         </button>
 
                         <p class="text-center text-sm text-slate-500">
@@ -143,12 +167,20 @@
                     </form>
                 </div>
             </template>
+
+            <!-- ÉXITO sin verificación (login automático): evita pantalla en blanco -->
+            <div v-else class="text-center py-10 space-y-3">
+                <div class="text-5xl">✅</div>
+                <h2 class="text-xl font-semibold text-slate-700">¡Cuenta creada!</h2>
+                <p class="text-slate-500">Iniciando sesión…</p>
+            </div>
         </div>
     </div>
 </template>
 
+
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import PasswordStrengthField from '@/app/components/ui/form/PasswordStrengthField.vue'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
@@ -169,8 +201,13 @@ const registeredEmail      = ref('')
 const activeWindow         = ref<any>(null)
 const windowLoading        = ref(false)
 const windowChecked        = ref(false)
+const showConfirm          = ref(false)
 
 const errors = ref<Record<string, string>>({})
+
+// El registro está cerrado si ya verificamos el periodo y no hay ventana activa.
+const registrationClosed = computed(() => windowChecked.value && !activeWindow.value)
+const passwordsMatch     = computed(() => password.value === passwordConfirmation.value)
 
 onMounted(async () => {
     collegeStore.hydrate()
