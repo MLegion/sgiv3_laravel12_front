@@ -97,12 +97,10 @@
 
                         <!-- Contraseña -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
-                            <input
+                            <PasswordStrengthField
                                 v-model="password"
-                                type="password"
-                                placeholder="Mínimo 8 caracteres"
-                                class="form-control"
+                                label="Contraseña"
+                                placeholder="Crea tu contraseña"
                             />
                             <span v-if="errors.password" class="text-sm text-red-600">{{ errors.password }}</span>
                         </div>
@@ -152,6 +150,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
+import PasswordStrengthField from '@/app/components/ui/form/PasswordStrengthField.vue'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { useCollegeStore } from '@/modules/auth/stores/college.store'
 import ADMISSIONS_API from '@/modules/admissions/api/admissions.api'

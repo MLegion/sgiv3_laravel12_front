@@ -63,16 +63,14 @@
                         <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Contraseña actual</label>
                         <input v-model="pw.current_password" type="password" class="field" autocomplete="current-password" />
                     </div>
-                    <div class="grid sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nueva contraseña</label>
-                            <input v-model="pw.password" type="password" class="field" autocomplete="new-password" />
-                            <p class="text-[10px] text-slate-400 mt-0.5">Mínimo 8 caracteres.</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Confirmar nueva</label>
-                            <input v-model="pw.password_confirmation" type="password" class="field" autocomplete="new-password" />
-                        </div>
+                    <PasswordStrengthField
+                        v-model="pw.password"
+                        label="Nueva contraseña"
+                        placeholder="Nueva contraseña"
+                    />
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Confirmar nueva</label>
+                        <input v-model="pw.password_confirmation" type="password" class="field" autocomplete="new-password" />
                     </div>
                     <p v-if="pwError" class="text-xs text-red-600">{{ pwError }}</p>
                     <div class="flex justify-end">
@@ -95,6 +93,7 @@ import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import PasswordStrengthField from '@/app/components/ui/form/PasswordStrengthField.vue'
 
 const toast = useToast()
 
@@ -187,8 +186,9 @@ async function changePassword() {
         pwError.value = 'Completa la contraseña actual y la nueva.'
         return
     }
-    if (pw.value.password.length < 8) {
-        pwError.value = 'La nueva contraseña debe tener al menos 8 caracteres.'
+    const np = pw.value.password
+    if (np.length < 8 || !/[A-Z]/.test(np) || !/[a-z]/.test(np) || !/[0-9]/.test(np) || !/[^A-Za-z0-9]/.test(np)) {
+        pwError.value = 'La contraseña debe tener mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo.'
         return
     }
     if (pw.value.password !== pw.value.password_confirmation) {

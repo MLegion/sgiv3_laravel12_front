@@ -21,18 +21,11 @@
                     />
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Nueva contraseña</label>
-                    <input
-                        v-model="password"
-                        type="password"
-                        autocomplete="new-password"
-                        minlength="8"
-                        required
-                        class="w-full h-11 rounded-lg border border-slate-300 px-3"
-                        placeholder="Mínimo 8 caracteres"
-                    />
-                </div>
+                <PasswordStrengthField
+                    v-model="password"
+                    label="Nueva contraseña"
+                    placeholder="Nueva contraseña"
+                />
 
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Confirmar contraseña</label>
@@ -72,6 +65,11 @@
 import { computed, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
+import PasswordStrengthField from '@/app/components/ui/form/PasswordStrengthField.vue'
+
+function meetsPolicy(p: string): boolean {
+    return p.length >= 8 && /[A-Z]/.test(p) && /[a-z]/.test(p) && /[0-9]/.test(p) && /[^A-Za-z0-9]/.test(p)
+}
 
 const route  = useRoute()
 const router = useRouter()
@@ -87,7 +85,7 @@ const error   = ref<string | null>(null)
 
 const hasParams = computed(() => email.value && token.value)
 const canSubmit = computed(() =>
-    password.value.length >= 8 && password.value === passwordConfirmation.value
+    meetsPolicy(password.value) && password.value === passwordConfirmation.value
 )
 
 async function submit() {
