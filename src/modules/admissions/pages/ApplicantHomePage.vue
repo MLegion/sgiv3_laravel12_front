@@ -8,7 +8,7 @@
             <!-- Hero: saludo + identidad -->
             <section class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
                 <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Proceso de Admisión</p>
-                <h1 class="text-2xl font-bold text-slate-800 mt-1">Hola, {{ firstName }} 👋</h1>
+                <h1 class="text-2xl font-bold text-slate-800 mt-1">Hola{{ firstName ? ', ' + firstName : '' }} 👋</h1>
                 <div class="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm">
                     <p v-if="me?.preApplicationFolio"><span class="text-slate-400">Folio:</span> <span class="font-mono font-bold text-slate-700">{{ me.preApplicationFolio }}</span></p>
                     <p v-if="periodLabel"><span class="text-slate-400">Periodo:</span> <span class="font-semibold text-slate-700">{{ periodLabel }}</span></p>
@@ -126,7 +126,11 @@ const me        = ref<any | null>(null)
 const documents = ref<any | null>(null)
 
 const status = computed<number>(() => me.value?.status ?? 0)
-const firstName = computed(() => me.value?.names?.split(' ')[0] ?? me.value?.names ?? 'aspirante')
+// Primer nombre del aspirante; vacío si aún no lo capturó (recién registrado).
+const firstName = computed(() => {
+    const n = (me.value?.names ?? '').trim()
+    return n ? n.split(' ')[0] : ''
+})
 const periodLabel = computed(() => me.value?.academicPeriod?.shortName ?? me.value?.academicPeriod?.name ?? null)
 
 const gridCols = computed(() => 'auto' + ' minmax(0, 1fr) auto'.repeat(STAGES.length - 1))
