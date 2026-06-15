@@ -13,50 +13,51 @@
         <div class="bg-white border rounded-xl shadow-sm p-4 space-y-3">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
                 <div class="xl:col-span-2">
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar</label>
+                    <label for="flt-search" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar</label>
                     <input
+                        id="flt-search"
                         v-model="search"
-                        type="text"
+                        type="search"
                         placeholder="Nombre, CURP, email, num. control..."
                         class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                         @input="debouncedFetch"
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Campus</label>
-                    <select v-model="filters.campusId" @change="onFilterChange"
+                    <label for="flt-campus" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Campus</label>
+                    <select id="flt-campus" v-model="filters.campusId" @change="onFilterChange"
                             class="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm">
                         <option :value="null">Todos</option>
                         <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.shortName ?? c.name }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Modalidad</label>
-                    <select v-model="filters.modalityTypeId" @change="onFilterChange"
+                    <label for="flt-modality" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Modalidad</label>
+                    <select id="flt-modality" v-model="filters.modalityTypeId" @change="onFilterChange"
                             class="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm">
                         <option :value="null">Todas</option>
                         <option v-for="m in modalityTypes" :key="m.id" :value="m.id">{{ m.shortName ?? m.name }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Carrera</label>
-                    <select v-model="filters.careerId" @change="onFilterChange"
+                    <label for="flt-career" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Carrera</label>
+                    <select id="flt-career" v-model="filters.careerId" @change="onFilterChange"
                             class="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm">
                         <option :value="null">Todas</option>
                         <option v-for="c in careers" :key="c.id" :value="c.id">{{ c.shortName ?? c.name }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Estatus</label>
-                    <select v-model="filters.studentStatusId" @change="onFilterChange"
+                    <label for="flt-status" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Estatus</label>
+                    <select id="flt-status" v-model="filters.studentStatusId" @change="onFilterChange"
                             class="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm">
                         <option :value="null">Todos</option>
                         <option v-for="s in studentStatuses" :key="s.id" :value="s.id">{{ s.name }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Semestre</label>
-                    <select v-model.number="filters.semester" @change="onFilterChange"
+                    <label for="flt-semester" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Semestre</label>
+                    <select id="flt-semester" v-model.number="filters.semester" @change="onFilterChange"
                             class="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm">
                         <option :value="null">Todos</option>
                         <option v-for="n in 12" :key="n" :value="n">{{ n }}°</option>
@@ -69,11 +70,26 @@
         </div>
 
         <!-- Cargando -->
-        <div v-if="loading" class="flex justify-center py-12">
+        <div v-if="loading" role="status" aria-label="Cargando estudiantes" class="flex justify-center py-12">
             <svg class="animate-spin w-8 h-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>
+        </div>
+
+        <!-- Error -->
+        <div v-else-if="errorMsg" role="alert" class="flex flex-col items-center justify-center py-16 gap-3 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-red-400">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            <p class="text-sm text-red-600 max-w-sm">{{ errorMsg }}</p>
+            <button
+                type="button"
+                class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                @click="fetchStudents"
+            >
+                Reintentar
+            </button>
         </div>
 
         <!-- Sin resultados -->
@@ -185,6 +201,7 @@ const search   = ref('')
 const page     = ref(1)
 const total    = ref(0)
 const lastPage = ref(1)
+const errorMsg = ref('')
 
 interface Filters {
     campusId: number | null
@@ -263,6 +280,7 @@ function statusClass(name?: string) {
 
 async function fetchStudents() {
     loading.value = true
+    errorMsg.value = ''
     try {
         const params: Record<string, any> = { page: page.value, per_page: 25 }
         const searchObj: Record<string, any> = {}
@@ -289,6 +307,12 @@ async function fetchStudents() {
         items.value    = data.items ?? []
         total.value    = data.total ?? 0
         lastPage.value = data.lastPage ?? 1
+    } catch (e: any) {
+        items.value = []
+        total.value = 0
+        lastPage.value = 1
+        errorMsg.value = e?.response?.data?.message
+            ?? 'No se pudo cargar la lista de estudiantes. Verifica tu conexión e inténtalo de nuevo.'
     } finally {
         loading.value = false
     }
