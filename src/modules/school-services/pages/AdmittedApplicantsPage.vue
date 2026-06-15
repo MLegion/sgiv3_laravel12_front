@@ -188,8 +188,13 @@
         <!-- ── DRAWER DETALLE ────────────────────────────────────────────────── -->
         <Teleport to="body">
             <Transition enter-active-class="transition-opacity duration-200" enter-from-class="opacity-0" leave-active-class="transition-opacity duration-200" leave-to-class="opacity-0">
-                <div v-if="drawerItem" class="fixed inset-0 z-[100] flex" @click.self="drawerItem = null">
-                    <div class="ml-auto w-full max-w-lg h-full bg-white shadow-2xl flex flex-col overflow-hidden">
+                <div v-if="drawerItem" class="fixed inset-0 z-[100] flex" @click.self="drawerItem = null" @keydown.esc.window="drawerItem = null">
+                    <div
+                        class="ml-auto w-full max-w-lg h-full bg-white shadow-2xl flex flex-col overflow-hidden"
+                        role="dialog"
+                        aria-modal="true"
+                        :aria-label="`Detalle del aspirante ${fullName(drawerItem)}`"
+                    >
                         <!-- Cabecera drawer -->
                         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-50 shrink-0">
                             <div>
@@ -279,12 +284,8 @@
         </Teleport>
 
         <!-- ── MODAL INSCRIPCIÓN ──────────────────────────────────────────────── -->
-        <Teleport to="body">
-            <Transition enter-active-class="transition-opacity duration-150" enter-from-class="opacity-0">
-                <div v-if="enrollModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 p-4">
-                    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4">
-                        <h2 class="text-base font-bold text-slate-800 uppercase tracking-wide">Confirmar Inscripción</h2>
-
+        <BaseModal v-model="enrollModal" title="Confirmar Inscripción" size="lg">
+            <div class="space-y-4">
                         <!-- Selección de periodo de ingreso -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Período de Ingreso <span class="text-red-500">*</span></label>
@@ -357,10 +358,8 @@
                                 </div>
                             </template>
                         </template>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
+            </div>
+        </BaseModal>
 
     </div>
 </template>
@@ -369,6 +368,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'

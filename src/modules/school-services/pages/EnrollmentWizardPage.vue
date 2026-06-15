@@ -11,6 +11,7 @@
         <ol class="flex items-center gap-3 text-xs">
             <li v-for="(label, idx) in stepLabels" :key="idx"
                 class="flex items-center gap-2"
+                :aria-current="(idx + 1) === step ? 'step' : undefined"
                 :class="idx + 1 === step ? 'font-bold text-blue-700' : (idx + 1 < step ? 'text-emerald-700' : 'text-slate-400')">
                 <span
                     class="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold"

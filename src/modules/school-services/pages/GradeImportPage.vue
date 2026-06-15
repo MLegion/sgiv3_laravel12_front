@@ -15,6 +15,7 @@
                 <p class="font-semibold text-slate-700 uppercase text-[11px] tracking-wide">Formato del CSV</p>
                 <button
                     type="button"
+                    aria-label="Descargar plantilla CSV de ejemplo"
                     class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] rounded-md bg-white border border-slate-300 text-slate-600 hover:border-blue-400 hover:text-blue-600 transition"
                     @click="downloadTemplate"
                 >
@@ -126,7 +127,7 @@ IJKL345678HDFZZZ02,QUI301,ORD1,3,0,,,0</pre>
 
         <!-- Resultados -->
         <div v-if="result" class="max-w-xl space-y-3">
-            <div class="grid grid-cols-3 gap-3 text-center">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
                 <div class="bg-white border rounded-lg p-4">
                     <p class="text-2xl font-bold text-slate-800">{{ result.total }}</p>
                     <p class="text-xs text-slate-500 uppercase">Total filas</p>

@@ -37,6 +37,7 @@
                         <div v-for="t in tokens" :key="t.token" class="flex items-center gap-2 p-2 border rounded bg-slate-50">
                             <button
                                 type="button"
+                                :aria-label="`Insertar token ${t.token}`"
                                 class="px-2 py-0.5 bg-indigo-600 text-white rounded font-mono text-[10px] hover:bg-indigo-700"
                                 @click="insertToken(t.token)"
                             >

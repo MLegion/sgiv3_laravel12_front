@@ -61,7 +61,7 @@
         <!-- Buscador global: filtra pendientes + estudiantes dentro de cada grupo -->
         <div v-if="cohortLoaded" class="bg-white rounded-xl border border-slate-200 p-3 flex items-center gap-3">
             <div class="relative flex-1">
-                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <svg aria-hidden="true" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 <input
                     v-model="searchTerm"
                     type="search"
@@ -146,7 +146,7 @@
                 </div>
 
                 <!-- Aviso cuando la carga no está finalizada -->
-                <div v-if="!loadState.finalized" class="m-3 p-3 rounded-lg border border-amber-200 bg-amber-50 text-sm text-amber-800">
+                <div v-if="!loadState.finalized" class="m-3 p-3 rounded-lg border border-amber-200 bg-amber-100 text-sm text-amber-900">
                     <p class="font-semibold">
                         <template v-if="!loadState.exists">No hay carga académica configurada</template>
                         <template v-else>La carga académica aún no está finalizada</template>
@@ -199,7 +199,7 @@
                                     <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">T: {{ g.shift }}</span>
                                     <span v-if="isSuggested(g)"
                                         class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white inline-flex items-center gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
+                                        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
                                             <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z" clip-rule="evenodd" />
                                         </svg>
                                         Recomendado
@@ -226,10 +226,11 @@
                         <div class="mt-3 flex items-center justify-between gap-2 flex-wrap">
                             <button
                                 type="button"
+                                :aria-expanded="expandedGroupIds.has(g.id)"
                                 class="text-[11px] font-semibold text-slate-500 hover:text-slate-800 inline-flex items-center gap-1"
                                 @click="toggleGroupDetails(g.id)"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                                     class="w-3.5 h-3.5 transition-transform"
                                     :class="{ 'rotate-180': expandedGroupIds.has(g.id) }">
                                     <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
@@ -286,7 +287,7 @@
                                         title="Quitar estudiante del grupo"
                                         @click="removeFromGroup(g, s)"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                                        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                                             <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
                                         </svg>
                                     </button>

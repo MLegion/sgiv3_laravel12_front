@@ -13,6 +13,7 @@
             <input
                 v-model="search"
                 type="text"
+                aria-label="Buscar materia o programa"
                 placeholder="Filtrar por clave o nombre…"
                 class="w-72 px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />

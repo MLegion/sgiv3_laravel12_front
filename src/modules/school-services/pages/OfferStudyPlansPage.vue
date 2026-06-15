@@ -48,6 +48,7 @@
                 <!-- Cabecera de la oferta -->
                 <button
                     type="button"
+                    :aria-expanded="expanded.has(offer.id)"
                     class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-slate-50 transition"
                     @click="toggle(offer)"
                 >
@@ -85,7 +86,7 @@
                 </button>
 
                 <!-- Planes de estudio -->
-                <div v-if="expanded.has(offer.id)" class="border-t px-6 py-4 space-y-3">
+                <div v-if="expanded.has(offer.id)" role="region" class="border-t px-6 py-4 space-y-3">
                     <div v-if="loadingPlans.has(offer.id)" class="text-xs text-slate-400">Cargando planes...</div>
 
                     <template v-else>

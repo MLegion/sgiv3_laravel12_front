@@ -142,6 +142,7 @@
                             <td class="px-3 py-2 text-right">
                                 <button
                                     v-if="!a.actaClosedAt"
+                                    :aria-label="`Cerrar acta de ${a.subjectName}`"
                                     :disabled="busyActaIds.has(a.teacherAssignmentId)"
                                     class="text-[10px] px-2 py-0.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-slate-300"
                                     @click="closeActa(a.teacherAssignmentId, a.subjectName)"
@@ -150,6 +151,7 @@
                                 </button>
                                 <button
                                     v-else
+                                    :aria-label="`Reabrir acta de ${a.subjectName}`"
                                     :disabled="busyActaIds.has(a.teacherAssignmentId) || !!data?.gradesLoadedAt"
                                     class="text-[10px] px-2 py-0.5 rounded bg-amber-100 text-amber-800 hover:bg-amber-200 disabled:bg-slate-100 disabled:text-slate-400"
                                     @click="reopenActa(a.teacherAssignmentId)"

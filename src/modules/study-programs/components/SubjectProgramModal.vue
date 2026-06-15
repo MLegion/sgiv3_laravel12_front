@@ -41,6 +41,7 @@
                     <input
                         ref="fileInput"
                         type="file"
+                        aria-label="Seleccionar archivo PDF del programa"
                         accept="application/pdf,.pdf"
                         class="hidden"
                         @change="onFileChange"

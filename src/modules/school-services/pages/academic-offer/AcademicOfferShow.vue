@@ -57,27 +57,23 @@
         </template>
 
         <!-- Modal vincular plan -->
-        <div v-if="showLinkModal" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
-                <h3 class="text-sm font-semibold text-slate-700 uppercase">Vincular Plan de Estudio</h3>
+        <BaseModal v-model="showLinkModal" title="Vincular Plan de Estudio" size="md">
+            <FormRemoteSelect
+                label="PLAN DE ESTUDIO"
+                v-model="selectedStudyPlanId"
+                :endpoint="API.SUPERADMIN_API?.studyPlans?.list ?? ''"
+                :endpoint-by-id="API.SUPERADMIN_API?.studyPlans?.byId ?? ''"
+                item-label="name"
+                item-value="id"
+            />
 
-                <FormRemoteSelect
-                    label="PLAN DE ESTUDIO"
-                    v-model="selectedStudyPlanId"
-                    :endpoint="API.SUPERADMIN_API?.studyPlans?.list ?? ''"
-                    :endpoint-by-id="API.SUPERADMIN_API?.studyPlans?.byId ?? ''"
-                    item-label="name"
-                    item-value="id"
-                />
-
-                <div class="flex justify-end gap-2 pt-2 border-t">
-                    <button class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="showLinkModal = false">CANCELAR</button>
-                    <button class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700" :disabled="!selectedStudyPlanId || linking" @click="linkStudyPlan">
-                        {{ linking ? 'VINCULANDO...' : 'VINCULAR' }}
-                    </button>
-                </div>
-            </div>
-        </div>
+            <template #footer>
+                <button class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="showLinkModal = false">CANCELAR</button>
+                <button class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700" :disabled="!selectedStudyPlanId || linking" @click="linkStudyPlan">
+                    {{ linking ? 'VINCULANDO...' : 'VINCULAR' }}
+                </button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -89,6 +85,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import type { AcademicOfferType } from '@/modules/school-services/types/academic-offer.type'
 import type { AcademicOfferStudyPlanType } from '@/modules/school-services/types/academic-offer-study-plan.type'
 
