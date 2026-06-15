@@ -88,28 +88,10 @@ export default [
         meta: { title: 'Mis Periodos Académicos' },
     },
     {
-        path: 'school-services/college-academic-periods/create',
-        name: 'school-services.college-academic-periods.create',
-        component: () => import('@/modules/school-services/pages/college-academic-period/CollegeAcademicPeriodCreate.vue'),
-        meta: { title: 'Adoptar - Periodo Académico' },
-    },
-    {
         path: 'school-services/college-academic-periods/:id',
         name: 'school-services.college-academic-periods.show',
         component: () => import('@/modules/school-services/pages/college-academic-period/CollegeAcademicPeriodShow.vue'),
         meta: { title: 'Detalle - Periodo Institucional' },
-    },
-    {
-        path: 'school-services/college-academic-periods/:id/edit',
-        name: 'school-services.college-academic-periods.edit',
-        component: () => import('@/modules/school-services/pages/college-academic-period/CollegeAcademicPeriodEdit.vue'),
-        meta: { title: 'Ajustar - Periodo Institucional' },
-    },
-    {
-        path: 'school-services/college-academic-periods/:id/delete',
-        name: 'school-services.college-academic-periods.delete',
-        component: () => import('@/modules/school-services/pages/college-academic-period/CollegeAcademicPeriodDelete.vue'),
-        meta: { title: 'Eliminar - Periodo Institucional' },
     },
 
     // Academic Offers
@@ -120,48 +102,18 @@ export default [
         meta: { title: 'Oferta Académica' },
     },
     {
-        path: 'school-services/academic-offers/create',
-        name: 'school-services.academic-offers.create',
-        component: () => import('@/modules/school-services/pages/academic-offer/AcademicOfferCreate.vue'),
-        meta: { title: 'Registrar - Oferta Académica' },
-    },
-    {
         path: 'school-services/academic-offers/:id',
         name: 'school-services.academic-offers.show',
         component: () => import('@/modules/school-services/pages/academic-offer/AcademicOfferShow.vue'),
         meta: { title: 'Detalle - Oferta Académica' },
     },
-    {
-        path: 'school-services/academic-offers/:id/edit',
-        name: 'school-services.academic-offers.edit',
-        component: () => import('@/modules/school-services/pages/academic-offer/AcademicOfferEdit.vue'),
-        meta: { title: 'Editar - Oferta Académica' },
-    },
-    {
-        path: 'school-services/academic-offers/:id/delete',
-        name: 'school-services.academic-offers.delete',
-        component: () => import('@/modules/school-services/pages/academic-offer/AcademicOfferDelete.vue'),
-        meta: { title: 'Eliminar - Oferta Académica' },
-    },
 
-    // Offer Study Plans
+    // Offer Study Plans (vincular/desvincular en modal dentro del listado)
     {
         path: 'school-services/offer-study-plans',
         name: 'school-services.offer-study-plans',
         component: () => import('@/modules/school-services/pages/OfferStudyPlansPage.vue'),
         meta: { title: 'Oferta por Plan de Estudio' },
-    },
-    {
-        path: 'school-services/offer-study-plans/:offerId/study-plans/create',
-        name: 'school-services.offer-study-plans.create',
-        component: () => import('@/modules/school-services/pages/offer-study-plan/OfferStudyPlanCreate.vue'),
-        meta: { title: 'Agregar Plan de Estudio' },
-    },
-    {
-        path: 'school-services/offer-study-plans/:offerId/study-plans/:id/delete',
-        name: 'school-services.offer-study-plans.delete',
-        component: () => import('@/modules/school-services/pages/offer-study-plan/OfferStudyPlanDelete.vue'),
-        meta: { title: 'Eliminar Plan de Estudio' },
     },
 
     // Approval Types (alta/edición/eliminación en modal dentro del listado)

@@ -5,7 +5,7 @@
             <button
                 type="button"
                 class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-                @click="router.push({ name: 'school-services.academic-offers.create' })"
+                @click="openCreate"
             >
                 <PlusIcon class="w-4 h-4" />
                 REGISTRAR OFERTA
@@ -81,33 +81,99 @@
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-7.5 9.75-7.5S21.75 12 21.75 12s-3.75 7.5-9.75 7.5S2.25 12 2.25 12z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                     </button>
                     <button type="button" class="border p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition cursor-pointer" title="Editar" aria-label="Editar oferta académica"
-                        @click="router.push({ name: 'school-services.academic-offers.edit', params: { id: row.id } })">
+                        @click="openEdit(row)">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l2.651 2.651M7.5 13.85l-.75 3.75 3.75-.75L19.513 7.138a2.121 2.121 0 00-3-3L7.5 13.85z" /></svg>
                     </button>
                     <button type="button" class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition cursor-pointer" title="Eliminar" aria-label="Eliminar oferta académica"
-                        @click="router.push({ name: 'school-services.academic-offers.delete', params: { id: row.id } })">
+                        @click="confirmDelete(row)">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 7.5h12m-10.5 0v10.125A1.875 1.875 0 009.375 19.5h5.25A1.875 1.875 0 0016.5 17.625V7.5M9.75 4.875A1.875 1.875 0 0111.625 3h.75A1.875 1.875 0 0114.25 4.875L15 7.5h-6l.75-2.625z" /></svg>
                     </button>
                 </div>
             </template>
         </DataTable>
+
+        <BaseModal
+            v-model="modalOpen"
+            :title="editing ? 'Editar Oferta Académica' : 'Registrar Oferta Académica'"
+            size="lg"
+            persistent
+        >
+            <div class="space-y-6">
+                <!-- ALTA: carrera + modalidad seleccionables -->
+                <template v-if="!editing">
+                    <FormRemoteSelect
+                        :key="`modality-${createKey}`"
+                        label="MODALIDAD (CAMPUS + TIPO)"
+                        v-model="form.modalityId"
+                        :endpoint="API.SCHOOL_SERVICES_API.modalities.list"
+                        :endpoint-by-id="API.SCHOOL_SERVICES_API.modalities.byId"
+                        item-label="name"
+                        item-value="id"
+                        required
+                    />
+
+                    <FormRemoteSelect
+                        :key="`career-${createKey}`"
+                        label="CARRERA"
+                        v-model="form.careerId"
+                        :endpoint="API.SUPERADMIN_API?.careers?.list ?? ''"
+                        :endpoint-by-id="API.SUPERADMIN_API?.careers?.byId ?? ''"
+                        item-label="name"
+                        item-value="id"
+                        required
+                    />
+                </template>
+
+                <!-- EDICIÓN: solo el estado; modalidad y carrera de solo lectura -->
+                <template v-else>
+                    <div class="p-4 bg-slate-50 border border-dashed rounded-lg space-y-2 text-sm text-slate-600">
+                        <p><strong>Modalidad:</strong> {{ editing.modality?.name ?? `#${form.modalityId}` }}</p>
+                        <p><strong>Carrera:</strong> {{ editing.career?.name ?? `#${form.careerId}` }}</p>
+                        <p class="text-xs text-slate-400 italic">* La modalidad y carrera no se pueden modificar.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ESTADO</label>
+                        <select v-model.number="form.status" class="w-full border rounded-lg px-3 py-2 text-sm">
+                            <option :value="0">INACTIVA</option>
+                            <option :value="1">ACTIVA</option>
+                        </select>
+                    </div>
+                </template>
+
+                <p v-if="formError" class="text-sm text-red-600">{{ formError }}</p>
+            </div>
+
+            <template #footer>
+                <button type="button" class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="modalOpen = false">
+                    CANCELAR
+                </button>
+                <button type="button" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50" :disabled="submitting" @click="submitForm">
+                    {{ submitting ? 'GUARDANDO...' : (editing ? 'ACTUALIZAR' : 'GUARDAR') }}
+                </button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useConfirm } from '@/app/composables/useConfirm'
 import type { AcademicOfferType } from '@/modules/school-services/types/academic-offer.type'
 
 const router = useRouter()
 const toast = useToast()
+const { confirm } = useConfirm()
 
 const columns: DataTableColumn<AcademicOfferType>[] = [
     { key: 'id',                 label: '#',                field: 'id',       sortable: true },
@@ -125,7 +191,7 @@ const campuses       = ref<Catalog[]>([])
 const modalityTypes  = ref<Catalog[]>([])
 
 /* Persistencia en sessionStorage para no perder filtros al navegar a
-   create/delete de plan y regresar. */
+   la vista de detalle (planes vinculados) y regresar. */
 const FILTERS_KEY = 'sgiv3:academic-offers-page:filters'
 function loadSavedFilters(): { campusId: number | null; modalityTypeId: number | null } {
     try {
@@ -200,4 +266,101 @@ onMounted(async () => {
         fetchData()
     }
 })
+
+/* ---------- Alta / edición en modal ---------- */
+const modalOpen = ref(false)
+const editing = ref<AcademicOfferType | null>(null)
+const submitting = ref(false)
+const formError = ref<string | null>(null)
+const createKey = ref(0)
+
+const form = reactive({
+    modalityId: null as number | null,
+    careerId:   null as number | null,
+    status:     0 as number,
+})
+
+function resetForm() {
+    form.modalityId = null
+    form.careerId   = null
+    form.status     = 0
+    formError.value = null
+}
+
+function openCreate() {
+    editing.value = null
+    resetForm()
+    // Remontar los selects relacionales para limpiar su estado interno.
+    createKey.value++
+    modalOpen.value = true
+}
+
+async function openEdit(row: AcademicOfferType) {
+    editing.value = row
+    resetForm()
+    // Hidratar por id (el listado puede no traer todos los campos).
+    try {
+        const { data } = await api.get(API.SCHOOL_SERVICES_API.academicOffers.byId(row.id))
+        form.modalityId = data.modalityId
+        form.careerId   = data.careerId
+        form.status     = data.status
+        editing.value   = data
+    } catch {
+        toast.error('No se pudo cargar la oferta académica.')
+        return
+    }
+    modalOpen.value = true
+}
+
+async function submitForm() {
+    formError.value = null
+
+    if (!editing.value) {
+        if (!form.modalityId) { formError.value = 'La modalidad es requerida.'; return }
+        if (!form.careerId)   { formError.value = 'La carrera es requerida.'; return }
+    }
+
+    submitting.value = true
+    try {
+        if (editing.value) {
+            await api.put(API.SCHOOL_SERVICES_API.academicOffers.update(editing.value.id), {
+                modality_id: form.modalityId,
+                career_id:   form.careerId,
+                status:      form.status,
+            })
+            toast.success('Oferta actualizada.')
+        } else {
+            await api.post(API.SCHOOL_SERVICES_API.academicOffers.create, {
+                modality_id: form.modalityId,
+                career_id:   form.careerId,
+                status:      0,
+            })
+            toast.success('Oferta creada.')
+        }
+        modalOpen.value = false
+        if (bothFiltersSelected.value) fetchData()
+    } catch (e: any) {
+        formError.value = e?.response?.data?.message ?? 'Error al guardar.'
+    } finally {
+        submitting.value = false
+    }
+}
+
+/* ---------- Eliminar ---------- */
+async function confirmDelete(row: AcademicOfferType) {
+    const ok = await confirm({
+        title: 'Eliminar oferta académica',
+        message: `¿Eliminar la oferta de "${row.career?.name ?? `Carrera #${row.careerId}`}"? Esta acción no se puede deshacer.`,
+        variant: 'danger',
+        confirmText: 'Eliminar',
+    })
+    if (!ok) return
+    try {
+        await api.delete(API.SCHOOL_SERVICES_API.academicOffers.delete(row.id))
+        toast.success('Oferta eliminada.')
+        if (bothFiltersSelected.value) fetchData()
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'Error al eliminar la oferta.')
+    }
+}
 </script>

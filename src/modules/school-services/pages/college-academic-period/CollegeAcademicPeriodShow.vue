@@ -4,13 +4,6 @@
             <h1 class="text-xl font-semibold text-slate-800">DETALLE - PERIODO INSTITUCIONAL</h1>
             <div class="flex gap-2">
                 <button class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="router.back()">VOLVER</button>
-                <button
-                    class="px-3 py-2 text-sm rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50"
-                    :disabled="loading"
-                    @click="router.push({ name: 'school-services.college-academic-periods.edit', params: { id: route.params.id } })"
-                >
-                    AJUSTAR
-                </button>
             </div>
         </div>
 
