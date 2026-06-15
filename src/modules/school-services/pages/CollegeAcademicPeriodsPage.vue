@@ -87,7 +87,7 @@
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition"
                         title="Eliminar"
-                        @click="router.push({ name: 'school-services.college-academic-periods.delete', params: { id: row.id } })"
+                        @click="confirmDelete(row)"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 7.5h12m-10.5 0v10.125A1.875 1.875 0 009.375 19.5h5.25A1.875 1.875 0 0016.5 17.625V7.5M9.75 4.875A1.875 1.875 0 0111.625 3h.75A1.875 1.875 0 0114.25 4.875L15 7.5h-6l.75-2.625z" />
@@ -110,8 +110,12 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { AcademicPeriodStatus, CollegeAcademicPeriod } from '@/modules/school-services/types/college-academic-period.type'
 import { STATUS_CLASSES, STATUS_OPTIONS } from '@/modules/school-services/types/college-academic-period.type'
+import { useConfirm } from '@/app/composables/useConfirm'
+import { useToast } from '@/app/composables/useToast'
 
 const router = useRouter()
+const { confirm } = useConfirm()
+const toast = useToast()
 
 const columns: DataTableColumn<CollegeAcademicPeriod>[] = [
     { key: 'id',              label: '#',              field: 'id',        sortable: true },
@@ -147,7 +151,22 @@ async function onStatusChange(row: CollegeAcademicPeriod, newStatus: string) {
     if (newStatus === row.status) return
 
     const prevStatus = row.status
+    // Optimista (también corrige el valor mostrado en el select).
     row.status = newStatus as AcademicPeriodStatus
+
+    // Confirmación para transiciones sensibles / irreversibles.
+    if (newStatus === 'closed' || newStatus === 'archived') {
+        const ok = await confirm({
+            title: newStatus === 'closed' ? 'Cerrar periodo' : 'Archivar periodo',
+            message: newStatus === 'closed'
+                ? `¿Cerrar "${(row as any).name ?? 'este periodo'}"? Pasa a solo lectura: ya no se podrán cargar ni editar calificaciones. Queda auditado.`
+                : `¿Archivar "${(row as any).name ?? 'este periodo'}"? Pasa a histórico.`,
+            variant: 'danger',
+            confirmText: newStatus === 'closed' ? 'Cerrar' : 'Archivar',
+        })
+        if (!ok) { row.status = prevStatus; return }
+    }
+
     savingIds.add(row.id)
     errorMsg.value = ''
 
@@ -167,6 +186,24 @@ async function onStatusChange(row: CollegeAcademicPeriod, newStatus: string) {
             || 'Error al cambiar el estado.'
     } finally {
         savingIds.delete(row.id)
+    }
+}
+
+/* ---------- Eliminar con modal inline ---------- */
+async function confirmDelete(row: CollegeAcademicPeriod) {
+    const ok = await confirm({
+        title: 'Eliminar periodo',
+        message: `¿Eliminar "${(row as any).name ?? 'este periodo'}" del plantel? No se puede deshacer.`,
+        variant: 'danger',
+        confirmText: 'Eliminar',
+    })
+    if (!ok) return
+    try {
+        await api.delete(API.SCHOOL_SERVICES_API.collegeAcademicPeriods.delete(row.id))
+        toast.success('Periodo eliminado.')
+        fetchData()
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo eliminar el periodo.')
     }
 }
 

@@ -48,6 +48,16 @@
             {{ banner.message }}
         </div>
 
+        <!-- Detalle de fallidos en la asignación masiva -->
+        <div v-if="lastFailures.length" class="text-sm px-4 py-3 rounded-lg border border-red-200 bg-red-50">
+            <p class="font-semibold text-red-700 mb-1">No se pudieron asignar {{ lastFailures.length }}:</p>
+            <ul class="space-y-0.5 text-xs text-red-700">
+                <li v-for="(f, i) in lastFailures" :key="i">
+                    • <span class="font-medium">{{ f.name }}</span> — {{ f.reason }}
+                </li>
+            </ul>
+        </div>
+
         <!-- Buscador global: filtra pendientes + estudiantes dentro de cada grupo -->
         <div v-if="cohortLoaded" class="bg-white rounded-xl border border-slate-200 p-3 flex items-center gap-3">
             <div class="relative flex-1">
@@ -311,6 +321,7 @@ const cohortLoaded = ref(false)
 const loading = ref(false)
 const assigning = ref<number | null>(null)
 const banner = reactive({ ok: false, message: '' })
+const lastFailures = ref<Array<{ name: string; reason: string }>>([])
 
 const expandedGroupIds = ref<Set<number>>(new Set())
 const groupStudents = reactive<Record<number, Array<{ id: number, num_control: string | null, full_name: string, source: string }>>>({})
@@ -426,18 +437,34 @@ function toggleAllSelection() {
 
 async function assignSelection(g: CohortGroup) {
     if (!selectedIds.value.length) return
+
+    const count = selectedIds.value.length
+    const ok = await useConfirm().confirm({
+        title: 'Asignar a grupo',
+        message: `¿Asignar ${count} estudiante(s) al grupo ${g.name}?`,
+        confirmText: 'Asignar',
+    })
+    if (!ok) return
+
     assigning.value = g.id
     banner.message = ''
+    lastFailures.value = []
+    // Lookup id→nombre ANTES de recargar el cohorte (para nombrar los fallidos).
+    const nameById = new Map(students.value.map(s => [s.id, s.full_name]))
+
     try {
         const { data } = await api.post(API.SCHOOL_SERVICES_API.studentGroups.bulkAssign, {
             student_ids: selectedIds.value,
             group_id:    g.id,
             source:      'INSCRIPCION',
         })
-        banner.ok = true
-        const parts = [`${data.assigned} asignados al grupo ${g.name}`]
-        if (data.failed > 0) parts.push(`${data.failed} fallaron (revisa capacidad / modalidad)`)
-        banner.message = parts.join(' · ')
+        banner.ok = data.failed === 0
+        banner.message = `${data.assigned} asignado(s) al grupo ${g.name}`
+            + (data.failed > 0 ? ` · ${data.failed} con problema` : '')
+        lastFailures.value = (data.failed_items ?? []).map((f: any) => ({
+            name:   nameById.get(f.student_id) ?? `Estudiante #${f.student_id}`,
+            reason: f.reason ?? 'No se pudo asignar.',
+        }))
         await loadCohort()
     } catch (e: any) {
         banner.ok = false

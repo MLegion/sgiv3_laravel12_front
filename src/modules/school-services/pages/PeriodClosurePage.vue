@@ -144,7 +144,7 @@
                                     v-if="!a.actaClosedAt"
                                     :disabled="busyActaIds.has(a.teacherAssignmentId)"
                                     class="text-[10px] px-2 py-0.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-slate-300"
-                                    @click="closeActa(a.teacherAssignmentId)"
+                                    @click="closeActa(a.teacherAssignmentId, a.subjectName)"
                                 >
                                     Cerrar
                                 </button>
@@ -369,17 +369,25 @@ function confirmMarkLoaded(): void {
     )
 }
 
-async function closeActa(taId: number): Promise<void> {
-    busyActaIds.value.add(taId)
-    try {
-        await api.post(API.SCHOOL_SERVICES_API.periodClosure.closeActa(taId), {})
-        await load()
-    } catch (e: unknown) {
-        closureError.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error
-            ?? 'No se pudo cerrar el acta.'
-    } finally {
-        busyActaIds.value.delete(taId)
-    }
+function closeActa(taId: number, label?: string): void {
+    askConfirm(
+        'Cerrar acta',
+        `¿Cerrar el acta${label ? ' de ' + label : ''}? Ya no se podrán editar las calificaciones de esta materia; reabrirla requiere intervención de un administrador.`,
+        'Cerrar acta',
+        'warning',
+        async () => {
+            busyActaIds.value.add(taId)
+            try {
+                await api.post(API.SCHOOL_SERVICES_API.periodClosure.closeActa(taId), {})
+                await load()
+            } catch (e: unknown) {
+                closureError.value = (e as { response?: { data?: { error?: string } } })?.response?.data?.error
+                    ?? 'No se pudo cerrar el acta.'
+            } finally {
+                busyActaIds.value.delete(taId)
+            }
+        },
+    )
 }
 
 function reopenActa(taId: number): void {
