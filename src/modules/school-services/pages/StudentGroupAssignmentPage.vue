@@ -162,15 +162,48 @@
                 </div>
 
                 <div v-else class="max-h-[560px] overflow-y-auto p-3 space-y-3">
+                    <!-- Atajo: asignar la selección al grupo recomendado (balanceo de carga) -->
+                    <div v-if="suggestedGroup && selectedIds.length"
+                        class="flex items-center justify-between gap-3 p-3 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-800">
+                        <div class="min-w-0 text-xs">
+                            <p class="font-semibold">
+                                Sugerencia: asignar a <span class="font-bold">{{ suggestedGroup.name }}</span>
+                            </p>
+                            <p class="text-indigo-600 mt-0.5">
+                                {{ suggestedGroup.available }} lugares libres ·
+                                <template v-if="suggestedGroup.available >= selectedIds.length">caben los {{ selectedIds.length }} seleccionados</template>
+                                <template v-else>es el grupo con más cupo; caben {{ suggestedGroup.available }} de {{ selectedIds.length }}</template>
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            :disabled="assigning === suggestedGroup.id"
+                            class="flex-shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                            @click="assignSelection(suggestedGroup)"
+                        >
+                            {{ assigning === suggestedGroup.id ? 'Asignando...' : 'Asignar aquí' }}
+                        </button>
+                    </div>
+
                     <div v-for="g in groups" :key="g.id"
-                        class="border border-slate-200 rounded-xl p-3 hover:shadow-sm transition"
-                        :class="{ 'opacity-60': g.is_full }"
+                        class="border rounded-xl p-3 hover:shadow-sm transition"
+                        :class="[
+                            g.is_full ? 'opacity-60' : '',
+                            isSuggested(g) ? 'border-indigo-400 ring-2 ring-indigo-100 bg-indigo-50/30' : 'border-slate-200',
+                        ]"
                     >
                         <div class="flex items-center justify-between gap-2">
                             <div class="min-w-0">
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2 flex-wrap">
                                     <h3 class="font-bold text-slate-800 text-base">{{ g.name }}</h3>
                                     <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">T: {{ g.shift }}</span>
+                                    <span v-if="isSuggested(g)"
+                                        class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white inline-flex items-center gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
+                                            <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z" clip-rule="evenodd" />
+                                        </svg>
+                                        Recomendado
+                                    </span>
                                 </div>
                                 <p class="text-[11px] text-slate-500 mt-0.5">
                                     {{ g.subjects.length }} materias
@@ -362,6 +395,27 @@ const allSelected = computed(() =>
     filteredPending.value.length > 0
     && filteredPending.value.every(s => selectedIds.value.includes(s.id))
 )
+
+/**
+ * Grupo recomendado para la selección actual: balanceo de carga.
+ * Entre los grupos no llenos, prioriza los que pueden alojar a TODA la
+ * selección; de ésos, el menos ocupado (más cupo libre) para mantener los
+ * grupos parejos. Si ninguno cabe completo, sugiere el de mayor cupo libre.
+ * El desempate por `id` mantiene la sugerencia estable entre recargas.
+ */
+const suggestedGroup = computed<CohortGroup | null>(() => {
+    const n = selectedIds.value.length
+    if (!n) return null
+    const open = groups.value.filter(g => !g.is_full && g.available > 0)
+    if (!open.length) return null
+    const fits = open.filter(g => g.available >= n)
+    const pool = fits.length ? fits : open
+    return [...pool].sort((a, b) => b.available - a.available || a.id - b.id)[0] ?? null
+})
+
+function isSuggested(g: CohortGroup): boolean {
+    return suggestedGroup.value?.id === g.id
+}
 
 onMounted(async () => {
     const [pRes, spRes, mRes] = await Promise.all([
