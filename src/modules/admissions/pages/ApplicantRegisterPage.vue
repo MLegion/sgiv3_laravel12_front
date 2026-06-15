@@ -106,6 +106,8 @@
                                 v-model="password"
                                 label="Contraseña"
                                 placeholder="Crea tu contraseña"
+                                :generator="true"
+                                @generated="onPasswordGenerated"
                             />
                             <span v-if="errors.password" class="text-sm text-red-600">{{ errors.password }}</span>
                         </div>
@@ -208,6 +210,12 @@ const errors = ref<Record<string, string>>({})
 // El registro está cerrado si ya verificamos el periodo y no hay ventana activa.
 const registrationClosed = computed(() => windowChecked.value && !activeWindow.value)
 const passwordsMatch     = computed(() => password.value === passwordConfirmation.value)
+
+// Al generar una contraseña, rellena también la confirmación y la revela.
+function onPasswordGenerated(value: string) {
+    passwordConfirmation.value = value
+    showConfirm.value = true
+}
 
 onMounted(async () => {
     collegeStore.hydrate()

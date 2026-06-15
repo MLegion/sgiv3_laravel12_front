@@ -264,6 +264,8 @@
                             v-model="form.password"
                             label="Nueva contraseña"
                             placeholder="Nueva contraseña"
+                            :generator="true"
+                            @generated="(v: string) => form.password_confirmation = v"
                         />
                         <div>
                             <label class="block text-xs font-semibold text-slate-500 mb-1">Confirmar contraseña</label>

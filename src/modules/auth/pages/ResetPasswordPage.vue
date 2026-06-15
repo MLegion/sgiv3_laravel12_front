@@ -25,6 +25,8 @@
                     v-model="password"
                     label="Nueva contraseña"
                     placeholder="Nueva contraseña"
+                    :generator="true"
+                    @generated="(v: string) => passwordConfirmation = v"
                 />
 
                 <div>

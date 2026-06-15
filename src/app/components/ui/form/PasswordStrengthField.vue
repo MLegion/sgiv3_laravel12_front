@@ -22,12 +22,37 @@
             </button>
         </div>
 
+        <!-- Generar / copiar (ayuda a crear una segura sin inventarla) -->
+        <div v-if="generator" class="flex items-center gap-3 flex-wrap">
+            <button
+                type="button"
+                class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800"
+                @click="generate"
+            >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/></svg>
+                Generar contraseña segura
+            </button>
+            <button
+                v-if="modelValue"
+                type="button"
+                class="inline-flex items-center gap-1 text-xs"
+                :class="copied ? 'text-green-600' : 'text-slate-500 hover:text-slate-700'"
+                @click="copy"
+            >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75"/></svg>
+                {{ copied ? '¡Copiada!' : 'Copiar' }}
+            </button>
+        </div>
+
         <!-- Medidor + requisitos -->
-        <div v-if="modelValue" class="space-y-1.5 pt-0.5">
-            <div class="h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                <div class="h-full transition-all duration-300" :class="strength.barClass" :style="{ width: strength.pct + '%' }"></div>
-            </div>
-            <p class="text-[11px] font-semibold" :class="strength.textClass">Seguridad: {{ strength.label }}</p>
+        <div v-if="modelValue || generator" class="space-y-1.5 pt-0.5">
+            <template v-if="modelValue">
+                <div class="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="h-full transition-all duration-300" :class="strength.barClass" :style="{ width: strength.pct + '%' }"></div>
+                </div>
+                <p class="text-[11px] font-semibold" :class="strength.textClass">Seguridad: {{ strength.label }}</p>
+            </template>
+            <p v-else class="text-[11px] text-slate-400">Tu contraseña debe incluir:</p>
             <ul class="grid grid-cols-2 gap-x-3 gap-y-0.5">
                 <li
                     v-for="req in checks"
@@ -50,18 +75,63 @@ const props = withDefaults(defineProps<{
     label?: string
     placeholder?: string
     autocomplete?: string
+    /** Muestra el botón "Generar contraseña segura" y los requisitos desde el inicio. */
+    generator?: boolean
 }>(), {
     modelValue: '',
     placeholder: '',
     autocomplete: 'new-password',
+    generator: false,
 })
 
-const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
+const emit = defineEmits<{
+    'update:modelValue': [value: string]
+    /** Se emite cuando el usuario genera una contraseña (para sincronizar el campo de confirmación). */
+    'generated': [value: string]
+}>()
 
-const show = ref(false)
+const show   = ref(false)
+const copied = ref(false)
 
 function onInput(e: Event) {
     emit('update:modelValue', (e.target as HTMLInputElement).value)
+}
+
+/** Entero aleatorio criptográfico en [0, max). */
+function randInt(max: number): number {
+    const a = new Uint32Array(1)
+    crypto.getRandomValues(a)
+    return a[0] % max
+}
+
+/** Genera una contraseña que cumple la política (sin caracteres ambiguos). */
+function generate() {
+    const upper  = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+    const lower  = 'abcdefghijkmnpqrstuvwxyz'
+    const digit  = '23456789'
+    const symbol = '!@#$%&*?-_'
+    const all    = upper + lower + digit + symbol
+    const pick   = (set: string) => set[randInt(set.length)]
+
+    const chars = [pick(upper), pick(lower), pick(digit), pick(symbol)]
+    while (chars.length < 14) chars.push(pick(all))
+    // Mezcla (Fisher-Yates) para que el orden no sea predecible.
+    for (let i = chars.length - 1; i > 0; i--) {
+        const j = randInt(i + 1)
+        ;[chars[i], chars[j]] = [chars[j], chars[i]]
+    }
+    const pw = chars.join('')
+    show.value = true
+    emit('update:modelValue', pw)
+    emit('generated', pw)
+}
+
+async function copy() {
+    try {
+        await navigator.clipboard.writeText(props.modelValue)
+        copied.value = true
+        setTimeout(() => { copied.value = false }, 1500)
+    } catch { /* clipboard no disponible */ }
 }
 
 const checks = computed(() => {
