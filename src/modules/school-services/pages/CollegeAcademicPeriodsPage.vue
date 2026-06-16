@@ -174,6 +174,52 @@
                 </button>
             </template>
         </BaseModal>
+
+        <!-- Forzar transición fuera de la política (excepcional, requiere motivo) -->
+        <BaseModal v-model="forceModal.open" title="Forzar cambio de estado" size="md" persistent>
+            <div class="space-y-4">
+                <div class="flex items-center justify-center gap-3 text-sm">
+                    <span class="px-2 py-1 rounded-full font-semibold" :class="STATUS_CLASSES[forceModal.prevStatus as AcademicPeriodStatus]">
+                        {{ labelFor(forceModal.prevStatus) }}
+                    </span>
+                    <span class="text-slate-400">→</span>
+                    <span class="px-2 py-1 rounded-full font-semibold" :class="STATUS_CLASSES[forceModal.newStatus as AcademicPeriodStatus]">
+                        {{ labelFor(forceModal.newStatus) }}
+                    </span>
+                </div>
+
+                <div class="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                    {{ forceModal.message || 'Esta transición no es la sugerida por el ciclo natural del periodo.' }}
+                    Solo debe forzarse para corregir una situación excepcional. <strong>Quedará auditado</strong> con tu usuario y motivo.
+                </div>
+
+                <div>
+                    <label for="force-reason" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Motivo (obligatorio)</label>
+                    <textarea
+                        id="force-reason"
+                        v-model="forceModal.reason"
+                        rows="3"
+                        maxlength="255"
+                        placeholder="Explica por qué se fuerza este cambio de estado…"
+                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                </div>
+            </div>
+
+            <template #footer>
+                <button type="button" class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="cancelForce">
+                    CANCELAR
+                </button>
+                <button
+                    type="button"
+                    class="px-4 py-2 text-sm rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50"
+                    :disabled="!forceModal.reason.trim() || forceModal.submitting"
+                    @click="confirmForce"
+                >
+                    {{ forceModal.submitting ? 'FORZANDO…' : 'FORZAR CAMBIO' }}
+                </button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -349,6 +395,21 @@ const savingIds = reactive(new Set<number>())
 const savedIds  = reactive(new Set<number>())
 const errorMsg  = ref('')
 
+// Modal de "forzar transición fuera de la política" (justificación obligatoria).
+const forceModal = reactive({
+    open: false,
+    row: null as CollegeAcademicPeriod | null,
+    newStatus: '' as AcademicPeriodStatus | '',
+    prevStatus: '' as AcademicPeriodStatus | '',
+    message: '',
+    reason: '',
+    submitting: false,
+})
+
+function labelFor(status: string): string {
+    return STATUS_OPTIONS.find(o => o.value === status)?.label ?? status
+}
+
 async function onStatusChange(row: CollegeAcademicPeriod, newStatus: string) {
     if (newStatus === row.status) return
 
@@ -369,26 +430,76 @@ async function onStatusChange(row: CollegeAcademicPeriod, newStatus: string) {
         if (!ok) { row.status = prevStatus; return }
     }
 
+    await patchStatus(row, newStatus, prevStatus, false)
+}
+
+/**
+ * Llama al endpoint gobernado por la state-machine. Si la policy rechaza la
+ * transición sin forzar (requires_force), abre el modal de justificación y
+ * reintenta con force=true. Devuelve true si se aplicó.
+ */
+async function patchStatus(
+    row: CollegeAcademicPeriod,
+    newStatus: string,
+    prevStatus: AcademicPeriodStatus,
+    force: boolean,
+    reason?: string,
+): Promise<boolean> {
     savingIds.add(row.id)
     errorMsg.value = ''
-
     try {
         const { data } = await api.patch(
             API.SCHOOL_SERVICES_API.collegeAcademicPeriods.updateStatus(row.id),
-            { status: newStatus },
+            { status: newStatus, force, ...(reason ? { reason } : {}) },
         )
-        row.status      = data.status ?? newStatus
-        row.statusLabel = data.statusLabel ?? row.statusLabel
+        row.status      = (data.to ?? newStatus) as AcademicPeriodStatus
+        row.statusLabel = labelFor(row.status)
         savedIds.add(row.id)
         setTimeout(() => savedIds.delete(row.id), 2000)
+        return true
     } catch (e: any) {
+        const resp = e?.response?.data
+        if (!force && resp?.requires_force) {
+            // Transición no sugerida por el ciclo natural → ofrecer forzar con motivo.
+            // Se mantiene el valor optimista mientras el modal está abierto.
+            forceModal.row        = row
+            forceModal.newStatus  = newStatus as AcademicPeriodStatus
+            forceModal.prevStatus = prevStatus
+            forceModal.message    = resp?.message ?? ''
+            forceModal.reason     = ''
+            forceModal.open       = true
+            return false
+        }
         row.status = prevStatus
-        errorMsg.value = e?.response?.data?.message
-            || e?.response?.data?.errors?.status?.[0]
-            || 'Error al cambiar el estado.'
+        toast.error(resp?.message || resp?.errors?.status?.[0] || 'No se pudo cambiar el estado.')
+        return false
     } finally {
         savingIds.delete(row.id)
     }
+}
+
+async function confirmForce() {
+    if (!forceModal.row || !forceModal.reason.trim()) return
+    forceModal.submitting = true
+    const ok = await patchStatus(
+        forceModal.row,
+        forceModal.newStatus as string,
+        forceModal.prevStatus as AcademicPeriodStatus,
+        true,
+        forceModal.reason.trim(),
+    )
+    forceModal.submitting = false
+    if (ok) {
+        toast.success('Estado cambiado (forzado, auditado).')
+        forceModal.open = false
+        forceModal.row = null
+    }
+}
+
+function cancelForce() {
+    if (forceModal.row) forceModal.row.status = forceModal.prevStatus as AcademicPeriodStatus
+    forceModal.open = false
+    forceModal.row = null
 }
 
 /* ---------- Eliminar con modal inline ---------- */
