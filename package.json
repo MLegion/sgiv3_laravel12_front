@@ -28,7 +28,7 @@
     "@tiptap/extension-underline": "^3.23.1",
     "@tiptap/starter-kit": "^3.23.1",
     "@tiptap/vue-3": "^3.23.1",
-    "axios": "^1.13.2",
+    "axios": "^1.18.0",
     "chart.js": "^4.5.1",
     "codemirror": "^6.0.2",
     "docx-preview": "^0.3.7",
