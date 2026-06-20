@@ -127,7 +127,7 @@
                 <!-- EDICIÓN: solo el estado; modalidad y carrera de solo lectura -->
                 <template v-else>
                     <div class="p-4 bg-slate-50 border border-dashed rounded-lg space-y-2 text-sm text-slate-600">
-                        <p><strong>Modalidad:</strong> {{ editing.modality?.name ?? `#${form.modalityId}` }}</p>
+                        <p><strong>Modalidad:</strong> {{ editing.modality?.modalityType?.name ?? `#${form.modalityId}` }}</p>
                         <p><strong>Carrera:</strong> {{ editing.career?.name ?? `#${form.careerId}` }}</p>
                         <p class="text-xs text-slate-400 italic">* La modalidad y carrera no se pueden modificar.</p>
                     </div>

@@ -8,7 +8,7 @@ import type { MenuBadgeSource } from '@/app/services/menu-badges'
  */
 const source: MenuBadgeSource = {
     codes: ['adm.admissions.applicants'],
-    async resolve() {
+    async resolve(): Promise<Record<string, number>> {
         try {
             const res = await api.get(API.ADMISSIONS_API.applicants.docsToReviewCount)
             const count = res.data?.count ?? 0
