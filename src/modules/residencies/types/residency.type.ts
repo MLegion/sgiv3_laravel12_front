@@ -46,7 +46,7 @@ export interface Residency {
 export interface ResidencyDocument {
     id: number
     residencyId: number
-    typeId: number
+    code: string
     originalName: string | null
     mimeType: string | null
     sizeKb: number | null
@@ -57,15 +57,17 @@ export interface ResidencyDocument {
     uploadedAt: string | null
 }
 
-/** Renglón del checklist de documentos: tipo + documento subido (o null). */
+/** Renglón del checklist de documentos: requisito (del set anclado) + subido (o null). */
 export interface ResidencyDocumentChecklistItem {
-    typeId: number
     code: string
     name: string
     shortName: string | null
     description: string | null
+    kind: 'upload' | 'generated'
+    generatedReportCode: string | null
     acceptsFormats: string[] | null
     maxSizeKb: number | null
+    isRequired: boolean
     sortOrder: number
     document: ResidencyDocument | null
 }
@@ -87,15 +89,37 @@ export interface Company {
     approval_notes: string | null
 }
 
-export interface CompanyAdvisor {
+/** Puesto vigente del personal externo (persona-en-puesto). */
+export interface CompanyEmployeePosition {
+    assignment_id: number
+    position_id: number
+    name: string
+    start_date: string | null
+}
+
+/**
+ * Personal externo de una empresa (unifica al antiguo asesor externo). Shape
+ * aplanado por presentEmployee() en el backend.
+ */
+export interface CompanyEmployee {
     id: number
     company_id: number
-    name: string
-    position: string | null
+    names: string
+    first_surname: string | null
+    second_surname: string | null
+    full_name: string
     email: string | null
     phone: string | null
     approval_status: ApprovalStatus
     approval_notes: string | null
+    current_position: CompanyEmployeePosition | null
+}
+
+/** Puesto del catálogo global del personal externo. */
+export interface ExternalJobPosition {
+    id: number
+    name: string
+    is_active: boolean
 }
 
 export interface ProjectCareerRef {

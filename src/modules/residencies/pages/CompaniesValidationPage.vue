@@ -36,26 +36,26 @@
                             class="text-xs px-3 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700" @click="approve(c.id)">Aprobar</button>
                         <button v-if="c.approval_status !== 'rejected'" type="button"
                             class="text-xs px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700" @click="openReason('company', c.id)">Rechazar</button>
-                        <button type="button" class="text-xs px-3 py-1.5 border rounded-md hover:bg-slate-50" @click="toggleAdvisors(c)">
-                            {{ expanded === c.id ? 'Ocultar asesores' : 'Asesores' }}
+                        <button type="button" class="text-xs px-3 py-1.5 border rounded-md hover:bg-slate-50" @click="toggleEmployees(c)">
+                            {{ expanded === c.id ? 'Ocultar personal' : 'Personal' }}
                         </button>
                     </div>
                 </div>
 
-                <!-- Asesores -->
+                <!-- Personal externo (unifica al asesor) -->
                 <div v-if="expanded === c.id" class="border-t pt-3 space-y-2">
-                    <p v-if="!advisors.length" class="text-xs text-slate-400 italic">Sin asesores propuestos.</p>
-                    <div v-for="a in advisors" :key="a.id" class="flex items-center justify-between text-sm">
+                    <p v-if="!employees.length" class="text-xs text-slate-400 italic">Sin personal propuesto.</p>
+                    <div v-for="a in employees" :key="a.id" class="flex items-center justify-between text-sm">
                         <div>
-                            <span class="font-medium text-slate-700">{{ a.name }}</span>
-                            <span v-if="a.position" class="text-xs text-slate-400"> · {{ a.position }}</span>
+                            <span class="font-medium text-slate-700">{{ a.full_name }}</span>
+                            <span v-if="a.current_position" class="text-xs text-slate-400"> · {{ a.current_position.name }}</span>
                             <span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold" :class="approvalClass(a.approval_status)">{{ approvalLabel(a.approval_status) }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <button v-if="a.approval_status !== 'approved'" type="button"
-                                class="text-xs px-2 py-1 bg-emerald-600 text-white rounded-md hover:bg-emerald-700" @click="approveAdvisor(c.id, a.id)">Aprobar</button>
+                                class="text-xs px-2 py-1 bg-emerald-600 text-white rounded-md hover:bg-emerald-700" @click="approveEmployee(c.id, a.id)">Aprobar</button>
                             <button v-if="a.approval_status !== 'rejected'" type="button"
-                                class="text-xs px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700" @click="openReason('advisor', a.id, c.id)">Rechazar</button>
+                                class="text-xs px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700" @click="openReason('employee', a.id, c.id)">Rechazar</button>
                         </div>
                     </div>
                 </div>
@@ -84,7 +84,7 @@
 import { ref, reactive } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { Company, CompanyAdvisor, ApprovalStatus } from '@/modules/residencies/types/residency.type'
+import type { Company, CompanyEmployee, ApprovalStatus } from '@/modules/residencies/types/residency.type'
 
 const R = API.RESIDENCIES_API
 
@@ -94,9 +94,9 @@ const statusFilter = ref('pending')
 const search = ref('')
 
 const expanded = ref<number | null>(null)
-const advisors = ref<CompanyAdvisor[]>([])
+const employees = ref<CompanyEmployee[]>([])
 
-const reason = reactive<{ open: boolean; text: string; error: string | null; mode: 'company' | 'advisor'; id: number | null; companyId: number | null }>({
+const reason = reactive<{ open: boolean; text: string; error: string | null; mode: 'company' | 'employee'; id: number | null; companyId: number | null }>({
     open: false, text: '', error: null, mode: 'company', id: null, companyId: null,
 })
 
@@ -111,21 +111,21 @@ async function fetchData() {
 }
 function reload() { fetchData() }
 
-async function toggleAdvisors(c: Company) {
+async function toggleEmployees(c: Company) {
     if (expanded.value === c.id) { expanded.value = null; return }
     expanded.value = c.id
-    const { data } = await api.get(R.companies.advisors(c.id))
-    advisors.value = data ?? []
+    const { data } = await api.get(R.companies.employees(c.id))
+    employees.value = data ?? []
 }
 
 async function approve(id: number) { await api.post(R.companies.approve(id), {}); await fetchData() }
-async function approveAdvisor(companyId: number, id: number) {
-    await api.post(R.companies.approveAdvisor(companyId, id), {})
-    const { data } = await api.get(R.companies.advisors(companyId))
-    advisors.value = data ?? []
+async function approveEmployee(companyId: number, id: number) {
+    await api.post(R.companies.approveEmployee(companyId, id), {})
+    const { data } = await api.get(R.companies.employees(companyId))
+    employees.value = data ?? []
 }
 
-function openReason(mode: 'company' | 'advisor', id: number, companyId: number | null = null) {
+function openReason(mode: 'company' | 'employee', id: number, companyId: number | null = null) {
     reason.open = true; reason.text = ''; reason.error = null; reason.mode = mode; reason.id = id; reason.companyId = companyId
 }
 async function submitReason() {
@@ -134,11 +134,11 @@ async function submitReason() {
         if (reason.mode === 'company' && reason.id) {
             await api.post(R.companies.reject(reason.id), { notes: reason.text })
             reason.open = false; await fetchData()
-        } else if (reason.mode === 'advisor' && reason.id && reason.companyId) {
-            await api.post(R.companies.rejectAdvisor(reason.companyId, reason.id), { notes: reason.text })
+        } else if (reason.mode === 'employee' && reason.id && reason.companyId) {
+            await api.post(R.companies.rejectEmployee(reason.companyId, reason.id), { notes: reason.text })
             reason.open = false
-            const { data } = await api.get(R.companies.advisors(reason.companyId))
-            advisors.value = data ?? []
+            const { data } = await api.get(R.companies.employees(reason.companyId))
+            employees.value = data ?? []
         }
     } catch (e: any) {
         reason.error = e?.response?.data?.message ?? 'No se pudo rechazar.'

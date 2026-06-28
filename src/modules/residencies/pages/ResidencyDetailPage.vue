@@ -121,7 +121,7 @@
             <div class="rounded-xl border bg-white p-5 space-y-3">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Documentos</h2>
                 <ul class="space-y-2">
-                    <li v-for="item in checklist" :key="item.typeId"
+                    <li v-for="item in checklist" :key="item.code"
                         class="flex items-center justify-between rounded-lg border px-4 py-3"
                         :class="item.document ? 'bg-slate-50' : 'bg-white'">
                         <div class="space-y-0.5">

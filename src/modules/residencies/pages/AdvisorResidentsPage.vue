@@ -35,7 +35,7 @@
 
                 <div v-if="openId === r.id" class="border-t pt-3 space-y-4">
                     <ul class="space-y-1.5">
-                        <li v-for="d in docs" :key="d.typeId" class="flex items-center justify-between text-sm">
+                        <li v-for="d in docs" :key="d.code" class="flex items-center justify-between text-sm">
                             <span class="text-slate-700">{{ d.name }}</span>
                             <div class="flex items-center gap-2">
                                 <a v-if="d.document" :href="downloadUrl(d.document.id)" target="_blank" class="text-xs px-2 py-1 border rounded-md hover:bg-slate-100">Ver</a>

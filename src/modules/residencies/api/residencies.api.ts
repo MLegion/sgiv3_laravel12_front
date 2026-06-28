@@ -48,7 +48,7 @@ const residenciesApi: ApiModule = {
             close:     (id: string | number) => apiUrl(`/residencies/projects/${id}/close`),
         },
 
-        // ── Empresas y asesores externos ──
+        // ── Empresas y su personal externo (unifica al asesor) ──
         companies: {
             options:        apiUrl('/residencies/companies/options'),
             sectors:        apiUrl('/residencies/companies/sectors'),
@@ -57,10 +57,18 @@ const residenciesApi: ApiModule = {
             create:         apiUrl('/residencies/companies'),
             approve:        (id: string | number) => apiUrl(`/residencies/companies/${id}/approve`),
             reject:         (id: string | number) => apiUrl(`/residencies/companies/${id}/reject`),
-            advisors:       (companyId: string | number) => apiUrl(`/residencies/companies/${companyId}/advisors`),
-            createAdvisor:  (companyId: string | number) => apiUrl(`/residencies/companies/${companyId}/advisors`),
-            approveAdvisor: (companyId: string | number, id: string | number) => apiUrl(`/residencies/companies/${companyId}/advisors/${id}/approve`),
-            rejectAdvisor:  (companyId: string | number, id: string | number) => apiUrl(`/residencies/companies/${companyId}/advisors/${id}/reject`),
+            employees:        (companyId: string | number) => apiUrl(`/residencies/companies/${companyId}/employees`),
+            createEmployee:   (companyId: string | number) => apiUrl(`/residencies/companies/${companyId}/employees`),
+            approveEmployee:  (companyId: string | number, id: string | number) => apiUrl(`/residencies/companies/${companyId}/employees/${id}/approve`),
+            rejectEmployee:   (companyId: string | number, id: string | number) => apiUrl(`/residencies/companies/${companyId}/employees/${id}/reject`),
+            assignPosition:   (companyId: string | number, id: string | number) => apiUrl(`/residencies/companies/${companyId}/employees/${id}/position`),
+        },
+
+        // ── Catálogo global de puestos del personal externo ──
+        jobPositions: {
+            list:   apiUrl('/residencies/job-positions'),
+            create: apiUrl('/residencies/job-positions'),
+            update: (id: string | number) => apiUrl(`/residencies/job-positions/${id}`),
         },
     },
 }

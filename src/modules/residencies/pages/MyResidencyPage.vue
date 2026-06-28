@@ -123,28 +123,33 @@
                         </div>
                     </div>
 
-                    <!-- 3. Asesor externo -->
+                    <!-- 3. Asesor externo (personal de la empresa) -->
                     <div v-else-if="active === 'advisor'" class="space-y-4">
                         <h2 class="text-sm font-bold text-slate-700 uppercase">Asesor externo</h2>
                         <div class="flex flex-wrap items-center gap-2">
                             <select v-model.number="form.company_advisor_id" class="border rounded-md px-3 py-2 text-sm w-full sm:w-80">
-                                <option :value="null">— Selecciona asesor aprobado —</option>
-                                <option v-for="a in advisors" :key="a.id" :value="a.id">{{ a.name }}<span v-if="a.position"> · {{ a.position }}</span></option>
+                                <option :value="null">— Selecciona personal aprobado —</option>
+                                <option v-for="a in advisors" :key="a.id" :value="a.id">{{ a.full_name }}<span v-if="a.current_position"> · {{ a.current_position.name }}</span></option>
                             </select>
                             <button type="button" class="text-xs px-3 py-2 border rounded-md hover:bg-slate-50" @click="showNewAdvisor = !showNewAdvisor">
-                                {{ showNewAdvisor ? 'Cancelar' : '+ Proponer asesor' }}
+                                {{ showNewAdvisor ? 'Cancelar' : '+ Proponer persona' }}
                             </button>
                             <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                                     :disabled="saving" @click="saveProcess">Guardar</button>
                         </div>
                         <div v-if="showNewAdvisor" class="rounded-lg border bg-slate-50 p-4 grid sm:grid-cols-2 gap-3">
-                            <input v-model="newAdvisor.name" aria-label="Nombre del asesor" placeholder="Nombre del asesor *" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
-                            <input v-model="newAdvisor.position" aria-label="Cargo / puesto" placeholder="Cargo / puesto" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                            <input v-model="newAdvisor.names" aria-label="Nombre(s)" placeholder="Nombre(s) *" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
+                            <input v-model="newAdvisor.first_surname" aria-label="Apellido paterno" placeholder="Apellido paterno" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                            <input v-model="newAdvisor.second_surname" aria-label="Apellido materno" placeholder="Apellido materno" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                            <select v-model.number="newAdvisor.job_position_id" aria-label="Puesto / cargo" class="border rounded-md px-3 py-2 text-sm">
+                                <option :value="null">— Puesto / cargo (opcional) —</option>
+                                <option v-for="p in jobPositions" :key="p.id" :value="p.id">{{ p.name }}</option>
+                            </select>
                             <input v-model="newAdvisor.phone" aria-label="Teléfono" placeholder="Teléfono" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
                             <input v-model="newAdvisor.email" aria-label="Correo" placeholder="Correo" class="border rounded-md px-3 py-2 text-sm sm:col-span-2" />
                             <div class="sm:col-span-2">
                                 <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                                    :disabled="!newAdvisor.name || savingAdvisor" @click="proposeAdvisor">Enviar para validación</button>
+                                    :disabled="!newAdvisor.names || savingAdvisor" @click="proposeAdvisor">Enviar para validación</button>
                             </div>
                         </div>
                     </div>
@@ -209,7 +214,7 @@
                         <p v-if="docMsg" class="text-xs" :class="docError ? 'text-red-600' : 'text-emerald-600'">{{ docMsg }}</p>
                         <p v-if="docsLoading" class="text-xs text-slate-400">Cargando documentos…</p>
                         <ul v-else class="space-y-2">
-                            <li v-for="item in checklist" :key="item.typeId"
+                            <li v-for="item in checklist" :key="item.code"
                                 class="flex items-center justify-between rounded-lg border px-4 py-3"
                                 :class="item.document ? 'bg-slate-50' : 'bg-white'">
                                 <div class="space-y-0.5 min-w-0">
@@ -227,7 +232,7 @@
                                         {{ item.document ? 'Reemplazar' : 'Subir' }}
                                         <input type="file" class="hidden"
                                                :accept="item.acceptsFormats ? item.acceptsFormats.map(f => `.${f}`).join(',') : ''"
-                                               @change="(e) => uploadDoc(e, item.typeId)" />
+                                               @change="(e) => uploadDoc(e, item.code)" />
                                     </label>
                                 </div>
                             </li>
@@ -253,7 +258,7 @@ import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
 import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
 import { ReportCode } from '@/modules/reports/types/reportCodes'
 import type {
-    Residency, ResidencyDocumentChecklistItem, Company, CompanyAdvisor,
+    Residency, ResidencyDocumentChecklistItem, Company, CompanyEmployee, ExternalJobPosition,
     ResidencyProject, ApprovalStatus, ProjectOption,
 } from '@/modules/residencies/types/residency.type'
 
@@ -284,7 +289,8 @@ const form = ref<{
 }>({ project_option: null, company_id: null, company_advisor_id: null, project_id: null, project_title: null, nss: null })
 
 const companies         = ref<Company[]>([])
-const advisors          = ref<CompanyAdvisor[]>([])
+const advisors          = ref<CompanyEmployee[]>([])
+const jobPositions      = ref<ExternalJobPosition[]>([])
 const availableProjects = ref<ResidencyProject[]>([])
 
 const companyPickerOpen = ref(false)
@@ -304,7 +310,7 @@ const showNewAdvisor = ref(false)
 const savingCompany  = ref(false)
 const savingAdvisor  = ref(false)
 const newCompany = ref<Record<string, any>>({ name: '', rfc: '', sector_id: null, address: '', titular_name: '', titular_position: '', phone: '', email: '' })
-const newAdvisor = ref<Record<string, string>>({ name: '', position: '', phone: '', email: '' })
+const newAdvisor = ref<Record<string, any>>({ names: '', first_surname: '', second_surname: '', job_position_id: null, phone: '', email: '' })
 const sectorOptions = ref<{ id: number; name: string }[]>([])
 
 const checklist   = ref<ResidencyDocumentChecklistItem[]>([])
@@ -371,7 +377,7 @@ async function load() {
                 project_title:      data.projectTitle ?? null,
                 nss:                data.nss ?? null,
             }
-            await Promise.all([loadCompanies(), loadAvailableProjects(), loadSectors()])
+            await Promise.all([loadCompanies(), loadAvailableProjects(), loadSectors(), loadJobPositions()])
             if (form.value.company_id) await loadAdvisors(form.value.company_id)
         }
     } finally { loading.value = false }
@@ -386,8 +392,12 @@ async function loadSectors() {
     catch { sectorOptions.value = [] }
 }
 async function loadAdvisors(companyId: number) {
-    const { data } = await api.get(R.companies.advisors(companyId), { params: { status: 'approved' } })
+    const { data } = await api.get(R.companies.employees(companyId), { params: { status: 'approved' } })
     advisors.value = data ?? []
+}
+async function loadJobPositions() {
+    try { const { data } = await api.get(R.jobPositions.list); jobPositions.value = data ?? [] }
+    catch { jobPositions.value = [] }
 }
 async function loadAvailableProjects() {
     const { data } = await api.get(R.projects.available)
@@ -435,14 +445,14 @@ async function proposeAdvisor() {
     if (!form.value.company_id) return
     savingAdvisor.value = true; msg.value = null
     try {
-        await api.post(R.companies.createAdvisor(form.value.company_id), newAdvisor.value)
+        await api.post(R.companies.createEmployee(form.value.company_id), newAdvisor.value)
         showNewAdvisor.value = false
-        newAdvisor.value = { name: '', position: '', phone: '', email: '' }
+        newAdvisor.value = { names: '', first_surname: '', second_surname: '', job_position_id: null, phone: '', email: '' }
         msgError.value = false
-        msg.value = 'Asesor enviado para validación del coordinador.'
+        msg.value = 'Persona enviada para validación del coordinador.'
     } catch (e: any) {
         msgError.value = true
-        msg.value = e?.response?.data?.message ?? 'No se pudo enviar el asesor.'
+        msg.value = e?.response?.data?.message ?? 'No se pudo enviar la persona.'
     } finally { savingAdvisor.value = false }
 }
 
@@ -476,14 +486,14 @@ async function loadDocs() {
     } finally { docsLoading.value = false }
 }
 
-async function uploadDoc(event: Event, typeId: number) {
+async function uploadDoc(event: Event, code: string) {
     const file = (event.target as HTMLInputElement).files?.[0]
     if (!file) return
     docMsg.value = null
     try {
         const fd = new FormData()
         fd.append('file', file)
-        fd.append('residency_document_type_id', String(typeId))
+        fd.append('code', code)
         await api.post(R.documents.uploadMine, fd)
         checklist.value = []
         await loadDocs()
