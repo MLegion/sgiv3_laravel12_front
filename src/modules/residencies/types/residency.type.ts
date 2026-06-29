@@ -127,6 +127,36 @@ export interface ProjectCareerRef {
     name: string
 }
 
+/** Renglón del archivo histórico de residencias (migrado de SGIv2). */
+export interface LegacyResidencyRow {
+    id: number
+    externalId: number
+    source: string
+    numControl: string | null
+    studentName: string | null
+    studentId: number | null
+    companyName: string | null
+    status: string | null
+    projectOption: string | null
+    periodLabel: string | null
+    documentsCount: number
+}
+
+export interface LegacyResidencyDocument {
+    id: number
+    code: string
+    originalName: string | null
+    sizeKb: number | null
+}
+
+export interface LegacyResidencyDetail extends LegacyResidencyRow {
+    companyRfc: string | null
+    place: string | null
+    externalAdvisorName: string | null
+    internalAdvisorName: string | null
+    documents: LegacyResidencyDocument[]
+}
+
 export interface ResidencyEvaluationComponent {
     key: string
     label: string

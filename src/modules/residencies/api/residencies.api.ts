@@ -64,6 +64,13 @@ const residenciesApi: ApiModule = {
             assignPosition:   (companyId: string | number, id: string | number) => apiUrl(`/residencies/companies/${companyId}/employees/${id}/position`),
         },
 
+        // ── Archivo histórico (migrado de SGIv2, solo lectura) ──
+        legacy: {
+            list:             apiUrl('/residencies/legacy'),
+            byId:             (id: string | number) => apiUrl(`/residencies/legacy/${id}`),
+            downloadDocument: (id: string | number) => apiUrl(`/residencies/legacy/documents/${id}/download`),
+        },
+
         // ── Catálogo global de puestos del personal externo ──
         jobPositions: {
             list:   apiUrl('/residencies/job-positions'),

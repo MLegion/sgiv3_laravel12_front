@@ -47,4 +47,10 @@ export default [
         component: () => import('@/modules/residencies/pages/ResidencyStatisticsPage.vue'),
         meta: { title: 'Estadísticas de Residencias' },
     },
+    {
+        path: 'residencies/legacy',
+        name: 'residencies.legacy',
+        component: () => import('@/modules/residencies/pages/LegacyResidenciesPage.vue'),
+        meta: { title: 'Histórico de Residencias' },
+    },
 ]
