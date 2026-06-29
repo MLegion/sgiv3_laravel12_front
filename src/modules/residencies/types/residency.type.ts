@@ -89,8 +89,6 @@ export interface Company {
     address: string | null
     phone: string | null
     email: string | null
-    titular_name: string | null
-    titular_position: string | null
     approval_status: ApprovalStatus
     approval_notes: string | null
 }

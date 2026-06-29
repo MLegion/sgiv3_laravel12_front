@@ -123,8 +123,6 @@
                                 <option v-for="s in sectorOptions" :key="s.id" :value="s.id">{{ s.name }}</option>
                             </select>
                             <input v-model="newCompany.address" aria-label="Domicilio" placeholder="Domicilio" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
-                            <input v-model="newCompany.titular_name" aria-label="Titular / responsable" placeholder="Titular / responsable" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
-                            <input v-model="newCompany.titular_position" aria-label="Cargo del titular" placeholder="Cargo del titular" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
                             <input v-model="newCompany.phone" aria-label="Teléfono" placeholder="Teléfono" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
                             <input v-model="newCompany.email" aria-label="Correo" placeholder="Correo" class="border rounded-md px-3 py-2 text-sm" />
                             <div class="sm:col-span-2 flex items-center gap-2">
@@ -135,9 +133,9 @@
                         </div>
                     </div>
 
-                    <!-- 3. Asesor externo (personal de la empresa) -->
+                    <!-- 3. Asesor externo y titular (personal de la empresa) -->
                     <div v-else-if="active === 'advisor'" class="space-y-4">
-                        <h2 class="text-sm font-bold text-slate-700 uppercase">Asesor externo</h2>
+                        <h2 class="text-sm font-bold text-slate-700 uppercase">Asesor externo y titular</h2>
                         <div class="flex flex-wrap items-center gap-2">
                             <select v-model.number="form.company_advisor_id" class="border rounded-md px-3 py-2 text-sm w-full sm:w-80">
                                 <option :value="null">— Selecciona personal aprobado —</option>
@@ -149,6 +147,17 @@
                             <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                                     :disabled="saving || readOnly" @click="saveProcess">Guardar</button>
                         </div>
+
+                        <!-- Titular de la empresa (persona-en-puesto del mismo personal) -->
+                        <div class="pt-1">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Titular de la empresa</label>
+                            <select v-model.number="form.company_titular_id" :disabled="readOnly" class="border rounded-md px-3 py-2 text-sm w-full sm:w-80 disabled:bg-slate-50">
+                                <option :value="null">— Selecciona titular (persona con puesto) —</option>
+                                <option v-for="t in titularOptions" :key="t.assignmentId" :value="t.assignmentId">{{ t.label }}</option>
+                            </select>
+                            <p class="text-[11px] text-slate-400 mt-1">El titular sale del personal aprobado de la empresa que tenga un puesto asignado. Si no aparece, propón la persona con su puesto en "+ Proponer persona"; el coordinador la aprueba y luego la eliges.</p>
+                        </div>
+
                         <div v-if="showNewAdvisor" class="rounded-lg border bg-slate-50 p-4 grid sm:grid-cols-2 gap-3">
                             <input v-model="newAdvisor.names" aria-label="Nombre(s)" placeholder="Nombre(s) *" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
                             <input v-model="newAdvisor.first_surname" aria-label="Apellido paterno" placeholder="Apellido paterno" class="border rounded-md px-3 py-2 text-sm uppercase placeholder:normal-case" />
@@ -280,7 +289,7 @@ type SectionKey = 'personal' | 'company' | 'advisor' | 'project' | 'commission' 
 const sections: { key: SectionKey; n: number; title: string }[] = [
     { key: 'personal',   n: 1, title: 'Datos personales' },
     { key: 'company',    n: 2, title: 'Empresa' },
-    { key: 'advisor',    n: 3, title: 'Asesor externo' },
+    { key: 'advisor',    n: 3, title: 'Asesor y titular' },
     { key: 'project',    n: 4, title: 'Proyecto' },
     { key: 'commission', n: 5, title: 'Asesor interno' },
     { key: 'letter',     n: 6, title: 'Oficio de asignación' },
@@ -295,10 +304,11 @@ const form = ref<{
     project_option: ProjectOption | null
     company_id: number | null
     company_advisor_id: number | null
+    company_titular_id: number | null
     project_id: number | null
     project_title: string | null
     nss: string | null
-}>({ project_option: null, company_id: null, company_advisor_id: null, project_id: null, project_title: null, nss: null })
+}>({ project_option: null, company_id: null, company_advisor_id: null, company_titular_id: null, project_id: null, project_title: null, nss: null })
 
 const companies         = ref<Company[]>([])
 const advisors          = ref<CompanyEmployee[]>([])
@@ -307,6 +317,11 @@ const availableProjects = ref<ResidencyProject[]>([])
 
 const companyPickerOpen = ref(false)
 const selectedCompany = computed<Company | null>(() => companies.value.find(c => c.id === form.value.company_id) ?? null)
+
+// Titular = persona-en-puesto: solo el personal aprobado que tenga un puesto vigente.
+const titularOptions = computed(() => advisors.value
+    .filter(a => a.current_position)
+    .map(a => ({ assignmentId: a.current_position!.assignment_id, label: `${a.full_name} · ${a.current_position!.name}` })))
 
 async function onCompanyPicked(companyId: number) {
     form.value.company_id = companyId
@@ -321,7 +336,7 @@ const showNewCompany = ref(false)
 const showNewAdvisor = ref(false)
 const savingCompany  = ref(false)
 const savingAdvisor  = ref(false)
-const newCompany = ref<Record<string, any>>({ name: '', rfc: '', sector_id: null, address: '', titular_name: '', titular_position: '', phone: '', email: '' })
+const newCompany = ref<Record<string, any>>({ name: '', rfc: '', sector_id: null, address: '', phone: '', email: '' })
 const newAdvisor = ref<Record<string, any>>({ names: '', first_surname: '', second_surname: '', job_position_id: null, phone: '', email: '' })
 const sectorOptions = ref<{ id: number; name: string }[]>([])
 
@@ -389,6 +404,7 @@ async function load() {
                 project_option:     data.projectOption ?? null,
                 company_id:         data.companyId ?? null,
                 company_advisor_id: data.companyAdvisorId ?? null,
+                company_titular_id: data.companyTitularId ?? null,
                 project_id:         data.projectId ?? null,
                 project_title:      data.projectTitle ?? null,
                 nss:                data.nss ?? null,
@@ -421,8 +437,9 @@ async function loadAvailableProjects() {
 }
 
 async function onCompanyChange() {
-    // Cascada: cambiar empresa reinicia asesor y proyecto (estilo v2).
+    // Cascada: cambiar empresa reinicia asesor, titular y proyecto (estilo v2).
     form.value.company_advisor_id = null
+    form.value.company_titular_id = null
     form.value.project_id = null
     form.value.project_title = null
     advisors.value = []
@@ -450,7 +467,7 @@ async function proposeCompany() {
     try {
         await api.post(R.companies.create, newCompany.value)
         showNewCompany.value = false
-        newCompany.value = { name: '', rfc: '', sector_id: null, address: '', titular_name: '', titular_position: '', phone: '', email: '' }
+        newCompany.value = { name: '', rfc: '', sector_id: null, address: '', phone: '', email: '' }
         msgError.value = false
         msg.value = 'Empresa enviada para validación del coordinador.'
     } catch (e: any) {
