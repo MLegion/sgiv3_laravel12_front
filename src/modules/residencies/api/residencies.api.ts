@@ -71,6 +71,18 @@ const residenciesApi: ApiModule = {
             downloadDocument: (id: string | number) => apiUrl(`/residencies/legacy/documents/${id}/download`),
         },
 
+        // ── Requisitos documentales versionados (por college) ──
+        requirementSets: {
+            list:     apiUrl('/residencies/requirement-sets'),
+            create:   apiUrl('/residencies/requirement-sets'),
+            byId:     (id: string | number) => apiUrl(`/residencies/requirement-sets/${id}`),
+            update:   (id: string | number) => apiUrl(`/residencies/requirement-sets/${id}`),
+            saveItems:(id: string | number) => apiUrl(`/residencies/requirement-sets/${id}/items`),
+            publish:  (id: string | number) => apiUrl(`/residencies/requirement-sets/${id}/publish`),
+            archive:  (id: string | number) => apiUrl(`/residencies/requirement-sets/${id}/archive`),
+            clone:    (id: string | number) => apiUrl(`/residencies/requirement-sets/${id}/clone`),
+        },
+
         // ── Catálogo global de puestos del personal externo ──
         jobPositions: {
             list:   apiUrl('/residencies/job-positions'),

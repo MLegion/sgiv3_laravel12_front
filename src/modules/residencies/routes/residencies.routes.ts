@@ -53,4 +53,10 @@ export default [
         component: () => import('@/modules/residencies/pages/LegacyResidenciesPage.vue'),
         meta: { title: 'Histórico de Residencias' },
     },
+    {
+        path: 'residencies/requirements',
+        name: 'residencies.requirements',
+        component: () => import('@/modules/residencies/pages/RequirementSetsPage.vue'),
+        meta: { title: 'Requisitos de Documentos' },
+    },
 ]

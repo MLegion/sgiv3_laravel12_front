@@ -122,6 +122,36 @@ export interface ExternalJobPosition {
     is_active: boolean
 }
 
+/** Documento dentro de una versión de requisitos (editor). */
+export interface RequirementSetItem {
+    code: string
+    name: string
+    shortName: string | null
+    description: string | null
+    kind: 'upload' | 'generated'
+    generatedReportCode: string | null
+    acceptsFormats: string[] | null
+    maxSizeKb: number | null
+    isRequired: boolean
+    sortOrder: number
+}
+
+/** Versión/generación de requisitos documentales (renglón de lista). */
+export interface RequirementSetRow {
+    id: number
+    name: string
+    isGlobal: boolean
+    effectiveFrom: string | null
+    status: 'draft' | 'published' | 'archived'
+    notes: string | null
+    itemsCount: number
+    editable: boolean
+}
+
+export interface RequirementSetDetail extends Omit<RequirementSetRow, 'itemsCount'> {
+    items: RequirementSetItem[]
+}
+
 export interface ProjectCareerRef {
     id: number
     name: string
