@@ -25,6 +25,12 @@ export interface Residency {
     id: number
     status: ResidencyStatus
     collegeAcademicPeriodId: number | null
+    periodActive: boolean
+    processOpen: boolean
+    gradeOpen: boolean
+    exceptionInfoUntil: string | null
+    exceptionGradeUntil: string | null
+    exceptionReason: string | null
     numControl: string | null
     studentName: string | null
     career: string | null

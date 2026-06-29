@@ -98,23 +98,42 @@
             <!-- Evaluación -->
             <ResidencyEvaluationCard :residency-id="props.id" :can-confirm="true" @confirmed="load" />
 
-            <!-- Carta de presentación -->
-            <div class="rounded-xl border bg-white p-5 space-y-3">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">Carta de presentación</h2>
+            <!-- Excepción de proceso (coordinador): reabre por ámbito pese al periodo cerrado -->
+            <div v-if="canManage" class="rounded-xl border bg-white p-5 space-y-3">
+                <h2 class="text-sm font-bold text-slate-700 uppercase">Excepción de proceso</h2>
                 <p class="text-xs text-slate-500">
-                    Se habilita cuando el proyecto está avalado y el kardex sellado y la vigencia del IMSS están aprobados.
+                    Reabre, por ámbito, el proceso del residente aunque su periodo ya no esté activo. Puedes otorgar
+                    <strong>solo información</strong> (captura/subida), <strong>solo calificación</strong> (asentar la nota), o ambos.
                 </p>
-                <div v-if="canGenerateLetter">
-                    <ReportGenerateButton
-                        :report-code="ReportCode.RESIDENCY_PRESENTATION_LETTER"
-                        :params="{ residency_id: Number(props.id) }"
-                        format="docx"
-                        label="Generar carta (DOCX)"
-                        :filename="`carta-presentacion-${residency.numControl ?? props.id}`" />
+
+                <!-- Estado actual -->
+                <div v-if="residency.exceptionInfoUntil || residency.exceptionGradeUntil"
+                     class="flex items-center justify-between gap-3 flex-wrap rounded-lg bg-emerald-50 px-3 py-2">
+                    <div class="text-sm text-emerald-700 space-y-0.5">
+                        <p v-if="residency.exceptionInfoUntil">✅ Información: hasta <strong>{{ residency.exceptionInfoUntil }}</strong></p>
+                        <p v-if="residency.exceptionGradeUntil">✅ Calificación: hasta <strong>{{ residency.exceptionGradeUntil }}</strong></p>
+                        <p v-if="residency.exceptionReason" class="text-xs text-slate-400">{{ residency.exceptionReason }}</p>
+                    </div>
+                    <button type="button" :disabled="exSaving"
+                        class="text-xs px-3 py-1.5 border border-red-200 text-red-600 rounded-md hover:bg-red-50 disabled:opacity-50"
+                        @click="revokeException">Revocar</button>
                 </div>
-                <p v-else class="text-xs text-amber-600">
-                    Falta: {{ letterMissing.join(', ') }}.
-                </p>
+
+                <!-- Otorgar / modificar -->
+                <div class="flex flex-wrap items-end gap-3">
+                    <div class="flex items-center gap-3 text-sm">
+                        <label class="flex items-center gap-1"><input v-model="exForm.info" type="checkbox" /> Información</label>
+                        <label class="flex items-center gap-1"><input v-model="exForm.grade" type="checkbox" /> Calificación</label>
+                    </div>
+                    <label class="text-sm">
+                        <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Vigente hasta</span>
+                        <input v-model="exForm.until" type="date" class="border rounded-md px-3 py-2 text-sm" />
+                    </label>
+                    <input v-model="exForm.reason" placeholder="Motivo (opcional)" class="border rounded-md px-3 py-2 text-sm flex-1 min-w-48" />
+                    <button type="button" :disabled="(!exForm.info && !exForm.grade) || !exForm.until || exSaving"
+                        class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                        @click="grantException">Otorgar excepción</button>
+                </div>
             </div>
 
             <!-- Documentos -->
@@ -125,8 +144,11 @@
                         class="flex items-center justify-between rounded-lg border px-4 py-3"
                         :class="item.document ? 'bg-slate-50' : 'bg-white'">
                         <div class="space-y-0.5">
-                            <p class="text-sm font-medium text-slate-700">{{ item.name }}</p>
+                            <p class="text-sm font-medium text-slate-700">{{ item.name }}
+                                <span v-if="item.kind === 'generated'" class="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-600">GENERADO</span>
+                            </p>
                             <p v-if="item.document" class="text-xs text-slate-400">{{ item.document.originalName }}</p>
+                            <p v-else-if="item.kind === 'generated'" class="text-xs text-slate-400 italic">Aún no generado</p>
                             <p v-else class="text-xs text-slate-400 italic">Sin subir</p>
                             <p v-if="item.document?.status === 'rejected' && item.document.rejectionReason" class="text-xs text-red-600">
                                 Rechazado: {{ item.document.rejectionReason }}
@@ -136,7 +158,18 @@
                             <span v-if="item.document" class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="approvalClass(item.document.status)">
                                 {{ approvalLabel(item.document.status) }}
                             </span>
-                            <template v-if="item.document">
+                            <!-- Generado por el sistema: generar/regenerar y servir el artefacto guardado. -->
+                            <template v-if="item.kind === 'generated'">
+                                <a v-if="item.document" :href="downloadUrl(item.document.id)" target="_blank" class="text-xs px-2 py-1.5 border rounded-md hover:bg-slate-100">Ver</a>
+                                <button v-if="canGenerateItem(item)" type="button" :disabled="generatingCode === item.code"
+                                    class="text-xs px-2 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                                    @click="generateAndStore(item)">
+                                    {{ generatingCode === item.code ? 'Generando…' : (item.document ? 'Regenerar' : 'Generar y guardar') }}
+                                </button>
+                                <span v-else-if="!item.document" class="text-[11px] text-amber-600">Falta: {{ letterMissing.join(', ') }}</span>
+                            </template>
+                            <!-- Subido por el residente: verificar. -->
+                            <template v-else-if="item.document">
                                 <a :href="downloadUrl(item.document.id)" target="_blank" class="text-xs px-2 py-1.5 border rounded-md hover:bg-slate-100">Ver</a>
                                 <button type="button" class="text-xs px-2 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
                                     @click="approveDoc(item.document.id)">Aprobar</button>
@@ -175,9 +208,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
-import ReportGenerateButton from '@/modules/reports/components/ReportGenerateButton.vue'
 import ResidencyEvaluationCard from '@/modules/residencies/components/ResidencyEvaluationCard.vue'
-import { ReportCode } from '@/modules/reports/types/reportCodes'
+import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
 import type { Residency, ResidencyDocumentChecklistItem, ApprovalStatus, ProjectOption, ResidencyAdvisorType } from '@/modules/residencies/types/residency.type'
 import { ADVISOR_TYPE_OPTIONS } from '@/modules/residencies/types/residency.type'
 
@@ -214,6 +246,75 @@ const letterMissing = computed<string[]>(() => {
     return missing
 })
 const canGenerateLetter = computed(() => letterMissing.value.length === 0)
+
+/* ── Documentos generados por el sistema (carta de presentación, etc.) ── */
+const { generate } = useReportGenerator()
+const generatingCode = ref<string | null>(null)
+
+// La carta exige proyecto avalado + kardex + IMSS; otros generados, sin gate específico.
+function canGenerateItem(item: ResidencyDocumentChecklistItem): boolean {
+    return item.code !== 'CARTA_PRESENTACION' || canGenerateLetter.value
+}
+
+async function generateAndStore(item: ResidencyDocumentChecklistItem) {
+    if (!item.generatedReportCode) {
+        useToast().error(`El documento "${item.name}" no tiene un reporte asociado. Configúralo en Requisitos.`)
+        return
+    }
+    generatingCode.value = item.code
+    try {
+        // Se genera client-side (docxtemplater) y se sube para persistirlo inmutable.
+        const { blob } = await generate({
+            reportCode: item.generatedReportCode,
+            params: { residency_id: Number(props.id) },
+        })
+        const fd = new FormData()
+        fd.append('file', new File([blob], `${item.code}.docx`, { type: blob.type || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }))
+        fd.append('code', item.code)
+        await api.post(R.documents.storeGenerated(props.id), fd)
+        await load()
+        useToast().success(`"${item.name}" generado y guardado.`)
+    } catch (e: any) {
+        if (e instanceof ReportFormatUnavailableError) {
+            useToast().error('La plantilla del reporte aún no está disponible. Autórala en el módulo de Reportes.')
+        } else {
+            useToast().error(e?.response?.data?.message ?? e?.message ?? 'No se pudo generar el documento.')
+        }
+    } finally {
+        generatingCode.value = null
+    }
+}
+
+/* ── Excepción de proceso (coordinador) ── */
+const exForm = reactive({ info: false, grade: false, until: '', reason: '' })
+const exSaving = ref(false)
+
+async function grantException() {
+    if ((!exForm.info && !exForm.grade) || !exForm.until) return
+    exSaving.value = true
+    try {
+        await api.post(R.residency.grantException(props.id), {
+            until: exForm.until, reason: exForm.reason || null,
+            scope_info: exForm.info, scope_grade: exForm.grade,
+        })
+        exForm.info = false; exForm.grade = false; exForm.until = ''; exForm.reason = ''
+        await load()
+        useToast().success('Excepción otorgada.')
+    } catch (e: any) {
+        useToast().error(e?.response?.data?.message ?? 'No se pudo otorgar la excepción.')
+    } finally { exSaving.value = false }
+}
+
+async function revokeException() {
+    exSaving.value = true
+    try {
+        await api.delete(R.residency.revokeException(props.id))
+        await load()
+        useToast().success('Excepción revocada.')
+    } catch (e: any) {
+        useToast().error(e?.response?.data?.message ?? 'No se pudo revocar la excepción.')
+    } finally { exSaving.value = false }
+}
 
 // Componente inline de campo
 const Field = (p: { label: string; value?: string | null; sub?: string | null }) => h('div', [

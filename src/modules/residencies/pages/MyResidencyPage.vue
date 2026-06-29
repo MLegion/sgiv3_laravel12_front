@@ -31,6 +31,18 @@
 
             <p v-if="msg" class="text-sm px-4 py-2.5 rounded-lg" :class="msgError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'">{{ msg }}</p>
 
+            <!-- Periodo cerrado: solo lectura -->
+            <div v-if="readOnly && !isPending" class="rounded-xl border bg-slate-50 border-slate-200 px-4 py-3 text-sm text-slate-600 flex items-start gap-2">
+                <span class="text-slate-400">🔒</span>
+                <p>El periodo de tu residencia ya no está activo. Tu expediente es de <strong>solo lectura</strong>: puedes consultar y descargar, pero ya no editar tu información ni subir o generar documentos. Si necesitas continuar, solicita una excepción a tu coordinador.</p>
+            </div>
+
+            <!-- Excepción vigente: el coordinador reabrió el proceso pese al periodo cerrado -->
+            <div v-else-if="exceptionActive" class="rounded-xl border bg-emerald-50 border-emerald-200 px-4 py-3 text-sm text-emerald-700 flex items-start gap-2">
+                <span>✅</span>
+                <p>Tu coordinador habilitó una <strong>excepción</strong> para continuar tu proceso hasta el <strong>{{ residency.exceptionInfoUntil }}</strong>, aunque tu periodo ya cerró.</p>
+            </div>
+
             <!-- Pendiente de activación: portal bloqueado hasta que el coordinador active -->
             <div v-if="isPending" class="rounded-xl border bg-amber-50 border-amber-200 p-6 flex items-start gap-4">
                 <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
@@ -96,11 +108,11 @@
                                 <button type="button" class="text-xs px-3 py-2 border rounded-md hover:bg-white inline-flex items-center gap-1" @click="companyPickerOpen = true">
                                     <MagnifyingGlassIcon class="w-4 h-4" /> Buscar empresa
                                 </button>
-                                <button type="button" class="text-xs px-3 py-2 border rounded-md hover:bg-white" @click="showNewCompany = !showNewCompany">
+                                <button v-if="!readOnly" type="button" class="text-xs px-3 py-2 border rounded-md hover:bg-white" @click="showNewCompany = !showNewCompany">
                                     {{ showNewCompany ? 'Cancelar' : '+ Proponer' }}
                                 </button>
                                 <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                                        :disabled="saving" @click="saveProcess">Guardar</button>
+                                        :disabled="saving || readOnly" @click="saveProcess">Guardar</button>
                             </div>
                         </div>
                         <div v-if="showNewCompany" class="rounded-lg border bg-slate-50 p-4 grid sm:grid-cols-2 gap-3">
@@ -117,7 +129,7 @@
                             <input v-model="newCompany.email" aria-label="Correo" placeholder="Correo" class="border rounded-md px-3 py-2 text-sm" />
                             <div class="sm:col-span-2 flex items-center gap-2">
                                 <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                                    :disabled="!newCompany.name || savingCompany" @click="proposeCompany">Enviar para validación</button>
+                                    :disabled="!newCompany.name || savingCompany || readOnly" @click="proposeCompany">Enviar para validación</button>
                                 <span class="text-[11px] text-slate-400">Pendiente hasta que el coordinador la apruebe.</span>
                             </div>
                         </div>
@@ -131,11 +143,11 @@
                                 <option :value="null">— Selecciona personal aprobado —</option>
                                 <option v-for="a in advisors" :key="a.id" :value="a.id">{{ a.full_name }}<span v-if="a.current_position"> · {{ a.current_position.name }}</span></option>
                             </select>
-                            <button type="button" class="text-xs px-3 py-2 border rounded-md hover:bg-slate-50" @click="showNewAdvisor = !showNewAdvisor">
+                            <button v-if="!readOnly" type="button" class="text-xs px-3 py-2 border rounded-md hover:bg-slate-50" @click="showNewAdvisor = !showNewAdvisor">
                                 {{ showNewAdvisor ? 'Cancelar' : '+ Proponer persona' }}
                             </button>
                             <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                                    :disabled="saving" @click="saveProcess">Guardar</button>
+                                    :disabled="saving || readOnly" @click="saveProcess">Guardar</button>
                         </div>
                         <div v-if="showNewAdvisor" class="rounded-lg border bg-slate-50 p-4 grid sm:grid-cols-2 gap-3">
                             <input v-model="newAdvisor.names" aria-label="Nombre(s)" placeholder="Nombre(s) *" class="border rounded-md px-3 py-2 text-sm sm:col-span-2 uppercase placeholder:normal-case" />
@@ -149,7 +161,7 @@
                             <input v-model="newAdvisor.email" aria-label="Correo" placeholder="Correo" class="border rounded-md px-3 py-2 text-sm sm:col-span-2" />
                             <div class="sm:col-span-2">
                                 <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                                    :disabled="!newAdvisor.names || savingAdvisor" @click="proposeAdvisor">Enviar para validación</button>
+                                    :disabled="!newAdvisor.names || savingAdvisor || readOnly" @click="proposeAdvisor">Enviar para validación</button>
                             </div>
                         </div>
                     </div>
@@ -178,7 +190,7 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <button type="button" class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                                    :disabled="saving" @click="saveProcess">Guardar proyecto</button>
+                                    :disabled="saving || readOnly" @click="saveProcess">Guardar proyecto</button>
                             <span class="text-[11px] text-slate-400">Lo avala el jefe de carrera.</span>
                         </div>
                     </div>
@@ -201,7 +213,7 @@
                         <div class="flex items-center gap-3">
                             <button type="button"
                                     class="px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white font-bold hover:bg-emerald-700 disabled:opacity-50"
-                                    :disabled="generatingLetter" @click="downloadAssignmentLetter">
+                                    :disabled="generatingLetter || readOnly" @click="downloadAssignmentLetter">
                                 {{ generatingLetter ? 'Generando…' : 'DESCARGAR OFICIO' }}
                             </button>
                             <span class="text-[11px] text-slate-400">Documento oficial para presentarte en la empresa.</span>
@@ -228,7 +240,7 @@
                                         {{ approvalLabel(item.document.status) }}
                                     </span>
                                     <a v-if="item.document" :href="downloadUrl(item.document.id)" target="_blank" class="text-xs px-2 py-1.5 border rounded-md hover:bg-slate-100">Ver</a>
-                                    <label v-if="!item.document || item.document.status !== 'approved'" class="text-xs px-2 py-1.5 border rounded-md cursor-pointer hover:bg-slate-100">
+                                    <label v-if="(!item.document || item.document.status !== 'approved') && !readOnly" class="text-xs px-2 py-1.5 border rounded-md cursor-pointer hover:bg-slate-100">
                                         {{ item.document ? 'Reemplazar' : 'Subir' }}
                                         <input type="file" class="hidden"
                                                :accept="item.acceptsFormats ? item.acceptsFormats.map(f => `.${f}`).join(',') : ''"
@@ -326,6 +338,10 @@ const formatUnavailableInfo = ref<{ code: string; reason: 'missing' | 'inactive'
 /* ── Gating / estado por etapa ───────────────────────────────────── */
 // Pendiente de activación por el coordinador: el portal queda bloqueado.
 const isPending = computed(() => residency.value?.status === 'pending_activation')
+// Proceso cerrado (periodo no activo y sin excepción vigente): portal en SOLO LECTURA.
+const readOnly = computed(() => !!residency.value && !residency.value.processOpen)
+// Excepción vigente otorgada por el coordinador (periodo cerrado pero proceso reabierto).
+const exceptionActive = computed(() => !!residency.value && !residency.value.periodActive && residency.value.processOpen)
 const companyDone = computed(() => !!form.value.company_id)
 const advisorDone = computed(() => !!form.value.company_advisor_id)
 const projectSet  = computed(() => form.value.project_option === 'bank' ? !!form.value.project_id : !!(form.value.project_title && form.value.project_title.trim()))
@@ -414,6 +430,7 @@ async function onCompanyChange() {
 }
 
 async function saveProcess() {
+    if (readOnly.value) return
     saving.value = true; msg.value = null
     try {
         const { data } = await api.put(R.residency.me, form.value)
@@ -428,6 +445,7 @@ async function saveProcess() {
 }
 
 async function proposeCompany() {
+    if (readOnly.value) return
     savingCompany.value = true; msg.value = null
     try {
         await api.post(R.companies.create, newCompany.value)
@@ -442,7 +460,7 @@ async function proposeCompany() {
 }
 
 async function proposeAdvisor() {
-    if (!form.value.company_id) return
+    if (readOnly.value || !form.value.company_id) return
     savingAdvisor.value = true; msg.value = null
     try {
         await api.post(R.companies.createEmployee(form.value.company_id), newAdvisor.value)
@@ -457,7 +475,7 @@ async function proposeAdvisor() {
 }
 
 async function downloadAssignmentLetter() {
-    if (!residency.value || generatingLetter.value) return
+    if (readOnly.value || !residency.value || generatingLetter.value) return
     generatingLetter.value = true; msg.value = null
     try {
         const { blob } = await generatePdf({
@@ -487,6 +505,7 @@ async function loadDocs() {
 }
 
 async function uploadDoc(event: Event, code: string) {
+    if (readOnly.value) return
     const file = (event.target as HTMLInputElement).files?.[0]
     if (!file) return
     docMsg.value = null
