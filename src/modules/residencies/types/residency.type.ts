@@ -126,6 +126,16 @@ export interface ExternalJobPosition {
     is_active: boolean
 }
 
+/** Persona del personal externo pendiente de validar (cola del coordinador/jefe). */
+export interface PendingPersonnel {
+    id: number
+    companyId: number
+    fullName: string
+    email: string | null
+    phone: string | null
+    companyName: string | null
+}
+
 /** Ajustes del personal externo por college (delegación + umbrales de purga). */
 export interface PersonnelSettings {
     delegateReview: boolean

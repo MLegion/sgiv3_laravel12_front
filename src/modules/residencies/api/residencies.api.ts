@@ -97,6 +97,7 @@ const residenciesApi: ApiModule = {
         personnel: {
             settings: apiUrl('/residencies/personnel/settings'),
             sync:     apiUrl('/residencies/personnel/sync'),
+            pending:  apiUrl('/residencies/personnel/pending'),
         },
     },
 }

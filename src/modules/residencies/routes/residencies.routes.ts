@@ -65,4 +65,10 @@ export default [
         component: () => import('@/modules/residencies/pages/PersonnelConfigPage.vue'),
         meta: { title: 'Configuración de Personal' },
     },
+    {
+        path: 'residencies/pending-personnel',
+        name: 'residencies.pending-personnel',
+        component: () => import('@/modules/residencies/pages/PendingPersonnelPage.vue'),
+        meta: { title: 'Personal por Validar' },
+    },
 ]
