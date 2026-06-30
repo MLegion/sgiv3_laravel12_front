@@ -59,4 +59,10 @@ export default [
         component: () => import('@/modules/residencies/pages/RequirementSetsPage.vue'),
         meta: { title: 'Requisitos de Documentos' },
     },
+    {
+        path: 'residencies/personnel-config',
+        name: 'residencies.personnel-config',
+        component: () => import('@/modules/residencies/pages/PersonnelConfigPage.vue'),
+        meta: { title: 'Configuración de Personal' },
+    },
 ]

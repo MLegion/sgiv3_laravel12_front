@@ -96,7 +96,7 @@
             </div>
 
             <!-- Evaluación -->
-            <ResidencyEvaluationCard :residency-id="props.id" :can-confirm="true" @confirmed="load" />
+            <ResidencyEvaluationCard :residency-id="props.id" :can-confirm="true" :grade-open="residency.gradeOpen" @confirmed="load" />
 
             <!-- Excepción de proceso (coordinador): reabre por ámbito pese al periodo cerrado -->
             <div v-if="canManage" class="rounded-xl border bg-white p-5 space-y-3">

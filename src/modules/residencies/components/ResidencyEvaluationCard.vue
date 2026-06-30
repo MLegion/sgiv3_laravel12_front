@@ -50,13 +50,16 @@
                     <span v-else class="text-[11px] text-amber-600 ml-2">Faltan calificaciones</span>
                 </div>
 
-                <button v-if="canConfirm && !locked" type="button"
+                <button v-if="canConfirm && !locked && gradeOpen !== false" type="button"
                         class="text-xs px-3 py-2 rounded-md text-white disabled:opacity-50"
                         :class="evaluation.complete ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-slate-400'"
                         :disabled="!evaluation.complete || confirming"
                         @click="confirmModal = true">
                     Confirmar y enviar al kardex
                 </button>
+                <span v-else-if="canConfirm && !locked && gradeOpen === false" class="text-[11px] text-amber-600 text-right max-w-xs">
+                    El periodo cerró: se requiere una excepción de <strong>calificación</strong> para asentar la nota.
+                </span>
             </div>
 
             <p v-if="msg" class="text-xs" :class="msgError ? 'text-red-600' : 'text-emerald-600'">{{ msg }}</p>
@@ -89,7 +92,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { ResidencyEvaluation } from '@/modules/residencies/types/residency.type'
 
-const props = defineProps<{ residencyId: number | string; canConfirm?: boolean }>()
+const props = defineProps<{ residencyId: number | string; canConfirm?: boolean; gradeOpen?: boolean }>()
 const emit = defineEmits<{ (e: 'confirmed'): void }>()
 
 const R = API.RESIDENCIES_API

@@ -92,6 +92,11 @@ const residenciesApi: ApiModule = {
             create: apiUrl('/residencies/job-positions'),
             update: (id: string | number) => apiUrl(`/residencies/job-positions/${id}`),
         },
+
+        // ── Ajustes del personal externo (delegación + umbrales de purga) ──
+        personnel: {
+            settings: apiUrl('/residencies/personnel/settings'),
+        },
     },
 }
 

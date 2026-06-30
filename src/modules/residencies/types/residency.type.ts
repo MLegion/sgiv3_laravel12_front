@@ -126,6 +126,13 @@ export interface ExternalJobPosition {
     is_active: boolean
 }
 
+/** Ajustes del personal externo por college (delegación + umbrales de purga). */
+export interface PersonnelSettings {
+    delegateReview: boolean
+    rejectedPurgeDays: number | null
+    pendingPurgeDays: number | null
+}
+
 /** Documento dentro de una versión de requisitos (editor). */
 export interface RequirementSetItem {
     code: string
