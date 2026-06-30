@@ -96,6 +96,7 @@ const residenciesApi: ApiModule = {
         // ── Ajustes del personal externo (delegación + umbrales de purga) ──
         personnel: {
             settings: apiUrl('/residencies/personnel/settings'),
+            sync:     apiUrl('/residencies/personnel/sync'),
         },
     },
 }

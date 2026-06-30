@@ -56,6 +56,21 @@
             </div>
         </section>
 
+        <!-- Empresa interna -->
+        <section class="rounded-xl border bg-white p-5 space-y-3">
+            <div>
+                <h2 class="text-sm font-bold text-slate-700 uppercase">Empresa interna (personal institucional)</h2>
+                <p class="text-xs text-slate-400">
+                    Sincroniza al personal del Tec (con su historial de puestos) hacia la empresa interna, para que los residentes con proyecto interno elijan asesor/titular sin capturar.
+                    Corre solo cada noche; aquí puedes forzarlo ahora. El personal dado de baja deja de ser elegible (no se borra).
+                </p>
+            </div>
+            <button type="button" :disabled="syncing"
+                class="text-sm px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50" @click="syncInternal">
+                {{ syncing ? 'Sincronizando…' : 'Sincronizar personal interno ahora' }}
+            </button>
+        </section>
+
         <!-- Modal puesto -->
         <Teleport to="body">
             <div v-if="form.open" class="fixed inset-0 z-50 flex items-center justify-center">
@@ -140,6 +155,18 @@ async function saveSettings() {
     } catch (e: any) {
         useToast().error(e?.response?.data?.message ?? 'No se pudieron guardar los ajustes.')
     } finally { savingSettings.value = false }
+}
+
+/* ── Empresa interna ── */
+const syncing = ref(false)
+async function syncInternal() {
+    syncing.value = true
+    try {
+        const { data } = await api.post(R.personnel.sync, {})
+        useToast().success(`Personal interno sincronizado: ${data.synced}.`)
+    } catch (e: any) {
+        useToast().error(e?.response?.data?.message ?? 'No se pudo sincronizar.')
+    } finally { syncing.value = false }
 }
 
 loadPositions()
