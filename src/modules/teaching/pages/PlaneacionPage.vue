@@ -48,7 +48,12 @@
                                     <DocumentTextIcon class="w-4 h-4" />
                                     Ver programa
                                 </button>
-                                <button
+                                <span v-if="a.requiresInstrumentation === false"
+                                    class="inline-flex items-center px-3 py-1.5 text-xs rounded-lg bg-slate-100 text-slate-500 border border-slate-200"
+                                    title="Residencias, servicio social y actividades complementarias no llevan instrumentación didáctica">
+                                    No requiere instrumentación
+                                </span>
+                                <button v-else
                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg text-white"
                                     :class="a.instrumentationId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'"
                                     @click="openInstrumentacion(a)"

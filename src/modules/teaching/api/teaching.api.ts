@@ -20,6 +20,10 @@ export default {
             submit:        (id: string | number) => apiUrl(`/teaching/instrumentations/${id}/submit`),
             review:        (id: string | number) => apiUrl(`/teaching/instrumentations/${id}/review`),
         },
+        didacticSupports: {
+            list:   (teacherAssignmentId: string | number) => apiUrl(`/teaching/didactic-supports?teacher_assignment_id=${teacherAssignmentId}`),
+            create: apiUrl('/teaching/didactic-supports'),
+        },
         evaluationProducts: {
             list:   apiUrl('/teaching/evaluation-products'),
             byId:   (id: string | number) => apiUrl(`/teaching/evaluation-products/${id}`),
