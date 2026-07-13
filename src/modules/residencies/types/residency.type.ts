@@ -203,6 +203,7 @@ export interface LegacyResidencyDocument {
 export interface LegacyResidencyDetail extends LegacyResidencyRow {
     companyRfc: string | null
     place: string | null
+    projectTitle: string | null
     externalAdvisorName: string | null
     internalAdvisorName: string | null
     documents: LegacyResidencyDocument[]

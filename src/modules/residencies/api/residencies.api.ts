@@ -72,6 +72,7 @@ const residenciesApi: ApiModule = {
             list:             apiUrl('/residencies/legacy'),
             byId:             (id: string | number) => apiUrl(`/residencies/legacy/${id}`),
             downloadDocument: (id: string | number) => apiUrl(`/residencies/legacy/documents/${id}/download`),
+            downloadAll:      (id: string | number) => apiUrl(`/residencies/legacy/${id}/download-all`),
         },
 
         // ── Requisitos documentales versionados (por college) ──
@@ -80,6 +81,7 @@ const residenciesApi: ApiModule = {
             create:   apiUrl('/residencies/requirement-sets'),
             byId:     (id: string | number) => apiUrl(`/residencies/requirement-sets/${id}`),
             update:   (id: string | number) => apiUrl(`/residencies/requirement-sets/${id}`),
+            delete:   (id: string | number) => apiUrl(`/residencies/requirement-sets/${id}`),
             saveItems:(id: string | number) => apiUrl(`/residencies/requirement-sets/${id}/items`),
             publish:  (id: string | number) => apiUrl(`/residencies/requirement-sets/${id}/publish`),
             archive:  (id: string | number) => apiUrl(`/residencies/requirement-sets/${id}/archive`),

@@ -22,6 +22,9 @@
                 <div class="flex items-center gap-2 shrink-0">
                     <button type="button" class="text-xs px-3 py-1.5 border rounded-md hover:bg-slate-50" @click="open(s.id)">{{ s.editable ? 'Editar' : 'Ver' }}</button>
                     <button type="button" class="text-xs px-3 py-1.5 border rounded-md hover:bg-slate-50" @click="openClone(s)">Clonar</button>
+                    <button v-if="s.status === 'draft' && !s.isGlobal" type="button"
+                            class="text-xs px-3 py-1.5 border border-red-200 text-red-600 rounded-md hover:bg-red-50"
+                            @click="removeSet(s)">Eliminar</button>
                 </div>
             </li>
         </ul>
@@ -74,11 +77,18 @@
                                 <tr v-for="(it, idx) in detail.items" :key="idx">
                                     <td class="px-2 py-1"><input v-model="it.code" :disabled="!detail.editable" placeholder="VIGENCIA_IMSS" class="border rounded px-2 py-1 text-xs w-36 uppercase disabled:bg-slate-50 disabled:border-transparent" /></td>
                                     <td class="px-2 py-1"><input v-model="it.name" :disabled="!detail.editable" placeholder="Nombre del documento" class="border rounded px-2 py-1 text-xs w-full uppercase disabled:bg-slate-50 disabled:border-transparent" /></td>
-                                    <td class="px-2 py-1">
-                                        <select v-model="it.kind" :disabled="!detail.editable" class="border rounded px-1 py-1 text-xs disabled:bg-slate-50 disabled:border-transparent">
+                                    <td class="px-2 py-1 align-top">
+                                        <select v-model="it.kind" :disabled="!detail.editable" class="border rounded px-1 py-1 text-xs disabled:bg-slate-50 disabled:border-transparent" @change="onKindChange(it)">
                                             <option value="upload">Sube el residente</option>
                                             <option value="generated">Lo genera el sistema</option>
                                         </select>
+                                        <div v-if="it.kind === 'generated'" class="mt-1">
+                                            <input v-model="it.generatedReportCode" list="residency-report-codes"
+                                                   :disabled="!detail.editable" placeholder="CLAVE DE REPORTE"
+                                                   class="border rounded px-2 py-1 text-xs w-44 uppercase disabled:bg-slate-50 disabled:border-transparent"
+                                                   :class="!it.generatedReportCode ? 'border-red-300' : ''" />
+                                            <p v-if="detail.editable && !it.generatedReportCode" class="text-[10px] text-red-500 mt-0.5">Selecciona o escribe la clave del reporte.</p>
+                                        </div>
                                     </td>
                                     <td class="px-2 py-1 text-center"><input v-model="it.isRequired" type="checkbox" :disabled="!detail.editable" /></td>
                                     <td v-if="detail.editable" class="px-2 py-1 text-right"><button type="button" class="text-red-500 hover:text-red-700 text-xs" @click="detail.items.splice(idx, 1)">Quitar</button></td>
@@ -86,6 +96,13 @@
                                 <tr v-if="!detail.items.length"><td :colspan="detail.editable ? 5 : 4" class="px-2 py-3 text-center text-xs text-slate-400 italic">Sin documentos.</td></tr>
                             </tbody>
                         </table>
+                        <!-- Claves de reporte disponibles (para los documentos "lo genera el sistema") -->
+                        <datalist id="residency-report-codes">
+                            <option v-for="r in reportCodes" :key="r.code" :value="r.code">{{ r.name }}</option>
+                        </datalist>
+                        <p class="text-[11px] text-slate-400 mt-1">
+                            "Lo genera el sistema" produce el documento desde una plantilla de reportes; indica su clave (p. ej. FORMATO_ASESORIA_RETICULAR).
+                        </p>
                     </div>
 
                     <p v-if="msg" class="text-xs" :class="msgError ? 'text-red-600' : 'text-emerald-600'">{{ msg }}</p>
@@ -94,8 +111,11 @@
                     <div v-if="detail.editable" class="flex items-center gap-2 border-t pt-4">
                         <button type="button" :disabled="saving" class="text-sm px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50" @click="save">Guardar</button>
                         <button type="button" :disabled="saving" class="text-sm px-3 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50" @click="publish">Publicar</button>
-                        <span class="text-[11px] text-slate-400">Publicar la deja vigente (e inmutable) desde su fecha.</span>
+                        <button v-if="detail.status === 'draft' && !detail.isGlobal" type="button" :disabled="saving"
+                                class="text-sm px-3 py-2 border border-red-200 text-red-600 rounded-md hover:bg-red-50 disabled:opacity-50 ml-auto"
+                                @click="removeSet(detail)">Eliminar</button>
                     </div>
+                    <p v-if="detail.editable" class="text-[11px] text-slate-400 -mt-3">Publicar la deja vigente (e inmutable) desde su fecha.</p>
                     <div v-else-if="detail.status === 'published' && !detail.isGlobal" class="border-t pt-4">
                         <button type="button" class="text-sm px-3 py-2 border border-red-200 text-red-600 rounded-md hover:bg-red-50" @click="archive">Archivar versión</button>
                     </div>
@@ -129,6 +149,7 @@
 import { ref, reactive } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useConfirm } from '@/app/composables/useConfirm'
 import type { RequirementSetRow, RequirementSetDetail } from '@/modules/residencies/types/residency.type'
 
 const R = API.RESIDENCIES_API
@@ -136,6 +157,7 @@ const R = API.RESIDENCIES_API
 const loading = ref(false)
 const sets = ref<RequirementSetRow[]>([])
 const detail = ref<RequirementSetDetail | null>(null)
+const reportCodes = ref<{ code: string; name: string }[]>([])
 const saving = ref(false)
 const msg = ref<string | null>(null)
 const msgError = ref(false)
@@ -154,8 +176,24 @@ async function load() {
 
 async function open(id: number) {
     msg.value = null
+    if (!reportCodes.value.length) loadReportCodes()
     const { data } = await api.get(R.requirementSets.byId(id))
     detail.value = data
+}
+
+/** Claves de reporte disponibles para los documentos de tipo "lo genera el sistema". */
+async function loadReportCodes() {
+    try {
+        const { data } = await api.get(API.REPORTS_API.reports.list, { params: { per_page: 200 } })
+        const items = data?.items ?? data?.data ?? data ?? []
+        reportCodes.value = items
+            .filter((r: any) => r?.code)
+            .map((r: any) => ({ code: r.code, name: r.name ?? '' }))
+    } catch { /* datalist opcional: si falla, el campo sigue siendo de texto libre */ }
+}
+
+function onKindChange(it: { kind: string; generatedReportCode: string | null }) {
+    if (it.kind !== 'generated') it.generatedReportCode = null
 }
 
 function addItem() {
@@ -207,6 +245,25 @@ async function archive() {
         await load()
     } catch (e: any) {
         msgError.value = true; msg.value = e?.response?.data?.message ?? 'No se pudo archivar.'
+    }
+}
+
+async function removeSet(s: { id: number; name: string }) {
+    const ok = await useConfirm().confirm({
+        title: 'Eliminar versión',
+        message: `¿Eliminar la versión en borrador "${s.name}"? Esta acción no se puede deshacer.`,
+        confirmText: 'Eliminar',
+        variant: 'danger',
+    })
+    if (!ok) return
+    try {
+        await api.delete(R.requirementSets.delete(s.id))
+        detail.value = null
+        await load()
+    } catch (e: any) {
+        msgError.value = true
+        msg.value = e?.response?.data?.message ?? 'No se pudo eliminar.'
+        await useConfirm().confirm({ title: 'No se pudo eliminar', message: msg.value ?? '', confirmText: 'Entendido' })
     }
 }
 
