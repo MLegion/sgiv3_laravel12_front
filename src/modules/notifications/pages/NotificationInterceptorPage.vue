@@ -71,7 +71,7 @@
                         </td>
                         <td class="px-3 py-2 max-w-md">
                             <div v-if="n.subject" class="font-semibold text-slate-700">{{ n.subject }}</div>
-                            <div class="text-[11px] text-slate-500 line-clamp-3" :title="n.body_rendered ?? ''" v-html="n.body_rendered ?? ''" />
+                            <div class="text-[11px] text-slate-500 line-clamp-3" :title="stripHtml(n.body_rendered)">{{ stripHtml(n.body_rendered) }}</div>
                         </td>
                         <td class="px-3 py-2 text-right">
                             <button class="text-xs font-semibold text-blue-600 hover:text-blue-800 border border-blue-200 rounded-md px-2 py-1"
@@ -111,6 +111,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
 import NotificationPreview from '@/modules/notifications/components/NotificationPreview.vue'
+import { stripHtml } from '@/app/utils/sanitizeHtml'
 
 interface CapturedRow {
     id: number

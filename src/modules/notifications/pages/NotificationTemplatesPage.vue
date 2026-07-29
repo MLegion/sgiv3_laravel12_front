@@ -33,7 +33,7 @@
                         </td>
                         <td class="px-3 py-2 text-slate-700">{{ t.subject || '—' }}</td>
                         <td class="px-3 py-2 text-slate-600 whitespace-pre-line">
-                            <div v-if="t.channel === 'email'" class="prose prose-sm max-w-none line-clamp-3" v-html="t.body"></div>
+                            <div v-if="t.channel === 'email'" class="prose prose-sm max-w-none line-clamp-3" v-html="sanitizeHtml(t.body)"></div>
                             <div v-else>{{ t.body }}</div>
                         </td>
                         <td class="px-3 py-2 space-y-1">
@@ -74,6 +74,7 @@ import { RouterLink } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { NotificationTemplate } from '@/modules/notifications/types/notification.type'
+import { sanitizeHtml } from '@/app/utils/sanitizeHtml'
 
 const templates = ref<NotificationTemplate[]>([])
 const loading   = ref(false)

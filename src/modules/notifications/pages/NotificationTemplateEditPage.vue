@@ -100,13 +100,13 @@
                 <div class="bg-white border border-slate-200 rounded-md p-3">
                     <p class="text-[11px] font-bold uppercase text-slate-600 mb-2">Vista previa (override)</p>
                     <div v-if="form.subject" class="text-sm font-bold text-slate-800 mb-1 pb-1 border-b border-slate-100">{{ rendered.subject }}</div>
-                    <div v-if="channel === 'email'" class="text-sm text-slate-700 prose prose-sm max-w-none" v-html="rendered.body"></div>
+                    <div v-if="channel === 'email'" class="text-sm text-slate-700 prose prose-sm max-w-none" v-html="sanitizeHtml(rendered.body)"></div>
                     <div v-else class="text-sm text-slate-700 whitespace-pre-line">{{ rendered.body }}</div>
                 </div>
                 <div class="bg-slate-50 border border-slate-200 rounded-md p-3">
                     <p class="text-[11px] font-bold uppercase text-slate-500 mb-2">Default global (referencia)</p>
                     <div v-if="data.default.subject" class="text-xs font-bold text-slate-700 mb-1">{{ data.default.subject }}</div>
-                    <div v-if="channel === 'email'" class="text-xs text-slate-600 prose prose-sm max-w-none" v-html="data.default.body"></div>
+                    <div v-if="channel === 'email'" class="text-xs text-slate-600 prose prose-sm max-w-none" v-html="sanitizeHtml(data.default.body)"></div>
                     <div v-else class="text-xs text-slate-600 whitespace-pre-line">{{ data.default.body }}</div>
                 </div>
             </div>
@@ -146,6 +146,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import EmailRichEditor from '@/modules/notifications/components/EmailRichEditor.vue'
+import { sanitizeHtml } from '@/app/utils/sanitizeHtml'
 import SubjectInputWithVars from '@/modules/notifications/components/SubjectInputWithVars.vue'
 
 interface TemplateDetail {

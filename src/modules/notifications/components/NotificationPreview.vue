@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { sanitizeHtml } from '@/app/utils/sanitizeHtml'
 
 interface Captured {
     channel: string
@@ -37,7 +38,7 @@ const bodyText = computed(() =>
             <div class="text-[11px] text-slate-500">De: <span class="font-medium">SGI</span> &lt;no-reply@sgi&gt;</div>
             <div class="text-[11px] text-slate-500">Para: {{ notification.recipient_label || '—' }} &lt;{{ notification.recipient_address }}&gt;</div>
         </div>
-        <div class="bg-white p-5 text-sm text-slate-700 leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1 [&_p]:mb-2" v-html="body" />
+        <div class="bg-white p-5 text-sm text-slate-700 leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1 [&_p]:mb-2" v-html="sanitizeHtml(body)" />
     </div>
 
     <!-- IN-APP: tarjeta de notificación (campana/inbox) -->
