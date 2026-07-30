@@ -27,9 +27,9 @@
                 Presentarás el examen desde el sistema en línea. Asegúrate de tener buena conexión a internet
                 y un lugar tranquilo antes de iniciar.
             </p>
-            <div v-if="pass?.examUrl">
+            <div v-if="safeExamUrl">
                 <a
-                    :href="pass.examUrl"
+                    :href="safeExamUrl"
                     target="_blank"
                     rel="noopener"
                     class="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700"
@@ -335,6 +335,17 @@ const fullName = computed(() => {
     const a = applicant.value
     if (!a) return '—'
     return [a.names, a.firstSurname, a.secondSurname].filter(Boolean).join(' ')
+})
+
+// examUrl viene de AppConfig (configurable por admin). Sólo se acepta si es
+// http/https absoluta: evita esquemas peligrosos (javascript:, data:) en el href.
+const safeExamUrl = computed(() => {
+    const raw = pass.value?.examUrl
+    if (!raw) return null
+    try {
+        const u = new URL(raw, window.location.origin)
+        return (u.protocol === 'http:' || u.protocol === 'https:') ? u.href : null
+    } catch { return null }
 })
 
 const todayLabel = computed(() =>

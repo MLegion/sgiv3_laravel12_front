@@ -563,6 +563,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 import CompromiseLetterModal from '@/modules/advising/components/CompromiseLetterModal.vue'
 import type {
@@ -646,12 +647,9 @@ function onConfirmRemove() {
     }
 }
 
-const currentUserId = computed(() => {
-    try {
-        const u = JSON.parse(localStorage.getItem('user') ?? '{}')
-        return u?.id ?? null
-    } catch { return null }
-})
+const authStore = useAuthStore()
+// Fuente de verdad de la sesión: el auth store (no leer localStorage crudo).
+const currentUserId = computed(() => authStore.user?.id ?? null)
 
 const isMine    = computed(() => session.value?.reviewer?.id === currentUserId.value)
 const canDecide = computed(() => session.value?.status === 'submitted' && isMine.value)

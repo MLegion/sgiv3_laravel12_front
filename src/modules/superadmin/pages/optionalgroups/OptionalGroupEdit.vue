@@ -145,9 +145,11 @@
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
-                            <tr v-if="loadingSubjects" v-for="i in 3" :key="'loader-'+i" class="animate-pulse">
+                            <template v-if="loadingSubjects">
+                            <tr v-for="i in 3" :key="'loader-'+i" class="animate-pulse">
                                 <td colspan="5" class="px-6 py-6"><div class="h-4 bg-slate-100 rounded-lg w-full"></div></td>
                             </tr>
+                            </template>
                             <tr v-else-if="subjects.length === 0">
                                 <td colspan="5" class="px-6 py-16 text-center">
                                     <div class="flex flex-col items-center gap-2">

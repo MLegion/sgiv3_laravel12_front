@@ -132,9 +132,11 @@
                             </tr>
                             </thead>
                             <tbody class="divide-y text-sm">
-                            <tr v-if="loadingSubjects" v-for="i in 3" :key="'loader-'+i" class="animate-pulse">
+                            <template v-if="loadingSubjects">
+                            <tr v-for="i in 3" :key="'loader-'+i" class="animate-pulse">
                                 <td colspan="5" class="px-4 py-5"><div class="h-4 bg-slate-100 rounded"></div></td>
                             </tr>
+                            </template>
                             <tr v-else-if="subjects.length === 0">
                                 <td colspan="5" class="px-4 py-12 text-center text-slate-400 text-xs uppercase font-medium italic">No hay materias ligadas a esta especialidad</td>
                             </tr>
