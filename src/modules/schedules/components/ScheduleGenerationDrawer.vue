@@ -3,7 +3,14 @@
         <div v-if="open" class="fixed inset-0 z-[120]">
             <div class="absolute inset-0 bg-black/40" @click="close"></div>
 
-            <aside class="absolute right-0 top-0 h-full w-full max-w-2xl bg-white shadow-2xl overflow-y-auto">
+            <aside
+                ref="panelRef"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Generación automática de horarios"
+                tabindex="-1"
+                class="absolute right-0 top-0 h-full w-full max-w-2xl bg-white shadow-2xl overflow-y-auto focus:outline-none"
+            >
                 <header class="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-start justify-between gap-3">
                     <div class="min-w-0">
                         <h2 class="text-lg font-semibold text-slate-800 uppercase tracking-wide">Generación Automática</h2>
@@ -320,6 +327,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useConfirm } from '@/app/composables/useConfirm'
+import { useFocusTrap } from '@/app/composables/useFocusTrap'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type {
@@ -350,6 +358,9 @@ const emit = defineEmits<{
     (e: 'close'): void
     (e: 'promoted', runId: number): void
 }>()
+
+const panelRef = ref<HTMLElement | null>(null)
+useFocusTrap(panelRef, () => props.open, () => emit('close'))
 
 const weightKeys = WEIGHT_KEYS
 const weightLabels = WEIGHT_LABELS

@@ -3,7 +3,14 @@
         <div class="fixed inset-0 z-50">
             <div class="absolute inset-0 bg-black/40" @click="$emit('close')"></div>
 
-            <aside class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl overflow-y-auto">
+            <aside
+                ref="panelRef"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Editar jerarquía"
+                tabindex="-1"
+                class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl overflow-y-auto focus:outline-none"
+            >
                 <div class="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b">
                     <h3 class="text-base font-semibold text-slate-800">
                         Editar jerarquía
@@ -75,6 +82,7 @@
 import { ref, computed } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useFocusTrap } from '@/app/composables/useFocusTrap'
 
 interface WorkArea {
     id: number
@@ -95,6 +103,10 @@ const emit = defineEmits<{
     (e: 'close'): void
     (e: 'saved'): void
 }>()
+
+const panelRef = ref<HTMLElement | null>(null)
+// Montado por el padre con v-if: mientras exista está "abierto".
+useFocusTrap(panelRef, () => true, () => emit('close'))
 
 const selectedParentId = ref<number | null>(props.area.parent_work_area_id)
 const saving = ref(false)

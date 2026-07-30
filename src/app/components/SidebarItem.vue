@@ -4,9 +4,13 @@
         <!-- ── Etiqueta de sección (grupo de nivel 2+ con children) ── -->
         <div
             v-if="depth > 0 && item.children && !collapsed"
-            class="flex items-center gap-2 px-2 pt-2.5 pb-0.5 cursor-pointer select-none group"
+            class="flex items-center gap-2 px-2 pt-2.5 pb-0.5 cursor-pointer select-none group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded"
             :title="item.label"
+            role="button"
+            tabindex="0"
+            :aria-expanded="open"
             @click="handleClick"
+            @keydown="onKeydown"
         >
             <component
                 v-if="Icon"
@@ -38,7 +42,7 @@
             v-else
             :is="item.route && !item.children ? 'router-link' : 'div'"
             :to="item.route"
-            class="flex items-center gap-2 rounded-xl cursor-pointer transition-all duration-300 group select-none relative overflow-hidden active:scale-[0.96] sidebar-item"
+            class="flex items-center gap-2 rounded-xl cursor-pointer transition-all duration-300 group select-none relative overflow-hidden active:scale-[0.96] sidebar-item focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
             :class="[
                 isActive
                     ? 'is-active text-white shadow-md'
@@ -46,7 +50,11 @@
                 collapsed ? 'justify-center px-0 w-10 h-10 mx-auto py-0' : '',
                 depth > 0 ? 'px-3 py-1.5' : 'px-4 py-2.5'
             ]"
+            :role="isLeafLink ? undefined : 'button'"
+            :tabindex="isLeafLink ? undefined : 0"
+            :aria-expanded="item.children ? open : undefined"
             @click="handleClick"
+            @keydown="isLeafLink ? undefined : onKeydown($event)"
             :title="item.label"
         >
             <!-- Indicador lateral activo -->
@@ -146,6 +154,9 @@ const Icon = computed(() =>
     props.item.icon ? iconMap[props.item.icon] : null
 )
 
+/** Item hoja con ruta: es un <router-link> (ya operable por teclado nativamente). */
+const isLeafLink = computed(() => !!props.item.route && !props.item.children)
+
 /** Suma el badge propio + el de todos los descendientes (roll-up). */
 function sumBadges(item: any): number {
     let total = menuStore.badges?.[item.code] ?? 0
@@ -173,6 +184,13 @@ const isActive = computed(() => {
     if (props.item.route && !props.item.children) return route.path === props.item.route
     return false
 })
+
+function onKeydown(e: KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault()
+        handleClick()
+    }
+}
 
 function handleClick() {
     if (props.item.children && !props.collapsed) {

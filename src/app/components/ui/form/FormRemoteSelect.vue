@@ -12,13 +12,18 @@
             <input
                 :id="fieldId"
                 type="text"
+                role="combobox"
+                aria-autocomplete="list"
+                :aria-expanded="open"
+                :aria-controls="listboxId"
+                :aria-activedescendant="open && activeIndex >= 0 ? optionId(activeIndex) : undefined"
                 :value="search"
                 :placeholder="placeholder"
                 :class="inputClasses"
                 :disabled="disabled"
                 @focus="onFocus"
                 @input="onInput"
-                @keydown.esc="closeDropdown"
+                @keydown="onKeydown"
             />
 
             <div v-if="loading" class="absolute right-3 top-1/2 -translate-y-1/2">
@@ -43,12 +48,17 @@
                 Recomendaciones
             </div>
 
-            <div class="max-h-60 overflow-y-auto divide-y divide-slate-50">
+            <div class="max-h-60 overflow-y-auto divide-y divide-slate-50" :id="listboxId" role="listbox">
                 <div
-                    v-for="item in items"
+                    v-for="(item, i) in items"
                     :key="item[itemValue]"
-                    class="px-4 py-3 text-xs cursor-pointer transition-colors hover:bg-blue-50 group"
+                    :id="optionId(i)"
+                    role="option"
+                    :aria-selected="i === activeIndex"
+                    class="px-4 py-3 text-xs cursor-pointer transition-colors group"
+                    :class="i === activeIndex ? 'bg-blue-50' : 'hover:bg-blue-50'"
                     @mousedown="select(item)"
+                    @mousemove="activeIndex = i"
                 >
                     <div class="flex flex-col">
                         <span class="font-bold text-slate-700 group-hover:text-blue-700 uppercase">
@@ -91,9 +101,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onBeforeUnmount, onMounted } from 'vue'
+import { ref, computed, watch, onBeforeUnmount, onMounted, nextTick } from 'vue'
 
 const fieldId = `fld-${Math.random().toString(36).slice(2, 9)}`
+const listboxId = `lb-${fieldId}`
+const optionId = (i: number) => `${fieldId}-opt-${i}`
 import { CheckCircleIcon } from '@heroicons/vue/24/solid'
 import { api } from '@/shared/services/api'
 
@@ -134,6 +146,7 @@ const loading = ref(false)
 const search = ref('')
 const selectedItem = ref<any | null>(null)
 const items = ref<any[]>([])
+const activeIndex = ref(-1)
 const page = ref(1)
 const lastPage = ref(1)
 const dropdownStyle = ref({ top: '0px', left: '0px', width: '0px' })
@@ -188,6 +201,7 @@ async function fetchList(reset = false) {
     if (reset) {
         page.value = 1
         items.value = []
+        activeIndex.value = -1
     }
 
     try {
@@ -296,6 +310,35 @@ function select(item: any) {
     closeDropdown()
 }
 
+/** Navegación por teclado del combobox (ArrowUp/Down, Enter, Escape). */
+function onKeydown(e: KeyboardEvent) {
+    const count = items.value.length
+    if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        if (!open.value) { onFocus(); return }
+        if (count) { activeIndex.value = activeIndex.value >= count - 1 ? 0 : activeIndex.value + 1 }
+        scrollActiveIntoView()
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        if (count) { activeIndex.value = activeIndex.value <= 0 ? count - 1 : activeIndex.value - 1 }
+        scrollActiveIntoView()
+    } else if (e.key === 'Enter') {
+        if (open.value && activeIndex.value >= 0 && activeIndex.value < count) {
+            e.preventDefault()
+            select(items.value[activeIndex.value])
+        }
+    } else if (e.key === 'Escape') {
+        if (open.value) { e.preventDefault(); closeDropdown() }
+    }
+}
+
+function scrollActiveIntoView() {
+    if (activeIndex.value < 0) return
+    nextTick(() => {
+        document.getElementById(optionId(activeIndex.value))?.scrollIntoView({ block: 'nearest' })
+    })
+}
+
 function loadMore() {
     if (!loading.value && canLoadMore.value) {
         page.value++
@@ -305,6 +348,7 @@ function loadMore() {
 
 function closeDropdown() {
     open.value = false
+    activeIndex.value = -1
     window.removeEventListener('scroll', updateDropdownPosition, true)
     window.removeEventListener('resize', updateDropdownPosition)
 }

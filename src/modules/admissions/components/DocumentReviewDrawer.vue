@@ -11,7 +11,14 @@
                 <div class="absolute inset-0 bg-black/40" @click="$emit('close')" />
 
                 <!-- Drawer panel -->
-                <div class="relative ml-auto flex h-full w-full max-w-4xl bg-white shadow-2xl flex-col">
+                <div
+                    ref="panelRef"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Revisión de documentos"
+                    tabindex="-1"
+                    class="relative ml-auto flex h-full w-full max-w-4xl bg-white shadow-2xl flex-col focus:outline-none"
+                >
 
                     <!-- Header -->
                     <div class="flex items-center justify-between border-b px-6 py-4 shrink-0">
@@ -261,6 +268,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useFocusTrap } from '@/app/composables/useFocusTrap'
 
 interface DocItem {
     id: number
@@ -302,6 +310,9 @@ const emit = defineEmits<{
     close: []
     reviewed: []
 }>()
+
+const panelRef = ref<HTMLElement | null>(null)
+useFocusTrap(panelRef, () => props.open, () => emit('close'))
 
 const documents    = ref<DocItem[]>([])
 const loadingDocs  = ref(false)

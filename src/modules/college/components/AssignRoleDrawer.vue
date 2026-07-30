@@ -18,7 +18,14 @@
                 leave-to-class="translate-x-full"
                 appear
             >
-                <div class="fixed right-0 top-0 bottom-0 w-full sm:w-[480px] bg-white shadow-2xl flex flex-col">
+                <div
+                    ref="panelRef"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Gestionar roles"
+                    tabindex="-1"
+                    class="fixed right-0 top-0 bottom-0 w-full sm:w-[480px] bg-white shadow-2xl flex flex-col focus:outline-none"
+                >
                     <!-- Header -->
                     <div class="px-5 py-4 border-b border-slate-200 flex items-start justify-between gap-3">
                         <div class="min-w-0">
@@ -197,6 +204,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useConfirm } from '@/app/composables/useConfirm'
+import { useFocusTrap } from '@/app/composables/useFocusTrap'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { XMarkIcon, TrashIcon, LockClosedIcon } from '@heroicons/vue/24/outline'
@@ -243,6 +251,10 @@ const emit = defineEmits<{
     (e: 'close'): void
     (e: 'changed', payload: { ok: boolean, message: string }): void
 }>()
+
+const panelRef = ref<HTMLElement | null>(null)
+// Montado por el padre con v-if: mientras exista está "abierto".
+useFocusTrap(panelRef, () => true, () => emit('close'))
 
 // Roles que NO pueden revocarse desde el college (espeja FORBIDDEN_ROLE_CODES
 // de RevokeRoleFromCollegeUserHandler): el college_admin no puede quitarse a sí
