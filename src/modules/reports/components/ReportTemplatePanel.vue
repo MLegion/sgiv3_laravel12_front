@@ -114,7 +114,6 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import { renderAsync } from 'docx-preview'
 
 const props = defineProps<{
     reportId:              number | string
@@ -234,6 +233,7 @@ async function loadPreview() {
         const blob = res.data as Blob
         await nextTick()
         if (!previewContainer.value) return
+        const { renderAsync } = await import('docx-preview')
         previewContainer.value.innerHTML = ''
         await renderAsync(blob, previewContainer.value, undefined, {
             className:    'docx-preview',

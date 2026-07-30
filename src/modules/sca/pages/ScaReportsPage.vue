@@ -407,7 +407,6 @@
 import { reactive, ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import { renderAsync } from 'docx-preview'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
 import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
 import FormatUnavailableModal from '@/modules/reports/components/FormatUnavailableModal.vue'
@@ -609,6 +608,7 @@ async function generateProyInline(code: string, format: 'pdf' | 'docx') {
             proyBlob.value = blob
             await nextTick()
             if (proyDocxHost.value) {
+                const { renderAsync } = await import('docx-preview')
                 proyDocxHost.value.innerHTML = ''
                 await renderAsync(blob, proyDocxHost.value, undefined, {
                     className: 'docx-preview', inWrapper: true, breakPages: true,

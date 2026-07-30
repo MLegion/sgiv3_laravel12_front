@@ -1,7 +1,7 @@
 import { ref } from 'vue'
-import { renderAsync } from 'docx-preview'
-// @ts-ignore — html2pdf.js no tiene types oficiales
-import html2pdf from 'html2pdf.js'
+// docx-preview y html2pdf.js se cargan con import() dinámico dentro de las
+// funciones que los usan (preview/generatePdf): son pesados (~cientos de KB)
+// y sólo hacen falta al previsualizar/exportar, no en el bundle inicial.
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { fillDocxTemplate } from '@/modules/reports/services/docxGenerator'
@@ -122,6 +122,7 @@ export function useReportGenerator() {
     /** Renderiza el DOCX como HTML dentro de un contenedor (usando docx-preview). */
     async function preview(options: GenerateOptions, host: HTMLElement): Promise<Blob> {
         const { blob } = await generate(options)
+        const { renderAsync } = await import('docx-preview')
         host.innerHTML = ''
         await renderAsync(blob, host, undefined, {
             className:    'docx-preview',
@@ -136,6 +137,11 @@ export function useReportGenerator() {
     /** Convierte el DOCX a un PDF Blob client-side (vía html2pdf.js sobre el docx-preview). */
     async function generatePdf(options: GenerateOptions): Promise<{ blob: Blob; filename: string; report: Report }> {
         const { blob: docxBlob, report } = await generate(options)
+        const [{ renderAsync }, { default: html2pdf }] = await Promise.all([
+            import('docx-preview'),
+            // @ts-ignore — html2pdf.js no tiene types oficiales
+            import('html2pdf.js'),
+        ])
         const host = document.createElement('div')
         host.style.cssText = 'position:absolute;left:-99999px;top:0;width:816px;'  // ~Letter width
         document.body.appendChild(host)

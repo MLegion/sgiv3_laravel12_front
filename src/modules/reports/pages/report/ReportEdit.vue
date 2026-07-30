@@ -186,7 +186,6 @@ import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
 import ReportTemplatePanel from '@/modules/reports/components/ReportTemplatePanel.vue'
 import ReportDaoManager, { type LinkedDao } from '@/modules/reports/components/ReportDaoManager.vue'
 import { fillDocxTemplate } from '@/modules/reports/services/docxGenerator'
-import { renderAsync } from 'docx-preview'
 import type { DataAccessObject } from '@/modules/reports/types/dao.type'
 import type { DaoParameter, ParameterDataType } from '@/modules/reports/types/queryBuilder.type'
 import type { Report } from '@/modules/reports/types/report.type'
@@ -497,6 +496,7 @@ async function doAction(action: ExportAction) {
         docxPreviewOpen.value = true
         await new Promise<void>((r) => requestAnimationFrame(() => r()))
         if (!docxPreviewHost.value) return
+        const { renderAsync } = await import('docx-preview')
         docxPreviewHost.value.innerHTML = ''
         await renderAsync(filled, docxPreviewHost.value, undefined, {
             className:    'docx-preview',

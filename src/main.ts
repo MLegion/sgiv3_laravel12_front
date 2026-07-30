@@ -6,9 +6,11 @@ import router from '@/app/router'
 // Importación de estilos globales (Tailwind CSS)
 import '@/assets/styles/main.css'
 
-// Inicialización de Laravel Echo (WebSocket via Reverb).
-// El módulo asigna `window.Echo` al cargarse — se importa side-effect.
-import '@/shared/services/echo'
+// Laravel Echo (WebSocket via Reverb) — se importa en un CHUNK APARTE para
+// sacar pusher-js/laravel-echo del bundle principal. Se dispara ya (fetch en
+// paralelo) y se espera antes de montar, así window.Echo está listo cuando los
+// stores se suscriben (sin race), pero sin engordar el parse inicial.
+const echoReady = import('@/shared/services/echo')
 
 /**
  * Inicialización de la aplicación SGI v3.
@@ -29,6 +31,7 @@ async function bootstrap() {
     // El router.isReady() asegura que las rutas iniciales y guards
     // se hayan procesado antes de mostrar la UI.
     await router.isReady()
+    await echoReady
     app.mount('#app')
 }
 
