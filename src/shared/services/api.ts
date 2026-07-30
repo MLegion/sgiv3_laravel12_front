@@ -27,12 +27,30 @@ function resolveApiBaseUrl(): string {
 
 export const api = axios.create({
     baseURL: resolveApiBaseUrl(),
+    // [3G] withCredentials: envía/recibe la cookie de sesión httpOnly (auth SPA de
+    // Sanctum) y la cookie XSRF-TOKEN, que axios reenvía como header X-XSRF-TOKEN.
+    withCredentials: true,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
     headers: {
         Accept: 'application/json',
     },
 })
 
+/**
+ * [3G] Solicita la cookie CSRF de Sanctum. Debe llamarse ANTES del primer
+ * request mutante de auth (login) para que el navegador tenga XSRF-TOKEN.
+ * Idempotente y barato.
+ */
+export async function ensureCsrfCookie(): Promise<void> {
+    await api.get('/sanctum/csrf-cookie')
+}
+
 api.interceptors.request.use(config => {
+    // Transición: mientras exista token en localStorage se sigue mandando Bearer
+    // (compat con impersonación y clientes por token). Con la cookie de sesión
+    // activa, Sanctum prioriza la sesión; el token queda como respaldo hasta el
+    // "flip" final (ver docs/auth-cookie-migration.md).
     const token = localStorage.getItem('token')
     if (token) {
         config.headers.Authorization = `Bearer ${token}`

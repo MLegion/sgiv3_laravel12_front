@@ -8,7 +8,7 @@ import {
     type LoginPayload,
     type LoginResponse,
 } from '@/modules/auth/services/auth.service'
-import { api } from '@/shared/services/api'
+import { api, ensureCsrfCookie } from '@/shared/services/api'
 import { useMenuStore } from '@/app/stores/menu.store'
 import { resolveBrandingByCollegeId } from '@/modules/auth/services/branding.service'
 import { useBrandingStore } from '@/modules/auth/stores/branding.store'
@@ -76,6 +76,8 @@ export const useAuthStore = defineStore('auth', {
          * Login REAL contra backend
          */
         async login(payload: LoginPayload) {
+            // [3G] Cookie CSRF antes del login para la auth por sesión de Sanctum.
+            await ensureCsrfCookie()
             const response = await loginRequest(payload)
 
             // 2FA activo: no hay token todavía. Guardamos el challenge y la UI
@@ -143,6 +145,7 @@ export const useAuthStore = defineStore('auth', {
          * El backend valida que el email matchee el dominio Workspace del college.
          */
         async loginWithGoogle(payload: { accessToken: string; collegeId: number }) {
+            await ensureCsrfCookie() // [3G]
             const { data } = await api.post('/api/v1/auth/google', {
                 access_token: payload.accessToken,
                 college_id:   payload.collegeId,
