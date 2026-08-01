@@ -24,6 +24,12 @@ export default [
         component: () => import('@/modules/reports/pages/report/ReportDelete.vue'),
         meta: { title: 'Eliminar Reporte' },
     },
+    {
+        path: 'reports/reports/:id/afinar',
+        name: 'reports.reports.tune',
+        component: () => import('@/modules/reports/pages/TemplateTunerPage.vue'),
+        meta: { title: 'Afinar Plantilla' },
+    },
 
     // DAOs
     {
