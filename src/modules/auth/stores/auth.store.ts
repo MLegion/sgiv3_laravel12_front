@@ -25,6 +25,12 @@ export const useAuthStore = defineStore('auth', {
         emailVerified: null as boolean | null, // null = no consultado aún
         profileType: null as ProfileType | null,
 
+        // Versión de la foto de perfil: al subir una nueva se incrementa para
+        // bustear la caché y refrescar el avatar en navbar + perfil a la vez.
+        // Se siembra con un timestamp único por carga para que la URL nunca
+        // coincida con una respuesta vieja cacheada por el navegador.
+        avatarVersion: Date.now(),
+
         // Impersonation state
         impersonatorToken: localStorage.getItem('impersonator_token') as string | null,
         impersonatorUser: null as AuthUser | null,
@@ -38,6 +44,10 @@ export const useAuthStore = defineStore('auth', {
         },
         userName(state) : string {
             return state.user?.name ?? ''
+        },
+        /** URL del avatar del usuario logueado (con versión para bustear caché). */
+        avatarUrl(state): string {
+            return `/api/v1/user/profile/avatar?v=${state.avatarVersion}`
         },
         isImpersonating(state): boolean {
             return !!state.impersonatorToken
@@ -291,6 +301,11 @@ export const useAuthStore = defineStore('auth', {
         /**
          * Carga (y cachea) el tipo de perfil del usuario autenticado.
          */
+        /** Refresca el avatar en toda la app (navbar + perfil) tras cambiar la foto. */
+        bumpAvatar() {
+            this.avatarVersion++
+        },
+
         async loadProfileType(): Promise<ProfileType | null> {
             if (this.profileType) return this.profileType
             if (!this.token) return null

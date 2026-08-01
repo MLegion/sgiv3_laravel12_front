@@ -67,10 +67,9 @@
             <div class="relative pl-2 border-l border-slate-100" ref="dropdownRef">
                 <button
                     @click="menuOpen = !menuOpen"
-                    class="w-10 h-10 rounded-2xl bg-slate-100 font-black flex items-center justify-center border-2 border-white shadow-sm hover:scale-105 transition-transform"
-                    :style="{ color: 'var(--brand-primary, #4f46e5)' }"
+                    class="w-10 h-10 rounded-2xl overflow-hidden bg-slate-100 border-2 border-white shadow-sm hover:scale-105 transition-transform"
                 >
-                    {{ auth.userName?.charAt(0).toUpperCase() }}
+                    <UserAvatar :key="auth.avatarVersion" :url="auth.avatarUrl" :name="auth.userName" shape="square" eager fill />
                 </button>
 
                 <!-- Dropdown Menu -->
@@ -137,6 +136,7 @@ import { Bars3BottomLeftIcon, UserCircleIcon, ArrowRightStartOnRectangleIcon } f
 import NotificationsBell from '@/modules/notifications/components/NotificationsBell.vue'
 import NotificationToast from '@/modules/notifications/components/NotificationToast.vue'
 import LogoutConfirmModal from '@/app/components/LogoutConfirmModal.vue'
+import UserAvatar from '@/app/components/ui/UserAvatar.vue'
 
 const auth = useAuthStore()
 const branding = useBrandingStore()
