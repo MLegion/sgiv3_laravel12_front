@@ -70,6 +70,7 @@
             <div class="flex-1 min-h-0 relative overflow-auto">
                 <div v-if="error" class="absolute inset-x-0 top-0 z-10 bg-red-50 border-b border-red-200 text-red-700 text-xs px-4 py-2">{{ error }}</div>
                 <div v-if="saved" class="absolute inset-x-0 top-0 z-10 bg-emerald-50 border-b border-emerald-200 text-emerald-700 text-xs px-4 py-2">Plantilla guardada. El reporte ya usa este diseño.</div>
+                <div v-if="!firstRenderDone" class="absolute inset-0 flex items-center justify-center text-slate-500 text-sm">Generando vista previa con datos de ejemplo…</div>
                 <div ref="previewHost" class="docx-preview-host p-6"></div>
             </div>
         </div>
@@ -77,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -96,6 +97,7 @@ const previewHost = ref<HTMLElement | null>(null)
 const error = ref<string | null>(null)
 const saving = ref(false)
 const saved = ref(false)
+const firstRenderDone = ref(false)
 
 const storageKey = computed(() => `reportTuner:${builder.value?.code ?? reportId}`)
 
@@ -139,7 +141,10 @@ function persist() {
 }
 
 async function render() {
-    if (!builder.value || !previewHost.value) return
+    if (!builder.value) return
+    // el host vive en un v-else; puede no estar montado aún en el primer render
+    if (!previewHost.value) { await nextTick() }
+    if (!previewHost.value) return
     error.value = null
     try {
         const bytes = builder.value.build(JSON.parse(JSON.stringify(config)))
@@ -147,7 +152,10 @@ async function render() {
         const filled = await fillDocxTemplate(tpl, builder.value.sampleData)
         const { renderAsync } = await import('docx-preview')
         previewHost.value.innerHTML = ''
-        await renderAsync(filled, previewHost.value, undefined, { className: 'docx-preview', inWrapper: true, ignoreWidth: false, ignoreHeight: false })
+        await renderAsync(filled, previewHost.value, undefined, {
+            className: 'docx-preview', inWrapper: true, breakPages: true, experimental: true, useBase64URL: true,
+        })
+        firstRenderDone.value = true
     } catch (e: unknown) {
         error.value = (e as Error)?.message ?? 'No se pudo generar la vista previa.'
     }
@@ -190,18 +198,20 @@ function goBack() {
 onMounted(async () => {
     try {
         const { data } = await api.get(API.REPORTS_API.reports.byId(reportId))
-        reportName.value = data?.name ?? data?.code ?? String(reportId)
-        builder.value = getTemplateBuilder(data?.code)
+        const rep = data?.data ?? data
+        reportName.value = rep?.name ?? rep?.code ?? String(reportId)
+        builder.value = getTemplateBuilder(rep?.code)
     } catch {
-        builder.value = getTemplateBuilder(undefined)
+        builder.value = undefined
     }
     if (builder.value) {
-        let initial = builder.value.defaultConfig
+        let initial: Record<string, unknown> = builder.value.defaultConfig
         try {
             const raw = localStorage.getItem(storageKey.value)
             if (raw) initial = { ...builder.value.defaultConfig, ...JSON.parse(raw) }
         } catch { /* ignore */ }
         applyConfig(initial)
+        await nextTick()   // asegura que el host (v-else) ya esté montado
         render()
     }
 })
