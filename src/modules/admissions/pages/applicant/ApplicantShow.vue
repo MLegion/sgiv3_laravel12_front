@@ -41,10 +41,11 @@
             <section class="flex items-start gap-6">
                 <!-- Foto -->
                 <div class="shrink-0">
-                    <ApplicantAvatar
-                        :applicant-id="applicant.id ?? null"
+                    <UserAvatar
+                        :url="applicant.id ? API.ADMISSIONS_API.applicants.avatar(applicant.id, 'lg') : null"
                         :name="`${applicant.names ?? ''} ${applicant.firstSurname ?? ''}`"
                         size="lg"
+                        eager
                     />
                 </div>
 
@@ -202,7 +203,7 @@ import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import InfoItem from '@/app/components/ui/InfoItem.vue'
 import Skeleton from '@/app/components/ui/Skeleton.vue'
-import ApplicantAvatar from '@/app/components/ui/ApplicantAvatar.vue'
+import UserAvatar from '@/app/components/ui/UserAvatar.vue'
 import type { Applicant } from '@/modules/admissions/types/applicant.type'
 import { STATUS_OPTIONS, STATUS_CLASSES } from '@/modules/admissions/types/applicant.type'
 import type { ApplicantDocument } from '@/modules/admissions/types/applicant-document.type'
