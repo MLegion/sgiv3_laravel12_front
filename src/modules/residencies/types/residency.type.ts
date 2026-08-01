@@ -187,10 +187,24 @@ export interface LegacyResidencyRow {
     studentName: string | null
     studentId: number | null
     companyName: string | null
+    career: string | null
+    careerId: number | null
+    internalAdvisorName: string | null
+    internalAdvisorId: number | null
     status: string | null
     projectOption: string | null
+    projectTitle: string | null
     periodLabel: string | null
     documentsCount: number
+}
+
+export interface LegacyFilterOption {
+    id: number
+    name: string
+}
+export interface LegacyFilterOptions {
+    careers: LegacyFilterOption[]
+    advisors: LegacyFilterOption[]
 }
 
 export interface LegacyResidencyDocument {

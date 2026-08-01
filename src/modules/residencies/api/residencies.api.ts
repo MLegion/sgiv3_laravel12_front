@@ -70,6 +70,8 @@ const residenciesApi: ApiModule = {
         // ── Archivo histórico (migrado de SGIv2, solo lectura) ──
         legacy: {
             list:             apiUrl('/residencies/legacy'),
+            filterOptions:    apiUrl('/residencies/legacy/filter-options'),
+            studentAvatar:    (studentId: string | number) => apiUrl(`/residencies/legacy/students/${studentId}/avatar`),
             byId:             (id: string | number) => apiUrl(`/residencies/legacy/${id}`),
             downloadDocument: (id: string | number) => apiUrl(`/residencies/legacy/documents/${id}/download`),
             downloadAll:      (id: string | number) => apiUrl(`/residencies/legacy/${id}/download-all`),

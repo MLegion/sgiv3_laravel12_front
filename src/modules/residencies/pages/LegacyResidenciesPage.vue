@@ -5,9 +5,17 @@
                 <h1 class="text-xl font-semibold text-slate-800 uppercase">Histórico de Residencias</h1>
                 <p class="text-xs text-slate-400">Expediente migrado del SGIv2 (solo lectura).</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
                 <input v-model="search" placeholder="Buscar por control, nombre o empresa…"
                        class="border rounded-md px-2 py-1 text-xs w-64" @keyup.enter="reload" />
+                <select v-model="careerId" class="border rounded-md px-2 py-1 text-xs max-w-[16rem]" @change="reload">
+                    <option :value="null">TODAS LAS CARRERAS</option>
+                    <option v-for="c in careers" :key="c.id" :value="c.id">{{ c.name }}</option>
+                </select>
+                <select v-model="advisorId" class="border rounded-md px-2 py-1 text-xs max-w-[16rem]" @change="reload">
+                    <option :value="null">TODOS LOS ASESORES</option>
+                    <option v-for="a in advisors" :key="a.id" :value="a.id">{{ a.name }}</option>
+                </select>
                 <select v-model="statusFilter" class="border rounded-md px-2 py-1 text-xs" @change="reload">
                     <option value="">TODOS</option>
                     <option value="in_progress">EN PROCESO</option>
@@ -18,16 +26,22 @@
             </div>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
-        <div v-else-if="!rows.length" class="text-sm text-slate-400 italic">Sin registros.</div>
+        <div v-if="loading && !rows.length" class="rounded-xl border bg-white p-8 text-center text-sm text-slate-400">Cargando…</div>
+        <div v-else-if="!rows.length" class="rounded-xl border bg-white p-8 text-center text-sm text-slate-400 italic">Sin registros.</div>
 
-        <div v-else class="overflow-x-auto rounded-xl border bg-white">
-            <table class="min-w-full text-sm">
+        <div v-else class="overflow-x-auto rounded-xl border bg-white relative">
+            <!-- Overlay sutil durante recarga: mantiene la tabla visible (sin parpadeo) -->
+            <div v-if="loading" class="absolute inset-0 z-10 flex items-start justify-center bg-white/60 pt-12">
+                <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
+                    <span class="h-4 w-4 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+                    Actualizando…
+                </div>
+            </div>
+            <table class="min-w-full text-sm transition-opacity duration-200" :class="{ 'opacity-50': loading }">
                 <thead class="bg-slate-50 text-[11px] uppercase text-slate-500">
                     <tr>
                         <th class="text-left px-4 py-2">No. control</th>
-                        <th class="text-left px-4 py-2">Residente</th>
-                        <th class="text-left px-4 py-2">Empresa</th>
+                        <th class="text-left px-4 py-2">Información</th>
                         <th class="text-left px-4 py-2">Opción</th>
                         <th class="text-center px-4 py-2">Estado</th>
                         <th class="text-center px-4 py-2">Docs</th>
@@ -36,18 +50,30 @@
                 </thead>
                 <tbody class="divide-y">
                     <tr v-for="r in rows" :key="r.id" class="hover:bg-slate-50">
-                        <td class="px-4 py-2 font-mono text-xs text-slate-600">{{ r.numControl ?? '—' }}</td>
-                        <td class="px-4 py-2 text-slate-700">{{ r.studentName ?? '—' }}</td>
-                        <td class="px-4 py-2 text-slate-500 text-xs">{{ r.companyName ?? '—' }}</td>
-                        <td class="px-4 py-2 text-slate-500 text-xs">{{ r.projectOption ?? '—' }}</td>
-                        <td class="px-4 py-2 text-center">
+                        <td class="px-4 py-2 font-mono text-xs text-slate-600 align-top">{{ r.numControl ?? '—' }}</td>
+                        <td class="px-4 py-2 align-top">
+                            <div class="flex items-start gap-3">
+                                <UserAvatar
+                                    :url="r.studentId ? R.legacy.studentAvatar(r.studentId) : null"
+                                    :name="r.studentName" size="md" shape="square" class="mt-0.5" />
+                                <div class="space-y-0.5 text-xs leading-relaxed">
+                                    <div><span class="font-bold text-slate-700">Estudiante:</span> <span class="text-slate-800">{{ r.studentName ?? '—' }}</span></div>
+                                    <div><span class="font-bold text-slate-700">Carrera:</span> <span class="text-slate-600">{{ r.career ?? '—' }}</span></div>
+                                    <div><span class="font-bold text-slate-700">Asesor interno:</span> <span class="text-slate-600">{{ r.internalAdvisorName ?? '—' }}</span></div>
+                                    <div><span class="font-bold text-slate-700">Empresa:</span> <span class="text-slate-600">{{ r.companyName ?? '—' }}</span></div>
+                                    <div><span class="font-bold text-slate-700">Proyecto:</span> <span class="text-slate-600">{{ r.projectTitle ?? '—' }}</span></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-2 text-slate-500 text-xs align-top">{{ r.projectOption ?? '—' }}</td>
+                        <td class="px-4 py-2 text-center align-top">
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="statusClass(r.status)">{{ statusLabel(r.status) }}</span>
                         </td>
-                        <td class="px-4 py-2 text-center">
+                        <td class="px-4 py-2 text-center align-top">
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
                                   :class="r.documentsCount ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-400'">{{ r.documentsCount }}</span>
                         </td>
-                        <td class="px-4 py-2 text-right">
+                        <td class="px-4 py-2 text-right align-top">
                             <button type="button" class="text-xs px-3 py-1 border rounded-md hover:bg-slate-100" @click="open(r.id)">Ver</button>
                         </td>
                     </tr>
@@ -55,12 +81,12 @@
             </table>
         </div>
 
-        <!-- Paginación -->
-        <div v-if="!loading && rows.length" class="flex items-center justify-between text-xs text-slate-500">
+        <!-- Paginación: se mantiene visible durante la carga (botones deshabilitados) -->
+        <div v-if="rows.length" class="flex items-center justify-between text-xs text-slate-500">
             <span>{{ total }} registros · página {{ page }} de {{ lastPage }}</span>
             <div class="flex items-center gap-2">
-                <button type="button" class="px-3 py-1 border rounded-md disabled:opacity-40" :disabled="page <= 1" @click="go(page - 1)">Anterior</button>
-                <button type="button" class="px-3 py-1 border rounded-md disabled:opacity-40" :disabled="page >= lastPage" @click="go(page + 1)">Siguiente</button>
+                <button type="button" class="px-3 py-1 border rounded-md disabled:opacity-40" :disabled="loading || page <= 1" @click="go(page - 1)">Anterior</button>
+                <button type="button" class="px-3 py-1 border rounded-md disabled:opacity-40" :disabled="loading || page >= lastPage" @click="go(page + 1)">Siguiente</button>
             </div>
         </div>
 
@@ -151,10 +177,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount } from 'vue'
+import { ref, watch, onBeforeUnmount } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { LegacyResidencyRow, LegacyResidencyDetail } from '@/modules/residencies/types/residency.type'
+import type { LegacyResidencyRow, LegacyResidencyDetail, LegacyFilterOption } from '@/modules/residencies/types/residency.type'
+import UserAvatar from '@/app/components/ui/UserAvatar.vue'
 
 const R = API.RESIDENCIES_API
 
@@ -165,6 +192,10 @@ const page = ref(1)
 const lastPage = ref(1)
 const search = ref('')
 const statusFilter = ref('')
+const careerId = ref<number | null>(null)
+const advisorId = ref<number | null>(null)
+const careers = ref<LegacyFilterOption[]>([])
+const advisors = ref<LegacyFilterOption[]>([])
 
 const detail = ref<LegacyResidencyDetail | null>(null)
 const zipBusy = ref(false)
@@ -179,15 +210,29 @@ async function fetchData() {
     loading.value = true
     try {
         const { data } = await api.get(R.legacy.list, {
-            params: { search: search.value || undefined, status: statusFilter.value || undefined, page: page.value, per_page: 20 },
+            params: {
+                search: search.value || undefined,
+                status: statusFilter.value || undefined,
+                career_id: careerId.value || undefined,
+                advisor_id: advisorId.value || undefined,
+                page: page.value,
+                per_page: 20,
+            },
         })
         rows.value = data.items ?? []
         total.value = data.total ?? 0
         lastPage.value = data.lastPage ?? 1
     } finally { loading.value = false }
 }
-function reload() { page.value = 1; fetchData() }
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+function reload() { clearTimeout(searchTimer); page.value = 1; fetchData() }
 function go(p: number) { page.value = p; fetchData() }
+
+// Búsqueda con debounce: busca sola al escribir (350 ms) sin borrar la tabla.
+watch(search, () => {
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout(() => { page.value = 1; fetchData() }, 350)
+})
 
 async function open(id: number) {
     resetPreview()
@@ -254,7 +299,14 @@ function statusClass(s: string | null): string {
     } as Record<string, string>)[s ?? ''] ?? 'bg-slate-100 text-slate-500'
 }
 
-onBeforeUnmount(() => { if (previewUrl.value) URL.revokeObjectURL(previewUrl.value) })
+async function loadFilterOptions() {
+    const { data } = await api.get(R.legacy.filterOptions)
+    careers.value = data.careers ?? []
+    advisors.value = data.advisors ?? []
+}
+
+onBeforeUnmount(() => { clearTimeout(searchTimer); if (previewUrl.value) URL.revokeObjectURL(previewUrl.value) })
 
 fetchData()
+loadFilterOptions()
 </script>
