@@ -141,8 +141,8 @@ const t1LoopRow = row([
     cell(para([run('{grupos}', { sz: 16 }), run('{/materias}', { sz: 16 })], { align: 'center', after: 0 }), { w: g1[8] }),
 ])
 // blank rows for handwriting
-const t1Blank = () => row(g1.map((w) => tcell(' ', { after: 0 }, { w })))
-const table1 = table(g1, [t1HeaderRow, t1LoopRow, t1Blank(), t1Blank(), t1Blank()])
+// Sin filas en blanco estáticas: el post_script pad_rows del DAO rellena hasta el mínimo.
+const table1 = table(g1, [t1HeaderRow, t1LoopRow])
 
 /* ---------- 4. Instrucciones + Tabla 2 (impartidas) ---------- */
 const instr2 = para([

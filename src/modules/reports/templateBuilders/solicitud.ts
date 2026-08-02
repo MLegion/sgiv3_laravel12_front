@@ -32,7 +32,7 @@ export const defaultSolicitudConfig: SolicitudConfig = {
     fontFamily: 'Arial',
     bodyPt: 8,
     titlePt: 10,
-    blankRows: 3,
+    blankRows: 0,   // el post_script pad_rows del DAO rellena hasta el mínimo (10 materias)
     cellMargin: 60,
     spBefore: 10,
     spAfter: 10,
@@ -65,20 +65,32 @@ export const solicitudControls: BuilderControl[] = [
     { group: 'Textos', key: 'title', label: 'Título (usa {modalidad})', type: 'text' },
 ]
 
+/** Rellena un arreglo hasta `n` con filas vacías (misma forma que el post_script pad_rows del DAO). */
+function padSample<T extends Record<string, unknown>>(real: T[], n: number, empty: T): T[] {
+    const out = real.slice(0, n)
+    while (out.length < n) out.push(empty)
+    return out
+}
+
+const emptyMateria = { no: '', clave: '', materia: '', carrera: '', hp: '', ht: '', hto: '', cr: '', grupos: '' }
+const emptyImpartida = { clave: '', materia: '', carrera: '', periodo: '' }
+
 export const solicitudSampleData: Record<string, unknown> = {
     periodo: 'AGO - DIC 2026', docente: 'ALICE SANTIAGO MORA', num_docente: '285',
     anios_servicio: '13 AÑOS', modalidad: 'ESCOLARIZADA', licenciatura: '', ubicacion: 'TIERRA BLANCA',
     maestria: '', doctorado: '',
-    materias: [
+    // conteos representativos del resultado con post_script: mín 10 materias, exactamente 18 impartidas
+    materias: padSample([
         { no: 1, clave: 'ASD1001', materia: 'AGRONEGOCIOS I', carrera: 'I.I.A.S.', hp: 3, ht: 2, hto: 5, cr: 5, grupos: 1 },
         { no: 2, clave: 'AEF1017', materia: 'ECOLOGIA', carrera: 'I.I.A.S.', hp: 2, ht: 3, hto: 5, cr: 5, grupos: 2 },
         { no: 3, clave: 'ACC0906', materia: 'FUNDAMENTOS DE INVESTIGACION', carrera: 'I.I.A.S.', hp: 2, ht: 2, hto: 4, cr: 4, grupos: 2 },
-    ],
-    impartidas: [
+    ] as Record<string, unknown>[], 10, emptyMateria),
+    impartidas: padSample([
         { clave: 'ASD1002', materia: 'AGRONEGOCIOS II', carrera: 'I.I.A.S.', periodo: 'ENE - JUN 2026' },
         { clave: 'ASD1007', materia: 'DLLO.COMUNITARIO', carrera: 'I.I.A.S.', periodo: 'ENE - JUN 2026' },
         { clave: 'ASF1012', materia: 'FISIOLOGIA VEGETAL', carrera: 'I.I.A.S.', periodo: 'AGO - DIC 2025' },
-    ],
+        { clave: 'ACC0906', materia: 'FUND. INVESTIGACION', carrera: 'I.I.A.S.', periodo: 'AGO - DIC 2025' },
+    ] as Record<string, unknown>[], 18, emptyImpartida),
 }
 
 /** Rellena/normaliza un config parcial contra los defaults. */
