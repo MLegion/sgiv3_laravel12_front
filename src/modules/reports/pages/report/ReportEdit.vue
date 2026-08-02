@@ -462,7 +462,13 @@ async function executeContext() {
             API.REPORTS_API.daos.execute(daoLink.dao_id),
             { params: execParams, report_id: reportId },
         )
-        context[daoLink.var_name] = data.data
+        const rows = data.data
+        context[daoLink.var_name] = rows
+        // DAO de encabezado (1 fila): aplanar sus campos a la raíz para plantillas
+        // que usan {campo} directo (misma lógica que useReportGenerator.runDaos).
+        if (Array.isArray(rows) && rows.length === 1 && rows[0] && typeof rows[0] === 'object') {
+            Object.assign(context, rows[0])
+        }
     }
     // eslint-disable-next-line no-console
     console.log('[report-context]', JSON.parse(JSON.stringify(context)))
