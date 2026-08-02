@@ -75,7 +75,16 @@ export function useReportGenerator() {
                 API.REPORTS_API.daos.execute(d.id),
                 { params, report_id: reportId },
             )
-            context[d.varName] = data.data
+            const rows = data.data
+            context[d.varName] = rows
+            // DAO de encabezado (una sola fila): además de exponerlo como `{#var}…{/var}`,
+            // aplanamos sus campos a la raíz del contexto para que la plantilla pueda usar
+            // `{campo}` directo (la tabla de datos de la SOLICITUD usa {docente}, {periodo},
+            // {modalidad}… no {#datos}). Los DAOs de detalle (materias, impartidas) se dejan
+            // solo como arreglo para el loop.
+            if (Array.isArray(rows) && rows.length === 1 && rows[0] && typeof rows[0] === 'object') {
+                Object.assign(context, rows[0])
+            }
         }
         return context
     }
