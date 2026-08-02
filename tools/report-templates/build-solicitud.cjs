@@ -32,12 +32,21 @@ function para(runs, opts = {}) {
 }
 
 // a table cell; opts: {w twips, span, shade hex, align, valign}
+function cellBorders(b) {
+    if (!b) return ''
+    const parts = ['top', 'left', 'bottom', 'right']
+        .filter((s) => b[s])
+        .map((s) => `<w:${s} w:val="single" w:sz="4" w:space="0" w:color="000000"/>`)
+    return parts.length ? `<w:tcBorders>${parts.join('')}</w:tcBorders>` : ''
+}
+
 function cell(bodyXml, opts = {}) {
     const o = opts
     const tcpr =
         `<w:tcPr>` +
         (o.w ? `<w:tcW w:w="${o.w}" w:type="dxa"/>` : `<w:tcW w:w="0" w:type="auto"/>`) +
         (o.span ? `<w:gridSpan w:val="${o.span}"/>` : ``) +
+        cellBorders(o.borders) +
         (o.shade ? `<w:shd w:val="clear" w:color="auto" w:fill="${o.shade}"/>` : ``) +
         `<w:vAlign w:val="${o.valign || 'center'}"/>` +
         `</w:tcPr>`
@@ -51,13 +60,17 @@ function tcell(text, popts = {}, copts = {}) {
 
 const row = (cells) => `<w:tr>${cells.join('')}</w:tr>`
 
-// full-width table with single-line borders; grid = array of col widths
-function table(grid, rows) {
-    const borders =
-        `<w:tblBorders>` +
-        ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']
-            .map((s) => `<w:${s} w:val="single" w:sz="4" w:space="0" w:color="000000"/>`).join('') +
-        `</w:tblBorders>`
+// full-width table; grid = array of col widths. opts.borders: true (todos) | false (ninguno) | 'outer' (solo recuadro; internos por celda)
+function table(grid, rows, opts = {}) {
+    const single = (s) => `<w:${s} w:val="single" w:sz="4" w:space="0" w:color="000000"/>`
+    const none = (s) => `<w:${s} w:val="none" w:sz="0" w:space="0" w:color="auto"/>`
+    const outer = ['top', 'left', 'bottom', 'right']
+    const inside = ['insideH', 'insideV']
+    let bordersInner
+    if (opts.borders === false) bordersInner = [...outer, ...inside].map(none).join('')
+    else if (opts.borders === 'outer') bordersInner = outer.map(single).join('') + inside.map(none).join('')
+    else bordersInner = [...outer, ...inside].map(single).join('')
+    const borders = `<w:tblBorders>${bordersInner}</w:tblBorders>`
     const tblGrid = `<w:tblGrid>${grid.map((w) => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>`
     return (
         `<w:tbl><w:tblPr>` +
@@ -92,30 +105,31 @@ const headerTable = table([1500, 5000, 2526], [
     ]),
 ])
 
-/* ---------- 2. Datos grid ---------- */
+/* ---------- 2. Datos: recuadro exterior + divisor central + subrayado en valores ---------- */
 const L = { b: true, sz: 16 } // label style
 const V = { sz: 16 }          // value style
 const g4 = [2400, 2113, 2400, 2113]
-const kv = (label, valTag, lopts = L) => [
-    tcell(label, { run: lopts, after: 0 }, { w: g4[0], shade: 'F2F2F2' }),
-    tcell(valTag, { run: V, after: 0 }, { w: g4[1] }),
-]
+const lbl = (t, w) => tcell(t, { run: L, after: 0 }, { w })
+const val = (t, w, divider = false) =>
+    tcell(t, { run: V, after: 0 }, { w, borders: divider ? { right: true, bottom: true } : { bottom: true } })
+const pairL = (label, valTag) => [lbl(label, g4[0]), val(valTag, g4[1], true)]
+const pairR = (label, valTag) => [lbl(label, g4[2]), val(valTag, g4[3])]
 const datosTable = table(g4, [
     row([
-        tcell('DIRECCIÓN ACADÉMICA', { align: 'center', run: { b: true, sz: 18 } }, { w: g4[0] + g4[1], span: 2, shade: HDR }),
-        tcell('PERIODO ESCOLAR:', { run: L, after: 0 }, { w: g4[2], shade: 'F2F2F2' }),
-        tcell('{periodo}', { run: V, after: 0 }, { w: g4[3] }),
+        tcell('DIRECCIÓN ACADÉMICA', { align: 'center', run: { b: true, sz: 18 }, after: 0 }, { w: g4[0] + g4[1], span: 2, borders: { right: true, bottom: true } }),
+        tcell('PERIODO ESCOLAR:', { run: L, after: 0 }, { w: g4[2], borders: { bottom: true } }),
+        tcell('{periodo}', { run: V, after: 0 }, { w: g4[3], borders: { bottom: true } }),
     ]),
-    row([...kv('Nombre del catedrático:', '{docente}'), ...kv('Núm. de Docente:', '{num_docente}')]),
-    row([...kv('Años de servicio en el ITSTB:', '{anios_servicio}'), ...kv('Tipo de Curso:', '{modalidad}')]),
-    row([...kv('Licenciatura en:', '{licenciatura}'), ...kv('Ubicación:', '{ubicacion}')]),
-    row([...kv('Maestría en:', '{maestria}'),
-        tcell('Titulado:', { run: L, after: 0 }, { w: g4[2], shade: 'F2F2F2' }),
+    row([...pairL('Nombre del catedrático:', '{docente}'), ...pairR('Núm. de Docente:', '{num_docente}')]),
+    row([...pairL('Años de servicio en el ITSTB:', '{anios_servicio}'), ...pairR('Tipo de Curso:', '{modalidad}')]),
+    row([...pairL('Licenciatura en:', '{licenciatura}'), ...pairR('Ubicación:', '{ubicacion}')]),
+    row([...pairL('Maestría en:', '{maestria}'),
+        lbl('Titulado:', g4[2]),
         tcell('SÍ (   )    NO (   )', { run: V, after: 0 }, { w: g4[3] })]),
-    row([...kv('Doctorado en:', '{doctorado}'),
-        tcell('Titulado:', { run: L, after: 0 }, { w: g4[2], shade: 'F2F2F2' }),
+    row([...pairL('Doctorado en:', '{doctorado}'),
+        lbl('Titulado:', g4[2]),
         tcell('SÍ (   )    NO (   )', { run: V, after: 0 }, { w: g4[3] })]),
-])
+], { borders: 'outer' })
 
 /* ---------- 3. Instrucciones + Tabla 1 (materias solicitadas) ---------- */
 const instr1 = para([

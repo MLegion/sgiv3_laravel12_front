@@ -11,8 +11,9 @@ import PizZip from 'pizzip'
 
 export interface RunOpts { b?: boolean; i?: boolean; sz?: number; color?: string; font?: string }
 export interface ParaOpts { align?: string; before?: number; after?: number }
-export interface CellOpts { w?: number; span?: number; shade?: string; valign?: string }
-export interface TableOpts { width?: number; borders?: boolean; cellMargin?: number }
+export interface CellBorders { top?: boolean; right?: boolean; bottom?: boolean; left?: boolean }
+export interface CellOpts { w?: number; span?: number; shade?: string; valign?: string; borders?: CellBorders }
+export interface TableOpts { width?: number; borders?: boolean | 'outer'; cellMargin?: number }
 
 const escXml = (s: unknown): string =>
     String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -41,11 +42,20 @@ export function createOoxml(fontFamily = 'Arial') {
         return `<w:p>${ppr}${Array.isArray(runs) ? runs.join('') : runs}</w:p>`
     }
 
+    function cellBorders(b?: CellBorders): string {
+        if (!b) return ''
+        const parts = (['top', 'left', 'bottom', 'right'] as const)
+            .filter((s) => b[s])
+            .map((s) => `<w:${s} w:val="single" w:sz="4" w:space="0" w:color="000000"/>`)
+        return parts.length ? `<w:tcBorders>${parts.join('')}</w:tcBorders>` : ''
+    }
+
     function cell(bodyXml: string, opts: CellOpts = {}): string {
         const tcpr =
             `<w:tcPr>` +
             (opts.w ? `<w:tcW w:w="${opts.w}" w:type="dxa"/>` : `<w:tcW w:w="0" w:type="auto"/>`) +
             (opts.span ? `<w:gridSpan w:val="${opts.span}"/>` : ``) +
+            cellBorders(opts.borders) +
             (opts.shade ? `<w:shd w:val="clear" w:color="auto" w:fill="${opts.shade}"/>` : ``) +
             `<w:vAlign w:val="${opts.valign || 'center'}"/>` +
             `</w:tcPr>`
@@ -61,10 +71,19 @@ export function createOoxml(fontFamily = 'Arial') {
     const row = (cells: string[]): string => `<w:tr>${cells.join('')}</w:tr>`
 
     function table(grid: number[], rows: string[], opts: TableOpts = {}): string {
-        const sides = ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']
-        const borders = opts.borders === false
-            ? `<w:tblBorders>${sides.map((s) => `<w:${s} w:val="none" w:sz="0" w:space="0" w:color="auto"/>`).join('')}</w:tblBorders>`
-            : `<w:tblBorders>${sides.map((s) => `<w:${s} w:val="single" w:sz="4" w:space="0" w:color="000000"/>`).join('')}</w:tblBorders>`
+        const single = (s: string) => `<w:${s} w:val="single" w:sz="4" w:space="0" w:color="000000"/>`
+        const none = (s: string) => `<w:${s} w:val="none" w:sz="0" w:space="0" w:color="auto"/>`
+        const outer = ['top', 'left', 'bottom', 'right']
+        const inside = ['insideH', 'insideV']
+        let borders: string
+        if (opts.borders === false) {
+            borders = `<w:tblBorders>${[...outer, ...inside].map(none).join('')}</w:tblBorders>`
+        } else if (opts.borders === 'outer') {
+            // solo recuadro exterior; los bordes internos se ponen por celda (tcBorders)
+            borders = `<w:tblBorders>${outer.map(single).join('')}${inside.map(none).join('')}</w:tblBorders>`
+        } else {
+            borders = `<w:tblBorders>${[...outer, ...inside].map(single).join('')}</w:tblBorders>`
+        }
         const m = opts.cellMargin ?? 60
         const tblGrid = `<w:tblGrid>${grid.map((w) => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>`
         return (

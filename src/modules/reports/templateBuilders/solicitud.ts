@@ -26,7 +26,6 @@ interface SolicitudConfig {
 }
 
 const HDR = 'DCE6F1'   // sombreado de encabezados de tabla
-const LBL = 'F2F2F2'   // sombreado de etiquetas
 
 export const defaultSolicitudConfig: SolicitudConfig = {
     fontFamily: 'Arial',
@@ -147,30 +146,32 @@ export function buildSolicitudDocx(rawConfig: TemplateConfig): ArrayBuffer {
         ]),
     ], tOpt)
 
-    /* 2. Datos */
+    /* 2. Datos — recuadro exterior + divisor central + subrayado en valores (sin cuadrícula) */
     const g4 = cfg.datosWidths
     const L = { b: true, sz: body }
     const V = { sz: body }
-    const kv = (label: string, valTag: string) => [
-        tcell(label, { run: L, ...P0 }, { w: g4[0], shade: LBL }),
-        tcell(valTag, { run: V, ...P0 }, { w: g4[1] }),
-    ]
+    const lbl = (t: string, w: number) => tcell(t, { run: L, ...P0 }, { w })
+    // val: subrayado; si es la columna izquierda, además lleva el divisor central (borde derecho)
+    const val = (t: string, w: number, divider = false) =>
+        tcell(t, { run: V, ...P0 }, { w, borders: divider ? { right: true, bottom: true } : { bottom: true } })
+    const pairL = (label: string, valTag: string) => [lbl(label, g4[0]), val(valTag, g4[1], true)]
+    const pairR = (label: string, valTag: string) => [lbl(label, g4[2]), val(valTag, g4[3])]
     const datosTable = table(g4, [
         row([
-            tcell('DIRECCIÓN ACADÉMICA', { align: 'center', run: { b: true, sz: body + 2 }, ...P0 }, { w: g4[0] + g4[1], span: 2, shade: HDR }),
-            tcell('PERIODO ESCOLAR:', { run: L, ...P0 }, { w: g4[2], shade: LBL }),
-            tcell('{periodo}', { run: V, ...P0 }, { w: g4[3] }),
+            tcell('DIRECCIÓN ACADÉMICA', { align: 'center', run: { b: true, sz: body + 2 }, ...P0 }, { w: g4[0] + g4[1], span: 2, borders: { right: true, bottom: true } }),
+            tcell('PERIODO ESCOLAR:', { run: L, ...P0 }, { w: g4[2], borders: { bottom: true } }),
+            tcell('{periodo}', { run: V, ...P0 }, { w: g4[3], borders: { bottom: true } }),
         ]),
-        row([...kv('Nombre del catedrático:', '{docente}'), ...kv('Núm. de Docente:', '{num_docente}')]),
-        row([...kv('Años de servicio en el ITSTB:', '{anios_servicio}'), ...kv('Tipo de Curso:', '{modalidad}')]),
-        row([...kv('Licenciatura en:', '{licenciatura}'), ...kv('Ubicación:', '{ubicacion}')]),
-        row([...kv('Maestría en:', '{maestria}'),
-            tcell('Titulado:', { run: L, ...P0 }, { w: g4[2], shade: LBL }),
+        row([...pairL('Nombre del catedrático:', '{docente}'), ...pairR('Núm. de Docente:', '{num_docente}')]),
+        row([...pairL('Años de servicio en el ITSTB:', '{anios_servicio}'), ...pairR('Tipo de Curso:', '{modalidad}')]),
+        row([...pairL('Licenciatura en:', '{licenciatura}'), ...pairR('Ubicación:', '{ubicacion}')]),
+        row([...pairL('Maestría en:', '{maestria}'),
+            lbl('Titulado:', g4[2]),
             tcell('SÍ (   )    NO (   )', { run: V, ...P0 }, { w: g4[3] })]),
-        row([...kv('Doctorado en:', '{doctorado}'),
-            tcell('Titulado:', { run: L, ...P0 }, { w: g4[2], shade: LBL }),
+        row([...pairL('Doctorado en:', '{doctorado}'),
+            lbl('Titulado:', g4[2]),
             tcell('SÍ (   )    NO (   )', { run: V, ...P0 }, { w: g4[3] })]),
-    ], tOpt)
+    ], { ...tOpt, borders: 'outer' })
 
     /* 3. Instrucciones + Tabla 1 */
     const instr1 = para([run('Instrucciones: ', { b: true, sz: body }), run('Enliste las materias en orden, según su prioridad para impartirlas.', { sz: body })], P)
