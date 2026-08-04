@@ -35,7 +35,14 @@ function cell(bodyXml, o = {}) {
     return `<w:tc>${tcpr}${bodyXml}</w:tc>`
 }
 function tcell(text, po = {}, co = {}) { return cell(para([run(text, po.run || {})], po), co) }
-const row = (cells) => `<w:tr>${cells.join('')}</w:tr>`
+// o.header => la fila se repite como cabecera al saltar de página (w:tblHeader).
+// o.cantSplit => la fila no se parte entre páginas.
+function row(cells, o = {}) {
+    const trpr = (o.header || o.cantSplit)
+        ? `<w:trPr>${o.header ? `<w:tblHeader/>` : ``}${o.cantSplit ? `<w:cantSplit/>` : ``}</w:trPr>`
+        : ``
+    return `<w:tr>${trpr}${cells.join('')}</w:tr>`
+}
 function table(grid, rows, o = {}) {
     const single = (s) => `<w:${s} w:val="single" w:sz="4" w:space="0" w:color="000000"/>`
     const none = (s) => `<w:${s} w:val="none" w:sz="0" w:space="0" w:color="auto"/>`
@@ -85,7 +92,8 @@ const headerTable = table([1500, 4600, 4100], [
 const g = [380, 1550, 720, 1250, 400, 400, 400, 400, 400, 420, 380, 470, 650, 470, 1510]
 const heads = ['No', 'ASIGNATURA', 'CLAVE', 'CARRERA', 'E.D.', 'S.D.', 'IMP.', 'SOL', 'HT.', 'Crs.', 'Sem', 'Turno', 'Grupo', 'ND', 'Docente']
 const headerRow = row(heads.map((h, i) =>
-    tcell(h, { align: 'center', run: { b: true, sz: 13 }, before: 4, after: 4 }, { w: g[i], shade: ORANGE })))
+    tcell(h, { align: 'center', run: { b: true, sz: 13 }, before: 4, after: 4 }, { w: g[i], shade: ORANGE })),
+    { header: true })   // se repite en cada página
 
 // fila de materia (loop interno). {#docentes} y {#materias} abren en la 1a celda;
 // {/materias} cierra en la última de esta fila.
@@ -97,7 +105,7 @@ const materiaRow = row([
     c('{ed}', 4), c('{sd}', 5), c('{imp}', 6), c('{sol}', 7),
     c('{ht}', 8), c('{crs}', 9), c('{sem}', 10), c('{turno}', 11), c('{grupo}', 12), c('{nd}', 13),
     cell(para([run('{docente}', { sz: B }), run('{/materias}', { sz: B })], { align: 'left', before: 3, after: 3 }), { w: g[14] }),
-])
+], { cantSplit: true })
 // fila de subtotales (dentro de {#docentes}, fuera de materias). {/docentes} cierra en la última celda.
 const totalsRow = row([
     tcell('TOTAL DE HORAS:', { align: 'right', run: { b: true, sz: B }, before: 3, after: 3 }, { w: g.slice(0, 8).reduce((a, b) => a + b, 0), span: 8, shade: 'F2F2F2' }),
@@ -105,7 +113,7 @@ const totalsRow = row([
     tcell('TOTAL DE GRUPOS:', { align: 'right', run: { b: true, sz: B }, before: 3, after: 3 }, { w: g.slice(9, 12).reduce((a, b) => a + b, 0), span: 3, shade: 'F2F2F2' }),
     tcell('{total_grupos}', { align: 'center', run: { b: true, sz: B }, before: 3, after: 3 }, { w: g[12], shade: 'F2F2F2' }),
     cell(para([run('{/docentes}', { sz: B })], { before: 3, after: 3 }), { w: g[13] + g[14], span: 2, shade: 'F2F2F2' }),
-])
+], { cantSplit: true })
 const mainTable = table(g, [headerRow, materiaRow, totalsRow])
 
 const SPACER = para([run('', { sz: 8 })])
