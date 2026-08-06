@@ -192,5 +192,19 @@ export function useReportGenerator() {
         URL.revokeObjectURL(url)
     }
 
-    return { loading, error, generate, download, preview, generatePdf, downloadPdf }
+    /**
+     * Genera el DOCX (cliente) y lo convierte a PDF en el servidor (LibreOffice)
+     * para una vista previa PAGINADA fiel. Devuelve el Blob PDF y su nombre.
+     * Para usar en un <iframe>: crear un objectURL del blob.
+     */
+    async function renderPdf(options: GenerateOptions): Promise<{ blob: Blob; filename: string; report: Report }> {
+        const { blob: docxBlob, filename: docxName, report } = await generate(options)
+        const form = new FormData()
+        form.append('file', docxBlob, docxName)
+        const res = await api.post(API.REPORTS_API.convertPdf, form, { responseType: 'blob' })
+        const filename = `${options.filename ?? report.code ?? report.name ?? 'reporte'}.pdf`
+        return { blob: res.data as Blob, filename, report }
+    }
+
+    return { loading, error, generate, download, preview, generatePdf, downloadPdf, renderPdf }
 }

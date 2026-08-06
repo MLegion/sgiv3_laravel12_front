@@ -46,8 +46,8 @@
                         </button>
                     </div>
 
-                    <!-- Documento renderizado (docx-preview) -->
-                    <div v-show="rendered" ref="previewHost" class="docx-preview-host p-6"></div>
+                    <!-- Vista previa: PDF paginado (LibreOffice) en iframe -->
+                    <iframe v-if="rendered && pdfUrl" :src="pdfUrl" class="w-full h-full border-0" title="Vista previa"></iframe>
                 </div>
             </div>
         </div>
@@ -65,7 +65,7 @@ interface ReqParam { name: string; dataType: string; required: boolean }
 const props = defineProps<{ reportId: number | string | null }>()
 const emit = defineEmits<{ close: [] }>()
 
-const { preview, download } = useReportGenerator()
+const { renderPdf, download } = useReportGenerator()
 
 const reportName = ref('')
 const loadingReport = ref(false)
@@ -74,7 +74,7 @@ const values = reactive<Record<string, string>>({})
 const generating = ref(false)
 const error = ref<string | null>(null)
 const rendered = ref(false)
-const previewHost = ref<HTMLElement | null>(null)
+const pdfUrl = ref<string | null>(null)
 
 const canGenerate = computed(() => requestParams.value.every(p => !p.required || String(values[p.name] ?? '').trim() !== ''))
 
@@ -129,16 +129,23 @@ async function loadReport(id: number | string) {
 }
 
 async function generate() {
-    if (props.reportId == null || !previewHost.value) return
+    if (props.reportId == null) return
     generating.value = true
     error.value = null
     try {
-        await preview({ reportId: props.reportId, params: buildParams() }, previewHost.value)
+        const { blob } = await renderPdf({ reportId: props.reportId, params: buildParams() })
+        if (pdfUrl.value) URL.revokeObjectURL(pdfUrl.value)
+        pdfUrl.value = URL.createObjectURL(blob)
         rendered.value = true
     } catch (e: any) {
+        // el backend puede devolver el error como blob JSON
+        let msg = e?.response?.data?.message ?? e?.message
+        if (e?.response?.data instanceof Blob) {
+            try { msg = JSON.parse(await e.response.data.text())?.message ?? msg } catch { /* ignore */ }
+        }
         error.value = e?.notAvailable
             ? 'El reporte no tiene plantilla o no está configurado.'
-            : (e?.response?.data?.message ?? e?.message ?? 'No se pudo generar el reporte.')
+            : (msg ?? 'No se pudo generar el reporte.')
     } finally {
         generating.value = false
     }
@@ -153,7 +160,7 @@ async function downloadDocx() {
 
 function reset() {
     rendered.value = false
-    if (previewHost.value) previewHost.value.innerHTML = ''
+    if (pdfUrl.value) { URL.revokeObjectURL(pdfUrl.value); pdfUrl.value = null }
 }
 
 function close() {

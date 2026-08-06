@@ -26,5 +26,6 @@ export default {
         schema: {
             get: apiUrl('/reports/schema'),
         },
+        convertPdf: apiUrl('/reports/convert-pdf'),
     },
 } satisfies ApiModule
