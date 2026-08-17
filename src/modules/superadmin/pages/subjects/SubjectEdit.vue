@@ -63,6 +63,22 @@
                     :options="SPECIAL_TYPE_OPTIONS"
                 />
 
+                <!-- Tipo de hora de descarga (función académica) -->
+                <FormRemoteSelect
+                    label="TIPO DE HORA DE DESCARGA (opcional)"
+                    v-model="form.complementaryHourTypeId"
+                    :endpoint="API.SUPERADMIN_API.complementaryHourTypes?.paginate"
+                    :endpoint-by-id="API.SUPERADMIN_API.complementaryHourTypes?.byId"
+                    item-label="name"
+                    item-value="id"
+                />
+                <p class="-mt-4 text-[10px] text-slate-400 italic">
+                    * Si la materia es en realidad una hora de descarga (p. ej. TUTORÍA GRUPAL), elige su tipo. Sus horas contarán como función académica, no como frente a grupo.
+                </p>
+
+                <!-- Ciencias Básicas -->
+                <FormSwitch label="CIENCIAS BÁSICAS" v-model="form.isBasicScience" />
+
                 <div class="flex justify-end gap-2 pt-4 border-t">
                     <button type="button" class="px-4 py-2 text-sm border rounded-lg uppercase" @click="goBack">
                         CANCELAR
@@ -85,6 +101,7 @@ import { API } from '@/shared/api' // <-- Revisa que este objeto tenga SUPERADMI
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
 
 const SPECIAL_TYPE_OPTIONS = [
     { value: 'social_service', label: 'SERVICIO SOCIAL' },
@@ -110,6 +127,8 @@ const form = reactive({
     specialtyId: null as number | null,
     optionalGroupId: null as number | null,
     specialType: '' as string,
+    complementaryHourTypeId: null as number | null,
+    isBasicScience: false,
 })
 
 async function fetchSubject() {
@@ -127,6 +146,8 @@ async function fetchSubject() {
         form.specialtyId = data.specialtyId
         form.optionalGroupId = data.optionalGroupId
         form.specialType = data.specialType ?? ''
+        form.complementaryHourTypeId = data.complementaryHourTypeId ?? null
+        form.isBasicScience = Boolean(data.isBasicScience)
 
         if (data.specialtyId) hasSpecialty.value = true
         if (data.optionalGroupId) hasOptionalGroup.value = true
@@ -146,7 +167,9 @@ async function submit() {
             official_code: form.officialCode,
             specialty_id: form.specialtyId,
             optional_group_id: form.optionalGroupId,
-            special_type: form.specialType || null
+            special_type: form.specialType || null,
+            complementary_hour_type_id: form.complementaryHourTypeId,
+            is_basic_science: form.isBasicScience,
         })
         router.push({ name: 'superadmin.subjects.show', params: { id: route.params.id } })
     } finally {

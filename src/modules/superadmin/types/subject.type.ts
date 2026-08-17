@@ -26,6 +26,15 @@ export interface SubjectType {
     /** Tipo especial (servicio social / actividades complementarias / residencia). null = normal. */
     specialType: 'social_service' | 'complementary_activities' | 'professional_residency' | null
 
+    /**
+     * Tipo de hora de descarga (función académica) al que equivale esta materia.
+     * null = materia normal (frente a grupo); seteado = cuenta como descarga de ese tipo.
+     */
+    complementaryHourTypeId: number | null
+
+    /** Bandera de Ciencias Básicas (visor de evidencias por sección). */
+    isBasicScience: boolean
+
     collegeId: number | null
     college?: College | null
 

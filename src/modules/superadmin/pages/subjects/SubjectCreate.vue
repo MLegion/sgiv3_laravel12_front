@@ -83,6 +83,22 @@
                     * Marca la materia como servicio social, actividades complementarias o residencia profesional. Déjalo en "Seleccionar" para una materia normal.
                 </p>
 
+                <!-- Tipo de hora de descarga (función académica) -->
+                <FormRemoteSelect
+                    label="TIPO DE HORA DE DESCARGA (opcional)"
+                    v-model="form.complementaryHourTypeId"
+                    :endpoint="API.SUPERADMIN_API.complementaryHourTypes.paginate"
+                    :endpoint-by-id="API.SUPERADMIN_API.complementaryHourTypes.byId"
+                    item-label="name"
+                    item-value="id"
+                />
+                <p class="-mt-4 text-[10px] text-slate-400 italic">
+                    * Si la materia es en realidad una hora de descarga (p. ej. TUTORÍA GRUPAL), elige su tipo. Sus horas contarán como función académica, no como frente a grupo.
+                </p>
+
+                <!-- Ciencias Básicas -->
+                <FormSwitch label="CIENCIAS BÁSICAS" v-model="form.isBasicScience" />
+
                 <!-- Actions -->
                 <div class="flex justify-end gap-2 pt-4 border-t">
                     <button type="button" class="px-4 py-2 text-sm border rounded-lg uppercase" @click="goBack">
@@ -110,6 +126,7 @@ import { API } from '@/shared/api'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
 
 const SPECIAL_TYPE_OPTIONS = [
     { value: 'social_service', label: 'SERVICIO SOCIAL' },
@@ -140,6 +157,8 @@ const form = reactive({
     specialtyId: currentSpecialtyId.value ? Number(currentSpecialtyId.value) : null,
     optionalGroupId: currentOptionalGroupId.value ? Number(currentOptionalGroupId.value) : null,
     specialType: '' as string,
+    complementaryHourTypeId: null as number | null,
+    isBasicScience: false,
 })
 
 const isLockedSpecialty = computed(() => !!currentSpecialtyId.value)
@@ -155,6 +174,8 @@ async function submit() {
             specialty_id: form.specialtyId,
             optional_group_id: form.optionalGroupId,
             special_type: form.specialType || null,
+            complementary_hour_type_id: form.complementaryHourTypeId,
+            is_basic_science: form.isBasicScience,
         })
 
         // Si veníamos de una especialidad, regresamos a su edición para ver la materia ya ahí
