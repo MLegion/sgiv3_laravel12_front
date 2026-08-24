@@ -28,6 +28,7 @@ export enum ReportCode {
 
     // Oficio / solicitudes
     ASSIGNMENT_OFFICIAL_LETTER      = 'RPT.OFICIO_ASIGNACION',
+    TEACHING_FUNCTION_OFFICIAL_LETTER = 'RPT.OFICIO_FUNCION_ACADEMICA',
     TEACHER_SUBJECT_REQUEST         = 'RPT.SOLICITUD_MATERIA',
 
     // Formatos dirigidos al alumno

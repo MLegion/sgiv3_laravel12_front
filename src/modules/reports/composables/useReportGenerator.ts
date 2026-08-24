@@ -117,6 +117,53 @@ export function useReportGenerator() {
         }
     }
 
+    /** Aplana los DAOs de una sola fila a la raíz (igual que runDaos). */
+    function flattenContext(context: Record<string, any>): Record<string, any> {
+        const out: Record<string, any> = { ...context }
+        for (const v of Object.values(context)) {
+            if (Array.isArray(v) && v.length === 1 && v[0] && typeof v[0] === 'object') {
+                Object.assign(out, v[0])
+            }
+        }
+        return out
+    }
+
+    /**
+     * Genera el DOCX a partir de un CONTEXTO ya calculado (sin ejecutar DAOs en el
+     * cliente). Útil cuando los datos los sirve un endpoint propio con ownership
+     * forzado (p. ej. el oficio de Mi Docencia).
+     */
+    async function generateFromContext(options: { reportCode?: string; reportId?: number | string; context: Record<string, any>; filename?: string }): Promise<{ blob: Blob; filename: string; report: Report }> {
+        loading.value = true
+        error.value   = null
+        try {
+            const report = await fetchReport(options as GenerateOptions)
+            if (!report.hasTemplate && !report.templatePath) {
+                throw new Error('El reporte no tiene plantilla Word asociada.')
+            }
+            const tpl  = await fetchTemplate(report.id)
+            const blob = await fillDocxTemplate(tpl, flattenContext(options.context))
+            const filename = `${options.filename ?? report.code ?? report.name ?? 'reporte'}.docx`
+            return { blob, filename, report }
+        } catch (e: any) {
+            error.value = e?.response?.data?.message ?? e?.message ?? 'Error al generar el reporte.'
+            throw e
+        } finally {
+            loading.value = false
+        }
+    }
+
+    /** Descarga el DOCX generado desde un contexto dado. */
+    async function downloadFromContext(options: { reportCode?: string; reportId?: number | string; context: Record<string, any>; filename?: string }): Promise<void> {
+        const { blob, filename } = await generateFromContext(options)
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = filename
+        a.click()
+        URL.revokeObjectURL(url)
+    }
+
     /** Descarga el DOCX directo. */
     async function download(options: GenerateOptions): Promise<void> {
         const { blob, filename } = await generate(options)
@@ -199,12 +246,22 @@ export function useReportGenerator() {
      */
     async function renderPdf(options: GenerateOptions): Promise<{ blob: Blob; filename: string; report: Report }> {
         const { blob: docxBlob, filename: docxName, report } = await generate(options)
+        const pdf = await convertToPdf(docxBlob, docxName)
+        const filename = `${options.filename ?? report.code ?? report.name ?? 'reporte'}.pdf`
+        return { blob: pdf, filename, report }
+    }
+
+    /**
+     * Convierte un Blob DOCX ya generado a PDF (LibreOffice, server-side).
+     * Útil para previsualizar en PDF paginado un reporte cuyo formato de
+     * descarga es DOCX, sin re-ejecutar los DAOs.
+     */
+    async function convertToPdf(docxBlob: Blob, docxName: string): Promise<Blob> {
         const form = new FormData()
         form.append('file', docxBlob, docxName)
         const res = await api.post(API.REPORTS_API.convertPdf, form, { responseType: 'blob' })
-        const filename = `${options.filename ?? report.code ?? report.name ?? 'reporte'}.pdf`
-        return { blob: res.data as Blob, filename, report }
+        return res.data as Blob
     }
 
-    return { loading, error, generate, download, preview, generatePdf, downloadPdf, renderPdf }
+    return { loading, error, generate, download, preview, generatePdf, downloadPdf, renderPdf, convertToPdf, generateFromContext, downloadFromContext }
 }

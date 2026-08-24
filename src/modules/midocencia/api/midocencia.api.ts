@@ -28,6 +28,23 @@ export default {
             save:    apiUrl('/midocencia/distribution/save'),
             submit:  apiUrl('/midocencia/distribution/submit'),
             retract: apiUrl('/midocencia/distribution/retract'),
+            oficio:  apiUrl('/midocencia/distribution/oficio'),
+            schedule:       apiUrl('/midocencia/distribution/schedule'),
+            scheduleSave:   apiUrl('/midocencia/distribution/schedule/save'),
+            scheduleSubmit: apiUrl('/midocencia/distribution/schedule/submit'),
+            evidences:      apiUrl('/midocencia/distribution/evidences'),
+        },
+        // F5.a — Archivos de evidencia.
+        evidence: {
+            upload:   (detailId: string | number, evidenceId: string | number) => apiUrl(`/midocencia/distribution/evidences/${detailId}/${evidenceId}/upload`),
+            download: (id: string | number) => apiUrl(`/midocencia/evidence-files/${id}/download`),
+            delete:   (id: string | number) => apiUrl(`/midocencia/evidence-files/${id}`),
+        },
+        // F5.b — Visor por sección (roles por rubro).
+        sections: {
+            scope:     apiUrl('/midocencia/sections/scope'),
+            evidences: apiUrl('/midocencia/sections/evidences'),
+            download:  (id: string | number) => apiUrl(`/midocencia/sections/files/${id}/download`),
         },
         // F2 — Aprobación (Jefatura de Carrera).
         approval: {
@@ -35,6 +52,10 @@ export default {
             show:    (id: string | number) => apiUrl(`/midocencia/approval/${id}`),
             approve: (id: string | number) => apiUrl(`/midocencia/approval/${id}/approve`),
             reject:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/reject`),
+            oficio:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/oficio`),
+            scheduleBlocks:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule`),
+            scheduleApprove: (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule/approve`),
+            scheduleReject:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule/reject`),
         },
         // Editor fino (F1.b) — solo borradores del plantel.
         builder: {

@@ -83,6 +83,29 @@
                     {{ detail.rejectedReason }}
                 </div>
 
+                <!-- Fase de horario (tras aprobar la distribución) -->
+                <div v-if="detail.status === 'approved'" class="border-t pt-3 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-sm font-semibold text-slate-700">Horario de descarga</h4>
+                        <span class="px-2 py-0.5 rounded text-xs font-semibold" :class="schedStatusClass(detail.scheduleStatus)">{{ schedStatusLabel(detail.scheduleStatus) }}</span>
+                    </div>
+                    <div v-if="scheduleBlocks.length" class="border rounded-lg divide-y">
+                        <div v-for="b in scheduleBlocks" :key="b.id" class="px-3 py-1.5 text-sm flex justify-between">
+                            <span>{{ diaLabel(b.dayOfWeek) }} {{ b.startTime }}–{{ b.endTime }}</span>
+                            <span class="text-slate-500">aula #{{ b.placeId }}</span>
+                        </div>
+                    </div>
+                    <p v-else class="text-xs text-slate-400">El docente aún no ha colocado su horario.</p>
+
+                    <div v-if="detail.scheduleStatus === 'submitted'" class="space-y-2 pt-1">
+                        <textarea v-model="schedReason" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Motivo de rechazo (si aplica)…"></textarea>
+                        <div class="flex justify-end gap-2">
+                            <button class="px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50" :disabled="schedBusy || !schedReason.trim()" @click="rejectSchedule">Rechazar horario</button>
+                            <button class="px-3 py-1.5 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50" :disabled="schedBusy" @click="approveSchedule">Aprobar horario</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Acciones (solo en revisión) -->
                 <div v-if="detail.status === 'submitted'" class="space-y-3 border-t pt-3">
                     <div>
@@ -100,7 +123,12 @@
                             :disabled="busy || !folio.trim()" @click="approve">Aprobar</button>
                     </div>
                 </div>
-                <div class="flex justify-end">
+                <div class="flex justify-end gap-2">
+                    <button v-if="detail.status === 'approved'"
+                        class="px-3 py-1.5 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+                        :disabled="oficioBusy" @click="downloadOficio">
+                        {{ oficioBusy ? 'Generando…' : 'Descargar oficio' }}
+                    </button>
                     <button class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 hover:bg-slate-50" @click="detail = null">Cerrar</button>
                 </div>
             </div>
@@ -113,11 +141,14 @@ import { ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import type { DistributionRequest } from '@/modules/midocencia/types/distribution.type'
 
 const toast = useToast()
+const { downloadFromContext } = useReportGenerator()
 const A = API.MIDOCENCIA_API.approval
+const oficioBusy = ref(false)
 
 const periodId = ref<number | null>(null)
 const status = ref('submitted')
@@ -128,6 +159,14 @@ const busy = ref(false)
 const detail = ref<DistributionRequest | null>(null)
 const folio = ref('')
 const reason = ref('')
+
+const scheduleBlocks = ref<Array<{ id: number; dayOfWeek: number | null; startTime: string; endTime: string; placeId: number | null }>>([])
+const schedReason = ref('')
+const schedBusy = ref(false)
+const dias: Record<number, string> = { 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb', 7: 'Dom' }
+function diaLabel(d: number | null) { return d ? (dias[d] ?? '?') : '—' }
+function schedStatusLabel(s: string) { return ({ pending: 'Por colocar', submitted: 'En revisión', approved: 'Aprobado' } as any)[s] ?? s }
+function schedStatusClass(s: string) { return ({ pending: 'bg-slate-100 text-slate-600', submitted: 'bg-amber-100 text-amber-700', approved: 'bg-emerald-100 text-emerald-700' } as any)[s] ?? 'bg-slate-100' }
 
 const teacherNames = ref<Record<number, string>>({})
 const critNames = ref<Record<number, string>>({})
@@ -171,6 +210,11 @@ async function openDetail(r: DistributionRequest) {
     detail.value = r
     folio.value = r.folio ?? ''
     reason.value = ''
+    schedReason.value = ''
+    scheduleBlocks.value = []
+    if (r.status === 'approved') {
+        try { const { data } = await api.get(A.scheduleBlocks(r.id)); scheduleBlocks.value = Array.isArray(data) ? data : [] } catch { /* noop */ }
+    }
     // Nombres de criterios de la versión de la solicitud.
     if (r.rubricId) {
         try {
@@ -192,6 +236,41 @@ async function approve() {
         await loadInbox()
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo aprobar.') }
     finally { busy.value = false }
+}
+
+async function approveSchedule() {
+    if (!detail.value) return
+    schedBusy.value = true
+    try {
+        await api.post(A.scheduleApprove(detail.value.id), {})
+        toast.success('Horario aprobado y colocado como ocupación oficial.')
+        detail.value = null
+        await loadInbox()
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo aprobar el horario.') }
+    finally { schedBusy.value = false }
+}
+
+async function rejectSchedule() {
+    if (!detail.value) return
+    schedBusy.value = true
+    try {
+        await api.post(A.scheduleReject(detail.value.id), { reason: schedReason.value })
+        toast.success('Horario rechazado.')
+        detail.value = null
+        await loadInbox()
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo rechazar el horario.') }
+    finally { schedBusy.value = false }
+}
+
+async function downloadOficio() {
+    if (!detail.value) return
+    oficioBusy.value = true
+    try {
+        const { data } = await api.get(A.oficio(detail.value.id))
+        await downloadFromContext({ reportCode: data.reportCode, context: data.context, filename: 'OFICIO_FUNCION_ACADEMICA' })
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo generar el oficio.')
+    } finally { oficioBusy.value = false }
 }
 
 async function reject() {

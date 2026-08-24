@@ -18,6 +18,24 @@ export default [
         meta: { title: 'Mi Docencia' },
     },
     {
+        path: 'midocencia/my-schedule',
+        name: 'midocencia.my-schedule',
+        component: () => import('@/modules/midocencia/pages/MyDischargeSchedulePage.vue'),
+        meta: { title: 'Horario de Descarga' },
+    },
+    {
+        path: 'midocencia/my-evidences',
+        name: 'midocencia.my-evidences',
+        component: () => import('@/modules/midocencia/pages/MyEvidencePage.vue'),
+        meta: { title: 'Mis Evidencias' },
+    },
+    {
+        path: 'midocencia/sections',
+        name: 'midocencia.sections',
+        component: () => import('@/modules/midocencia/pages/SectionEvidenceViewerPage.vue'),
+        meta: { title: 'Evidencias por Sección' },
+    },
+    {
         path: 'midocencia/approval',
         name: 'midocencia.approval',
         component: () => import('@/modules/midocencia/pages/DistributionApprovalPage.vue'),

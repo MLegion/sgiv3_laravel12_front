@@ -41,6 +41,10 @@ export interface DistributionRequest {
     submittedAt: string | null
     approvedAt: string | null
     rejectedReason: string | null
+    scheduleStatus: 'pending' | 'submitted' | 'approved'
+    scheduleSubmittedAt: string | null
+    scheduleApprovedAt: string | null
+    scheduleRejectedReason: string | null
     details: RequestDetail[]
 }
 

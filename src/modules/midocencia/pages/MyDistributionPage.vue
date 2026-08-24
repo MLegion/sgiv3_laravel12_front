@@ -5,9 +5,17 @@
                 <h1 class="text-xl font-semibold text-slate-800 uppercase">Mi Docencia</h1>
                 <p class="text-sm text-slate-500">Distribuye tus horas de función académica (descarga) en la rúbrica vigente.</p>
             </div>
-            <span v-if="request" class="px-2.5 py-1 rounded-full text-xs font-semibold" :class="statusClass">
-                {{ statusLabel }}
-            </span>
+            <div class="flex items-center gap-2">
+                <button
+                    v-if="request && ['submitted','approved'].includes(request.status)"
+                    class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50"
+                    @click="goToEvidences">
+                    Mis evidencias
+                </button>
+                <span v-if="request" class="px-2.5 py-1 rounded-full text-xs font-semibold" :class="statusClass">
+                    {{ statusLabel }}
+                </span>
+            </div>
         </div>
 
         <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
@@ -45,8 +53,20 @@
                     <strong>Rechazada:</strong> {{ request.rejectedReason }}
                 </div>
                 <div v-if="request?.status === 'approved'"
-                     class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-700">
-                    Aprobada. Folio: <strong>{{ request.folio }}</strong>
+                     class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-700 flex items-center justify-between gap-3 flex-wrap">
+                    <span>Aprobada. Folio: <strong>{{ request.folio }}</strong></span>
+                    <div class="flex gap-2">
+                        <button
+                            class="px-3 py-1.5 text-xs rounded-lg bg-slate-700 text-white hover:bg-slate-800"
+                            @click="goToSchedule">
+                            Colocar horario
+                        </button>
+                        <button
+                            class="px-3 py-1.5 text-xs rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+                            :disabled="oficioBusy" @click="downloadOficio">
+                            {{ oficioBusy ? 'Generando…' : 'Descargar oficio' }}
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Renglones bloqueados (TUTORÍA GRUPAL) -->
@@ -135,14 +155,36 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import type { Budget, DistributionRequest, LockedRow } from '@/modules/midocencia/types/distribution.type'
 import type { RubricTree, RubricCriterion } from '@/modules/midocencia/types/rubric.type'
 
 const toast = useToast()
+const router = useRouter()
+const { downloadFromContext } = useReportGenerator()
+
+function goToSchedule() {
+    router.push({ name: 'midocencia.my-schedule' })
+}
+function goToEvidences() {
+    router.push({ name: 'midocencia.my-evidences' })
+}
 const D = API.MIDOCENCIA_API.distribution
+
+const oficioBusy = ref(false)
+async function downloadOficio() {
+    oficioBusy.value = true
+    try {
+        const { data } = await api.get(D.oficio)
+        await downloadFromContext({ reportCode: data.reportCode, context: data.context, filename: 'OFICIO_FUNCION_ACADEMICA' })
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo generar el oficio.')
+    } finally { oficioBusy.value = false }
+}
 
 const loading = ref(true)
 const busy = ref(false)
