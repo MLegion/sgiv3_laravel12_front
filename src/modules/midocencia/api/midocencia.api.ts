@@ -46,6 +46,17 @@ export default {
             evidences: apiUrl('/midocencia/sections/evidences'),
             download:  (id: string | number) => apiUrl(`/midocencia/sections/files/${id}/download`),
         },
+        // F8 — Ciencias Básicas.
+        basicas: {
+            modalities:     apiUrl('/midocencia/basicas/modalities'),
+            members:        (modalityId: string | number) => apiUrl(`/midocencia/basicas/scope/${modalityId}`),
+            setMember:      apiUrl('/midocencia/basicas/scope'),
+            inbox:          apiUrl('/midocencia/basicas/inbox'),
+            scheduleBlocks: (id: string | number) => apiUrl(`/midocencia/basicas/${id}/schedule`),
+            scheduleApprove:(id: string | number) => apiUrl(`/midocencia/basicas/${id}/schedule/approve`),
+            scheduleReject: (id: string | number) => apiUrl(`/midocencia/basicas/${id}/schedule/reject`),
+            oficio:         (id: string | number) => apiUrl(`/midocencia/basicas/${id}/oficio`),
+        },
         // F2 — Aprobación (Jefatura de Carrera).
         approval: {
             inbox:   apiUrl('/midocencia/approval/inbox'),

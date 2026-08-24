@@ -36,6 +36,18 @@ export default [
         meta: { title: 'Evidencias por Sección' },
     },
     {
+        path: 'midocencia/basicas',
+        name: 'midocencia.basicas',
+        component: () => import('@/modules/midocencia/pages/BasicasRosterPage.vue'),
+        meta: { title: 'Padrón de Ciencias Básicas' },
+    },
+    {
+        path: 'midocencia/basicas/approval',
+        name: 'midocencia.basicas.approval',
+        component: () => import('@/modules/midocencia/pages/BasicasApprovalPage.vue'),
+        meta: { title: 'Ciencias Básicas — Aprobar Horario' },
+    },
+    {
         path: 'midocencia/approval',
         name: 'midocencia.approval',
         component: () => import('@/modules/midocencia/pages/DistributionApprovalPage.vue'),
