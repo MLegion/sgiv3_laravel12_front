@@ -7,6 +7,11 @@
             </div>
             <div class="flex items-center gap-2">
                 <button
+                    class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50"
+                    @click="goToOtros">
+                    Otros
+                </button>
+                <button
                     v-if="request && ['submitted','approved'].includes(request.status)"
                     class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50"
                     @click="goToEvidences">
@@ -172,6 +177,9 @@ function goToSchedule() {
 }
 function goToEvidences() {
     router.push({ name: 'midocencia.my-evidences' })
+}
+function goToOtros() {
+    router.push({ name: 'midocencia.my-otros' })
 }
 const D = API.MIDOCENCIA_API.distribution
 

@@ -46,6 +46,13 @@ export default {
             evidences: apiUrl('/midocencia/sections/evidences'),
             download:  (id: string | number) => apiUrl(`/midocencia/sections/files/${id}/download`),
         },
+        // F9 — "Otros" (evidencias libres).
+        otros: {
+            index:    apiUrl('/midocencia/otros'),
+            upload:   apiUrl('/midocencia/otros/upload'),
+            download: (id: string | number) => apiUrl(`/midocencia/otros/files/${id}/download`),
+            delete:   (id: string | number) => apiUrl(`/midocencia/otros/files/${id}`),
+        },
         // F8 — Ciencias Básicas.
         basicas: {
             modalities:     apiUrl('/midocencia/basicas/modalities'),
@@ -64,6 +71,7 @@ export default {
             approve: (id: string | number) => apiUrl(`/midocencia/approval/${id}/approve`),
             reject:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/reject`),
             oficio:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/oficio`),
+            reopen:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/reopen`),
             scheduleBlocks:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule`),
             scheduleApprove: (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule/approve`),
             scheduleReject:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule/reject`),

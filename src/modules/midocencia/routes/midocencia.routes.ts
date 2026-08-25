@@ -36,6 +36,12 @@ export default [
         meta: { title: 'Evidencias por Sección' },
     },
     {
+        path: 'midocencia/my-otros',
+        name: 'midocencia.my-otros',
+        component: () => import('@/modules/midocencia/pages/MyOtrosPage.vue'),
+        meta: { title: 'Otros (evidencias libres)' },
+    },
+    {
         path: 'midocencia/basicas',
         name: 'midocencia.basicas',
         component: () => import('@/modules/midocencia/pages/BasicasRosterPage.vue'),

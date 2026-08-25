@@ -124,6 +124,11 @@
                     </div>
                 </div>
                 <div class="flex justify-end gap-2">
+                    <button v-if="detail.status === 'approved' && detail.scheduleStatus !== 'approved'"
+                        class="px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 disabled:opacity-50"
+                        :disabled="busy" @click="reopen">
+                        Reabrir
+                    </button>
                     <button v-if="detail.status === 'approved'"
                         class="px-3 py-1.5 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
                         :disabled="oficioBusy" @click="downloadOficio">
@@ -260,6 +265,20 @@ async function rejectSchedule() {
         await loadInbox()
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo rechazar el horario.') }
     finally { schedBusy.value = false }
+}
+
+async function reopen() {
+    if (!detail.value) return
+    const motivo = window.prompt('Motivo para reabrir la distribución (se regresará a borrador):')
+    if (!motivo || !motivo.trim()) return
+    busy.value = true
+    try {
+        await api.post(A.reopen(detail.value.id), { reason: motivo.trim() })
+        toast.success('Distribución reabierta (regresó a borrador).')
+        detail.value = null
+        await loadInbox()
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo reabrir.') }
+    finally { busy.value = false }
 }
 
 async function downloadOficio() {
