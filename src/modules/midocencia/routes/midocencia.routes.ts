@@ -48,6 +48,12 @@ export default [
         meta: { title: 'Otros (evidencias libres)' },
     },
     {
+        path: 'midocencia/otros/buckets',
+        name: 'midocencia.otros-buckets',
+        component: () => import('@/modules/midocencia/pages/OtrosBucketsAdminPage.vue'),
+        meta: { title: 'Categorías de Otros' },
+    },
+    {
         path: 'midocencia/basicas',
         name: 'midocencia.basicas',
         component: () => import('@/modules/midocencia/pages/BasicasRosterPage.vue'),

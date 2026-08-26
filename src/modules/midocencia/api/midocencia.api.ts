@@ -55,6 +55,10 @@ export default {
             upload:   apiUrl('/midocencia/otros/upload'),
             download: (id: string | number) => apiUrl(`/midocencia/otros/files/${id}/download`),
             delete:   (id: string | number) => apiUrl(`/midocencia/otros/files/${id}`),
+            // Administración de categorías (buckets) por periodo — dirección académica.
+            buckets:     apiUrl('/midocencia/otros/buckets'),
+            bucket:      (id: string | number) => apiUrl(`/midocencia/otros/buckets/${id}`),
+            bucketsCopy: apiUrl('/midocencia/otros/buckets/copy'),
         },
         // F8 — Ciencias Básicas.
         basicas: {
