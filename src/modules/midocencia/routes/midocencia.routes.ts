@@ -36,6 +36,12 @@ export default [
         meta: { title: 'Evidencias por Sección' },
     },
     {
+        path: 'midocencia/instrumentations',
+        name: 'midocencia.instrumentations',
+        component: () => import('@/modules/midocencia/pages/SectionInstrumentationsViewerPage.vue'),
+        meta: { title: 'Instrumentaciones' },
+    },
+    {
         path: 'midocencia/my-otros',
         name: 'midocencia.my-otros',
         component: () => import('@/modules/midocencia/pages/MyOtrosPage.vue'),

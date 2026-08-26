@@ -45,6 +45,9 @@ export default {
             scope:     apiUrl('/midocencia/sections/scope'),
             evidences: apiUrl('/midocencia/sections/evidences'),
             download:  (id: string | number) => apiUrl(`/midocencia/sections/files/${id}/download`),
+            // F5.b (sub-parte) — Visor de instrumentaciones (cruza con teaching).
+            instrumentations: apiUrl('/midocencia/sections/instrumentations'),
+            instrumentation:  (id: string | number) => apiUrl(`/midocencia/sections/instrumentations/${id}`),
         },
         // F9 — "Otros" (evidencias libres).
         otros: {
