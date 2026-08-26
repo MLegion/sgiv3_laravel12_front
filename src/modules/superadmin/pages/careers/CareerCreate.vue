@@ -40,6 +40,20 @@
                     maxlength="20"
                 />
 
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nivel</label>
+                    <select
+                        v-model="form.level"
+                        class="w-full border rounded-lg px-3 py-2 text-sm"
+                    >
+                        <option value="undergraduate">LICENCIATURA</option>
+                        <option value="graduate">POSGRADO</option>
+                    </select>
+                    <p class="text-xs text-slate-400 mt-1">
+                        En posgrado el oficio de función académica lo firma la Subdirección de Posgrado e Investigación.
+                    </p>
+                </div>
+
                 <div class="flex justify-end gap-2 pt-4 border-t">
                     <button
                         class="px-4 py-2 text-sm border rounded-lg"
@@ -77,6 +91,7 @@ const form = reactive({
     name: '',
     short_name: '',
     official_code: '',
+    level: 'undergraduate',
 })
 
 async function submit() {

@@ -46,6 +46,20 @@
                 maxlength="20"
             />
 
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">NIVEL</label>
+                <select
+                    v-model="career.level"
+                    class="w-full border rounded-lg px-3 py-2 text-sm"
+                >
+                    <option value="undergraduate">LICENCIATURA</option>
+                    <option value="graduate">POSGRADO</option>
+                </select>
+                <p class="text-xs text-slate-400 mt-1">
+                    En posgrado el oficio de función académica lo firma la Subdirección de Posgrado e Investigación.
+                </p>
+            </div>
+
             <div class="flex justify-end gap-2 pt-4 border-t">
                 <button
                     type="button"
@@ -95,7 +109,8 @@ const submitting = ref(false)
 const career = reactive({
     name: '',
     short_name: '',
-    official_code: ''
+    official_code: '',
+    level: 'undergraduate'
 })
 
 onMounted(async () => {
@@ -107,6 +122,7 @@ onMounted(async () => {
         career.name = data.name
         career.short_name = data.shortName
         career.official_code = data.officialCode
+        career.level = data.level ?? 'undergraduate'
 
         loaded.value = true
     } catch (error) {

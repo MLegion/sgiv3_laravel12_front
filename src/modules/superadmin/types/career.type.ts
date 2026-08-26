@@ -5,6 +5,7 @@ export interface CareerType {
     name: string
     shortName: string
     officialCode: string
+    level: 'undergraduate' | 'graduate'
     createdBy: number | null
     collegeId: number | null
     approvedBy: number | null

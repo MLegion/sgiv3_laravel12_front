@@ -69,6 +69,12 @@
                         :value="career.shortName"
                         :loading="loading"
                     />
+
+                    <InfoItem
+                        label="NIVEL"
+                        :value="career.level === 'graduate' ? 'POSGRADO' : 'LICENCIATURA'"
+                        :loading="loading"
+                    />
                 </div>
             </section>
 
