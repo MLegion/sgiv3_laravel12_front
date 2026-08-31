@@ -19,6 +19,7 @@ export default {
         },
         // F2 — Plaza (captura por jefatura).
         plaza: {
+            list: apiUrl('/midocencia/plaza/list'),
             show: apiUrl('/midocencia/plaza'),
             save: apiUrl('/midocencia/plaza'),
         },
