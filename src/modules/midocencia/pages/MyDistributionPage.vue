@@ -5,11 +5,6 @@
                 <h1 class="text-2xl font-bold text-slate-800">Mi Docencia · Horas de función académica</h1>
                 <p class="text-sm text-slate-500">Marca los criterios de la rúbrica que vas a cumplir y asígnales horas dentro de su rango. La suma debe ser <strong>exactamente</strong> tu total de horas de descarga.</p>
             </div>
-            <button
-                class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50"
-                @click="goToOtros">
-                Otros
-            </button>
         </div>
 
         <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
@@ -101,10 +96,10 @@
                                     </template>
                                     <template v-else-if="isChecked(crit) && !isLocked(crit.id)">
                                         <span class="text-[10px] uppercase text-slate-400 font-semibold">Horas</span>
-                                        <input v-model.number="form[crit.id].hours" type="number" :min="crit.hoursMin" :max="crit.hoursMax"
-                                               :disabled="!editable"
+                                        <input v-model.number="form[crit.id].hours" type="number" :min="effectiveRange(crit)[0]" :max="effectiveRange(crit)[1]"
+                                               :disabled="!editable" @change="clampHours(crit)"
                                                class="w-16 border rounded-lg px-2 py-1 text-sm text-right disabled:bg-slate-100" />
-                                        <span class="text-[10px] text-slate-400">/ {{ crit.hoursMin }}–{{ crit.hoursMax }}</span>
+                                        <span class="text-[10px] text-slate-400">/ {{ effectiveRange(crit)[0] }}–{{ effectiveRange(crit)[1] }}</span>
                                     </template>
                                 </div>
                             </div>
@@ -119,8 +114,12 @@
                                            :class="disabled(crit) ? '' : 'cursor-pointer'">
                                         <input type="checkbox" class="mt-1"
                                             :checked="isProdChecked(crit, p)"
-                                            :disabled="disabled(crit)" @change="toggleProduct(crit, p)" />
-                                        <span class="text-slate-600">{{ p.name }}</span>
+                                            :disabled="disabled(crit)" @change="toggleProduct(crit, p, $event)" />
+                                        <span class="text-slate-600">
+                                            {{ p.name }}
+                                            <span v-if="hasOwnHours(p)" class="ml-1 px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 text-[10px] font-semibold whitespace-nowrap"
+                                                  title="Este producto tiene horas propias: se suman al rango del criterio">+{{ p.hoursMin === p.hoursMax ? p.hoursMin : p.hoursMin + '–' + p.hoursMax }} h</span>
+                                        </span>
                                     </label>
                                 </div>
                                 <div v-if="crit.evidences.length">
@@ -131,7 +130,7 @@
                                             <input type="checkbox" class="mt-1"
                                                 :checked="isEviChecked(crit, e)"
                                                 :disabled="disabled(crit) || isPaired(e)"
-                                                @change="toggleSharedEvidence(crit, e)" />
+                                                @change="toggleSharedEvidence(crit, e, $event)" />
                                             <span>
                                                 <span class="text-slate-600">{{ e.name }}</span>
                                                 <span v-if="isPaired(e)" class="block text-[10px] text-slate-400 uppercase tracking-wide">↳ Sigue al producto</span>
@@ -167,12 +166,38 @@
                         @click="goToSchedule">Colocar horario</button>
                     <button
                         class="px-3 py-1.5 text-sm rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-40 inline-flex items-center gap-1"
-                        :disabled="oficioBusy || request?.status !== 'approved'" @click="downloadOficio">
+                        :disabled="oficioBusy || request?.status !== 'approved'" @click="printOficio">
                         🖨 {{ oficioBusy ? 'Generando…' : 'Imprimir oficio' }}
                     </button>
                 </div>
             </template>
         </template>
+
+        <!-- Drawer lateral: vista previa del oficio en PDF -->
+        <Transition name="oficio-fade">
+            <div v-if="oficioOpen" class="fixed inset-0 z-[120] bg-black/40" @click="closeOficio"></div>
+        </Transition>
+        <Transition name="oficio-slide">
+            <div v-if="oficioOpen" class="fixed right-0 top-0 h-full w-full max-w-3xl z-[121] bg-white shadow-2xl flex flex-col" @click.stop>
+                <header class="border-b px-4 py-3 flex items-center justify-between gap-2 shrink-0">
+                    <h2 class="text-sm font-semibold text-slate-800">Oficio de función académica</h2>
+                    <div class="flex items-center gap-2">
+                        <button class="px-3 py-1.5 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 inline-flex items-center gap-1" :disabled="!oficioUrl" @click="printOficioNow">🖨 Imprimir</button>
+                        <button class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-40 inline-flex items-center gap-1" :disabled="!oficioUrl" @click="downloadOficioFile">⬇ Descargar</button>
+                        <button class="px-2 py-1.5 text-slate-400 hover:text-slate-700" title="Cerrar" @click="closeOficio">✕</button>
+                    </div>
+                </header>
+                <div class="flex-1 min-h-0 bg-slate-100">
+                    <iframe v-if="oficioUrl" ref="oficioFrame" :src="oficioUrl" class="w-full h-full border-0" title="Oficio de función académica"></iframe>
+                    <div v-else-if="oficioError" class="h-full flex items-center justify-center p-6 text-center text-red-600 text-sm">{{ oficioError }}</div>
+                    <!-- Skeleton de carga mientras se genera el PDF -->
+                    <div v-else class="h-full flex flex-col items-center justify-center gap-3 text-slate-400">
+                        <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <p class="text-sm">Generando oficio…</p>
+                    </div>
+                </div>
+            </div>
+        </Transition>
     </div>
 </template>
 
@@ -184,25 +209,51 @@ import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import type { Budget, DistributionRequest, LockedRow } from '@/modules/midocencia/types/distribution.type'
-import type { RubricTree, RubricCriterion, RubricRubro, RubricEvidence } from '@/modules/midocencia/types/rubric.type'
+import type { RubricTree, RubricCriterion, RubricRubro, RubricEvidence, RubricProduct } from '@/modules/midocencia/types/rubric.type'
 
 const toast = useToast()
 const router = useRouter()
-const { downloadFromContext } = useReportGenerator()
+const { generateFromContext, convertToPdf } = useReportGenerator()
 
 function goToSchedule() { router.push({ name: 'midocencia.my-schedule' }) }
-function goToOtros() { router.push({ name: 'midocencia.my-otros' }) }
 const D = API.MIDOCENCIA_API.distribution
 
-const oficioBusy = ref(false)
-async function downloadOficio() {
+const oficioOpen = ref(false)     // drawer visible
+const oficioBusy = ref(false)     // generando el PDF
+const oficioError = ref('')
+const oficioUrl = ref<string | null>(null)
+const oficioBlob = ref<Blob | null>(null)
+const oficioFrame = ref<HTMLIFrameElement | null>(null)
+
+/** Abre el drawer de inmediato (con carga) y genera el oficio en PDF para mostrarlo. */
+async function printOficio() {
+    if (oficioUrl.value) { URL.revokeObjectURL(oficioUrl.value); oficioUrl.value = null }
+    oficioBlob.value = null
+    oficioError.value = ''
+    oficioOpen.value = true
     oficioBusy.value = true
     try {
         const { data } = await api.get(D.oficio)
-        await downloadFromContext({ reportCode: data.reportCode, context: data.context, filename: 'OFICIO_FUNCION_ACADEMICA' })
+        const { blob } = await generateFromContext({ reportCode: data.reportCode, context: data.context, filename: 'OFICIO_FUNCION_ACADEMICA' })
+        const pdf = await convertToPdf(blob, 'OFICIO_FUNCION_ACADEMICA.docx')
+        if (!oficioOpen.value) return // el usuario cerró mientras generaba
+        oficioBlob.value = pdf
+        oficioUrl.value = URL.createObjectURL(pdf)
     } catch (e: any) {
-        toast.error(e?.response?.data?.message ?? 'No se pudo generar el oficio.')
+        oficioError.value = e?.response?.data?.message ?? 'No se pudo generar el oficio.'
     } finally { oficioBusy.value = false }
+}
+function printOficioNow() { oficioFrame.value?.contentWindow?.focus(); oficioFrame.value?.contentWindow?.print() }
+function downloadOficioFile() {
+    if (!oficioBlob.value) return
+    const url = URL.createObjectURL(oficioBlob.value)
+    const a = document.createElement('a'); a.href = url; a.download = 'OFICIO_FUNCION_ACADEMICA.pdf'; document.body.appendChild(a); a.click(); a.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
+}
+function closeOficio() {
+    oficioOpen.value = false
+    if (oficioUrl.value) { URL.revokeObjectURL(oficioUrl.value); oficioUrl.value = null }
+    oficioBlob.value = null
 }
 
 const loading = ref(true)
@@ -233,9 +284,45 @@ function rubroRange(rubro: RubricRubro) {
     return `${min}·${max} h`
 }
 
-function isFixed(crit: RubricCriterion) { return crit.hoursMin === crit.hoursMax }
+function hasOwnHours(p: RubricProduct) { return p.hoursMin != null }
+// Fijo solo si el rango base es exacto Y ningún producto aporta horas propias.
+function isFixed(crit: RubricCriterion) {
+    return crit.hoursMin === crit.hoursMax && !crit.products.some(p => hasOwnHours(p))
+}
 function isChecked(crit: RubricCriterion) { return isLocked(crit.id) || (Number(form[crit.id]?.hours) || 0) > 0 }
 function disabled(crit: RubricCriterion) { return isLocked(crit.id) || !editable.value }
+
+/**
+ * Rango de horas permitido del criterio según los productos marcados (espejo de
+ * rango()/rangoEfectivo de SGIv2): los productos generales comparten el rango
+ * base del criterio; los de horas propias suman su rango aparte.
+ */
+function effectiveRange(crit: RubricCriterion): [number, number] {
+    const f = form[crit.id]
+    let min = 0, max = 0, generales = false, alguno = false
+    crit.products.forEach(p => {
+        if (!f?.products.includes(p.id)) return
+        alguno = true
+        if (p.hoursMin != null) { min += p.hoursMin; max += (p.hoursMax ?? p.hoursMin) }
+        else generales = true
+    })
+    if (generales || !alguno) { min += crit.hoursMin; max += crit.hoursMax }
+    const lock = lockedHours(crit.id)
+    if (lock > min) min = lock
+    if (min > max) max = min
+    return [min, max]
+}
+
+/** Ajusta las horas del criterio al rango efectivo (tras cambiar productos o editar). */
+function clampHours(crit: RubricCriterion) {
+    const f = form[crit.id]
+    if (!f) return
+    const [min, max] = effectiveRange(crit)
+    let v = Number(f.hours) || 0
+    if (v < min) v = min
+    if (v > max) v = max
+    f.hours = v
+}
 
 function isPaired(e: RubricEvidence) { return e.productId != null }
 function sharedEvidences(crit: RubricCriterion) { return crit.evidences.filter(e => !isPaired(e)) }
@@ -249,8 +336,8 @@ function toggleCriterion(crit: RubricCriterion) {
         // Deshabilitar: solo apaga las horas; conserva la selección (como el DOM de v2).
         f.hours = 0
     } else {
-        f.hours = isFixed(crit) ? crit.hoursMin : (Number(f.hours) || crit.hoursMin)
         ensureMinimums(crit)
+        clampHours(crit) // fija las horas al mínimo efectivo del criterio (>0 → queda habilitado)
     }
 }
 
@@ -277,29 +364,45 @@ function sincronizarPareadas(crit: RubricCriterion) {
     })
 }
 
+/** Devuelve el checkbox del DOM a su estado real (el valor reactivo no cambió al rechazar). */
+function restoreCheckbox(ev: Event | undefined, checked: boolean) {
+    if (ev?.target) (ev.target as HTMLInputElement).checked = checked
+}
+
 /** Producto: mínimo 1; al cambiar, sincroniza sus evidencias pareadas. Réplica de onProducto. */
-function toggleProduct(crit: RubricCriterion, product: { id: number }) {
-    if (disabled(crit)) return
+function toggleProduct(crit: RubricCriterion, product: { id: number }, ev?: Event) {
+    if (disabled(crit)) { restoreCheckbox(ev, isProdChecked(crit, product)); return }
     const f = form[crit.id]
     if (!f) return
     if (f.products.includes(product.id)) {
-        if (f.products.length <= 1) { toast.error('Debes dejar al menos un producto a obtener en este criterio.'); return }
+        if (f.products.length <= 1) {
+            // No permitir quitar el último producto: dejar el checkbox marcado y avisar.
+            restoreCheckbox(ev, true)
+            toast.error('Debes dejar al menos un producto a obtener en este criterio.')
+            return
+        }
         f.products = f.products.filter(id => id !== product.id)
     } else {
         f.products.push(product.id)
     }
     sincronizarPareadas(crit)
+    clampHours(crit) // el rango depende de los productos: re-ajusta las horas
 }
 
 /** Evidencia COMPARTIDA (toggleable): mínimo 1. Réplica de onEvidenciaCompartida. */
-function toggleSharedEvidence(crit: RubricCriterion, e: RubricEvidence) {
-    if (disabled(crit)) return
+function toggleSharedEvidence(crit: RubricCriterion, e: RubricEvidence, ev?: Event) {
+    if (disabled(crit) || isPaired(e)) { restoreCheckbox(ev, isEviChecked(crit, e)); return }
     const f = form[crit.id]
     if (!f) return
     const idx = f.evidences.indexOf(e.id)
     if (idx >= 0) {
         const checkedShared = sharedEvidences(crit).filter(x => f.evidences.includes(x.id))
-        if (checkedShared.length <= 1) { toast.error('Debes dejar al menos una evidencia en este criterio.'); return }
+        if (checkedShared.length <= 1) {
+            // No permitir quitar la última evidencia: dejar el checkbox marcado y avisar.
+            restoreCheckbox(ev, true)
+            toast.error('Debes dejar al menos una evidencia en este criterio.')
+            return
+        }
         f.evidences.splice(idx, 1)
     } else {
         f.evidences.push(e.id)
@@ -423,3 +526,11 @@ async function retract() {
     finally { busy.value = false }
 }
 </script>
+
+<style scoped>
+/* Overlay: fade. Panel: slide desde la derecha. */
+.oficio-fade-enter-active, .oficio-fade-leave-active { transition: opacity .2s ease; }
+.oficio-fade-enter-from, .oficio-fade-leave-to { opacity: 0; }
+.oficio-slide-enter-active, .oficio-slide-leave-active { transition: transform .28s cubic-bezier(.4, 0, .2, 1); }
+.oficio-slide-enter-from, .oficio-slide-leave-to { transform: translateX(100%); }
+</style>
