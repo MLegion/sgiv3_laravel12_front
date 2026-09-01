@@ -46,21 +46,23 @@
                 <div v-if="instItems.length === 0" class="text-center py-8 text-slate-400">No tienes grupos asignados en este periodo.</div>
 
                 <div v-for="g in instItems" :key="g.teacherAssignmentId"
-                     class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                    <div class="px-4 py-2.5 bg-slate-800 text-white flex items-center justify-between gap-3">
+                     class="bg-white border border-slate-200 rounded-xl shadow-sm border-l-4 overflow-hidden"
+                     :class="isInstrumented(g) ? 'border-l-emerald-400' : 'border-l-amber-400'">
+                    <div class="px-4 pt-3 pb-2 flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <div class="font-semibold text-sm truncate">{{ g.materia }}</div>
-                            <div class="text-xs text-slate-300 truncate">
-                                <span v-if="g.grupo">Grupo {{ g.grupo }}</span>
-                                <span v-if="g.carrera"> · {{ g.carrera }}</span>
+                            <div class="font-bold text-slate-800 leading-tight">{{ g.grupo || 'Sin grupo' }}</div>
+                            <div class="text-xs text-slate-500 uppercase truncate">
+                                {{ g.materia }}<span v-if="g.carrera"> · {{ g.carrera }}</span>
                             </div>
                         </div>
-                        <span class="shrink-0 text-[11px] px-2 py-0.5 rounded-full"
-                              :class="isInstrumented(g) ? 'bg-emerald-500 text-white' : 'bg-slate-600 text-slate-200'">
-                            {{ isInstrumented(g) ? 'Instrumentado' : 'Pendiente' }}
+                        <span v-if="isInstrumented(g)" class="shrink-0 inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                            <span>✓</span> Instrumentado
+                        </span>
+                        <span v-else class="shrink-0 inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">
+                            <span>🕐</span> Pendiente
                         </span>
                     </div>
-                    <div class="p-4 space-y-3">
+                    <div class="px-4 pb-4 space-y-3">
                         <!-- Enlace al módulo teaching (cuando exista para el grupo) -->
                         <div v-if="g.teaching" class="flex items-center gap-2 text-sm bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
                             <span class="text-emerald-600">✓</span>
@@ -70,7 +72,7 @@
                         </div>
 
                         <!-- Excel subido -->
-                        <div v-if="g.file" class="flex items-center justify-between gap-2 text-sm bg-slate-50 rounded-lg px-3 py-2">
+                        <div v-if="g.file" class="flex items-center justify-between gap-2 text-sm bg-slate-50 border rounded-lg px-3 py-2">
                             <button class="text-blue-600 hover:underline truncate flex items-center gap-2" @click="downloadInst(g.file)">
                                 <span>📄</span>
                                 <span class="truncate">{{ g.file.originalName }}</span>
@@ -79,15 +81,17 @@
                             <button class="text-red-500 hover:text-red-700 shrink-0" title="Eliminar" @click="removeInst(g)">✕</button>
                         </div>
 
-                        <div class="flex items-center gap-3">
-                            <label class="inline-flex items-center gap-2 text-xs cursor-pointer text-blue-700 hover:underline"
-                                   :class="{ 'opacity-50 pointer-events-none': busy }">
-                                <input type="file" class="hidden" accept=".xls,.xlsx"
-                                       @change="onInstFile($event, g.teacherAssignmentId)" :disabled="busy" />
-                                <span>⬆</span> {{ g.file ? 'Reemplazar Excel' : 'Subir Excel (.xls, .xlsx)' }}
-                            </label>
-                            <span v-if="!g.file && !g.teaching" class="text-xs text-slate-400">Aún sin instrumentar.</span>
-                        </div>
+                        <!-- Dropzone -->
+                        <label class="dropzone" :class="{ 'dropzone--over': dragKey === 'inst:' + g.teacherAssignmentId, 'dropzone--busy': busy }"
+                               @dragover.prevent="dragKey = 'inst:' + g.teacherAssignmentId"
+                               @dragleave.prevent="dragKey = ''"
+                               @drop.prevent="onDrop($event, f => uploadInst(f, g.teacherAssignmentId))">
+                            <input type="file" class="hidden" accept=".xls,.xlsx"
+                                   @change="onPick($event, f => uploadInst(f, g.teacherAssignmentId))" :disabled="busy" />
+                            <CloudIcon />
+                            <div class="dz-title">{{ g.file ? 'Reemplazar instrumentación' : 'Subir instrumentación' }}</div>
+                            <div class="dz-sub">Excel .xls o .xlsx · 1 archivo por grupo</div>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -98,27 +102,41 @@
                     Podrás subir evidencias cuando envíes tu distribución a revisión.
                 </div>
 
-                <div v-for="crit in activeRubroGroup.criteria" :key="crit.detailId" class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                    <div class="px-4 py-2.5 bg-slate-700 text-white font-semibold text-sm">{{ crit.criterion }}</div>
-                    <div class="divide-y">
-                        <div v-for="ev in crit.evidences" :key="ev.evidenceId" class="p-4">
-                            <p class="text-sm text-slate-700 mb-2">{{ ev.name }}</p>
-                            <ul class="space-y-1 mb-2">
-                                <li v-for="f in ev.files" :key="f.id" class="flex items-center justify-between text-xs bg-slate-50 rounded px-2 py-1">
+                <template v-for="crit in activeRubroGroup.criteria" :key="crit.detailId">
+                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-400 px-1 pt-1">{{ crit.criterion }}</div>
+                    <div v-for="ev in crit.evidences" :key="ev.evidenceId"
+                         class="bg-white border border-slate-200 rounded-xl shadow-sm border-l-4 overflow-hidden"
+                         :class="ev.files.length ? 'border-l-emerald-400' : 'border-l-amber-400'">
+                        <div class="px-4 pt-3 pb-2 flex items-start justify-between gap-3">
+                            <div class="font-bold text-slate-800 leading-tight">{{ ev.name }}</div>
+                            <span v-if="ev.files.length" class="shrink-0 inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                                <span>✓</span> {{ ev.files.length }} archivo{{ ev.files.length === 1 ? '' : 's' }}
+                            </span>
+                            <span v-else class="shrink-0 inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">
+                                <span>🕐</span> Pendiente
+                            </span>
+                        </div>
+                        <div class="px-4 pb-4 space-y-3">
+                            <ul v-if="ev.files.length" class="space-y-1">
+                                <li v-for="f in ev.files" :key="f.id" class="flex items-center justify-between gap-2 text-sm bg-slate-50 border rounded-lg px-3 py-1.5">
                                     <button class="text-blue-600 hover:underline truncate" @click="downloadEv(f)">{{ f.originalName }}</button>
-                                    <button class="text-red-500 hover:text-red-700 ml-2 shrink-0" @click="removeEv(f)">✕</button>
+                                    <button class="text-red-500 hover:text-red-700 shrink-0" @click="removeEv(f)">✕</button>
                                 </li>
-                                <li v-if="ev.files.length === 0" class="text-xs text-slate-400">Sin archivos.</li>
                             </ul>
-                            <label v-if="uploadable" class="inline-flex items-center gap-2 text-xs cursor-pointer text-blue-700 hover:underline"
-                                   :class="{ 'opacity-50 pointer-events-none': busy }">
+                            <label v-if="uploadable" class="dropzone"
+                                   :class="{ 'dropzone--over': dragKey === 'ev:' + ev.evidenceId, 'dropzone--busy': busy }"
+                                   @dragover.prevent="dragKey = 'ev:' + ev.evidenceId"
+                                   @dragleave.prevent="dragKey = ''"
+                                   @drop.prevent="onDrop($event, f => uploadEv(f, crit.detailId, ev.evidenceId))">
                                 <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.gif"
-                                       @change="onEvFile($event, crit.detailId, ev.evidenceId)" :disabled="busy" />
-                                + Subir archivo
+                                       @change="onPick($event, f => uploadEv(f, crit.detailId, ev.evidenceId))" :disabled="busy" />
+                                <CloudIcon />
+                                <div class="dz-title">Arrastra o haz clic para subir</div>
+                                <div class="dz-sub">PDF o imagen (JPG, PNG, GIF) · puedes subir varios</div>
                             </label>
                         </div>
                     </div>
-                </div>
+                </template>
             </div>
 
             <!-- Pestaña: Otros -->
@@ -137,12 +155,16 @@
                             <input v-model="otrosLabel" type="text" maxlength="255" placeholder="Nombre del archivo"
                                    class="mt-1 block w-full border rounded-lg px-2 py-1.5 text-sm" />
                         </label>
-                        <label class="inline-flex items-center gap-2 text-sm cursor-pointer bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700"
-                               :class="{ 'opacity-50 pointer-events-none': busy }">
-                            <input type="file" class="hidden" @change="onOtrosFile($event)" :disabled="busy" />
-                            <span>⬆</span> Subir
-                        </label>
                     </div>
+                    <label class="dropzone" :class="{ 'dropzone--over': dragKey === 'otros', 'dropzone--busy': busy }"
+                           @dragover.prevent="dragKey = 'otros'"
+                           @dragleave.prevent="dragKey = ''"
+                           @drop.prevent="onDrop($event, uploadOtros)">
+                        <input type="file" class="hidden" @change="onPick($event, uploadOtros)" :disabled="busy" />
+                        <CloudIcon />
+                        <div class="dz-title">Arrastra o haz clic para subir</div>
+                        <div class="dz-sub">Cualquier archivo · puedes subir varios</div>
+                    </label>
                 </div>
 
                 <div v-if="otrosFiles.length === 0" class="text-center py-8 text-slate-400">Aún no has subido archivos en "Otros".</div>
@@ -163,7 +185,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -186,6 +208,15 @@ interface InstItem {
 interface OtrosFile { id: number; bucketId: number | null; label: string | null; originalName: string; mime: string | null; size: number }
 interface OtrosBucket { id: number; name: string }
 
+// Icono de nube (subida) inline — mismo trazo que SGIv2.
+const CloudIcon = () => h('svg', {
+    class: 'dz-icon', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+    'stroke-width': '1.6', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+}, [
+    h('path', { d: 'M12 16V9m0 0-3 3m3-3 3 3' }),
+    h('path', { d: 'M20 16.5A4.5 4.5 0 0 0 17.5 8h-1.05A7 7 0 1 0 5 15' }),
+])
+
 const router = useRouter()
 const toast = useToast()
 const E = API.MIDOCENCIA_API
@@ -193,6 +224,7 @@ const E = API.MIDOCENCIA_API
 const loading = ref(true)
 const busy = ref(false)
 const activeTab = ref<string>('inst')
+const dragKey = ref('')
 
 // Instrumentaciones
 const instItems = ref<InstItem[]>([])
@@ -272,21 +304,30 @@ async function load() {
     } finally { loading.value = false }
 }
 
-// ── Instrumentaciones ────────────────────────────────────────────────
-async function onInstFile(event: Event, taId: number) {
+// ── Selección/arrastre genéricos ─────────────────────────────────────
+function onPick(event: Event, up: (f: File) => Promise<void>) {
     const input = event.target as HTMLInputElement
     const file = input.files?.[0]
-    if (!file) return
+    if (file) up(file)
+    input.value = ''
+}
+function onDrop(event: DragEvent, up: (f: File) => Promise<void>) {
+    dragKey.value = ''
+    const file = event.dataTransfer?.files?.[0]
+    if (file) up(file)
+}
+
+// ── Instrumentaciones ────────────────────────────────────────────────
+async function uploadInst(file: File, taId: number) {
     busy.value = true
     try {
-        const form = new FormData()
-        form.append('file', file)
+        const form = new FormData(); form.append('file', file)
         await api.post(E.instrumentation.upload(taId), form)
         toast.success('Instrumentación subida.')
         await load()
     } catch (e: any) {
         toast.error(e?.response?.data?.message ?? 'No se pudo subir la instrumentación.')
-    } finally { busy.value = false; input.value = '' }
+    } finally { busy.value = false }
 }
 
 async function downloadInst(f: InstFile) {
@@ -309,20 +350,16 @@ async function removeInst(g: InstItem) {
 }
 
 // ── Evidencias ───────────────────────────────────────────────────────
-async function onEvFile(event: Event, detailId: number, evidenceId: number) {
-    const input = event.target as HTMLInputElement
-    const file = input.files?.[0]
-    if (!file) return
+async function uploadEv(file: File, detailId: number, evidenceId: number) {
     busy.value = true
     try {
-        const form = new FormData()
-        form.append('file', file)
+        const form = new FormData(); form.append('file', file)
         await api.post(E.evidence.upload(detailId, evidenceId), form)
         toast.success('Archivo subido.')
         await load()
     } catch (e: any) {
         toast.error(e?.response?.data?.message ?? 'No se pudo subir el archivo.')
-    } finally { busy.value = false; input.value = '' }
+    } finally { busy.value = false }
 }
 
 async function downloadEv(f: EvFile) {
@@ -344,14 +381,10 @@ async function removeEv(f: EvFile) {
 }
 
 // ── Otros ────────────────────────────────────────────────────────────
-async function onOtrosFile(event: Event) {
-    const input = event.target as HTMLInputElement
-    const file = input.files?.[0]
-    if (!file) return
+async function uploadOtros(file: File) {
     busy.value = true
     try {
-        const form = new FormData()
-        form.append('file', file)
+        const form = new FormData(); form.append('file', file)
         if (otrosPeriodId.value) form.append('period_id', String(otrosPeriodId.value))
         if (otrosBucketId.value) form.append('bucket_id', String(otrosBucketId.value))
         if (otrosLabel.value.trim()) form.append('label', otrosLabel.value.trim())
@@ -361,7 +394,7 @@ async function onOtrosFile(event: Event) {
         await load()
     } catch (e: any) {
         toast.error(e?.response?.data?.message ?? 'No se pudo subir el archivo.')
-    } finally { busy.value = false; input.value = '' }
+    } finally { busy.value = false }
 }
 
 async function downloadOtros(f: OtrosFile) {
@@ -389,3 +422,27 @@ function saveBlob(blob: Blob, name: string) {
     URL.revokeObjectURL(url)
 }
 </script>
+
+<style scoped>
+.dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    border: 2px dashed #cbd5e1;      /* slate-300 */
+    border-radius: 0.75rem;
+    background: #f8fafc;             /* slate-50 */
+    color: #94a3b8;                  /* slate-400 */
+    transition: background-color .15s, border-color .15s;
+}
+.dropzone:hover { border-color: #93c5fd; background: #eff6ff; } /* blue-300 / blue-50 */
+.dropzone--over { border-color: #3b82f6; background: #dbeafe; } /* blue-500 / blue-100 */
+.dropzone--busy { opacity: .55; pointer-events: none; }
+.dz-icon { width: 2.5rem; height: 2.5rem; color: #94a3b8; }
+.dz-title { font-weight: 600; color: #1d4ed8; }  /* blue-700 */
+.dz-sub { font-size: .75rem; color: #94a3b8; }
+</style>
