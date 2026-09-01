@@ -41,6 +41,13 @@ export default {
             download: (id: string | number) => apiUrl(`/midocencia/evidence-files/${id}/download`),
             delete:   (id: string | number) => apiUrl(`/midocencia/evidence-files/${id}`),
         },
+        // F5.a — Instrumentaciones (Excel por grupo). Puente hasta teaching.
+        instrumentation: {
+            index:    apiUrl('/midocencia/instrumentation'),
+            upload:   (taId: string | number) => apiUrl(`/midocencia/instrumentation/${taId}/upload`),
+            download: (id: string | number) => apiUrl(`/midocencia/instrumentation-files/${id}/download`),
+            delete:   (id: string | number) => apiUrl(`/midocencia/instrumentation-files/${id}`),
+        },
         // F5.b — Visor por sección (roles por rubro).
         sections: {
             scope:     apiUrl('/midocencia/sections/scope'),
