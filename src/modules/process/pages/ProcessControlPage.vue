@@ -5,13 +5,22 @@
             subtitle="Supervisa y abre/cierra las etapas de los procesos por periodo. Úsalo como respaldo cuando el encargado no pueda hacerlo."
         >
             <template #actions>
-                <div class="w-full sm:w-64">
-                    <FormSelect
-                        label="Periodo"
-                        v-model.number="periodId"
-                        :options="periodOptions"
-                        @update:model-value="loadProcesses"
-                    />
+                <div class="flex flex-wrap items-end gap-3">
+                    <div class="w-full sm:w-64">
+                        <FormSelect
+                            label="Periodo"
+                            v-model.number="periodId"
+                            :options="periodOptions"
+                            @update:model-value="loadProcesses"
+                        />
+                    </div>
+                    <div v-if="modalityOptions.length" class="w-full sm:w-56">
+                        <FormSelect
+                            label="Modalidad"
+                            v-model.number="modalityFilter"
+                            :options="modalityOptions"
+                        />
+                    </div>
                 </div>
             </template>
         </FormPageHeader>
@@ -24,14 +33,20 @@
             Este periodo no tiene procesos configurados.
         </div>
 
-        <section v-for="proc in processes" :key="proc.key" v-else class="space-y-3">
+        <template v-else>
+            <div v-if="modalityFilter == null && hasFilterable"
+                 class="bg-blue-50 border border-blue-200 text-blue-700 rounded-xl px-4 py-3 text-sm">
+                Selecciona una <strong>modalidad</strong> para ver los procesos que se gestionan por modalidad.
+            </div>
+
+            <section v-for="proc in visibleProcesses" :key="proc.key" class="space-y-3">
             <h2 class="text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-200 pb-1">
                 {{ proc.label }}
             </h2>
 
-            <div v-if="!proc.modalities.length" class="text-xs text-slate-400 italic px-1">Sin modalidades.</div>
+            <div v-if="!modalitiesToShow(proc).length" class="text-xs text-slate-400 italic px-1">Sin modalidades.</div>
 
-            <div v-for="m in proc.modalities" :key="m.modalityId" class="bg-white border rounded-xl shadow-sm">
+            <div v-for="m in modalitiesToShow(proc)" :key="m.modalityId" class="bg-white border rounded-xl shadow-sm">
                 <div class="border-b px-4 py-2 flex items-center justify-between">
                     <span class="text-sm font-bold text-slate-700">{{ m.modalityLabel }}</span>
                     <span v-if="m.periodStatus" class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full" :class="statusClass(m.periodStatus)">
@@ -67,7 +82,8 @@
                     </li>
                 </ul>
             </div>
-        </section>
+            </section>
+        </template>
 
         <!-- Modal motivo (acciones excepcionales) -->
         <BaseModal v-model="reasonModal.open" title="Acción excepcional" size="md" persistent>
@@ -119,10 +135,43 @@ const periodId  = ref<number | null>(null)
 const processes = ref<ProcessDescriptor[]>([])
 const loading   = ref(true)
 const busy      = ref(false)
+const modalityFilter = ref<number | null>(null)
 
 const periodOptions = computed(() =>
     periods.value.map(p => ({ value: p.id, label: periodLabel(p) }))
 )
+
+// Un proceso "requiere filtro" cuando maneja varias modalidades: se ocultan
+// hasta que se elige una en el filtro. Los de una sola (p. ej. General) se
+// muestran siempre.
+function requiresFilter(proc: ProcessDescriptor): boolean {
+    return proc.modalities.length > 1
+}
+function needsSelection(proc: ProcessDescriptor): boolean {
+    return requiresFilter(proc) && modalityFilter.value == null
+}
+function modalitiesToShow(proc: ProcessDescriptor): ProcessModality[] {
+    if (!requiresFilter(proc)) return proc.modalities
+    if (modalityFilter.value == null) return []
+    return proc.modalities.filter(m => m.modalityId === modalityFilter.value)
+}
+
+// Con modalidad sin elegir se ocultan por completo los procesos que la
+// requieren; solo quedan los que no dependen de modalidad.
+const visibleProcesses = computed(() => processes.value.filter(p => !needsSelection(p)))
+const hasFilterable = computed(() => processes.value.some(requiresFilter))
+
+// Modalidades disponibles para filtrar: solo las de procesos multi-modalidad.
+const modalityOptions = computed(() => {
+    const map = new Map<number, string>()
+    for (const proc of processes.value) {
+        if (!requiresFilter(proc)) continue
+        for (const m of proc.modalities) {
+            if (!map.has(m.modalityId)) map.set(m.modalityId, m.modalityLabel)
+        }
+    }
+    return Array.from(map, ([value, label]) => ({ value, label }))
+})
 
 const reasonModal = reactive<{
     open: boolean; processKey: string; modalityId: number; stageKey: string;
