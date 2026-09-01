@@ -16,6 +16,8 @@ export default {
             assigned:  (aoId: string | number) => apiUrl(`/sca/teacher-academic-offers/assigned/${aoId}`),
             available: (aoId: string | number) => apiUrl(`/sca/teacher-academic-offers/available/${aoId}`),
             attach:    apiUrl('/sca/teacher-academic-offers'),
+            affiliation: apiUrl('/sca/teacher-academic-offers/affiliation'),
+            manager:     apiUrl('/sca/teacher-academic-offers/manager'),
             detach:    apiUrl('/sca/teacher-academic-offers/detach'),
         },
         placeAcademicOffers: {

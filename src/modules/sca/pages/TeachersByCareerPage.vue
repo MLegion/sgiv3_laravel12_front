@@ -134,7 +134,27 @@
                             >
                                 <ChevronLeftIcon class="w-4 h-4" />
                             </button>
-                            <span class="text-sm text-slate-700 font-medium uppercase">{{ assignedTeacherName(row) }}</span>
+                            <span class="flex-1 mx-2 text-sm text-slate-700 font-medium uppercase">{{ assignedTeacherName(row) }}</span>
+                            <button aria-label="Jefe de carrera"
+                                type="button"
+                                class="border p-1.5 rounded-md transition disabled:opacity-40 mr-1"
+                                :class="row.isManager ? 'bg-amber-500 text-white border-amber-500 hover:bg-amber-600' : 'text-slate-400 hover:text-amber-600 hover:bg-amber-50 hover:border-amber-300'"
+                                :title="row.isManager ? 'Jefe de carrera de esta oferta (firma el oficio). Clic para quitar.' : 'Definir como jefe de carrera (uno solo por oferta)'"
+                                :disabled="managing === row.teacherId"
+                                @click="toggleManager(row)"
+                            >
+                                <StarIcon class="w-4 h-4" />
+                            </button>
+                            <button aria-label="Adscribir"
+                                type="button"
+                                class="border p-1.5 rounded-md transition disabled:opacity-40"
+                                :class="row.isAffiliation ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600' : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300'"
+                                :title="row.isAffiliation ? 'Adscrito a esta carrera (su jefe lo ve en Mi Docencia). Clic para quitar.' : 'Adscribir a esta carrera'"
+                                :disabled="affiliating === row.teacherId"
+                                @click="toggleAffiliation(row)"
+                            >
+                                <AcademicCapIcon class="w-4 h-4" />
+                            </button>
                         </div>
                         <div v-if="assignedTeachers.length === 0" class="px-4 py-8 text-center text-xs text-slate-400 uppercase font-bold">
                             Sin docentes asignados
@@ -169,7 +189,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { ChevronRightIcon, ChevronLeftIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
+import { ChevronRightIcon, ChevronLeftIcon, MagnifyingGlassIcon, AcademicCapIcon, StarIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 
@@ -208,6 +228,8 @@ const assignedPage = ref(1)
 const assignedLastPage = ref(1)
 const assignedTotal = ref(0)
 const detaching = ref<number | null>(null)
+const affiliating = ref<number | null>(null)
+const managing = ref<number | null>(null)
 
 /* ── Helpers nombre ────────────────────────────────────────────────── */
 function teacherName(t: any): string {
@@ -325,11 +347,61 @@ async function detach(row: any) {
     }
 }
 
+/* Adscripción (toggle): marca a qué carrera pertenece el docente. Es única, así
+   que si estaba adscrito a otra oferta, aquélla queda desmarcada en el backend. */
+async function toggleAffiliation(row: any) {
+    affiliating.value = row.teacherId
+    try {
+        const { data } = await api.post(API.SCA_API.teacherAcademicOffers.affiliation, {
+            teacher_id: row.teacherId,
+            academic_offer_id: selectedAcademicOfferId.value,
+        })
+        row.isAffiliation = data.isAffiliation
+    } catch (e: any) {
+        console.error('Error al adscribir:', e?.response?.data?.message ?? e)
+    } finally {
+        affiliating.value = null
+    }
+}
+
+/* Jefe de carrera (toggle): uno solo por oferta. Al marcar uno, los demás de la
+   lista quedan desmarcados (el backend limpia toda la oferta). */
+async function toggleManager(row: any) {
+    managing.value = row.teacherId
+    try {
+        const { data } = await api.post(API.SCA_API.teacherAcademicOffers.manager, {
+            teacher_id: row.teacherId,
+            academic_offer_id: selectedAcademicOfferId.value,
+        })
+        if (data.isManager) {
+            assignedTeachers.value.forEach((r: any) => { r.isManager = r.teacherId === row.teacherId })
+        } else {
+            row.isManager = false
+        }
+    } catch (e: any) {
+        console.error('Error al definir jefe de carrera:', e?.response?.data?.message ?? e)
+    } finally {
+        managing.value = null
+    }
+}
+
 /* ── Eventos filtros ───────────────────────────────────────────────── */
+/* ── Persistencia de filtros (localStorage) ────────────────────────── */
+const FILTERS_KEY = 'sca.teachers-by-career.filters'
+function saveFilters() {
+    try {
+        localStorage.setItem(FILTERS_KEY, JSON.stringify({
+            modalityId: selectedModalityId.value,
+            academicOfferId: selectedAcademicOfferId.value,
+        }))
+    } catch { /* ignore */ }
+}
+
 function onModalityChange() {
     selectedAcademicOfferId.value = null
     availableTeachers.value = []
     assignedTeachers.value = []
+    saveFilters()
 }
 
 function onAcademicOfferChange() {
@@ -337,13 +409,26 @@ function onAcademicOfferChange() {
     assignedPage.value = 1
     availableSearch.value = ''
     assignedSearch.value = ''
+    saveFilters()
     fetchAvailable()
     fetchAssigned()
 }
 
 /* ── Init ──────────────────────────────────────────────────────────── */
-onMounted(() => {
-    fetchModalities()
-    fetchAcademicOffers()
+onMounted(async () => {
+    await Promise.all([fetchModalities(), fetchAcademicOffers()])
+
+    // Restaurar los filtros guardados (si los ids siguen existiendo).
+    try {
+        const saved = JSON.parse(localStorage.getItem(FILTERS_KEY) || '{}')
+        if (saved.modalityId && modalities.value.some((m: any) => m.id === saved.modalityId)) {
+            selectedModalityId.value = saved.modalityId
+        }
+        if (saved.academicOfferId && academicOffers.value.some((ao: any) => ao.id === saved.academicOfferId)) {
+            selectedAcademicOfferId.value = saved.academicOfferId
+            fetchAvailable()
+            fetchAssigned()
+        }
+    } catch { /* ignore */ }
 })
 </script>
