@@ -30,6 +30,18 @@ export default [
         meta: { title: 'Mis Evidencias' },
     },
     {
+        path: 'midocencia/descarga-permits',
+        name: 'midocencia.descarga-permits',
+        component: () => import('@/modules/midocencia/pages/MyDescargaPermitsPage.vue'),
+        meta: { title: 'Permiso de Descarga' },
+    },
+    {
+        path: 'midocencia/descarga-permits/inbox',
+        name: 'midocencia.descarga-permits.inbox',
+        component: () => import('@/modules/midocencia/pages/DescargaPermitInboxPage.vue'),
+        meta: { title: 'Permisos de Descarga' },
+    },
+    {
         path: 'midocencia/sections',
         name: 'midocencia.sections',
         component: () => import('@/modules/midocencia/pages/SectionEvidenceViewerPage.vue'),

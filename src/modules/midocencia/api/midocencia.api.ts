@@ -57,6 +57,15 @@ export default {
             instrumentations: apiUrl('/midocencia/sections/instrumentations'),
             instrumentation:  (id: string | number) => apiUrl(`/midocencia/sections/instrumentations/${id}`),
         },
+        // Permisos de cambio de descarga (jefe ↔ dirección académica).
+        descargaPermits: {
+            mine:    apiUrl('/midocencia/descarga-permits/mine'),
+            request: apiUrl('/midocencia/descarga-permits'),
+            inbox:   apiUrl('/midocencia/descarga-permits/inbox'),
+            approve: (id: string | number) => apiUrl(`/midocencia/descarga-permits/${id}/approve`),
+            reject:  (id: string | number) => apiUrl(`/midocencia/descarga-permits/${id}/reject`),
+            revoke:  (id: string | number) => apiUrl(`/midocencia/descarga-permits/${id}/revoke`),
+        },
         // F9 — "Otros" (evidencias libres).
         otros: {
             index:    apiUrl('/midocencia/otros'),
