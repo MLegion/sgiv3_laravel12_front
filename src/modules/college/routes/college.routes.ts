@@ -17,4 +17,10 @@ export default [
         component: () => import('@/modules/college/pages/BrandingPage.vue'),
         meta: { title: 'Imagen del Colegio' },
     },
+    {
+        path: 'college/modules',
+        name: 'college.modules',
+        component: () => import('@/modules/college/pages/ModulesPage.vue'),
+        meta: { title: 'Módulos del sistema' },
+    },
 ]
