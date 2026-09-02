@@ -85,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -109,7 +109,26 @@ const reviewing = ref<DistributionRequest | null>(null)
 const oficioBusyId = ref<number | null>(null)
 
 const teacherNames = ref<Record<number, string>>({})
-onMounted(loadTeachers)
+
+// Persistencia de contexto: al recargar, restaurar periodo y pestaña para no
+// sacar al usuario del componente ni obligarlo a re-seleccionar el periodo.
+const LS_PERIOD = 'midocencia.approval.periodId'
+const LS_TAB = 'midocencia.approval.tab'
+
+onMounted(async () => {
+    await loadTeachers()
+    const savedTab = localStorage.getItem(LS_TAB)
+    if (savedTab && ['revisar', 'proceso', 'fin', 'todas'].includes(savedTab)) {
+        tab.value = savedTab as typeof tab.value
+    }
+    const savedPeriod = Number(localStorage.getItem(LS_PERIOD) || 0)
+    if (savedPeriod > 0) {
+        periodId.value = savedPeriod
+        loadInbox()
+    }
+})
+
+watch(tab, (t) => localStorage.setItem(LS_TAB, t))
 
 async function loadTeachers() {
     try {
@@ -178,7 +197,11 @@ function actionButtons(r: DistributionRequest): ActionBtn[] {
 function openReview(r: DistributionRequest) { reviewing.value = r }
 function goSchedule(r: DistributionRequest) { router.push({ name: 'midocencia.approval-schedule', params: { id: r.id } }) }
 function onReviewed() { reviewing.value = null; loadInbox() }
-function onPeriodChange() { tab.value = 'revisar'; loadInbox() }
+function onPeriodChange() {
+    localStorage.setItem(LS_PERIOD, String(periodId.value ?? ''))
+    tab.value = 'revisar'
+    loadInbox()
+}
 
 async function loadInbox() {
     if (!periodId.value) { rows.value = []; return }
