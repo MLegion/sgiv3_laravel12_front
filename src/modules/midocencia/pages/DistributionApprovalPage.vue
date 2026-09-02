@@ -14,7 +14,9 @@
                     :endpoint="API.SCHOOL_SERVICES_API.collegeAcademicPeriods.list"
                     :endpoint-by-id="API.SCHOOL_SERVICES_API.collegeAcademicPeriods.byId"
                     :params="{ order_by: 'actual_start_date', order_dir: 'desc', per_page: 100 }"
-                    item-label="name" item-value="id"
+                    :item-label="periodLabel"
+                    :item-searchs="['name']"
+                    item-value="id"
                     placeholder="Selecciona un periodo…"
                     @update:model-value="onPeriodChange"
                 />
@@ -150,6 +152,10 @@ async function loadTeachers() {
         teacherNames.value = map
     } catch { /* noop */ }
 }
+// El listado trae `name` de primer nivel; el byId lo trae anidado en
+// academicPeriod.name. Resolver ambos (nunca undefined) evita que el input
+// quede vacío y que search.value.trim() reviente al enfocar.
+function periodLabel(p: any): string { return p?.name ?? p?.academicPeriod?.name ?? '' }
 function teacherName(id: number) { return teacherNames.value[id] ?? `Docente #${id}` }
 function fmt(n: number) { return Number(n).toFixed(Number(n) % 1 === 0 ? 0 : 1) }
 function totalHours(r: DistributionRequest) { return r.details.reduce((a, d) => a + Number(d.hours), 0) }
