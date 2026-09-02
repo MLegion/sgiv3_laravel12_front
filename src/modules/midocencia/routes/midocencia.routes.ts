@@ -81,7 +81,13 @@ export default [
         path: 'midocencia/approval',
         name: 'midocencia.approval',
         component: () => import('@/modules/midocencia/pages/DistributionApprovalPage.vue'),
-        meta: { title: 'Aprobar Distribución' },
+        meta: { title: 'Seguimiento de descargas' },
+    },
+    {
+        path: 'midocencia/approval/:id/schedule',
+        name: 'midocencia.approval-schedule',
+        component: () => import('@/modules/midocencia/pages/ScheduleReviewPage.vue'),
+        meta: { title: 'Revisión del horario de descarga' },
     },
     {
         path: 'midocencia/plaza',

@@ -1,11 +1,11 @@
 <template>
     <div class="space-y-4 max-w-6xl mx-auto pb-16">
         <div>
-            <h1 class="text-xl font-semibold text-slate-800 uppercase">Aprobar distribución de función académica</h1>
-            <p class="text-sm text-slate-500">Revisa y aprueba (con folio) o rechaza la distribución de tus docentes.</p>
+            <h1 class="text-xl font-semibold text-slate-800">Seguimiento de descargas</h1>
+            <p class="text-sm text-slate-500">Recorrido de cada docente de tu división, de principio a fin<span v-if="periodName"> · {{ periodName }}</span>.</p>
         </div>
 
-        <!-- Filtros -->
+        <!-- Periodo -->
         <div class="bg-white border rounded-xl shadow-sm p-4 flex flex-wrap items-end gap-3">
             <div class="w-72">
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Periodo</label>
@@ -15,167 +15,100 @@
                     :params="{ order_by: 'actual_start_date', order_dir: 'desc', per_page: 100 }"
                     item-label="name" item-value="id"
                     placeholder="Selecciona un periodo…"
-                    @update:model-value="loadInbox"
+                    @update:model-value="onPeriodChange"
                 />
             </div>
-            <div class="w-48">
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Estado</label>
-                <select v-model="status" class="w-full border rounded-lg px-3 py-2 text-sm" @change="loadInbox">
-                    <option value="submitted">En revisión</option>
-                    <option value="approved">Aprobadas</option>
-                    <option value="rejected">Rechazadas</option>
-                    <option value="">Todas</option>
-                </select>
+        </div>
+
+        <template v-if="periodId">
+            <!-- Tabs por acción -->
+            <div class="flex flex-wrap gap-2">
+                <button v-for="t in tabs" :key="t.key"
+                    class="px-3.5 py-1.5 rounded-full text-sm font-semibold border transition inline-flex items-center gap-2"
+                    :class="tab === t.key ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+                    @click="tab = t.key">
+                    <span class="inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full text-xs"
+                          :class="tab === t.key ? 'bg-white/20' : 'bg-slate-100 text-slate-500'">{{ t.count }}</span>
+                    <span v-if="t.key === 'revisar'">⚡</span>{{ t.label }}
+                </button>
             </div>
-        </div>
 
-        <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
-        <div v-else-if="!periodId" class="text-center py-8 text-slate-400">Selecciona un periodo para ver las solicitudes.</div>
-        <div v-else-if="rows.length === 0" class="text-center py-8 text-slate-400">Sin solicitudes para este filtro.</div>
+            <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
+            <div v-else-if="visibleRows.length === 0" class="text-center py-8 text-slate-400">Sin docentes en este filtro.</div>
 
-        <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                    <tr>
-                        <th class="text-left px-4 py-2">Docente</th>
-                        <th class="text-left px-4 py-2">Estado</th>
-                        <th class="text-right px-4 py-2">Horas</th>
-                        <th class="text-left px-4 py-2">Folio</th>
-                        <th class="px-4 py-2"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <tr v-for="r in rows" :key="r.id" class="hover:bg-slate-50">
-                        <td class="px-4 py-2 text-slate-800">{{ teacherName(r.teacherId) }}</td>
-                        <td class="px-4 py-2"><span class="px-2 py-0.5 rounded text-xs font-semibold" :class="statusClass(r.status)">{{ statusLabel(r.status) }}</span></td>
-                        <td class="px-4 py-2 text-right">{{ totalHours(r) }}</td>
-                        <td class="px-4 py-2 text-slate-500">{{ r.folio ?? '—' }}</td>
-                        <td class="px-4 py-2 text-right">
-                            <button class="px-2.5 py-1 text-xs rounded-lg border border-slate-300 hover:bg-slate-100" @click="openDetail(r)">Ver</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Detalle -->
-        <div v-if="detail" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="detail = null">
-            <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[85vh] overflow-auto p-5 space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-slate-800">{{ teacherName(detail.teacherId) }}</h3>
-                    <span class="px-2 py-0.5 rounded text-xs font-semibold" :class="statusClass(detail.status)">{{ statusLabel(detail.status) }}</span>
-                </div>
-
-                <div class="border rounded-lg divide-y">
-                    <div v-for="d in detail.details" :key="d.id" class="px-3 py-2 flex items-start justify-between gap-3 text-sm">
-                        <div>
-                            <p class="text-slate-800">{{ critName(d.rubricCriterionId) }}</p>
-                            <p v-if="d.locked" class="text-[11px] text-slate-400">Asignado por jefatura</p>
-                        </div>
-                        <span class="shrink-0 font-semibold text-slate-700">{{ Number(d.hours).toFixed(Number(d.hours) % 1 === 0 ? 0 : 1) }} hrs</span>
-                    </div>
-                    <div class="px-3 py-2 flex justify-between text-sm font-bold bg-slate-50">
-                        <span>Total</span><span>{{ totalHours(detail) }} hrs</span>
-                    </div>
-                </div>
-
-                <div v-if="detail.status === 'rejected' && detail.rejectedReason" class="bg-red-50 border border-red-200 rounded p-2 text-sm text-red-700">
-                    {{ detail.rejectedReason }}
-                </div>
-
-                <!-- Fase de horario (tras aprobar la distribución) -->
-                <div v-if="detail.status === 'approved'" class="border-t pt-3 space-y-2">
-                    <div class="flex items-center justify-between">
-                        <h4 class="text-sm font-semibold text-slate-700">Horario de descarga</h4>
-                        <span class="px-2 py-0.5 rounded text-xs font-semibold" :class="schedStatusClass(detail.scheduleStatus)">{{ schedStatusLabel(detail.scheduleStatus) }}</span>
-                    </div>
-                    <div v-if="scheduleBlocks.length" class="border rounded-lg divide-y">
-                        <div v-for="b in scheduleBlocks" :key="b.id" class="px-3 py-1.5 text-sm flex justify-between">
-                            <span>{{ diaLabel(b.dayOfWeek) }} {{ b.startTime }}–{{ b.endTime }}</span>
-                            <span class="text-slate-500">aula #{{ b.placeId }}</span>
-                        </div>
-                    </div>
-                    <p v-else class="text-xs text-slate-400">El docente aún no ha colocado su horario.</p>
-
-                    <div v-if="detail.scheduleStatus === 'submitted'" class="space-y-2 pt-1">
-                        <textarea v-model="schedReason" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Motivo de rechazo (si aplica)…"></textarea>
-                        <div class="flex justify-end gap-2">
-                            <button class="px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50" :disabled="schedBusy || !schedReason.trim()" @click="rejectSchedule">Rechazar horario</button>
-                            <button class="px-3 py-1.5 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50" :disabled="schedBusy" @click="approveSchedule">Aprobar horario</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Acciones (solo en revisión) -->
-                <div v-if="detail.status === 'submitted'" class="space-y-3 border-t pt-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Folio del oficio</label>
-                        <input v-model="folio" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Folio…" />
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Motivo de rechazo (si aplica)</label>
-                        <textarea v-model="reason" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Motivo…"></textarea>
-                    </div>
-                    <div class="flex justify-end gap-2">
-                        <button class="px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-                            :disabled="busy || !reason.trim()" @click="reject">Rechazar</button>
-                        <button class="px-3 py-1.5 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
-                            :disabled="busy || !folio.trim()" @click="approve">Aprobar</button>
-                    </div>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button v-if="detail.status === 'approved' && detail.scheduleStatus !== 'approved'"
-                        class="px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 disabled:opacity-50"
-                        :disabled="busy" @click="reopen">
-                        Reabrir
-                    </button>
-                    <button v-if="detail.status === 'approved'"
-                        class="px-3 py-1.5 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
-                        :disabled="oficioBusy" @click="downloadOficio">
-                        {{ oficioBusy ? 'Generando…' : 'Descargar oficio' }}
-                    </button>
-                    <button class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 hover:bg-slate-50" @click="detail = null">Cerrar</button>
-                </div>
+            <!-- Tabla -->
+            <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wide">
+                        <tr>
+                            <th class="text-left px-4 py-3">Docente</th>
+                            <th class="text-left px-4 py-3">Distribución</th>
+                            <th class="text-left px-4 py-3">Horario</th>
+                            <th class="text-left px-4 py-3">Oficio</th>
+                            <th class="px-4 py-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr v-for="r in visibleRows" :key="r.id" class="hover:bg-slate-50"
+                            :class="bucketOf(r) === 'revisar' ? 'border-l-4 border-l-blue-500' : ''">
+                            <td class="px-4 py-3">
+                                <p class="font-semibold text-slate-800 inline-flex items-center gap-1.5">🎓 {{ teacherName(r.teacherId) }}</p>
+                                <p class="text-xs text-slate-400">{{ fmt(totalHours(r)) }} h de descarga</p>
+                            </td>
+                            <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-semibold" :class="distChip(r).cls">{{ distChip(r).text }}</span></td>
+                            <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-semibold" :class="horChip(r).cls">{{ horChip(r).text }}</span></td>
+                            <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-semibold" :class="ofiChip(r).cls">{{ ofiChip(r).text }}</span></td>
+                            <td class="px-4 py-3 text-right">
+                                <button v-for="b in actionButtons(r)" :key="b.key"
+                                    class="ml-1 px-2.5 py-1.5 text-xs rounded-lg inline-flex items-center gap-1"
+                                    :class="b.primary ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-slate-300 text-slate-700 hover:bg-slate-100'"
+                                    :disabled="b.key === 'oficio' && oficioBusyId === r.id"
+                                    @click="b.action(r)">
+                                    <span>{{ b.icon }}</span>{{ b.key === 'oficio' && oficioBusyId === r.id ? 'Generando…' : b.label }}
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-        </div>
+        </template>
+        <div v-else class="text-center py-8 text-slate-400">Selecciona un periodo para ver el seguimiento.</div>
+
+        <!-- Modal de revisión de distribución -->
+        <DescargaReviewModal
+            v-if="reviewing"
+            :request="reviewing"
+            :teacher-name="teacherName(reviewing.teacherId)"
+            @close="reviewing = null"
+            @changed="onReviewed" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import DescargaReviewModal from '@/modules/midocencia/components/DescargaReviewModal.vue'
 import type { DistributionRequest } from '@/modules/midocencia/types/distribution.type'
 
 const toast = useToast()
+const router = useRouter()
 const { downloadFromContext } = useReportGenerator()
 const A = API.MIDOCENCIA_API.approval
-const oficioBusy = ref(false)
 
 const periodId = ref<number | null>(null)
-const status = ref('submitted')
+const periodName = ref('')
 const rows = ref<DistributionRequest[]>([])
 const loading = ref(false)
-const busy = ref(false)
-
-const detail = ref<DistributionRequest | null>(null)
-const folio = ref('')
-const reason = ref('')
-
-const scheduleBlocks = ref<Array<{ id: number; dayOfWeek: number | null; startTime: string; endTime: string; placeId: number | null }>>([])
-const schedReason = ref('')
-const schedBusy = ref(false)
-const dias: Record<number, string> = { 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb', 7: 'Dom' }
-function diaLabel(d: number | null) { return d ? (dias[d] ?? '?') : '—' }
-function schedStatusLabel(s: string) { return ({ pending: 'Por colocar', submitted: 'En revisión', approved: 'Aprobado' } as any)[s] ?? s }
-function schedStatusClass(s: string) { return ({ pending: 'bg-slate-100 text-slate-600', submitted: 'bg-amber-100 text-amber-700', approved: 'bg-emerald-100 text-emerald-700' } as any)[s] ?? 'bg-slate-100' }
+const tab = ref<'revisar' | 'proceso' | 'fin' | 'todas'>('revisar')
+const reviewing = ref<DistributionRequest | null>(null)
+const oficioBusyId = ref<number | null>(null)
 
 const teacherNames = ref<Record<number, string>>({})
-const critNames = ref<Record<number, string>>({})
-
 onMounted(loadTeachers)
 
 async function loadTeachers() {
@@ -187,120 +120,82 @@ async function loadTeachers() {
         teacherNames.value = map
     } catch { /* noop */ }
 }
-
 function teacherName(id: number) { return teacherNames.value[id] ?? `Docente #${id}` }
-function critName(id: number) { return critNames.value[id] ?? `Criterio #${id}` }
-function totalHours(r: DistributionRequest) {
-    const t = r.details.reduce((a, d) => a + Number(d.hours), 0)
-    return t.toFixed(t % 1 === 0 ? 0 : 1)
+function fmt(n: number) { return Number(n).toFixed(Number(n) % 1 === 0 ? 0 : 1) }
+function totalHours(r: DistributionRequest) { return r.details.reduce((a, d) => a + Number(d.hours), 0) }
+
+// ── Bucket por acción (espejo de SGIv2) ──────────────────────────────
+function bucketOf(r: DistributionRequest): 'revisar' | 'proceso' | 'fin' {
+    if (r.status === 'submitted') return 'revisar'
+    if (r.status === 'approved' && r.scheduleStatus === 'submitted') return 'revisar'
+    if (r.status === 'approved' && r.scheduleStatus === 'approved') return 'fin'
+    return 'proceso'
 }
-function statusLabel(s: string) { return ({ draft: 'Borrador', submitted: 'En revisión', approved: 'Aprobada', rejected: 'Rechazada' } as any)[s] ?? s }
-function statusClass(s: string) {
-    return ({ draft: 'bg-slate-100 text-slate-600', submitted: 'bg-amber-100 text-amber-700', approved: 'bg-emerald-100 text-emerald-700', rejected: 'bg-red-100 text-red-700' } as any)[s] ?? 'bg-slate-100'
+
+const tabs = computed(() => [
+    { key: 'revisar' as const, label: 'Requieren tu revisión', count: rows.value.filter(r => bucketOf(r) === 'revisar').length },
+    { key: 'proceso' as const, label: 'En proceso del docente', count: rows.value.filter(r => bucketOf(r) === 'proceso').length },
+    { key: 'fin' as const, label: 'Finalizadas', count: rows.value.filter(r => bucketOf(r) === 'fin').length },
+    { key: 'todas' as const, label: 'Todas', count: rows.value.length },
+])
+const visibleRows = computed(() => tab.value === 'todas' ? rows.value : rows.value.filter(r => bucketOf(r) === tab.value))
+
+// ── Chips por etapa ──────────────────────────────────────────────────
+function distChip(r: DistributionRequest) {
+    return ({
+        draft:     { text: 'Borrador', cls: 'bg-slate-100 text-slate-500' },
+        submitted: { text: 'Por revisar', cls: 'bg-amber-100 text-amber-700' },
+        rejected:  { text: 'Rechazada', cls: 'bg-red-100 text-red-700' },
+        approved:  { text: 'Aprobada', cls: 'bg-emerald-100 text-emerald-700' },
+    } as Record<string, { text: string; cls: string }>)[r.status] ?? { text: '—', cls: 'bg-slate-100 text-slate-400' }
 }
+function horChip(r: DistributionRequest) {
+    if (r.status !== 'approved') return { text: '—', cls: 'bg-slate-100 text-slate-400' }
+    return ({
+        pending:   { text: 'Por colocar', cls: 'bg-slate-100 text-slate-500' },
+        submitted: { text: 'Por revisar', cls: 'bg-amber-100 text-amber-700' },
+        approved:  { text: 'Aprobado', cls: 'bg-emerald-100 text-emerald-700' },
+    } as Record<string, { text: string; cls: string }>)[r.scheduleStatus] ?? { text: '—', cls: 'bg-slate-100 text-slate-400' }
+}
+function ofiChip(r: DistributionRequest) {
+    if (r.status === 'approved' && r.scheduleStatus === 'approved') return { text: r.folio ?? 'Listo', cls: 'bg-emerald-100 text-emerald-700' }
+    return { text: '—', cls: 'bg-slate-100 text-slate-400' }
+}
+
+// ── Botones de acción por fila ───────────────────────────────────────
+interface ActionBtn { key: string; label: string; icon: string; primary: boolean; action: (r: DistributionRequest) => void }
+function actionButtons(r: DistributionRequest): ActionBtn[] {
+    if (r.status === 'submitted') return [{ key: 'rev-dist', label: 'Revisar', icon: '📌', primary: true, action: openReview }]
+    if (r.status === 'approved' && r.scheduleStatus === 'submitted') return [{ key: 'rev-hor', label: 'Revisar', icon: '📌', primary: true, action: goSchedule }]
+    if (r.status === 'approved' && r.scheduleStatus === 'approved') return [{ key: 'oficio', label: 'Oficio', icon: '🖨', primary: false, action: downloadOficio }]
+    if (r.status === 'approved') return [{ key: 'ver-hor', label: 'Ver horario', icon: '📅', primary: false, action: goSchedule }]
+    return [{ key: 'ver-dist', label: 'Ver', icon: '👁', primary: false, action: openReview }]
+}
+
+function openReview(r: DistributionRequest) { reviewing.value = r }
+function goSchedule(r: DistributionRequest) { router.push({ name: 'midocencia.approval-schedule', params: { id: r.id } }) }
+function onReviewed() { reviewing.value = null; loadInbox() }
+function onPeriodChange() { tab.value = 'revisar'; loadInbox() }
 
 async function loadInbox() {
     if (!periodId.value) { rows.value = []; return }
     loading.value = true
     try {
-        const { data } = await api.get(A.inbox, { params: { period_id: periodId.value, status: status.value } })
+        const { data } = await api.get(A.inbox, { params: { period_id: periodId.value, status: '' } })
         rows.value = Array.isArray(data) ? data : []
     } catch (e: any) {
-        toast.error(e?.response?.data?.message ?? 'No se pudo cargar la bandeja.')
+        toast.error(e?.response?.data?.message ?? 'No se pudo cargar el seguimiento.')
         rows.value = []
     } finally { loading.value = false }
 }
 
-async function openDetail(r: DistributionRequest) {
-    detail.value = r
-    folio.value = r.folio ?? ''
-    reason.value = ''
-    schedReason.value = ''
-    scheduleBlocks.value = []
-    if (r.status === 'approved') {
-        try { const { data } = await api.get(A.scheduleBlocks(r.id)); scheduleBlocks.value = Array.isArray(data) ? data : [] } catch { /* noop */ }
-    }
-    // Nombres de criterios de la versión de la solicitud.
-    if (r.rubricId) {
-        try {
-            const { data } = await api.get(API.MIDOCENCIA_API.rubrics.tree(r.rubricId))
-            const map: Record<number, string> = {}
-            for (const ru of data.rubros ?? []) for (const c of ru.criteria ?? []) map[c.id] = c.name
-            critNames.value = map
-        } catch { /* noop */ }
-    }
-}
-
-async function approve() {
-    if (!detail.value) return
-    busy.value = true
+async function downloadOficio(r: DistributionRequest) {
+    oficioBusyId.value = r.id
     try {
-        await api.post(A.approve(detail.value.id), { folio: folio.value })
-        toast.success('Distribución aprobada.')
-        detail.value = null
-        await loadInbox()
-    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo aprobar.') }
-    finally { busy.value = false }
-}
-
-async function approveSchedule() {
-    if (!detail.value) return
-    schedBusy.value = true
-    try {
-        await api.post(A.scheduleApprove(detail.value.id), {})
-        toast.success('Horario aprobado y colocado como ocupación oficial.')
-        detail.value = null
-        await loadInbox()
-    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo aprobar el horario.') }
-    finally { schedBusy.value = false }
-}
-
-async function rejectSchedule() {
-    if (!detail.value) return
-    schedBusy.value = true
-    try {
-        await api.post(A.scheduleReject(detail.value.id), { reason: schedReason.value })
-        toast.success('Horario rechazado.')
-        detail.value = null
-        await loadInbox()
-    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo rechazar el horario.') }
-    finally { schedBusy.value = false }
-}
-
-async function reopen() {
-    if (!detail.value) return
-    const motivo = window.prompt('Motivo para reabrir la distribución (se regresará a borrador):')
-    if (!motivo || !motivo.trim()) return
-    busy.value = true
-    try {
-        await api.post(A.reopen(detail.value.id), { reason: motivo.trim() })
-        toast.success('Distribución reabierta (regresó a borrador).')
-        detail.value = null
-        await loadInbox()
-    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo reabrir.') }
-    finally { busy.value = false }
-}
-
-async function downloadOficio() {
-    if (!detail.value) return
-    oficioBusy.value = true
-    try {
-        const { data } = await api.get(A.oficio(detail.value.id))
+        const { data } = await api.get(A.oficio(r.id))
         await downloadFromContext({ reportCode: data.reportCode, context: data.context, filename: 'OFICIO_FUNCION_ACADEMICA' })
     } catch (e: any) {
         toast.error(e?.response?.data?.message ?? 'No se pudo generar el oficio.')
-    } finally { oficioBusy.value = false }
-}
-
-async function reject() {
-    if (!detail.value) return
-    busy.value = true
-    try {
-        await api.post(A.reject(detail.value.id), { reason: reason.value })
-        toast.success('Distribución rechazada.')
-        detail.value = null
-        await loadInbox()
-    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo rechazar.') }
-    finally { busy.value = false }
+    } finally { oficioBusyId.value = null }
 }
 </script>
