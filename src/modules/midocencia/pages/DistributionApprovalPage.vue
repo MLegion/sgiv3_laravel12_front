@@ -55,7 +55,7 @@
                         <tr v-for="r in visibleRows" :key="r.id" class="hover:bg-slate-50"
                             :class="bucketOf(r) === 'revisar' ? 'border-l-4 border-l-blue-500' : ''">
                             <td class="px-4 py-3">
-                                <p class="font-semibold text-slate-800 inline-flex items-center gap-1.5">🎓 {{ teacherName(r.teacherId) }}</p>
+                                <p class="font-semibold text-slate-800 inline-flex items-center gap-1.5">🎓 {{ teacherLabel(r) }}</p>
                                 <p class="text-xs text-slate-400">{{ fmt(totalHours(r)) }} h de descarga</p>
                             </td>
                             <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-semibold" :class="distChip(r).cls">{{ distChip(r).text }}</span></td>
@@ -81,7 +81,7 @@
         <DescargaReviewModal
             v-if="reviewing"
             :request="reviewing"
-            :teacher-name="teacherName(reviewing.teacherId)"
+            :teacher-name="teacherLabel(reviewing)"
             @close="reviewing = null"
             @changed="onReviewed" />
     </div>
@@ -156,7 +156,10 @@ async function loadTeachers() {
 // academicPeriod.name. Resolver ambos (nunca undefined) evita que el input
 // quede vacío y que search.value.trim() reviente al enfocar.
 function periodLabel(p: any): string { return p?.name ?? p?.academicPeriod?.name ?? '' }
-function teacherName(id: number) { return teacherNames.value[id] ?? `Docente #${id}` }
+// Prefiere el nombre que trae el inbox (join a employees); fallback al catálogo.
+function teacherLabel(r: DistributionRequest): string {
+    return (r as any).teacherName || teacherNames.value[r.teacherId] || `Docente #${r.teacherId}`
+}
 function fmt(n: number) { return Number(n).toFixed(Number(n) % 1 === 0 ? 0 : 1) }
 function totalHours(r: DistributionRequest) { return r.details.reduce((a, d) => a + Number(d.hours), 0) }
 
