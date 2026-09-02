@@ -1,7 +1,13 @@
 import { defineStore } from 'pinia'
 import router from '@/app/router'
 import type { AuthUser } from "@/shared/types/user";
-import { loginRequest, type LoginPayload } from '@/modules/auth/services/auth.service'
+import {
+    loginRequest,
+    verifyMfaRequest,
+    isMfaChallenge,
+    type LoginPayload,
+    type LoginResponse,
+} from '@/modules/auth/services/auth.service'
 import { api } from '@/shared/services/api'
 import { useMenuStore } from '@/app/stores/menu.store'
 import { resolveBrandingByCollegeId } from '@/modules/auth/services/branding.service'
@@ -24,6 +30,12 @@ export const useAuthStore = defineStore('auth', {
         hydrated: false,
         emailVerified: null as boolean | null, // null = no consultado aún
         profileType: null as ProfileType | null,
+
+        // Segundo factor pendiente: si el login primario devuelve un challenge,
+        // se guarda aquí y la UI pide el código TOTP antes de emitir el token.
+        mfaChallenge: null as string | null,
+        mfaExpiresIn: 0,
+        mfaCollegeId: null as number | null,
 
         // Versión de la foto de perfil: al subir una nueva se incrementa para
         // bustear la caché y refrescar el avatar en navbar + perfil a la vez.
@@ -61,22 +73,53 @@ export const useAuthStore = defineStore('auth', {
         async login(payload: LoginPayload) {
             const response = await loginRequest(payload)
 
+            // 2FA activo: no hay token todavía. Guardamos el challenge y la UI
+            // pedirá el código TOTP (verifyMfa lo canjea por el token real).
+            if (isMfaChallenge(response)) {
+                this.mfaChallenge = response.challenge
+                this.mfaExpiresIn = response.expires_in
+                this.mfaCollegeId = payload.collegeId ?? null
+                return
+            }
+
+            this.applySession(response, payload.collegeId)
+        },
+
+        /**
+         * Canjea el challenge + código (TOTP o recuperación) por el token real.
+         * La página de login lo llama en el paso 2.
+         */
+        async verifyMfa(code: string) {
+            if (!this.mfaChallenge) {
+                throw new Error('No hay una verificación de dos factores pendiente.')
+            }
+            const response = await verifyMfaRequest({ challenge: this.mfaChallenge, code })
+            this.applySession(response, this.mfaCollegeId)
+        },
+
+        /** Cancela el paso de 2FA (volver a la pantalla de usuario/contraseña). */
+        cancelMfa() {
+            this.mfaChallenge = null
+            this.mfaExpiresIn = 0
+            this.mfaCollegeId = null
+        },
+
+        /** Aplica la sesión emitida (token + user), branding y redirige al splash. */
+        applySession(response: LoginResponse, collegeId?: number | null) {
             this.token = response.access_token
             this.user = response.user
             this.mustChangePassword = response.must_change_password
 
             localStorage.setItem('token', response.access_token)
             localStorage.setItem('user', JSON.stringify(response.user))
-            localStorage.setItem(
-                'must_change_password',
-                String(response.must_change_password)
-            )
+            localStorage.setItem('must_change_password', String(response.must_change_password))
 
-            if (payload.collegeId) {
-                localStorage.setItem('active_college_id', String(payload.collegeId))
-                this.loadAndApplyBranding(payload.collegeId).catch(() => { /* sin tema = OK */ })
+            if (collegeId) {
+                localStorage.setItem('active_college_id', String(collegeId))
+                this.loadAndApplyBranding(collegeId).catch(() => { /* sin tema = OK */ })
             }
 
+            this.cancelMfa()
             router.replace('/auth/splash')
         },
 
@@ -100,17 +143,19 @@ export const useAuthStore = defineStore('auth', {
                 college_id:   payload.collegeId,
             })
 
-            this.token = data.access_token
-            this.user  = data.user
-            this.mustChangePassword = data.must_change_password ?? false
+            // 2FA activo también en Google SSO: pedir el código antes del token.
+            if (data?.mfa_required) {
+                this.mfaChallenge = data.challenge
+                this.mfaExpiresIn = data.expires_in
+                this.mfaCollegeId = payload.collegeId
+                return
+            }
 
-            localStorage.setItem('token', data.access_token)
-            localStorage.setItem('user', JSON.stringify(data.user))
-            localStorage.setItem('must_change_password', String(this.mustChangePassword))
-            localStorage.setItem('active_college_id', String(payload.collegeId))
-            this.loadAndApplyBranding(payload.collegeId).catch(() => { /* sin tema = OK */ })
-
-            router.replace('/auth/splash')
+            this.applySession({
+                access_token: data.access_token,
+                user: data.user,
+                must_change_password: data.must_change_password ?? false,
+            }, payload.collegeId)
         },
         /**
          * Hidrata el estado del usuario al refrescar la página
@@ -332,6 +377,9 @@ export const useAuthStore = defineStore('auth', {
             this.impersonatorUser = null
             this.impersonator = null
             this.impersonationExpiresAt = null
+            this.mfaChallenge = null
+            this.mfaExpiresIn = 0
+            this.mfaCollegeId = null
 
             localStorage.removeItem('token')
             localStorage.removeItem('user')

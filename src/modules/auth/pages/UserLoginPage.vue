@@ -59,8 +59,14 @@
                     />
                 </div>
 
-                <!-- FORM -->
-                <form class="space-y-5" @submit.prevent="submit">
+                <!-- PASO 2: verificación de dos factores (si el login lo exige) -->
+                <MfaChallengeForm
+                    v-if="authStore.mfaChallenge"
+                    :branded-button-style="brandedButtonStyle"
+                />
+
+                <!-- FORM (usuario/contraseña) -->
+                <form v-else class="space-y-5" @submit.prevent="submit">
 
                     <!-- College: oculto cuando ya viene fijado por shortname -->
                     <div v-if="!brandedCollegeLocked">
@@ -221,6 +227,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { useCollegeStore } from '@/modules/auth/stores/college.store'
+import MfaChallengeForm from '@/modules/auth/components/MfaChallengeForm.vue'
 import { requestGoogleAccessToken } from '@/modules/auth/composables/useGoogleAuth'
 import {
     resolveBrandingByShortname,

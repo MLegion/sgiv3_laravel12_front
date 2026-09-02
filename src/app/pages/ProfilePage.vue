@@ -280,6 +280,11 @@
                                 </button>
                             </div>
                         </form>
+
+                        <hr class="my-6 border-slate-100" />
+
+                        <!-- Segundo factor (opt-in) -->
+                        <MfaCard />
                     </div>
                 </div>
             </div>
@@ -323,6 +328,7 @@ import ProfileField from '@/app/components/ProfileField.vue'
 import PasswordStrengthField from '@/app/components/ui/form/PasswordStrengthField.vue'
 import UserAvatar from '@/app/components/ui/UserAvatar.vue'
 import PhotoUpload from '@/app/components/ui/form/PhotoUpload.vue'
+import MfaCard from '@/modules/auth/components/MfaCard.vue'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 
 interface ProctorRecord {
