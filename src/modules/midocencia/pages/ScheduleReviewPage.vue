@@ -41,8 +41,9 @@
                                     {{ h2(h) }}<br><span class="text-slate-300">—</span><br>{{ h2(h + 1) }}
                                 </td>
                                 <td v-for="d in dias" :key="d.v" class="border-b border-r align-middle p-0 h-11"
-                                    :class="occ(d.v, h) ? '' : (cellContent(d.v, h) ? 'text-white' : '')"
-                                    :style="cellStyle(d.v, h)" :title="cellTitle(d.v, h)">
+                                    :class="cellClass(d.v, h)"
+                                    :style="cellStyle(d.v, h)" :title="cellTitle(d.v, h)"
+                                    @click="onCell(d.v, h)">
                                     <div v-if="cellContent(d.v, h)" class="px-1.5 py-1 leading-tight text-center">
                                         <div class="text-[11px] font-bold truncate flex items-center justify-center gap-1">
                                             <span v-if="cellContent(d.v, h)!.locked">🔒</span>{{ cellContent(d.v, h)!.label }}
@@ -59,8 +60,12 @@
                 <!-- Panel: horas colocadas + acciones -->
                 <div class="space-y-2">
                     <p class="text-sm font-semibold text-slate-700">Horas colocadas</p>
+                    <p v-if="editable" class="text-[11px] text-slate-400">Selecciona un tipo y da clic en una celda libre para colocar; clic en un bloque tuyo para quitarlo.</p>
                     <div v-for="a in activities" :key="a.complementaryHourTypeId"
-                        class="bg-white border rounded-lg p-2.5 border-l-4" :style="{ borderLeftColor: colorFor(a.complementaryHourTypeId) }">
+                        class="bg-white border rounded-lg p-2.5 border-l-4 transition"
+                        :class="[editable && !a.locked ? 'cursor-pointer hover:bg-slate-50' : '', selectedType === a.complementaryHourTypeId && editable && !a.locked ? 'ring-1 ring-slate-800' : '']"
+                        :style="{ borderLeftColor: colorFor(a.complementaryHourTypeId) }"
+                        @click="editable && !a.locked && (selectedType = a.complementaryHourTypeId)">
                         <p class="text-sm font-semibold flex items-center gap-1" :style="{ color: colorFor(a.complementaryHourTypeId) }">
                             <span v-if="a.locked">🔒</span>{{ a.shortName || a.name }}
                         </p>
@@ -71,7 +76,15 @@
                     </div>
                     <div class="pt-1 text-sm text-slate-600 border-t"><strong>{{ fmt(totalPlaced) }} / {{ fmt(totalTarget) }}</strong> h colocadas</div>
 
-                    <template v-if="scheduleStatus === 'submitted'">
+                    <template v-if="editable">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Aula para nuevos bloques</label>
+                            <select v-model="selectedPlace" class="w-full border rounded-lg px-2 py-1.5 text-sm">
+                                <option :value="null">Oficina (por defecto)</option>
+                                <option v-for="p in places" :key="p.id" :value="p.id">{{ p.name }}</option>
+                            </select>
+                        </div>
+                        <button class="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50" :disabled="busy || !dirty" @click="save">💾 Guardar reajuste</button>
                         <button class="w-full px-3 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50" :disabled="busy" @click="approve">✔ Aprobar horario</button>
                         <textarea v-model="reason" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Motivo de rechazo (si aplica)…"></textarea>
                         <button class="w-full px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50" :disabled="busy || !reason.trim()" @click="reject">✕ Rechazar horario</button>
@@ -126,6 +139,12 @@ const places = ref<Array<{ id: number; name: string }>>([])
 const occupied = ref<Record<string, string>>({})
 const lockedCells = ref<Record<string, Locked>>({})
 const placements = ref<Placement[]>([])
+const selectedType = ref<number | null>(null)
+const selectedPlace = ref<number | null>(null)
+const dirty = ref(false)
+
+// La jefatura reajusta (quita/mueve bloques) solo mientras el horario esté EN REVISIÓN.
+const editable = computed(() => scheduleStatus.value === 'submitted')
 
 const key = (d: number, h: number) => `${d}|${h}`
 const h2 = (h: number) => String(h).padStart(2, '0') + ':00'
@@ -184,10 +203,59 @@ function cellStyle(d: number, h: number) {
     if (p) return { background: colorFor(p.typeId) }
     return {}
 }
+function cellClass(d: number, h: number) {
+    if (occ(d, h)) return 'cursor-not-allowed'
+    if (lockedCells.value[key(d, h)]) return 'text-white cursor-not-allowed'
+    if (placements.value.find(x => x.day === d && x.hour === h)) return editable.value ? 'text-white cursor-pointer' : 'text-white'
+    return editable.value ? 'cursor-pointer hover:bg-slate-50' : ''
+}
 function cellTitle(d: number, h: number) {
     if (occ(d, h)) return 'Clase: ' + occ(d, h)
-    const c = cellContent(d, h)
-    return c ? c.label : 'Libre'
+    const l = lockedCells.value[key(d, h)]; if (l) return (l.shortName || '') + ' (asignada por jefatura)'
+    const p = placements.value.find(x => x.day === d && x.hour === h)
+    if (p) return (typeLabel.value[p.typeId] || '') + (editable.value ? ' (clic para quitar)' : '')
+    return 'Libre'
+}
+
+function onCell(d: number, h: number) {
+    if (!editable.value || occ(d, h) || lockedCells.value[key(d, h)]) return
+    const idx = placements.value.findIndex(p => p.day === d && p.hour === h)
+    if (idx >= 0) { placements.value.splice(idx, 1); dirty.value = true; return }
+    if (!selectedType.value) { toast.error('Selecciona un tipo a colocar.'); return }
+    const act = activities.value.find(a => a.complementaryHourTypeId === selectedType.value)
+    if (act && placedByType(act) >= act.hours) { toast.error('Ya están colocadas todas las horas de ese tipo.'); return }
+    placements.value.push({ day: d, hour: h, typeId: selectedType.value, placeId: selectedPlace.value })
+    dirty.value = true
+}
+
+/** Agrupa celdas contiguas del mismo día/tipo/lugar en bloques (solo del docente). */
+function payload() {
+    const sorted = [...placements.value].sort((a, b) => a.day - b.day || a.typeId - b.typeId || a.hour - b.hour)
+    const blocks: any[] = []
+    for (const p of sorted) {
+        const last = blocks[blocks.length - 1]
+        if (last && last._day === p.day && last._type === p.typeId && last._place === p.placeId && last._endH === p.hour) {
+            last._endH = p.hour + 1; last.end_time = h2(last._endH)
+        } else {
+            blocks.push({ complementary_hour_type_id: p.typeId, place_id: p.placeId, day_of_week: p.day, date: null, start_time: h2(p.hour), end_time: h2(p.hour + 1), _day: p.day, _type: p.typeId, _place: p.placeId, _endH: p.hour + 1 })
+        }
+    }
+    return { blocks: blocks.map(({ _day, _type, _place, _endH, ...b }) => b) }
+}
+
+async function doSave(): Promise<boolean> {
+    const { data } = await api.post(A.scheduleSave(id), payload())
+    dirty.value = false
+    if ((data.conflicts ?? []).length) { toast.error('Hay choques en el horario. Revísalos.'); return false }
+    return true
+}
+
+async function save() {
+    busy.value = true
+    try {
+        if (await doSave()) toast.success('Reajuste guardado.')
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo guardar.') }
+    finally { busy.value = false }
 }
 
 function goBack() { router.push({ name: 'midocencia.approval' }) }
@@ -230,6 +298,8 @@ async function load() {
                 placements.value.push({ day: b.dayOfWeek, hour: h, typeId: b.complementaryHourTypeId, placeId: b.placeId ?? null })
             }
         }
+        selectedType.value = activities.value.find(a => !a.locked)?.complementaryHourTypeId ?? null
+        dirty.value = false
         await loadTeacherName()
     } catch (e: any) {
         fatal.value = e?.response?.data?.message ?? 'No se pudo cargar el horario.'
@@ -249,6 +319,9 @@ async function loadTeacherName() {
 async function approve() {
     busy.value = true
     try {
+        // Persistir cualquier reajuste pendiente antes de aprobar (el backend
+        // valida sobre los bloques guardados). Si hay choques, no continúa.
+        if (dirty.value && !(await doSave())) return
         await api.post(A.scheduleApprove(id), {})
         toast.success('Horario aprobado y colocado como ocupación oficial.')
         goBack()

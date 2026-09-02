@@ -98,6 +98,7 @@ export default {
             reopen:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/reopen`),
             scheduleBlocks:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule`),
             scheduleView:    (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule-view`),
+            scheduleSave:    (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule/save`),
             scheduleApprove: (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule/approve`),
             scheduleReject:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule/reject`),
         },
