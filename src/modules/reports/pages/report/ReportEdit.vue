@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-5">
-        <!-- Modal: vista previa docx-preview -->
+        <!-- Modal: vista previa en PDF paginado (LibreOffice) -->
         <Teleport to="body">
             <div v-if="docxPreviewOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" @click.self="closeDocxPreview">
                 <div class="bg-white rounded-xl shadow-2xl w-[95vw] h-[95vh] flex flex-col overflow-hidden">
@@ -10,16 +10,17 @@
                             <button class="px-3 py-1.5 text-xs font-bold rounded bg-blue-600 hover:bg-blue-700 uppercase" @click="downloadGeneratedDocx">
                                 ⬇ DESCARGAR DOCX
                             </button>
-                            <button class="px-3 py-1.5 text-xs font-bold rounded bg-red-600 hover:bg-red-700 uppercase" @click="printGeneratedDocx">
-                                🖨 IMPRIMIR / PDF
+                            <button class="px-3 py-1.5 text-xs font-bold rounded bg-red-600 hover:bg-red-700 uppercase" @click="downloadGeneratedPdf">
+                                ⬇ DESCARGAR PDF
                             </button>
                             <button class="px-3 py-1.5 text-xs font-bold rounded bg-slate-600 hover:bg-slate-500 uppercase" @click="closeDocxPreview">
                                 CERRAR
                             </button>
                         </div>
                     </div>
-                    <div class="flex-1 bg-slate-200 overflow-auto p-6">
-                        <div ref="docxPreviewHost" class="docx-preview-host"></div>
+                    <div class="flex-1 bg-slate-200 overflow-hidden">
+                        <!-- Vista previa en PDF paginado (LibreOffice server-side) -->
+                        <iframe :src="pdfPreviewUrl ?? ''" class="w-full h-full border-0 bg-white" title="Vista previa"></iframe>
                     </div>
                 </div>
             </div>
@@ -325,8 +326,9 @@ const pendingExportFormat = ref<ExportAction | null>(null)
 const reportParamValues = reactive<Record<string, string>>({})
 
 const docxPreviewOpen   = ref(false)
-const docxPreviewHost   = ref<HTMLElement | null>(null)
+const pdfPreviewUrl     = ref<string | null>(null)
 const generatedDocxBlob = ref<Blob | null>(null)
+const generatedPdfBlob  = ref<Blob | null>(null)
 const generatedFilename = ref<string>('reporte.docx')
 
 const pendingExportButtonLabel = computed(() => {
@@ -345,8 +347,9 @@ function closeParamsModal() {
 
 function closeDocxPreview() {
     docxPreviewOpen.value = false
-    if (docxPreviewHost.value) docxPreviewHost.value.innerHTML = ''
+    if (pdfPreviewUrl.value) { URL.revokeObjectURL(pdfPreviewUrl.value); pdfPreviewUrl.value = null }
     generatedDocxBlob.value = null
+    generatedPdfBlob.value  = null
 }
 
 function downloadGeneratedDocx() {
@@ -359,24 +362,14 @@ function downloadGeneratedDocx() {
     URL.revokeObjectURL(url)
 }
 
-function printGeneratedDocx() {
-    if (!docxPreviewHost.value) return
-    const w = window.open('', '_blank', 'width=900,height=1100')
-    if (!w) return
-    w.document.write(`<!doctype html><html><head><title>${generatedFilename.value}</title>
-        <style>
-            body { margin: 0; font-family: 'Calibri', sans-serif; }
-            .docx-wrapper { background: transparent; }
-            .docx { margin: 0 auto 12px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
-            @media print {
-                body { background: white; }
-                .docx { box-shadow: none; margin: 0; }
-            }
-        </style>
-        </head><body>${docxPreviewHost.value.innerHTML}</body></html>`)
-    w.document.close()
-    w.focus()
-    setTimeout(() => { w.print() }, 300)
+function downloadGeneratedPdf() {
+    if (!generatedPdfBlob.value) return
+    const url = URL.createObjectURL(generatedPdfBlob.value)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = generatedFilename.value.replace(/\.docx$/i, '.pdf')
+    a.click()
+    URL.revokeObjectURL(url)
 }
 
 function normalizeDaoParameters(raw: any[]): DaoParameter[] {
@@ -499,24 +492,38 @@ async function doAction(action: ExportAction) {
             return
         }
 
-        docxPreviewOpen.value = true
-        await new Promise<void>((r) => requestAnimationFrame(() => r()))
-        if (!docxPreviewHost.value) return
-        const { renderAsync } = await import('docx-preview')
-        docxPreviewHost.value.innerHTML = ''
-        await renderAsync(filled, docxPreviewHost.value, undefined, {
-            className:    'docx-preview',
-            inWrapper:    true,
-            breakPages:   true,
-            experimental: true,
-            useBase64URL: true,
-        })
+        // preview / pdf: convertir el DOCX a PDF paginado (LibreOffice server-side).
+        // docx-preview NO paginaba tablas largas por desbordamiento (todo en una
+        // hoja); el PDF de LibreOffice sí respeta los saltos de página reales.
+        const fd = new FormData()
+        fd.append('file', filled, generatedFilename.value)
+        const pdfRes = await api.post(API.REPORTS_API.convertPdf, fd, { responseType: 'blob' })
+        const pdfBlob = pdfRes.data as Blob
+        generatedPdfBlob.value = pdfBlob
 
         if (action === 'pdf') {
-            setTimeout(() => printGeneratedDocx(), 250)
+            const url = URL.createObjectURL(pdfBlob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = generatedFilename.value.replace(/\.docx$/i, '.pdf')
+            a.click()
+            URL.revokeObjectURL(url)
+            return
         }
+
+        // action === 'preview'
+        if (pdfPreviewUrl.value) URL.revokeObjectURL(pdfPreviewUrl.value)
+        pdfPreviewUrl.value = URL.createObjectURL(pdfBlob)
+        docxPreviewOpen.value = true
     } catch (e: any) {
-        exportError.value = e?.response?.data?.message ?? e?.message ?? 'Error al exportar.'
+        // convert-pdf usa responseType 'blob', así que un error del servidor (503
+        // por falta de LibreOffice, 500, etc.) llega como Blob JSON, no como objeto.
+        // Lo desempaquetamos para mostrar el mensaje amable en vez de "status code 503".
+        let msg = e?.response?.data?.message ?? e?.message
+        if (e?.response?.data instanceof Blob) {
+            try { msg = JSON.parse(await e.response.data.text())?.message ?? msg } catch { /* ignore */ }
+        }
+        exportError.value = msg ?? 'Error al exportar.'
     } finally {
         exporting.value = false
     }
@@ -524,12 +531,3 @@ async function doAction(action: ExportAction) {
 
 onMounted(loadData)
 </script>
-
-<style>
-.docx-preview-host .docx-wrapper { background: transparent; }
-.docx-preview-host .docx {
-    margin: 0 auto 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    background: white;
-}
-</style>

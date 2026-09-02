@@ -29,15 +29,12 @@
                             </button>
                         </div>
                     </div>
-                    <div class="flex-1 bg-slate-200 overflow-auto p-6">
-                        <!-- DOCX: render HTML via docx-preview -->
-                        <div v-if="format === 'docx'" ref="docxHost" class="docx-preview-host"></div>
-
-                        <!-- PDF: iframe con el blob -->
+                    <div class="flex-1 bg-slate-200 overflow-hidden">
+                        <!-- Vista previa SIEMPRE en PDF paginado (LibreOffice),
+                             sin importar el formato de descarga (docx/pdf). -->
                         <iframe
-                            v-else
                             :src="pdfBlobUrl ?? ''"
-                            class="w-full h-full border-0 bg-white rounded shadow"
+                            class="w-full h-full border-0 bg-white"
                             :title="modalTitle"
                         ></iframe>
                     </div>
@@ -52,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onBeforeUnmount } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useReportGenerator, type GenerateOptions } from '@/modules/reports/composables/useReportGenerator'
 
 type Format = 'pdf' | 'docx'
@@ -84,10 +81,9 @@ const emit = defineEmits<{
     (e: 'error', message: string): void
 }>()
 
-const { loading, generate, generatePdf } = useReportGenerator()
+const { loading, generate, renderPdf, convertToPdf } = useReportGenerator()
 
 const modalOpen      = ref(false)
-const docxHost       = ref<HTMLElement | null>(null)
 const pdfBlobUrl     = ref<string | null>(null)
 const currentBlob    = ref<Blob | null>(null)
 const currentName    = ref<string>('')
@@ -107,36 +103,32 @@ async function onClick() {
     }
 
     try {
+        // La VISTA PREVIA siempre es un PDF paginado (LibreOffice server-side).
+        // La DESCARGA respeta el formato pedido: para 'docx' guardamos el DOCX
+        // como currentBlob y solo convertimos a PDF para mostrarlo.
         if (props.format === 'pdf') {
-            const { blob, filename } = await generatePdf(opts)
-            currentBlob.value = blob
+            const { blob, filename } = await renderPdf(opts)
+            currentBlob.value = blob          // PDF (preview y descarga)
             currentName.value = filename
             if (pdfBlobUrl.value) URL.revokeObjectURL(pdfBlobUrl.value)
             pdfBlobUrl.value = URL.createObjectURL(blob)
-            modalOpen.value = true
-            emit('generated', { blob, filename })
         } else {
-            const { blob, filename, report } = await generate(opts)
-            currentBlob.value = blob
+            const { blob, filename } = await generate(opts)
+            currentBlob.value = blob          // DOCX (descarga)
             currentName.value = filename
-            modalOpen.value = true
-            await nextTick()
-            if (docxHost.value) {
-                const { renderAsync } = await import('docx-preview')
-                docxHost.value.innerHTML = ''
-                await renderAsync(blob, docxHost.value, undefined, {
-                    className:    'docx-preview',
-                    inWrapper:    true,
-                    breakPages:   true,
-                    experimental: true,
-                    useBase64URL: true,
-                })
-            }
-            emit('generated', { blob, filename })
-            void report
+            const pdf = await convertToPdf(blob, filename)   // solo para previsualizar
+            if (pdfBlobUrl.value) URL.revokeObjectURL(pdfBlobUrl.value)
+            pdfBlobUrl.value = URL.createObjectURL(pdf)
         }
+        modalOpen.value = true
+        emit('generated', { blob: currentBlob.value!, filename: currentName.value })
     } catch (e: any) {
-        errorMessage.value = e?.message ?? 'Error al generar el reporte'
+        // convert-pdf puede devolver el error como blob JSON (responseType blob)
+        let msg = e?.response?.data?.message ?? e?.message
+        if (e?.response?.data instanceof Blob) {
+            try { msg = JSON.parse(await e.response.data.text())?.message ?? msg } catch { /* ignore */ }
+        }
+        errorMessage.value = msg ?? 'Error al generar el reporte'
         emit('error', errorMessage.value!)
     }
 }
@@ -153,7 +145,6 @@ function downloadCurrent() {
 
 function close() {
     modalOpen.value = false
-    if (docxHost.value) docxHost.value.innerHTML = ''
     if (pdfBlobUrl.value) {
         URL.revokeObjectURL(pdfBlobUrl.value)
         pdfBlobUrl.value = null
@@ -164,12 +155,3 @@ onBeforeUnmount(() => {
     if (pdfBlobUrl.value) URL.revokeObjectURL(pdfBlobUrl.value)
 })
 </script>
-
-<style>
-.docx-preview-host .docx-wrapper { background: transparent; }
-.docx-preview-host .docx {
-    margin: 0 auto 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    background: white;
-}
-</style>
