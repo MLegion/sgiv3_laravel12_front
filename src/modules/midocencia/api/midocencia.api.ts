@@ -90,6 +90,7 @@ export default {
         },
         // F2 — Aprobación (Jefatura de Carrera).
         approval: {
+            activePeriod: apiUrl('/midocencia/approval/active-period'),
             inbox:   apiUrl('/midocencia/approval/inbox'),
             show:    (id: string | number) => apiUrl(`/midocencia/approval/${id}`),
             approve: (id: string | number) => apiUrl(`/midocencia/approval/${id}/approve`),

@@ -12,6 +12,7 @@
                 <FormRemoteSelect
                     v-model="periodId"
                     :endpoint="API.SCHOOL_SERVICES_API.collegeAcademicPeriods.list"
+                    :endpoint-by-id="API.SCHOOL_SERVICES_API.collegeAcademicPeriods.byId"
                     :params="{ order_by: 'actual_start_date', order_dir: 'desc', per_page: 100 }"
                     item-label="name" item-value="id"
                     placeholder="Selecciona un periodo…"
@@ -125,6 +126,16 @@ onMounted(async () => {
     if (savedPeriod > 0) {
         periodId.value = savedPeriod
         loadInbox()
+    } else {
+        // Sin periodo guardado: por defecto, el periodo ACTIVO del plantel.
+        try {
+            const { data } = await api.get(A.activePeriod)
+            if (data?.id) {
+                periodId.value = Number(data.id)
+                localStorage.setItem(LS_PERIOD, String(data.id))
+                loadInbox()
+            }
+        } catch { /* noop */ }
     }
 })
 
