@@ -11,6 +11,12 @@ export const baseProtectedRoutes = [
         component: () => import('@/app/pages/ProfilePage.vue'),
         meta: { title: 'Mi Perfil' }
     },
+    {
+        path: 'audit-logs',
+        name: 'audit-logs',
+        component: () => import('@/app/pages/AuditLogPage.vue'),
+        meta: { title: 'Bitácora de Auditoría' }
+    },
 ]
 
 export const basePublicRoutes = [
