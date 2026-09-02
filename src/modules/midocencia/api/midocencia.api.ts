@@ -101,6 +101,7 @@ export default {
             scheduleSave:    (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule/save`),
             scheduleApprove: (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule/approve`),
             scheduleReject:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule/reject`),
+            scheduleReopen:  (id: string | number) => apiUrl(`/midocencia/approval/${id}/schedule/reopen`),
         },
         // Editor fino (F1.b) — solo borradores del plantel.
         builder: {

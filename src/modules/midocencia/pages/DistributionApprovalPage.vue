@@ -167,7 +167,10 @@ interface ActionBtn { key: string; label: string; icon: string; primary: boolean
 function actionButtons(r: DistributionRequest): ActionBtn[] {
     if (r.status === 'submitted') return [{ key: 'rev-dist', label: 'Revisar', icon: '📌', primary: true, action: openReview }]
     if (r.status === 'approved' && r.scheduleStatus === 'submitted') return [{ key: 'rev-hor', label: 'Revisar', icon: '📌', primary: true, action: goSchedule }]
-    if (r.status === 'approved' && r.scheduleStatus === 'approved') return [{ key: 'oficio', label: 'Oficio', icon: '🖨', primary: false, action: downloadOficio }]
+    if (r.status === 'approved' && r.scheduleStatus === 'approved') return [
+        { key: 'oficio', label: 'Oficio', icon: '🖨', primary: false, action: downloadOficio },
+        { key: 'ver-hor-fin', label: 'Ver horario', icon: '📅', primary: false, action: goSchedule },
+    ]
     if (r.status === 'approved') return [{ key: 'ver-hor', label: 'Ver horario', icon: '📅', primary: false, action: goSchedule }]
     return [{ key: 'ver-dist', label: 'Ver', icon: '👁', primary: false, action: openReview }]
 }

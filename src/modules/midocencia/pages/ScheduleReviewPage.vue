@@ -89,6 +89,10 @@
                         <textarea v-model="reason" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Motivo de rechazo (si aplica)…"></textarea>
                         <button class="w-full px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50" :disabled="busy || !reason.trim()" @click="reject">✕ Rechazar horario</button>
                     </template>
+                    <template v-else-if="scheduleStatus === 'approved'">
+                        <p class="text-xs text-slate-400 pt-1">Horario aprobado. Puedes reabrirlo para que el docente lo reajuste.</p>
+                        <button class="w-full px-3 py-2 text-sm rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 disabled:opacity-50" :disabled="busy" @click="reopen">↺ Reabrir horario</button>
+                    </template>
                     <p v-else class="text-xs text-slate-400 pt-1">Este horario no está en revisión.</p>
                 </div>
             </div>
@@ -336,6 +340,18 @@ async function reject() {
         toast.success('Horario rechazado.')
         goBack()
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo rechazar el horario.') }
+    finally { busy.value = false }
+}
+
+async function reopen() {
+    const motivo = window.prompt('Motivo para reabrir el horario (se regresará al docente para reajuste):')
+    if (!motivo || !motivo.trim()) return
+    busy.value = true
+    try {
+        await api.post(A.scheduleReopen(id), { reason: motivo.trim() })
+        toast.success('Horario reabierto; regresó al docente para reajuste.')
+        goBack()
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo reabrir el horario.') }
     finally { busy.value = false }
 }
 </script>
