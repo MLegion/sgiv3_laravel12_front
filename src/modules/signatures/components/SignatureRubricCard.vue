@@ -99,12 +99,24 @@ async function startEditing() {
     editing.value = true
 }
 
+/** La rúbrica se sirve desde un endpoint autenticado: se descarga con el token
+ * (vía api) como blob y se muestra con un objectURL — una <img> normal daría 401. */
+async function refreshRubricImage() {
+    try {
+        const res = await api.get(API.SIGNATURES_API.profile.rubric, { responseType: 'blob' })
+        if (rubricUrl.value.startsWith('blob:')) URL.revokeObjectURL(rubricUrl.value)
+        rubricUrl.value = URL.createObjectURL(res.data)
+    } catch {
+        rubricUrl.value = ''
+    }
+}
+
 async function load() {
     try {
         const { data } = await api.get(API.SIGNATURES_API.profile.show)
         hasRubric.value = data.has_rubric
         mfaRequired.value = data.mfa_required
-        if (data.rubric_url) rubricUrl.value = data.rubric_url
+        if (data.has_rubric) await refreshRubricImage()
     } catch { /* perfil aún sin crear */ }
 }
 
@@ -119,7 +131,7 @@ async function saveFromPad(pad: Pad | null, fromFullscreen = false) {
         fd.append('rubric', blob, 'rubrica.png')
         const { data } = await api.post(API.SIGNATURES_API.profile.update, fd)
         hasRubric.value = data.has_rubric
-        rubricUrl.value = data.rubric_url ?? ''
+        if (data.has_rubric) await refreshRubricImage()
         editing.value = false
         if (fromFullscreen) fullscreen.value = false
         toast.success('Rúbrica guardada')
