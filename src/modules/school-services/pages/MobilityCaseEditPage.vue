@@ -9,12 +9,16 @@
         <template v-else-if="c">
             <!-- Encabezado -->
             <div class="rounded-xl border border-slate-200 p-5">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-3">
                     <div>
-                        <h1 class="text-lg font-semibold text-slate-800">Expediente #{{ c.id }} · <span class="capitalize">{{ c.process_type }}</span></h1>
-                        <p class="text-sm text-slate-500">Plantel C{{ c.origin_college_id ?? '—' }} → C{{ c.destination_college_id ?? '—' }} · Alumno origen #{{ c.origin_student_id ?? '—' }}</p>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-lg font-semibold text-slate-800">Expediente #{{ c.id }}</h1>
+                            <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" :class="mobilityKind(c).cls">{{ mobilityKind(c).label }}</span>
+                        </div>
+                        <p class="text-sm text-slate-500 mt-1">{{ mobilityKind(c).desc }}</p>
+                        <p class="text-xs text-slate-400 mt-1">Plantel C{{ c.origin_college_id ?? '—' }} → C{{ c.destination_college_id ?? '—' }} · Alumno origen #{{ c.origin_student_id ?? '—' }}</p>
                     </div>
-                    <span class="rounded-full px-3 py-1 text-xs font-semibold" :class="statusClass(c.status)">{{ statusLabel(c.status) }}</span>
+                    <span class="rounded-full px-3 py-1 text-xs font-semibold shrink-0" :class="statusClass(c.status)">{{ statusLabel(c.status) }}</span>
                 </div>
                 <div v-if="c.dictamen_number" class="mt-2 text-sm text-slate-500">Dictamen: <span class="font-medium text-slate-700">{{ c.dictamen_number }}</span> · {{ c.resolution_date }}</div>
                 <div v-if="c.status === 'applied'" class="mt-3 rounded-lg bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
@@ -191,6 +195,7 @@ import SignDocumentModal from '@/modules/signatures/modals/SignDocumentModal.vue
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import ReportGenerateButton from '@/modules/reports/components/ReportGenerateButton.vue'
 import { statusClass, statusLabel } from '@/modules/school-services/mobility.status'
+import { mobilityKind } from '@/modules/school-services/mobility.labels'
 
 const SIGNABLE_TYPE = 'Modules\\SchoolServices\\Infrastructure\\Models\\StudentMobilityCase'
 

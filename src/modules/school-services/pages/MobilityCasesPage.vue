@@ -6,17 +6,28 @@
                 <p class="text-sm text-slate-500">Traslado, equivalencia y revalidación de estudios.</p>
             </div>
             <div class="flex gap-2">
-                <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" @click="openOutbound = true">
-                    Salida externa
+                <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" title="El alumno deja este plantel hacia otra institución" @click="openOutbound = true">
+                    Salida por traslado
                 </button>
-                <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" @click="openExternal = true">
-                    Equivalencia externa
+                <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" title="Estudios de una institución fuera del sistema (nacional o extranjera)" @click="openExternal = true">
+                    Equivalencia / Revalidación
                 </button>
-                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900" @click="openCreate = true">
-                    Nuevo traslado
+                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900" title="Recepción de otro plantel del sistema (SGIv3)" @click="openCreate = true">
+                    Traslado interno
                 </button>
             </div>
         </div>
+
+        <!-- Leyenda: qué es cada proceso TecNM -->
+        <details class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+            <summary class="cursor-pointer font-medium text-slate-600">¿Qué diferencia hay entre traslado, convalidación, equivalencia y revalidación?</summary>
+            <ul class="mt-3 space-y-2">
+                <li v-for="g in glossary" :key="g.key" class="flex gap-2">
+                    <span class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold h-fit" :class="g.cls">{{ g.label }}</span>
+                    <span class="text-slate-500">{{ g.desc }}</span>
+                </li>
+            </ul>
+        </details>
 
         <div class="flex gap-2 border-b border-slate-200">
             <button v-for="t in tabs" :key="t.key" class="px-4 py-2 text-sm font-medium -mb-px border-b-2"
@@ -29,7 +40,7 @@
                 <thead class="bg-slate-50 text-slate-500">
                     <tr>
                         <th class="text-left px-4 py-2 font-medium">#</th>
-                        <th class="text-left px-4 py-2 font-medium">Proceso</th>
+                        <th class="text-left px-4 py-2 font-medium">Tipo de trámite</th>
                         <th class="text-left px-4 py-2 font-medium">Origen → Destino</th>
                         <th class="text-left px-4 py-2 font-medium">Dictamen</th>
                         <th class="text-left px-4 py-2 font-medium">Estado</th>
@@ -41,7 +52,9 @@
                     <tr v-else-if="!rows.length"><td colspan="6" class="px-4 py-8 text-center text-slate-400">Sin expedientes.</td></tr>
                     <tr v-for="r in rows" :key="r.id" class="border-t border-slate-100 hover:bg-slate-50">
                         <td class="px-4 py-2 text-slate-500">{{ r.id }}</td>
-                        <td class="px-4 py-2 capitalize">{{ r.process_type }}</td>
+                        <td class="px-4 py-2">
+                            <span class="rounded-full px-2 py-0.5 text-xs font-semibold" :class="mobilityKind(r).cls" :title="mobilityKind(r).desc">{{ mobilityKind(r).label }}</span>
+                        </td>
                         <td class="px-4 py-2 text-slate-600">C{{ r.origin_college_id ?? '—' }} → C{{ r.destination_college_id ?? '—' }}</td>
                         <td class="px-4 py-2 text-slate-600">{{ r.dictamen_number || '—' }}</td>
                         <td class="px-4 py-2"><span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusClass(r.status)">{{ statusLabel(r.status) }}</span></td>
@@ -165,6 +178,9 @@ import { useToast } from '@/app/composables/useToast'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import { statusClass, statusLabel } from '@/modules/school-services/mobility.status'
+import { mobilityKind, PROCESS_GLOSSARY } from '@/modules/school-services/mobility.labels'
+
+const glossary = PROCESS_GLOSSARY
 
 function studentLabel(s: any): string {
     return `${s.num_control ?? ''} — ${s.names ?? ''} ${s.first_surname ?? ''}`.trim()
