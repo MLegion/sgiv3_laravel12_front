@@ -26,10 +26,11 @@
             <div class="rounded-xl border border-slate-200 p-5 space-y-4">
                 <div class="flex items-center justify-between">
                     <h2 class="font-semibold text-slate-800">Dictamen ({{ items.length }} materias · {{ recognizedCount }} reconocidas)</h2>
-                    <div v-if="canEdit" class="flex items-center gap-2">
+                    <div v-if="canEdit && !isExternal" class="flex items-center gap-2">
                         <input v-model.number="destPlanId" type="number" placeholder="ID plan destino" class="h-9 w-40 rounded-lg border border-slate-300 px-3 text-sm" />
                         <button class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-40" :disabled="!destPlanId || busy" @click="autoMatch">Convalidar por clave</button>
                     </div>
+                    <button v-if="canEdit && isExternal" class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700" @click="addRow">+ Agregar materia</button>
                 </div>
 
                 <div class="overflow-hidden rounded-lg border border-slate-100">
@@ -45,21 +46,39 @@
                         </thead>
                         <tbody>
                             <tr v-if="!items.length"><td colspan="5" class="px-3 py-6 text-center text-slate-400">Sin materias. Usa “Convalidar por clave”.</td></tr>
-                            <tr v-for="it in items" :key="it.id" class="border-t border-slate-100">
+                            <tr v-for="(it, idx) in items" :key="it.id ?? ('n' + idx)" class="border-t border-slate-100">
                                 <td class="px-3 py-2">
-                                    <span class="font-mono text-xs text-slate-400">{{ it.origin_subject_code || '—' }}</span>
-                                    <span class="block text-slate-700">{{ it.origin_subject_name || ('#' + it.origin_subject_id) }}</span>
+                                    <template v-if="canEdit && isExternal">
+                                        <input v-model="it.origin_subject_code" placeholder="Clave" class="mb-1 w-full rounded border border-slate-200 px-2 py-1 text-xs font-mono" />
+                                        <input v-model="it.origin_subject_name" placeholder="Nombre materia origen" class="w-full rounded border border-slate-200 px-2 py-1 text-xs" />
+                                    </template>
+                                    <template v-else>
+                                        <span class="font-mono text-xs text-slate-400">{{ it.origin_subject_code || '—' }}</span>
+                                        <span class="block text-slate-700">{{ it.origin_subject_name || ('#' + it.origin_subject_id) }}</span>
+                                    </template>
                                 </td>
-                                <td class="px-3 py-2 text-slate-600">{{ it.origin_grade ?? '—' }}</td>
-                                <td class="px-3 py-2 text-slate-600">#{{ it.destination_subject_id ?? '—' }} <span v-if="it.is_auto" class="text-[10px] rounded bg-blue-50 text-blue-600 px-1">auto</span></td>
-                                <td class="px-3 py-2 text-slate-700">{{ it.recognized_grade ?? '—' }}</td>
+                                <td class="px-3 py-2 text-slate-600">
+                                    <input v-if="canEdit && isExternal" v-model.number="it.origin_grade" type="number" class="w-16 rounded border border-slate-200 px-2 py-1 text-xs" />
+                                    <span v-else>{{ it.origin_grade ?? '—' }}</span>
+                                </td>
+                                <td class="px-3 py-2 text-slate-600">
+                                    <input v-if="canEdit && isExternal" v-model.number="it.destination_subject_id" type="number" placeholder="ID" class="w-20 rounded border border-slate-200 px-2 py-1 text-xs" />
+                                    <template v-else>#{{ it.destination_subject_id ?? '—' }} <span v-if="it.is_auto" class="text-[10px] rounded bg-blue-50 text-blue-600 px-1">auto</span></template>
+                                </td>
+                                <td class="px-3 py-2 text-slate-700">
+                                    <input v-if="canEdit && isExternal" v-model.number="it.recognized_grade" type="number" class="w-16 rounded border border-slate-200 px-2 py-1 text-xs" />
+                                    <span v-else>{{ it.recognized_grade ?? '—' }}</span>
+                                </td>
                                 <td class="px-3 py-2">
-                                    <select v-if="canEdit" v-model="it.decision" class="rounded border border-slate-300 text-xs px-2 py-1">
-                                        <option value="recognized">Reconocida</option>
-                                        <option value="not_recognized">No reconocida</option>
-                                        <option value="pending">Pendiente</option>
-                                    </select>
-                                    <span v-else class="text-xs" :class="it.decision === 'recognized' ? 'text-emerald-600' : 'text-slate-400'">{{ decisionLabel(it.decision) }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <select v-if="canEdit" v-model="it.decision" class="rounded border border-slate-300 text-xs px-2 py-1">
+                                            <option value="recognized">Reconocida</option>
+                                            <option value="not_recognized">No reconocida</option>
+                                            <option value="pending">Pendiente</option>
+                                        </select>
+                                        <span v-else class="text-xs" :class="it.decision === 'recognized' ? 'text-emerald-600' : 'text-slate-400'">{{ decisionLabel(it.decision) }}</span>
+                                        <button v-if="canEdit && isExternal" class="text-rose-500 hover:text-rose-700 text-xs" @click="items.splice(idx, 1)">✕</button>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -138,9 +157,14 @@ const numControl = ref('')
 const periodNumber = ref<number | null>(null)
 
 const canEdit = computed(() => c.value && ['draft', 'in_review'].includes(c.value.status))
+const isExternal = computed(() => c.value?.scope === 'external')
 const recognizedCount = computed(() => items.value.filter((i) => i.decision === 'recognized').length)
 
 function decisionLabel(d: string) { return d === 'recognized' ? 'Reconocida' : d === 'not_recognized' ? 'No reconocida' : 'Pendiente' }
+
+function addRow() {
+    items.value.push({ id: null, origin_subject_code: '', origin_subject_name: '', origin_grade: null, destination_subject_id: null, recognized_grade: null, decision: 'recognized', is_auto: false })
+}
 
 function hydrate(data: any) {
     c.value = data

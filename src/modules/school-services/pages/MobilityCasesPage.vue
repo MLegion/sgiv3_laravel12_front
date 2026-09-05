@@ -5,9 +5,14 @@
                 <h1 class="text-xl font-semibold text-slate-800">Movilidad estudiantil</h1>
                 <p class="text-sm text-slate-500">Traslado, equivalencia y revalidación de estudios.</p>
             </div>
-            <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900" @click="openCreate = true">
-                Nuevo traslado
-            </button>
+            <div class="flex gap-2">
+                <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" @click="openExternal = true">
+                    Equivalencia externa
+                </button>
+                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900" @click="openCreate = true">
+                    Nuevo traslado
+                </button>
+            </div>
         </div>
 
         <div class="flex gap-2 border-b border-slate-200">
@@ -66,6 +71,37 @@
                 <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40" :disabled="creating || !form.origin_student_id || !form.destination_college_id" @click="create">Crear</button>
             </template>
         </BaseModal>
+
+        <BaseModal v-model="openExternal" title="Nueva equivalencia / revalidación externa" size="md">
+            <div class="space-y-3">
+                <p class="text-sm text-slate-500">Reconocimiento de estudios de una institución fuera del sistema, sobre un alumno ya inscrito en este plantel.</p>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">ID del alumno (ya inscrito)</label>
+                    <input v-model.number="ext.student_id" type="number" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Institución de origen</label>
+                    <input v-model="ext.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Estado / País</label>
+                        <input v-model="ext.external_institution_place" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">ID plan destino</label>
+                        <input v-model.number="ext.destination_study_plan_id" type="number" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                    </div>
+                </div>
+                <label class="flex items-center gap-2 text-sm text-slate-600">
+                    <input v-model="ext.is_foreign" type="checkbox" /> Institución extranjera (revalidación)
+                </label>
+            </div>
+            <template #footer>
+                <button class="rounded-lg px-4 py-2 text-sm text-slate-600" @click="openExternal = false">Cancelar</button>
+                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40" :disabled="creating || !ext.student_id || !ext.external_institution_name" @click="createExternal">Crear</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -85,8 +121,10 @@ const tab = ref('mine')
 const rows = ref<any[]>([])
 const loading = ref(false)
 const openCreate = ref(false)
+const openExternal = ref(false)
 const creating = ref(false)
 const form = ref<{ origin_student_id: number | null; destination_college_id: number | null; justification: string }>({ origin_student_id: null, destination_college_id: null, justification: '' })
+const ext = ref<{ student_id: number | null; external_institution_name: string; external_institution_place: string; destination_study_plan_id: number | null; is_foreign: boolean }>({ student_id: null, external_institution_name: '', external_institution_place: '', destination_study_plan_id: null, is_foreign: false })
 
 async function load() {
     loading.value = true
@@ -105,6 +143,20 @@ async function create() {
         const { data } = await api.post(API.SCHOOL_SERVICES_API.mobility.cases, form.value)
         toast.success('Expediente creado')
         openCreate.value = false
+        router.push(`/school-services/mobility/${data.id}`)
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo crear')
+    } finally {
+        creating.value = false
+    }
+}
+
+async function createExternal() {
+    creating.value = true
+    try {
+        const { data } = await api.post(API.SCHOOL_SERVICES_API.mobility.external, ext.value)
+        toast.success('Expediente de equivalencia creado')
+        openExternal.value = false
         router.push(`/school-services/mobility/${data.id}`)
     } catch (e: any) {
         toast.error(e?.response?.data?.message ?? 'No se pudo crear')

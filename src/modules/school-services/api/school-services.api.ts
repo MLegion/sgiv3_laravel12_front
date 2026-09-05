@@ -140,6 +140,7 @@ export default {
         },
         mobility: {
             cases:     apiUrl('/school-services/mobility/cases'),
+            external:  apiUrl('/school-services/mobility/cases/external'),
             incoming:  apiUrl('/school-services/mobility/incoming'),
             byId:      (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}`),
             autoMatch: (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/auto-match`),
