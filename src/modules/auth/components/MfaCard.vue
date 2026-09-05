@@ -24,64 +24,14 @@
         <template v-else-if="!status.enabled && step === 'idle'">
             <button
                 type="button"
-                :disabled="busy"
-                class="px-5 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-                @click="startSetup"
+                class="px-5 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700"
+                @click="showWizard = true"
             >
-                {{ busy ? 'Generando…' : 'Activar 2FA' }}
+                Activar 2FA
             </button>
         </template>
 
-        <!-- ESTADO: CONFIGURANDO (QR + confirmar) -->
-        <template v-else-if="step === 'setup'">
-            <div class="rounded-xl border border-slate-200 p-4 space-y-4 max-w-md">
-                <ol class="text-sm text-slate-600 space-y-1 list-decimal list-inside">
-                    <li>Escanea el código QR con tu app autenticadora.</li>
-                    <li>Ingresa el código de 6 dígitos que muestra la app.</li>
-                </ol>
-
-                <div class="flex justify-center">
-                    <img v-if="qrDataUrl" :src="qrDataUrl" alt="Código QR 2FA" class="w-48 h-48 border border-slate-200 rounded-md" />
-                </div>
-
-                <div class="text-center">
-                    <p class="text-xs text-slate-400">¿No puedes escanear? Ingresa la clave manualmente:</p>
-                    <code class="mt-1 inline-block text-sm font-mono bg-slate-100 px-2 py-1 rounded break-all">{{ secret }}</code>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Código de verificación</label>
-                    <input
-                        v-model="confirmCode"
-                        inputmode="numeric"
-                        maxlength="6"
-                        placeholder="000000"
-                        class="w-full sm:w-48 rounded-lg border border-slate-300 px-3 py-2 text-center text-lg tracking-[0.3em] outline-none focus:border-indigo-500"
-                        @input="confirmCode = confirmCode.replace(/\D/g, '').slice(0, 6)"
-                    />
-                </div>
-
-                <div v-if="message" class="text-sm px-3 py-2 rounded-lg" :class="messageOk ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'">
-                    {{ message }}
-                </div>
-
-                <div class="flex gap-2">
-                    <button
-                        type="button"
-                        :disabled="busy || confirmCode.length < 6"
-                        class="px-5 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-                        @click="confirm"
-                    >
-                        {{ busy ? 'Verificando…' : 'Confirmar y activar' }}
-                    </button>
-                    <button type="button" class="px-4 py-2 text-slate-500 text-sm hover:underline" @click="reset">
-                        Cancelar
-                    </button>
-                </div>
-            </div>
-        </template>
-
-        <!-- ESTADO: MOSTRAR CÓDIGOS DE RECUPERACIÓN (tras activar o regenerar) -->
+        <!-- ESTADO: MOSTRAR CÓDIGOS DE RECUPERACIÓN (tras regenerar) -->
         <template v-else-if="step === 'recovery'">
             <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3 max-w-md">
                 <p class="text-sm font-semibold text-amber-800">Guarda tus códigos de recuperación</p>
@@ -145,24 +95,25 @@
                 </div>
             </div>
         </template>
+
+        <!-- Wizard a pantalla completa para activar 2FA -->
+        <MfaSetupWizard v-if="showWizard" @close="showWizard = false" @activated="onWizardActivated" />
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import QRCode from 'qrcode'
 import { api } from '@/shared/services/api'
+import MfaSetupWizard from '@/modules/auth/components/MfaSetupWizard.vue'
 
-type Step = 'idle' | 'setup' | 'recovery'
+type Step = 'idle' | 'recovery'
 
 const loading = ref(true)
 const busy = ref(false)
 const step = ref<Step>('idle')
 const status = reactive({ enabled: false, pending: false })
+const showWizard = ref(false)
 
-const secret = ref('')
-const qrDataUrl = ref<string | null>(null)
-const confirmCode = ref('')
 const recoveryCodes = ref<string[]>([])
 const password = ref('')
 const copied = ref(false)
@@ -188,37 +139,10 @@ async function loadStatus() {
     }
 }
 
-async function startSetup() {
-    busy.value = true
-    setMsg('')
-    try {
-        const { data } = await api.post('/api/v1/auth/mfa/setup')
-        secret.value = data.secret
-        qrDataUrl.value = await QRCode.toDataURL(data.otpauth_uri, {
-            errorCorrectionLevel: 'M', margin: 1, width: 256,
-        })
-        confirmCode.value = ''
-        step.value = 'setup'
-    } catch (e: any) {
-        setMsg(e?.response?.data?.message || 'No se pudo iniciar la configuración.')
-    } finally {
-        busy.value = false
-    }
-}
-
-async function confirm() {
-    busy.value = true
-    setMsg('')
-    try {
-        const { data } = await api.post('/api/v1/auth/mfa/confirm', { code: confirmCode.value })
-        recoveryCodes.value = data.recovery_codes || []
-        status.enabled = true
-        step.value = 'recovery'
-    } catch (e: any) {
-        setMsg(e?.response?.data?.message || 'Código incorrecto.')
-    } finally {
-        busy.value = false
-    }
+async function onWizardActivated() {
+    // El wizard confirmó el 2FA: refrescar la tarjeta para mostrar "Activo".
+    await loadStatus()
+    setMsg('Autenticación de dos factores activada.', true)
 }
 
 async function disable() {
@@ -259,9 +183,6 @@ function finishRecovery() {
 
 function reset() {
     step.value = 'idle'
-    secret.value = ''
-    qrDataUrl.value = null
-    confirmCode.value = ''
     setMsg('')
 }
 
