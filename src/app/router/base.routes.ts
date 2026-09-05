@@ -32,4 +32,10 @@ export const basePublicRoutes = [
         component: () => import('@/app/pages/ServerErrorPage.vue'),
         meta: { title: 'Error de Servidor' }
     },
+    {
+        path: '/verificar/:folio',
+        name: 'signatures.verify',
+        component: () => import('@/modules/signatures/pages/VerifySignaturePage.vue'),
+        meta: { title: 'Verificar Firma' }
+    },
 ]

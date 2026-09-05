@@ -285,6 +285,11 @@
 
                         <!-- Segundo factor (opt-in) -->
                         <MfaCard />
+
+                        <hr class="my-6 border-slate-100" />
+
+                        <!-- Firma electrónica (rúbrica + preferencia MFA al firmar) -->
+                        <SignatureRubricCard />
                     </div>
                 </div>
             </div>
@@ -329,6 +334,7 @@ import PasswordStrengthField from '@/app/components/ui/form/PasswordStrengthFiel
 import UserAvatar from '@/app/components/ui/UserAvatar.vue'
 import PhotoUpload from '@/app/components/ui/form/PhotoUpload.vue'
 import MfaCard from '@/modules/auth/components/MfaCard.vue'
+import SignatureRubricCard from '@/modules/signatures/components/SignatureRubricCard.vue'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 
 interface ProctorRecord {
