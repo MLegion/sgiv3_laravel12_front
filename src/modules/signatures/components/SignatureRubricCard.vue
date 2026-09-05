@@ -40,23 +40,28 @@
 
         <!-- Overlay a pantalla completa (ideal para celular / tableta) -->
         <teleport to="body">
-            <div v-if="fullscreen" class="fixed inset-0 z-[60] bg-white flex flex-col">
-                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200">
-                    <div>
-                        <p class="font-semibold text-slate-800">Dibuja tu firma</p>
-                        <p class="text-xs text-slate-400">Gira el teléfono a horizontal para más espacio. Usa el dedo o una pluma.</p>
+            <div v-if="fullscreen" class="fixed top-0 left-0 w-screen z-[60] bg-white flex flex-col" style="height:100dvh">
+                <!-- Barra superior: acciones SIEMPRE visibles (aunque el navegador móvil recorte abajo) -->
+                <div class="shrink-0 flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-200">
+                    <p class="font-semibold text-slate-800 text-sm truncate">Dibuja tu firma</p>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50" @click="fsPadRef?.clear()">Limpiar</button>
+                        <button type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50" @click="fullscreen = false">⤡ Reducir</button>
+                        <button type="button" class="rounded-lg bg-slate-800 px-4 py-1.5 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="saving || fsEmpty" @click="saveFromPad(fsPadRef, true)">
+                            {{ saving ? 'Guardando…' : 'Guardar' }}
+                        </button>
                     </div>
-                    <button type="button" class="text-slate-400 hover:text-slate-600 text-xl leading-none" @click="fullscreen = false">✕</button>
                 </div>
-                <div class="flex-1 p-3">
+                <p class="shrink-0 px-3 py-1 text-xs text-slate-400">Gira el teléfono a horizontal para más espacio. Usa el dedo, un stylus o una tableta de firma.</p>
+                <div class="flex-1 min-h-0 p-3">
                     <div class="w-full h-full rounded-xl border border-dashed border-slate-300 bg-slate-50 p-2">
                         <SignaturePad ref="fsPadRef" @update:empty="(v) => fsEmpty = v" />
                     </div>
                 </div>
-                <div class="flex items-center justify-end gap-3 px-4 py-3 border-t border-slate-200">
-                    <button type="button" class="text-sm font-medium text-slate-600 hover:text-slate-800" @click="fsPadRef?.clear()">Limpiar</button>
+                <!-- Barra inferior (redundante para escritorio / pantallas altas) -->
+                <div class="shrink-0 flex items-center justify-end gap-3 px-3 py-2 border-t border-slate-200">
                     <button type="button" class="text-sm text-slate-500" @click="fullscreen = false">Cancelar</button>
-                    <button type="button" class="rounded-lg bg-slate-800 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="saving || fsEmpty" @click="saveFromPad(fsPadRef, true)">
+                    <button type="button" class="rounded-lg bg-slate-800 px-5 py-1.5 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="saving || fsEmpty" @click="saveFromPad(fsPadRef, true)">
                         {{ saving ? 'Guardando…' : 'Guardar' }}
                     </button>
                 </div>
