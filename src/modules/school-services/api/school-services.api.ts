@@ -138,5 +138,18 @@ export default {
             reclassificationPreview: (capId: string | number) => apiUrl(`/school-services/academic-periods/${capId}/reclassification-preview`),
             reclassify:              (capId: string | number) => apiUrl(`/school-services/academic-periods/${capId}/reclassify`),
         },
+        mobility: {
+            cases:     apiUrl('/school-services/mobility/cases'),
+            incoming:  apiUrl('/school-services/mobility/incoming'),
+            byId:      (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}`),
+            autoMatch: (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/auto-match`),
+            items:     (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/items`),
+            send:      (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/send`),
+            review:    (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/review`),
+            approve:   (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/approve`),
+            reject:    (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/reject`),
+            cancel:    (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/cancel`),
+            apply:     (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/apply`),
+        },
     },
 } satisfies ApiModule

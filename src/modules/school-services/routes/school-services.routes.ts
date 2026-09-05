@@ -6,6 +6,19 @@ export default [
         component: () => import('@/modules/school-services/pages/MyKardexPage.vue'),
         meta: { title: 'Mi Kardex' },
     },
+    // Movilidad estudiantil
+    {
+        path: 'school-services/mobility',
+        name: 'school-services.mobility',
+        component: () => import('@/modules/school-services/pages/MobilityCasesPage.vue'),
+        meta: { title: 'Movilidad estudiantil' },
+    },
+    {
+        path: 'school-services/mobility/:id',
+        name: 'school-services.mobility.show',
+        component: () => import('@/modules/school-services/pages/MobilityCaseEditPage.vue'),
+        meta: { title: 'Expediente de movilidad' },
+    },
     // Students
     {
         path: 'school-services/students',
