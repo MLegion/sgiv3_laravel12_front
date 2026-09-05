@@ -157,14 +157,14 @@
                 <p v-if="c.status === 'approved'" class="mt-2 text-xs text-amber-600">El traslado no se aplica sin una firma válida del dictamen.</p>
             </div>
 
-            <!-- Documentos -->
+            <!-- Documentos (reporteador: DAO + plantilla .docx → PDF) -->
             <div class="rounded-xl border border-slate-200 p-5">
                 <h2 class="font-semibold text-slate-800 mb-1">Documentos</h2>
-                <p class="text-xs text-slate-400 mb-3">Formato TecNM/DGAIR (Acuerdo 286) con firma electrónica y QR de verificación.</p>
+                <p class="text-xs text-slate-400 mb-3">Formato estándar TecNM/DGAIR (Acuerdo 286) con folio de firma electrónica y ruta de verificación.</p>
                 <div class="flex flex-wrap gap-2">
-                    <button v-if="!isOutbound" class="btn-secondary" :disabled="dgBusy" @click="download('dictamen')">Descargar dictamen</button>
-                    <button v-if="isOutbound" class="btn-secondary" :disabled="dgBusy" @click="download('certificado')">Certificado parcial</button>
-                    <button v-if="isOutbound" class="btn-secondary" :disabled="dgBusy" @click="download('oficio')">Oficio de traslado</button>
+                    <ReportGenerateButton v-if="!isOutbound" report-code="RPT.MOV_DICTAMEN" :params="{ case_id: id }" format="pdf" label="Dictamen" :filename="`dictamen-${id}`" />
+                    <ReportGenerateButton v-if="isOutbound" report-code="RPT.MOV_CERT_PARCIAL" :params="{ case_id: id }" format="pdf" label="Certificado parcial" :filename="`certificado-${id}`" />
+                    <ReportGenerateButton v-if="isOutbound" report-code="RPT.MOV_OFICIO" :params="{ case_id: id }" format="pdf" label="Oficio de traslado" :filename="`oficio-${id}`" />
                 </div>
             </div>
         </template>
@@ -189,8 +189,8 @@ import { useToast } from '@/app/composables/useToast'
 import { useConfirm } from '@/app/composables/useConfirm'
 import SignDocumentModal from '@/modules/signatures/modals/SignDocumentModal.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import ReportGenerateButton from '@/modules/reports/components/ReportGenerateButton.vue'
 import { statusClass, statusLabel } from '@/modules/school-services/mobility.status'
-import { generateMobilityDocument } from '@/modules/school-services/mobility.documents'
 
 const SIGNABLE_TYPE = 'Modules\\SchoolServices\\Infrastructure\\Models\\StudentMobilityCase'
 
@@ -271,21 +271,6 @@ async function apply() {
 }
 
 function onSigned() { toast.success('Dictamen firmado. Ya puedes aplicar el traslado.') }
-
-const dgBusy = ref(false)
-async function download(type: 'dictamen' | 'certificado' | 'oficio') {
-    dgBusy.value = true
-    try {
-        const { data } = await api.get(API.SCHOOL_SERVICES_API.mobility.document(id))
-        let certData = null
-        if (type === 'certificado') certData = cert.value ?? (await api.get(API.SCHOOL_SERVICES_API.mobility.certificate(id))).data
-        await generateMobilityDocument(type, data, certData)
-    } catch (e: any) {
-        toast.error(e?.response?.data?.message ?? 'No se pudo generar el documento')
-    } finally {
-        dgBusy.value = false
-    }
-}
 
 onMounted(load)
 </script>

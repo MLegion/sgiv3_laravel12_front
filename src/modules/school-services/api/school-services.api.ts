@@ -147,7 +147,6 @@ export default {
             studyPlans:  apiUrl('/school-services/mobility/study-plans'),
             byId:        (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}`),
             certificate: (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/certificate`),
-            document:    (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/document`),
             autoMatch: (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/auto-match`),
             items:     (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/items`),
             send:      (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/send`),
