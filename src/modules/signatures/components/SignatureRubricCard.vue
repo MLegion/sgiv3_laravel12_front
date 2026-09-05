@@ -3,8 +3,8 @@
         <div>
             <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest">Firma electrónica</h3>
             <p class="text-sm text-slate-500 mt-1">
-                Dibuja tu rúbrica: se estampará en los documentos que firmes. La firma se
-                asegura con tu segundo factor (MFA) o contraseña al momento de firmar.
+                Dibuja tu rúbrica con el mouse, el dedo o una <strong>pluma / tableta de firma</strong>: se estampará en los
+                documentos que firmes. La firma se asegura con tu MFA o contraseña al firmar.
             </p>
         </div>
 
@@ -17,19 +17,17 @@
             </div>
         </div>
 
-        <!-- Editor de rúbrica -->
+        <!-- Editor de rúbrica (inline) -->
         <div v-if="editing || !hasRubric" class="space-y-2">
-            <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-2 w-fit">
-                <canvas
-                    ref="canvasRef"
-                    width="480" height="180"
-                    class="rounded-lg bg-white touch-none cursor-crosshair"
-                    @pointerdown="onDown" @pointermove="onMove" @pointerup="onUp" @pointerleave="onUp"
-                ></canvas>
+            <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-2 max-w-lg">
+                <div class="h-44">
+                    <SignaturePad ref="padRef" @update:empty="(v) => empty = v" />
+                </div>
             </div>
-            <div class="flex items-center gap-3">
-                <button type="button" class="text-sm font-medium text-slate-600 hover:text-slate-800" @click="clearCanvas">Limpiar</button>
-                <button type="button" class="rounded-lg bg-slate-800 px-4 py-1.5 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="saving || empty" @click="saveRubric">
+            <div class="flex flex-wrap items-center gap-3">
+                <button type="button" class="text-sm font-medium text-slate-600 hover:text-slate-800" @click="padRef?.clear()">Limpiar</button>
+                <button type="button" class="text-sm font-medium text-blue-600 hover:text-blue-700" @click="fullscreen = true">⤢ Ampliar (celular)</button>
+                <button type="button" class="rounded-lg bg-slate-800 px-4 py-1.5 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="saving || empty" @click="saveFromPad(padRef)">
                     {{ saving ? 'Guardando…' : 'Guardar rúbrica' }}
                 </button>
                 <button v-if="editing && hasRubric" type="button" class="text-sm text-slate-500 hover:text-slate-700" @click="editing = false">Cancelar</button>
@@ -39,73 +37,61 @@
         <hr class="border-slate-100" />
 
         <FormSwitch v-model="mfaRequired" label="Exigir código MFA al firmar" @update:modelValue="saveMfaRequired" />
+
+        <!-- Overlay a pantalla completa (ideal para celular / tableta) -->
+        <teleport to="body">
+            <div v-if="fullscreen" class="fixed inset-0 z-[60] bg-white flex flex-col">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+                    <div>
+                        <p class="font-semibold text-slate-800">Dibuja tu firma</p>
+                        <p class="text-xs text-slate-400">Gira el teléfono a horizontal para más espacio. Usa el dedo o una pluma.</p>
+                    </div>
+                    <button type="button" class="text-slate-400 hover:text-slate-600 text-xl leading-none" @click="fullscreen = false">✕</button>
+                </div>
+                <div class="flex-1 p-3">
+                    <div class="w-full h-full rounded-xl border border-dashed border-slate-300 bg-slate-50 p-2">
+                        <SignaturePad ref="fsPadRef" @update:empty="(v) => fsEmpty = v" />
+                    </div>
+                </div>
+                <div class="flex items-center justify-end gap-3 px-4 py-3 border-t border-slate-200">
+                    <button type="button" class="text-sm font-medium text-slate-600 hover:text-slate-800" @click="fsPadRef?.clear()">Limpiar</button>
+                    <button type="button" class="text-sm text-slate-500" @click="fullscreen = false">Cancelar</button>
+                    <button type="button" class="rounded-lg bg-slate-800 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="saving || fsEmpty" @click="saveFromPad(fsPadRef, true)">
+                        {{ saving ? 'Guardando…' : 'Guardar' }}
+                    </button>
+                </div>
+            </div>
+        </teleport>
     </section>
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useConfirm } from '@/app/composables/useConfirm'
 import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
+import SignaturePad from '@/modules/signatures/components/SignaturePad.vue'
+
+type Pad = { clear: () => void; toBlob: () => Promise<Blob | null>; isEmpty: () => boolean }
 
 const toast = useToast()
 const { confirm } = useConfirm()
 
-const canvasRef = ref<HTMLCanvasElement | null>(null)
+const padRef = ref<Pad | null>(null)
+const fsPadRef = ref<Pad | null>(null)
 const hasRubric = ref(false)
 const rubricUrl = ref('')
 const mfaRequired = ref(true)
 const editing = ref(false)
 const saving = ref(false)
 const empty = ref(true)
-
-let drawing = false
-let ctx: CanvasRenderingContext2D | null = null
-
-function initCanvas() {
-    const c = canvasRef.value
-    if (!c) return
-    ctx = c.getContext('2d')
-    if (!ctx) return
-    ctx.lineWidth = 2.4
-    ctx.lineCap = 'round'
-    ctx.lineJoin = 'round'
-    ctx.strokeStyle = '#0f172a'
-}
-
-function pos(e: PointerEvent) {
-    const rect = canvasRef.value!.getBoundingClientRect()
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
-}
-function onDown(e: PointerEvent) {
-    if (!ctx) initCanvas()
-    drawing = true
-    const p = pos(e)
-    ctx!.beginPath()
-    ctx!.moveTo(p.x, p.y)
-}
-function onMove(e: PointerEvent) {
-    if (!drawing || !ctx) return
-    const p = pos(e)
-    ctx.lineTo(p.x, p.y)
-    ctx.stroke()
-    empty.value = false
-}
-function onUp() { drawing = false }
-
-function clearCanvas() {
-    const c = canvasRef.value
-    if (c && ctx) ctx.clearRect(0, 0, c.width, c.height)
-    empty.value = true
-}
+const fsEmpty = ref(true)
+const fullscreen = ref(false)
 
 async function startEditing() {
     editing.value = true
-    await nextTick()
-    initCanvas()
-    clearCanvas()
 }
 
 async function load() {
@@ -117,12 +103,12 @@ async function load() {
     } catch { /* perfil aún sin crear */ }
 }
 
-async function saveRubric() {
-    const c = canvasRef.value
-    if (!c) return
+async function saveFromPad(pad: Pad | null, fromFullscreen = false) {
+    if (!pad) return
+    const blob = await pad.toBlob()
+    if (!blob) return
     saving.value = true
     try {
-        const blob: Blob = await new Promise((res) => c.toBlob((b) => res(b as Blob), 'image/png'))
         const fd = new FormData()
         fd.append('_method', 'PUT')
         fd.append('rubric', blob, 'rubrica.png')
@@ -130,6 +116,7 @@ async function saveRubric() {
         hasRubric.value = data.has_rubric
         rubricUrl.value = data.rubric_url ?? ''
         editing.value = false
+        if (fromFullscreen) fullscreen.value = false
         toast.success('Rúbrica guardada')
     } catch {
         toast.error('No se pudo guardar la rúbrica')
