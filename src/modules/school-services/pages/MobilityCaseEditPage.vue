@@ -135,24 +135,24 @@
             <div class="rounded-xl border border-slate-200 p-5">
                 <h2 class="font-semibold text-slate-800 mb-3">Acciones</h2>
                 <div class="flex flex-wrap items-center gap-2">
-                    <button v-if="c.status === 'draft'" class="btn-primary" :disabled="busy" @click="act('send')">Enviar al plantel destino</button>
-                    <button v-if="c.status === 'sent'" class="btn-primary" :disabled="busy" @click="act('review')">Tomar para revisión</button>
+                    <button v-if="c.status === 'draft'" class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="busy" @click="act('send')">Enviar al plantel destino</button>
+                    <button v-if="c.status === 'sent'" class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="busy" @click="act('review')">Tomar para revisión</button>
 
                     <template v-if="c.status === 'in_review'">
                         <input v-model="dictamen" placeholder="No. dictamen" class="h-9 w-40 rounded-lg border border-slate-300 px-3 text-sm" />
                         <input v-model="resolutionDate" type="date" class="h-9 rounded-lg border border-slate-300 px-3 text-sm" />
-                        <button class="btn-primary" :disabled="busy" @click="approve">Aprobar dictamen</button>
+                        <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="busy" @click="approve">Aprobar dictamen</button>
                     </template>
 
                     <template v-if="c.status === 'approved'">
-                        <button class="btn-secondary" :disabled="busy" @click="signOpen = true">Firmar dictamen</button>
+                        <button class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-40" :disabled="busy" @click="signOpen = true">Firmar dictamen</button>
                         <input v-model="numControl" placeholder="Núm. control (opc.)" class="h-9 w-44 rounded-lg border border-slate-300 px-3 text-sm" />
                         <input v-model.number="periodNumber" type="number" placeholder="Semestre" class="h-9 w-28 rounded-lg border border-slate-300 px-3 text-sm" />
-                        <button class="btn-primary" :disabled="busy" @click="apply">Aplicar traslado</button>
+                        <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="busy" @click="apply">Aplicar traslado</button>
                     </template>
 
-                    <button v-if="['sent','in_review'].includes(c.status)" class="btn-danger" :disabled="busy" @click="reject">Rechazar</button>
-                    <button v-if="['draft','sent','in_review','approved'].includes(c.status)" class="btn-ghost" :disabled="busy" @click="act('cancel')">Cancelar</button>
+                    <button v-if="['sent','in_review'].includes(c.status)" class="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-40" :disabled="busy" @click="reject">Rechazar</button>
+                    <button v-if="['draft','sent','in_review','approved'].includes(c.status)" class="rounded-lg px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 disabled:opacity-40" :disabled="busy" @click="act('cancel')">Cancelar</button>
                 </div>
                 <p v-if="c.status === 'approved'" class="mt-2 text-xs text-amber-600">El traslado no se aplica sin una firma válida del dictamen.</p>
             </div>
@@ -275,9 +275,3 @@ function onSigned() { toast.success('Dictamen firmado. Ya puedes aplicar el tras
 onMounted(load)
 </script>
 
-<style scoped>
-.btn-primary { @apply rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40; }
-.btn-secondary { @apply rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-40; }
-.btn-danger { @apply rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-40; }
-.btn-ghost { @apply rounded-lg px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 disabled:opacity-40; }
-</style>
