@@ -69,17 +69,34 @@
                 <FormRemoteSelect
                     v-model="ext.student_id"
                     label="Alumno (ya inscrito)"
-                    :endpoint="API.SCHOOL_SERVICES_API.students.list"
-                    :endpoint-by-id="API.SCHOOL_SERVICES_API.students.byId"
-                    :item-searchs="['names', 'first_surname', 'num_control']"
-                    :item-label="studentLabel"
+                    :endpoint="API.SCHOOL_SERVICES_API.mobility.students"
+                    :item-searchs="['q']"
+                    item-label="label"
                     item-value="id"
-                    placeholder="Buscar alumno…"
+                    placeholder="Buscar por num. control, nombre, apellidos o carrera…"
                 />
+                <label class="flex items-center gap-2 text-sm text-slate-600">
+                    <input v-model="ext.is_foreign" type="checkbox" /> Institución extranjera (revalidación)
+                </label>
+
+                <!-- Institución de origen: SGI (select) / externa (texto) / extranjera (texto) -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Institución de origen</label>
-                    <input v-model="ext.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                    <div v-if="!ext.is_foreign" class="flex gap-4 mb-2">
+                        <label class="flex items-center gap-2 text-sm text-slate-600"><input type="radio" value="external" v-model="ext.origin_type" /> Externa (nacional)</label>
+                        <label class="flex items-center gap-2 text-sm text-slate-600"><input type="radio" value="sgi" v-model="ext.origin_type" /> Del sistema (SGI)</label>
+                    </div>
+                    <FormRemoteSelect
+                        v-if="!ext.is_foreign && ext.origin_type === 'sgi'"
+                        v-model="ext.external_institution_name"
+                        :endpoint="API.SCHOOL_SERVICES_API.mobility.colleges"
+                        item-label="label"
+                        item-value="label"
+                        placeholder="Selecciona plantel del SGI…"
+                    />
+                    <input v-else v-model="ext.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" :placeholder="ext.is_foreign ? 'Nombre de la institución (extranjera)' : 'Nombre de la institución'" />
                 </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <FormRemoteSelect
                         v-if="!ext.is_foreign"
@@ -103,9 +120,6 @@
                         placeholder="Selecciona plan…"
                     />
                 </div>
-                <label class="flex items-center gap-2 text-sm text-slate-600">
-                    <input v-model="ext.is_foreign" type="checkbox" /> Institución extranjera (revalidación)
-                </label>
             </div>
             <template #footer>
                 <button class="rounded-lg px-4 py-2 text-sm text-slate-600" @click="openExternal = false">Cancelar</button>
@@ -119,12 +133,11 @@
                 <FormRemoteSelect
                     v-model="out.student_id"
                     label="Alumno saliente"
-                    :endpoint="API.SCHOOL_SERVICES_API.students.list"
-                    :endpoint-by-id="API.SCHOOL_SERVICES_API.students.byId"
-                    :item-searchs="['names', 'first_surname', 'num_control']"
-                    :item-label="studentLabel"
+                    :endpoint="API.SCHOOL_SERVICES_API.mobility.students"
+                    :item-searchs="['q']"
+                    item-label="label"
                     item-value="id"
-                    placeholder="Buscar alumno…"
+                    placeholder="Buscar por num. control, nombre, apellidos o carrera…"
                 />
 
                 <div>
@@ -187,10 +200,6 @@ import { mobilityKind, PROCESS_GLOSSARY } from '@/modules/school-services/mobili
 
 const glossary = PROCESS_GLOSSARY
 
-function studentLabel(s: any): string {
-    return `${s.num_control ?? ''} — ${s.names ?? ''} ${s.first_surname ?? ''}`.trim()
-}
-
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
@@ -207,7 +216,7 @@ const loading = ref(false)
 const openExternal = ref(false)
 const openOutbound = ref(false)
 const creating = ref(false)
-const ext = ref<{ student_id: number | null; external_institution_name: string; external_institution_place: string; destination_study_plan_id: number | null; is_foreign: boolean }>({ student_id: null, external_institution_name: '', external_institution_place: '', destination_study_plan_id: null, is_foreign: false })
+const ext = ref<{ student_id: number | null; origin_type: 'sgi' | 'external'; external_institution_name: string; external_institution_place: string; destination_study_plan_id: number | null; is_foreign: boolean }>({ student_id: null, origin_type: 'external', external_institution_name: '', external_institution_place: '', destination_study_plan_id: null, is_foreign: false })
 const out = ref<{ student_id: number | null; dest: 'sgi' | 'external'; destination_college_id: number | null; external_institution_name: string; external_institution_place: string }>({ student_id: null, dest: 'sgi', destination_college_id: null, external_institution_name: '', external_institution_place: '' })
 
 const outboundValid = computed(() => {
