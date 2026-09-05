@@ -1,7 +1,44 @@
 import PizZip from 'pizzip'
 import Docxtemplater from 'docxtemplater'
+// @ts-expect-error el módulo libre no trae tipos
+import ImageModule from 'docxtemplater-image-module-free'
 
 export const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
+const TRANSPARENT_PNG_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+
+function dataUrlToArrayBuffer(dataUrl: string): ArrayBuffer {
+    const base64 = (dataUrl.split(',')[1] ?? '')
+    const bin = atob(base64)
+    const u8 = new Uint8Array(bin.length)
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i)
+    return u8.buffer
+}
+
+/**
+ * Módulo de imágenes: los tags `{%campo}` se reemplazan por la imagen cuyo valor
+ * (ya resuelto a data URL por imageResolver) está en el contexto. El tamaño se
+ * infiere del nombre del tag (qr / firma-rúbrica / genérico).
+ */
+function buildImageModule(): any {
+    return new ImageModule({
+        centered: false,
+        getImage(tagValue: string): ArrayBuffer {
+            if (typeof tagValue === 'string' && tagValue.startsWith('data:')) {
+                return dataUrlToArrayBuffer(tagValue)
+            }
+            return dataUrlToArrayBuffer('data:image/png;base64,' + TRANSPARENT_PNG_B64)
+        },
+        getSize(_img: unknown, tagValue: string, tagName: string): [number, number] {
+            const real = typeof tagValue === 'string' && tagValue.startsWith('data:image/') && tagValue.length > 200
+            if (!real) return [1, 1]
+            const name = (tagName || '').toLowerCase()
+            if (name.includes('qr')) return [90, 90]
+            if (name.includes('rubric') || name.includes('firma')) return [170, 60]
+            return [110, 110]
+        },
+    })
+}
 
 /**
  * Parser que resuelve paths con puntos (ej: "docente.docente_nombre", "horario.totales.total").
@@ -128,6 +165,7 @@ export async function fillDocxTemplate(templateBlob: Blob, context: Record<strin
     let doc: Docxtemplater
     try {
         doc = new Docxtemplater(zip, {
+            modules:       [buildImageModule()],
             paragraphLoop: true,
             linebreaks:    true,
             parser:        dotPathParser,
