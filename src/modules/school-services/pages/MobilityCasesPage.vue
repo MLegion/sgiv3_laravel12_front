@@ -157,8 +157,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
@@ -170,10 +170,17 @@ function studentLabel(s: any): string {
     return `${s.num_control ?? ''} — ${s.names ?? ''} ${s.first_surname ?? ''}`.trim()
 }
 
+const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 const tabs = [{ key: 'mine', label: 'Todos' }, { key: 'incoming', label: 'Entrantes' }]
-const tab = ref('mine')
+const tab = ref(route.query.tab === 'incoming' ? 'incoming' : 'mine')
+
+// El menú "Entrantes" navega con ?tab=incoming; reflejarlo aunque el componente no se remonte.
+watch(() => route.query.tab, (t) => {
+    const next = t === 'incoming' ? 'incoming' : 'mine'
+    if (next !== tab.value) { tab.value = next; load() }
+})
 const rows = ref<any[]>([])
 const loading = ref(false)
 const openCreate = ref(false)
