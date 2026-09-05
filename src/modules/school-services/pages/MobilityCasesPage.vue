@@ -6,6 +6,9 @@
                 <p class="text-sm text-slate-500">Traslado, equivalencia y revalidación de estudios.</p>
             </div>
             <div class="flex gap-2">
+                <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" @click="openOutbound = true">
+                    Salida externa
+                </button>
                 <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" @click="openExternal = true">
                     Equivalencia externa
                 </button>
@@ -102,6 +105,28 @@
                 <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40" :disabled="creating || !ext.student_id || !ext.external_institution_name" @click="createExternal">Crear</button>
             </template>
         </BaseModal>
+
+        <BaseModal v-model="openOutbound" title="Salida externa (traslado a otra institución)" size="md">
+            <div class="space-y-3">
+                <p class="text-sm text-slate-500">Registra la salida de un alumno de este plantel hacia una institución fuera del sistema. Al aplicar se dará de baja por traslado.</p>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">ID del alumno saliente</label>
+                    <input v-model.number="out.student_id" type="number" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Institución de destino</label>
+                    <input v-model="out.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Estado / País</label>
+                    <input v-model="out.external_institution_place" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                </div>
+            </div>
+            <template #footer>
+                <button class="rounded-lg px-4 py-2 text-sm text-slate-600" @click="openOutbound = false">Cancelar</button>
+                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40" :disabled="creating || !out.student_id || !out.external_institution_name" @click="createOutbound">Crear</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -122,9 +147,11 @@ const rows = ref<any[]>([])
 const loading = ref(false)
 const openCreate = ref(false)
 const openExternal = ref(false)
+const openOutbound = ref(false)
 const creating = ref(false)
 const form = ref<{ origin_student_id: number | null; destination_college_id: number | null; justification: string }>({ origin_student_id: null, destination_college_id: null, justification: '' })
 const ext = ref<{ student_id: number | null; external_institution_name: string; external_institution_place: string; destination_study_plan_id: number | null; is_foreign: boolean }>({ student_id: null, external_institution_name: '', external_institution_place: '', destination_study_plan_id: null, is_foreign: false })
+const out = ref<{ student_id: number | null; external_institution_name: string; external_institution_place: string }>({ student_id: null, external_institution_name: '', external_institution_place: '' })
 
 async function load() {
     loading.value = true
@@ -157,6 +184,20 @@ async function createExternal() {
         const { data } = await api.post(API.SCHOOL_SERVICES_API.mobility.external, ext.value)
         toast.success('Expediente de equivalencia creado')
         openExternal.value = false
+        router.push(`/school-services/mobility/${data.id}`)
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo crear')
+    } finally {
+        creating.value = false
+    }
+}
+
+async function createOutbound() {
+    creating.value = true
+    try {
+        const { data } = await api.post(API.SCHOOL_SERVICES_API.mobility.outbound, out.value)
+        toast.success('Expediente de salida creado')
+        openOutbound.value = false
         router.push(`/school-services/mobility/${data.id}`)
     } catch (e: any) {
         toast.error(e?.response?.data?.message ?? 'No se pudo crear')

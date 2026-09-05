@@ -22,8 +22,38 @@
                 </div>
             </div>
 
+            <!-- Certificado parcial (salida externa) -->
+            <div v-if="isOutbound" class="rounded-xl border border-slate-200 p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-semibold text-slate-800">Certificado parcial de estudios</h2>
+                    <span class="text-sm text-slate-500">Destino: {{ c.external_institution_name }}</span>
+                </div>
+                <div v-if="cert" class="overflow-hidden rounded-lg border border-slate-100">
+                    <div class="px-3 py-2 bg-slate-50 text-sm text-slate-600">
+                        {{ cert.student?.name }} · N.C. {{ cert.student?.num_control }} · {{ cert.grades.length }} materias
+                    </div>
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-50 text-slate-500"><tr>
+                            <th class="text-left px-3 py-2 font-medium">Clave</th>
+                            <th class="text-left px-3 py-2 font-medium">Materia</th>
+                            <th class="text-left px-3 py-2 font-medium">Cal.</th>
+                            <th class="text-left px-3 py-2 font-medium">Tipo</th>
+                        </tr></thead>
+                        <tbody>
+                            <tr v-for="(g, i) in cert.grades" :key="i" class="border-t border-slate-100">
+                                <td class="px-3 py-1.5 font-mono text-xs text-slate-400">{{ g.code }}</td>
+                                <td class="px-3 py-1.5 text-slate-700">{{ g.subject }}</td>
+                                <td class="px-3 py-1.5 text-slate-600">{{ g.grade ?? '—' }}</td>
+                                <td class="px-3 py-1.5 text-slate-500 text-xs">{{ g.approval || '—' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p v-else class="text-sm text-slate-400">Cargando certificado…</p>
+            </div>
+
             <!-- Convalidación / dictamen -->
-            <div class="rounded-xl border border-slate-200 p-5 space-y-4">
+            <div v-if="!isOutbound" class="rounded-xl border border-slate-200 p-5 space-y-4">
                 <div class="flex items-center justify-between">
                     <h2 class="font-semibold text-slate-800">Dictamen ({{ items.length }} materias · {{ recognizedCount }} reconocidas)</h2>
                     <div v-if="canEdit && !isExternal" class="flex items-center gap-2">
@@ -156,8 +186,10 @@ const resolutionDate = ref('')
 const numControl = ref('')
 const periodNumber = ref<number | null>(null)
 
+const cert = ref<any>(null)
 const canEdit = computed(() => c.value && ['draft', 'in_review'].includes(c.value.status))
 const isExternal = computed(() => c.value?.scope === 'external')
+const isOutbound = computed(() => c.value?.direction === 'outbound' && isExternal.value)
 const recognizedCount = computed(() => items.value.filter((i) => i.decision === 'recognized').length)
 
 function decisionLabel(d: string) { return d === 'recognized' ? 'Reconocida' : d === 'not_recognized' ? 'No reconocida' : 'Pendiente' }
@@ -177,6 +209,9 @@ async function load() {
     try {
         const { data } = await api.get(API.SCHOOL_SERVICES_API.mobility.byId(id))
         hydrate(data)
+        if (isOutbound.value) {
+            try { cert.value = (await api.get(API.SCHOOL_SERVICES_API.mobility.certificate(id))).data } catch { /* sin certificado */ }
+        }
     } finally {
         loading.value = false
     }
