@@ -6,14 +6,11 @@
                 <p class="text-sm text-slate-500">Traslado, equivalencia y revalidación de estudios.</p>
             </div>
             <div class="flex gap-2">
-                <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" title="El alumno deja este plantel hacia otra institución" @click="openOutbound = true">
-                    Salida por traslado
-                </button>
                 <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" title="Estudios de una institución fuera del sistema (nacional o extranjera)" @click="openExternal = true">
                     Equivalencia / Revalidación
                 </button>
-                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900" title="Recepción de otro plantel del sistema (SGIv3)" @click="openCreate = true">
-                    Traslado interno
+                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900" title="El alumno deja este plantel (a otro plantel del SGI o a una institución externa)" @click="openOutbound = true">
+                    Salida por traslado
                 </button>
             </div>
         </div>
@@ -66,38 +63,6 @@
             </table>
         </div>
 
-        <BaseModal v-model="openCreate" title="Nuevo traslado interno" size="md">
-            <div class="space-y-3">
-                <p class="text-sm text-slate-500">Registra el traslado saliente de un alumno de este plantel hacia otro plantel del sistema.</p>
-                <FormRemoteSelect
-                    v-model="form.origin_student_id"
-                    label="Alumno de origen"
-                    :endpoint="API.SCHOOL_SERVICES_API.students.list"
-                    :endpoint-by-id="API.SCHOOL_SERVICES_API.students.byId"
-                    :item-searchs="['names', 'first_surname', 'num_control']"
-                    :item-label="studentLabel"
-                    item-value="id"
-                    placeholder="Buscar alumno…"
-                />
-                <FormRemoteSelect
-                    v-model="form.destination_college_id"
-                    label="Plantel destino"
-                    :endpoint="API.SCHOOL_SERVICES_API.mobility.colleges"
-                    item-label="label"
-                    item-value="id"
-                    placeholder="Selecciona plantel…"
-                />
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Justificación (opcional)</label>
-                    <textarea v-model="form.justification" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2"></textarea>
-                </div>
-            </div>
-            <template #footer>
-                <button class="rounded-lg px-4 py-2 text-sm text-slate-600" @click="openCreate = false">Cancelar</button>
-                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40" :disabled="creating || !form.origin_student_id || !form.destination_college_id" @click="create">Crear</button>
-            </template>
-        </BaseModal>
-
         <BaseModal v-model="openExternal" title="Nueva equivalencia / revalidación externa" size="md">
             <div class="space-y-3">
                 <p class="text-sm text-slate-500">Reconocimiento de estudios de una institución fuera del sistema, sobre un alumno ya inscrito en este plantel.</p>
@@ -116,9 +81,18 @@
                     <input v-model="ext.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Estado / País</label>
-                        <input v-model="ext.external_institution_place" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                    <FormRemoteSelect
+                        v-if="!ext.is_foreign"
+                        v-model="ext.external_institution_place"
+                        label="Estado"
+                        :endpoint="API.GEO_API.states"
+                        item-label="name"
+                        item-value="name"
+                        placeholder="Selecciona estado…"
+                    />
+                    <div v-else>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">País</label>
+                        <input v-model="ext.external_institution_place" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="País de origen" />
                     </div>
                     <FormRemoteSelect
                         v-model="ext.destination_study_plan_id"
@@ -139,9 +113,9 @@
             </template>
         </BaseModal>
 
-        <BaseModal v-model="openOutbound" title="Salida externa (traslado a otra institución)" size="md">
+        <BaseModal v-model="openOutbound" title="Salida por traslado" size="md">
             <div class="space-y-3">
-                <p class="text-sm text-slate-500">Registra la salida de un alumno de este plantel hacia una institución fuera del sistema. Al aplicar se dará de baja por traslado.</p>
+                <p class="text-sm text-slate-500">Registra la salida de un alumno de este plantel. Al aplicar se dará de baja por traslado.</p>
                 <FormRemoteSelect
                     v-model="out.student_id"
                     label="Alumno saliente"
@@ -152,25 +126,56 @@
                     item-value="id"
                     placeholder="Buscar alumno…"
                 />
+
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Institución de destino</label>
-                    <input v-model="out.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">¿A dónde se traslada?</label>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="flex items-center gap-2 text-sm text-slate-600">
+                            <input type="radio" value="sgi" v-model="out.dest" /> Otro plantel del sistema (SGI)
+                        </label>
+                        <label class="flex items-center gap-2 text-sm text-slate-600">
+                            <input type="radio" value="external" v-model="out.dest" /> Institución externa (fuera del SGI)
+                        </label>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Estado / País</label>
-                    <input v-model="out.external_institution_place" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
-                </div>
+
+                <!-- Destino SGI: se crea un traslado interno (el plantel destino lo recibe) -->
+                <FormRemoteSelect
+                    v-if="out.dest === 'sgi'"
+                    v-model="out.destination_college_id"
+                    label="Plantel destino (SGI)"
+                    :endpoint="API.SCHOOL_SERVICES_API.mobility.colleges"
+                    item-label="label"
+                    item-value="id"
+                    placeholder="Selecciona plantel…"
+                />
+
+                <!-- Destino externo: se emite certificado parcial + oficio -->
+                <template v-else>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Institución de destino</label>
+                        <input v-model="out.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                    </div>
+                    <FormRemoteSelect
+                        v-model="out.external_institution_place"
+                        label="Estado"
+                        :endpoint="API.GEO_API.states"
+                        item-label="name"
+                        item-value="name"
+                        placeholder="Selecciona estado…"
+                    />
+                </template>
             </div>
             <template #footer>
                 <button class="rounded-lg px-4 py-2 text-sm text-slate-600" @click="openOutbound = false">Cancelar</button>
-                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40" :disabled="creating || !out.student_id || !out.external_institution_name" @click="createOutbound">Crear</button>
+                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40" :disabled="creating || !outboundValid" @click="createOutbound">Crear</button>
             </template>
         </BaseModal>
     </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -199,13 +204,16 @@ watch(() => route.query.tab, (t) => {
 })
 const rows = ref<any[]>([])
 const loading = ref(false)
-const openCreate = ref(false)
 const openExternal = ref(false)
 const openOutbound = ref(false)
 const creating = ref(false)
-const form = ref<{ origin_student_id: number | null; destination_college_id: number | null; justification: string }>({ origin_student_id: null, destination_college_id: null, justification: '' })
 const ext = ref<{ student_id: number | null; external_institution_name: string; external_institution_place: string; destination_study_plan_id: number | null; is_foreign: boolean }>({ student_id: null, external_institution_name: '', external_institution_place: '', destination_study_plan_id: null, is_foreign: false })
-const out = ref<{ student_id: number | null; external_institution_name: string; external_institution_place: string }>({ student_id: null, external_institution_name: '', external_institution_place: '' })
+const out = ref<{ student_id: number | null; dest: 'sgi' | 'external'; destination_college_id: number | null; external_institution_name: string; external_institution_place: string }>({ student_id: null, dest: 'sgi', destination_college_id: null, external_institution_name: '', external_institution_place: '' })
+
+const outboundValid = computed(() => {
+    if (!out.value.student_id) return false
+    return out.value.dest === 'sgi' ? !!out.value.destination_college_id : !!out.value.external_institution_name
+})
 
 async function load() {
     loading.value = true
@@ -215,20 +223,6 @@ async function load() {
         rows.value = data.data ?? []
     } finally {
         loading.value = false
-    }
-}
-
-async function create() {
-    creating.value = true
-    try {
-        const { data } = await api.post(API.SCHOOL_SERVICES_API.mobility.cases, form.value)
-        toast.success('Expediente creado')
-        openCreate.value = false
-        router.push(`/school-services/mobility/${data.id}`)
-    } catch (e: any) {
-        toast.error(e?.response?.data?.message ?? 'No se pudo crear')
-    } finally {
-        creating.value = false
     }
 }
 
@@ -249,7 +243,21 @@ async function createExternal() {
 async function createOutbound() {
     creating.value = true
     try {
-        const { data } = await api.post(API.SCHOOL_SERVICES_API.mobility.outbound, out.value)
+        let data: any
+        if (out.value.dest === 'sgi') {
+            // Salida a otro plantel del SGI = traslado interno (el destino lo recibe en "Entrantes").
+            ({ data } = await api.post(API.SCHOOL_SERVICES_API.mobility.cases, {
+                origin_student_id: out.value.student_id,
+                destination_college_id: out.value.destination_college_id,
+            }))
+        } else {
+            // Salida a institución externa: se emite certificado parcial + oficio.
+            ({ data } = await api.post(API.SCHOOL_SERVICES_API.mobility.outbound, {
+                student_id: out.value.student_id,
+                external_institution_name: out.value.external_institution_name,
+                external_institution_place: out.value.external_institution_place,
+            }))
+        }
         toast.success('Expediente de salida creado')
         openOutbound.value = false
         router.push(`/school-services/mobility/${data.id}`)
