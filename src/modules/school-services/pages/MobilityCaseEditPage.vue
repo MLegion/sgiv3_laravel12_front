@@ -56,9 +56,20 @@
             <div v-if="!isOutbound" class="rounded-xl border border-slate-200 p-5 space-y-4">
                 <div class="flex items-center justify-between">
                     <h2 class="font-semibold text-slate-800">Dictamen ({{ items.length }} materias · {{ recognizedCount }} reconocidas)</h2>
-                    <div v-if="canEdit && !isExternal" class="flex items-center gap-2">
-                        <input v-model.number="destPlanId" type="number" placeholder="ID plan destino" class="h-9 w-40 rounded-lg border border-slate-300 px-3 text-sm" />
-                        <button class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-40" :disabled="!destPlanId || busy" @click="autoMatch">Convalidar por clave</button>
+                    <div v-if="canEdit && !isExternal" class="flex items-end gap-2">
+                        <div class="w-64">
+                            <FormRemoteSelect
+                                :key="c.destination_college_id"
+                                v-model="destPlanId"
+                                label="Plan destino"
+                                :endpoint="API.SCHOOL_SERVICES_API.mobility.studyPlans"
+                                :params="{ college_id: c.destination_college_id }"
+                                item-label="label"
+                                item-value="id"
+                                placeholder="Selecciona plan…"
+                            />
+                        </div>
+                        <button class="h-10 rounded-lg bg-blue-600 px-3 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-40" :disabled="!destPlanId || busy" @click="autoMatch">Convalidar por clave</button>
                     </div>
                     <button v-if="canEdit && isExternal" class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700" @click="addRow">+ Agregar materia</button>
                 </div>
@@ -166,6 +177,7 @@ import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useConfirm } from '@/app/composables/useConfirm'
 import SignDocumentModal from '@/modules/signatures/modals/SignDocumentModal.vue'
+import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import { statusClass, statusLabel } from '@/modules/school-services/mobility.status'
 
 const SIGNABLE_TYPE = 'Modules\\SchoolServices\\Infrastructure\\Models\\StudentMobilityCase'

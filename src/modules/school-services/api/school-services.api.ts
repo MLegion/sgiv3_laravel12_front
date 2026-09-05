@@ -143,6 +143,8 @@ export default {
             external:    apiUrl('/school-services/mobility/cases/external'),
             outbound:    apiUrl('/school-services/mobility/cases/outbound'),
             incoming:    apiUrl('/school-services/mobility/incoming'),
+            colleges:    apiUrl('/school-services/mobility/colleges'),
+            studyPlans:  apiUrl('/school-services/mobility/study-plans'),
             byId:        (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}`),
             certificate: (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/certificate`),
             autoMatch: (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/auto-match`),

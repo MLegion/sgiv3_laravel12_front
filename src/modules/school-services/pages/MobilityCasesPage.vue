@@ -56,14 +56,24 @@
         <BaseModal v-model="openCreate" title="Nuevo traslado interno" size="md">
             <div class="space-y-3">
                 <p class="text-sm text-slate-500">Registra el traslado saliente de un alumno de este plantel hacia otro plantel del sistema.</p>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">ID del alumno de origen</label>
-                    <input v-model.number="form.origin_student_id" type="number" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">ID del plantel destino</label>
-                    <input v-model.number="form.destination_college_id" type="number" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
-                </div>
+                <FormRemoteSelect
+                    v-model="form.origin_student_id"
+                    label="Alumno de origen"
+                    :endpoint="API.SCHOOL_SERVICES_API.students.list"
+                    :endpoint-by-id="API.SCHOOL_SERVICES_API.students.byId"
+                    :item-searchs="['names', 'first_surname', 'num_control']"
+                    :item-label="studentLabel"
+                    item-value="id"
+                    placeholder="Buscar alumno…"
+                />
+                <FormRemoteSelect
+                    v-model="form.destination_college_id"
+                    label="Plantel destino"
+                    :endpoint="API.SCHOOL_SERVICES_API.mobility.colleges"
+                    item-label="label"
+                    item-value="id"
+                    placeholder="Selecciona plantel…"
+                />
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Justificación (opcional)</label>
                     <textarea v-model="form.justification" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2"></textarea>
@@ -78,10 +88,16 @@
         <BaseModal v-model="openExternal" title="Nueva equivalencia / revalidación externa" size="md">
             <div class="space-y-3">
                 <p class="text-sm text-slate-500">Reconocimiento de estudios de una institución fuera del sistema, sobre un alumno ya inscrito en este plantel.</p>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">ID del alumno (ya inscrito)</label>
-                    <input v-model.number="ext.student_id" type="number" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
-                </div>
+                <FormRemoteSelect
+                    v-model="ext.student_id"
+                    label="Alumno (ya inscrito)"
+                    :endpoint="API.SCHOOL_SERVICES_API.students.list"
+                    :endpoint-by-id="API.SCHOOL_SERVICES_API.students.byId"
+                    :item-searchs="['names', 'first_surname', 'num_control']"
+                    :item-label="studentLabel"
+                    item-value="id"
+                    placeholder="Buscar alumno…"
+                />
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Institución de origen</label>
                     <input v-model="ext.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
@@ -91,10 +107,14 @@
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Estado / País</label>
                         <input v-model="ext.external_institution_place" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">ID plan destino</label>
-                        <input v-model.number="ext.destination_study_plan_id" type="number" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
-                    </div>
+                    <FormRemoteSelect
+                        v-model="ext.destination_study_plan_id"
+                        label="Plan destino"
+                        :endpoint="API.SCHOOL_SERVICES_API.mobility.studyPlans"
+                        item-label="label"
+                        item-value="id"
+                        placeholder="Selecciona plan…"
+                    />
                 </div>
                 <label class="flex items-center gap-2 text-sm text-slate-600">
                     <input v-model="ext.is_foreign" type="checkbox" /> Institución extranjera (revalidación)
@@ -109,10 +129,16 @@
         <BaseModal v-model="openOutbound" title="Salida externa (traslado a otra institución)" size="md">
             <div class="space-y-3">
                 <p class="text-sm text-slate-500">Registra la salida de un alumno de este plantel hacia una institución fuera del sistema. Al aplicar se dará de baja por traslado.</p>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">ID del alumno saliente</label>
-                    <input v-model.number="out.student_id" type="number" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
-                </div>
+                <FormRemoteSelect
+                    v-model="out.student_id"
+                    label="Alumno saliente"
+                    :endpoint="API.SCHOOL_SERVICES_API.students.list"
+                    :endpoint-by-id="API.SCHOOL_SERVICES_API.students.byId"
+                    :item-searchs="['names', 'first_surname', 'num_control']"
+                    :item-label="studentLabel"
+                    item-value="id"
+                    placeholder="Buscar alumno…"
+                />
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Institución de destino</label>
                     <input v-model="out.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
@@ -137,7 +163,12 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import { statusClass, statusLabel } from '@/modules/school-services/mobility.status'
+
+function studentLabel(s: any): string {
+    return `${s.num_control ?? ''} — ${s.names ?? ''} ${s.first_surname ?? ''}`.trim()
+}
 
 const router = useRouter()
 const toast = useToast()
