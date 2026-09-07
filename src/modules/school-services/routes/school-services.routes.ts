@@ -20,12 +20,6 @@ export default [
         meta: { title: 'Configuración de movilidad' },
     },
     {
-        path: 'school-services/mobility/sign',
-        name: 'school-services.mobility.sign',
-        component: () => import('@/modules/school-services/pages/MobilitySignInboxPage.vue'),
-        meta: { title: 'Dictámenes por firmar' },
-    },
-    {
         path: 'school-services/mobility/:id',
         name: 'school-services.mobility.show',
         component: () => import('@/modules/school-services/pages/MobilityCaseEditPage.vue'),

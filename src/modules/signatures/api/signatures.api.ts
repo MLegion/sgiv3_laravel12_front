@@ -10,8 +10,9 @@ export default {
             rubric:       apiUrl('/signatures/profile/rubric'),
             deleteRubric: apiUrl('/signatures/profile/rubric'),
         },
-        sign:   apiUrl('/signatures/sign'),
-        for:    apiUrl('/signatures/for'),
+        sign:    apiUrl('/signatures/sign'),
+        for:     apiUrl('/signatures/for'),
+        pending: apiUrl('/signatures/pending'),
         verify: (folio: string) => apiUrl(`/signatures/verify/${folio}`),
     },
 } satisfies ApiModule
