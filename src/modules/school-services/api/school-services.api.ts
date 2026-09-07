@@ -165,6 +165,16 @@ export default {
             reject:    (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/reject`),
             cancel:    (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/cancel`),
             apply:     (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/apply`),
+            config: {
+                normativas:        apiUrl('/school-services/mobility/config/normativas'),
+                normativaById:     (id: string | number) => apiUrl(`/school-services/mobility/config/normativas/${id}`),
+                documentTypes:     apiUrl('/school-services/mobility/config/document-types'),
+                requirementSets:   apiUrl('/school-services/mobility/config/requirement-sets'),
+                requirementSetById:(id: string | number) => apiUrl(`/school-services/mobility/config/requirement-sets/${id}`),
+                signers:           apiUrl('/school-services/mobility/config/signers'),
+                signerById:        (id: string | number) => apiUrl(`/school-services/mobility/config/signers/${id}`),
+                roles:             apiUrl('/school-services/mobility/config/roles'),
+            },
         },
     },
 } satisfies ApiModule
