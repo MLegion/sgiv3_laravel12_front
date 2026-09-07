@@ -155,6 +155,7 @@ export default {
             documentDownload: (id: string | number, docId: string | number) => apiUrl(`/school-services/mobility/cases/${id}/documents/${docId}/download`),
             documentDelete:   (id: string | number, docId: string | number) => apiUrl(`/school-services/mobility/cases/${id}/documents/${docId}`),
             documentValidate: (id: string | number, docId: string | number) => apiUrl(`/school-services/mobility/cases/${id}/documents/${docId}/validate`),
+            mySignatures: apiUrl('/school-services/mobility/my-signatures'),
             signatures:  (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/signatures`),
             sign:        (id: string | number, slot: string) => apiUrl(`/school-services/mobility/cases/${id}/sign/${slot}`),
             autoMatch: (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/auto-match`),

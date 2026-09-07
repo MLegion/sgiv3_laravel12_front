@@ -213,10 +213,10 @@
                 <p v-if="c.status === 'approved'" class="mt-2 text-xs text-amber-600">El traslado no se aplica hasta reunir todas las firmas requeridas del dictamen.</p>
             </div>
 
-            <!-- Firmas del dictamen -->
+            <!-- Firmas del dictamen (solo lectura: cada firmante firma desde su bandeja) -->
             <div v-if="signers.length" class="rounded-xl border border-slate-200 p-5 space-y-3">
                 <h2 class="font-semibold text-slate-800">Firmas del dictamen</h2>
-                <p class="text-xs text-slate-400">Estas firmas avalan el dictamen; hasta reunirlas todas no puede aplicarse.</p>
+                <p class="text-xs text-slate-400">Estas firmas avalan el dictamen; hasta reunirlas todas no puede aplicarse. Cada firmante las realiza desde <b>Trámites → Movilidad → Por firmar</b>.</p>
                 <div v-for="s in signers" :key="s.slot" class="flex items-center justify-between gap-3 rounded-lg border border-slate-100 p-3">
                     <div class="min-w-0">
                         <p class="text-sm font-medium text-slate-700">{{ s.avala || s.slot }}</p>
@@ -224,10 +224,9 @@
                             {{ s.role_code }}<span v-if="s.context === 'career'"> · de la carrera del caso</span><span v-else-if="s.context === 'college'"> · del plantel</span>
                         </p>
                         <p v-if="s.signed" class="text-xs text-emerald-600 mt-1">✓ Firmado por {{ s.signed.signer_name }} · folio {{ s.signed.folio }}</p>
-                        <p v-else class="text-xs text-amber-600 mt-1">Pendiente</p>
+                        <p v-else class="text-xs text-amber-600 mt-1">Pendiente de firma</p>
                     </div>
-                    <button v-if="!s.signed && s.can_sign" class="shrink-0 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700" @click="openSign(s)">Firmar</button>
-                    <span v-else-if="!s.signed" class="shrink-0 text-xs text-slate-400">No te corresponde</span>
+                    <span class="shrink-0 text-xs font-semibold" :class="s.signed ? 'text-emerald-600' : 'text-amber-500'">{{ s.signed ? 'Firmado' : 'Pendiente' }}</span>
                 </div>
             </div>
 
@@ -243,12 +242,6 @@
             </div>
         </template>
 
-        <SignDocumentModal
-            v-model="signOpen"
-            :endpoint="signEndpoint"
-            :label="signLabel"
-            @signed="onSlotSigned"
-        />
     </div>
 </template>
 
@@ -259,7 +252,6 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useConfirm } from '@/app/composables/useConfirm'
-import SignDocumentModal from '@/modules/signatures/modals/SignDocumentModal.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import ReportGenerateButton from '@/modules/reports/components/ReportGenerateButton.vue'
 import { statusClass, statusLabel } from '@/modules/school-services/mobility.status'
@@ -274,10 +266,7 @@ const c = ref<any>(null)
 const items = ref<any[]>([])
 const loading = ref(true)
 const busy = ref(false)
-const signOpen = ref(false)
 const signers = ref<any[]>([])
-const signEndpoint = ref('')
-const signLabel = ref('')
 const destPlanId = ref<number | null>(null)
 const dictamen = ref('')
 const resolutionDate = ref('')
@@ -393,16 +382,6 @@ async function apply() {
 
 async function loadSignatures() {
     try { signers.value = (await api.get(API.SCHOOL_SERVICES_API.mobility.signatures(id))).data.data ?? [] } catch { signers.value = [] }
-}
-
-function openSign(s: any) {
-    signEndpoint.value = API.SCHOOL_SERVICES_API.mobility.sign(id, s.slot)
-    signLabel.value = s.avala || s.slot
-    signOpen.value = true
-}
-
-async function onSlotSigned() {
-    await loadSignatures()
 }
 
 async function validateDoc(docId: number) {
