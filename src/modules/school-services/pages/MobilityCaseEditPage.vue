@@ -26,6 +26,18 @@
                 </div>
             </div>
 
+            <!-- Datos del alumno capturados (traslado externo: alta al aplicar) -->
+            <div v-if="c.incoming_student && c.status !== 'applied'" class="rounded-xl border border-slate-200 p-5">
+                <h2 class="font-semibold text-slate-800 mb-1">Alumno por dar de alta</h2>
+                <p class="text-xs text-slate-400 mb-3">Estos datos se registraron en el expediente. El alta (número de control nuevo) se hará al aplicar.</p>
+                <div class="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+                    <div><span class="text-slate-400">Nombre:</span> <span class="text-slate-700">{{ c.incoming_student.names }} {{ c.incoming_student.first_surname }} {{ c.incoming_student.second_surname }}</span></div>
+                    <div><span class="text-slate-400">Correo:</span> <span class="text-slate-700">{{ c.incoming_student.email }}</span></div>
+                    <div v-if="c.incoming_student.curp"><span class="text-slate-400">CURP:</span> <span class="text-slate-700">{{ c.incoming_student.curp }}</span></div>
+                    <div><span class="text-slate-400">Institución de origen:</span> <span class="text-slate-700">{{ c.external_institution_name }} <span v-if="c.external_institution_place">· {{ c.external_institution_place }}</span></span></div>
+                </div>
+            </div>
+
             <!-- Certificado parcial (salida externa) -->
             <div v-if="isOutbound" class="rounded-xl border border-slate-200 p-5 space-y-3">
                 <div class="flex items-center justify-between">

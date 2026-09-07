@@ -141,6 +141,7 @@ export default {
         mobility: {
             cases:       apiUrl('/school-services/mobility/cases'),
             external:    apiUrl('/school-services/mobility/cases/external'),
+            externalTransfer: apiUrl('/school-services/mobility/cases/external-transfer'),
             outbound:    apiUrl('/school-services/mobility/cases/outbound'),
             incoming:    apiUrl('/school-services/mobility/incoming'),
             colleges:    apiUrl('/school-services/mobility/colleges'),

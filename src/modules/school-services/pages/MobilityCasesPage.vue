@@ -5,8 +5,11 @@
                 <h1 class="text-xl font-semibold text-slate-800">Movilidad estudiantil</h1>
                 <p class="text-sm text-slate-500">Traslado, equivalencia y revalidación de estudios.</p>
             </div>
-            <div class="flex gap-2">
-                <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" title="Estudios de una institución fuera del sistema (nacional o extranjera)" @click="openExternal = true">
+            <div class="flex flex-wrap gap-2">
+                <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" title="El alumno llega de una institución que NO está en el SGI; se da de alta al aplicar" @click="openTransfer = true">
+                    Traslado externo
+                </button>
+                <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" title="Estudios de una institución fuera del sistema (nacional o extranjera), sobre un alumno ya inscrito" @click="openExternal = true">
                     Equivalencia / Revalidación
                 </button>
                 <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900" title="El alumno deja este plantel (a otro plantel del SGI o a una institución externa)" @click="openOutbound = true">
@@ -62,6 +65,72 @@
                 </tbody>
             </table>
         </div>
+
+        <BaseModal v-model="openTransfer" title="Traslado externo (entrante)" size="md">
+            <div class="space-y-3">
+                <p class="text-sm text-slate-500">El alumno llega de una institución que <b>no está en el SGI</b>. Sus datos quedan en el expediente y se da de alta al aplicar el traslado.</p>
+
+                <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Datos del alumno</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre(s) *</label>
+                        <input v-model="xt.names" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Apellido paterno *</label>
+                        <input v-model="xt.first_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Apellido materno</label>
+                        <input v-model="xt.second_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Correo *</label>
+                        <input v-model="xt.email" type="email" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">CURP</label>
+                        <input v-model="xt.curp" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                    </div>
+                </div>
+
+                <p class="text-xs font-black text-slate-400 uppercase tracking-widest pt-1">Institución de origen y destino</p>
+                <label class="flex items-center gap-2 text-sm text-slate-600">
+                    <input v-model="xt.is_foreign" type="checkbox" /> Institución extranjera
+                </label>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Institución de origen *</label>
+                    <input v-model="xt.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="Nombre de la institución" />
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <FormRemoteSelect
+                        v-if="!xt.is_foreign"
+                        v-model="xt.external_institution_place"
+                        label="Estado"
+                        :endpoint="API.GEO_API.states"
+                        item-label="name"
+                        item-value="name"
+                        placeholder="Selecciona estado…"
+                    />
+                    <div v-else>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">País</label>
+                        <input v-model="xt.external_institution_place" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="País de origen" />
+                    </div>
+                    <FormRemoteSelect
+                        v-model="xt.destination_study_plan_id"
+                        label="Plan destino (nuestro)"
+                        :endpoint="API.SCHOOL_SERVICES_API.mobility.studyPlans"
+                        item-label="label"
+                        item-value="id"
+                        placeholder="Selecciona plan…"
+                    />
+                </div>
+            </div>
+            <template #footer>
+                <button class="rounded-lg px-4 py-2 text-sm text-slate-600" @click="openTransfer = false">Cancelar</button>
+                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40" :disabled="creating || !xt.names || !xt.first_surname || !xt.email || !xt.external_institution_name" @click="createTransfer">Crear</button>
+            </template>
+        </BaseModal>
 
         <BaseModal v-model="openExternal" title="Nueva equivalencia / revalidación externa" size="md">
             <div class="space-y-3">
@@ -214,8 +283,10 @@ watch(() => route.query.tab, (t) => {
 const rows = ref<any[]>([])
 const loading = ref(false)
 const openExternal = ref(false)
+const openTransfer = ref(false)
 const openOutbound = ref(false)
 const creating = ref(false)
+const xt = ref<{ names: string; first_surname: string; second_surname: string; email: string; curp: string; is_foreign: boolean; external_institution_name: string; external_institution_place: string; destination_study_plan_id: number | null }>({ names: '', first_surname: '', second_surname: '', email: '', curp: '', is_foreign: false, external_institution_name: '', external_institution_place: '', destination_study_plan_id: null })
 const ext = ref<{ student_id: number | null; origin_type: 'sgi' | 'external'; external_institution_name: string; external_institution_place: string; destination_study_plan_id: number | null; is_foreign: boolean }>({ student_id: null, origin_type: 'external', external_institution_name: '', external_institution_place: '', destination_study_plan_id: null, is_foreign: false })
 const out = ref<{ student_id: number | null; dest: 'sgi' | 'external'; destination_college_id: number | null; external_institution_name: string; external_institution_place: string }>({ student_id: null, dest: 'sgi', destination_college_id: null, external_institution_name: '', external_institution_place: '' })
 
@@ -241,6 +312,32 @@ async function createExternal() {
         const { data } = await api.post(API.SCHOOL_SERVICES_API.mobility.external, ext.value)
         toast.success('Expediente de equivalencia creado')
         openExternal.value = false
+        router.push(`/school-services/mobility/${data.id}`)
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo crear')
+    } finally {
+        creating.value = false
+    }
+}
+
+async function createTransfer() {
+    creating.value = true
+    try {
+        const { data } = await api.post(API.SCHOOL_SERVICES_API.mobility.externalTransfer, {
+            external_institution_name: xt.value.external_institution_name,
+            external_institution_place: xt.value.external_institution_place,
+            is_foreign: xt.value.is_foreign,
+            destination_study_plan_id: xt.value.destination_study_plan_id,
+            incoming_student: {
+                names: xt.value.names,
+                first_surname: xt.value.first_surname,
+                second_surname: xt.value.second_surname || null,
+                email: xt.value.email,
+                curp: xt.value.curp || null,
+            },
+        })
+        toast.success('Traslado externo creado')
+        openTransfer.value = false
         router.push(`/school-services/mobility/${data.id}`)
     } catch (e: any) {
         toast.error(e?.response?.data?.message ?? 'No se pudo crear')
