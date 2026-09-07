@@ -147,6 +147,45 @@
                 </div>
             </div>
 
+            <!-- Documentos / Evidencia -->
+            <div v-if="c.requirement_set_id" class="rounded-xl border border-slate-200 p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-semibold text-slate-800">Documentos / Evidencia</h2>
+                    <span class="text-xs text-slate-400">Requisitos congelados según la normativa vigente al registrar</span>
+                </div>
+                <div v-if="docs" class="space-y-2">
+                    <div v-for="it in docs.items" :key="it.document_type_id" class="rounded-lg border border-slate-100 p-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="text-sm font-medium text-slate-700">
+                                    {{ it.document_type }}
+                                    <span v-if="it.is_required" class="ml-1 text-[10px] rounded bg-rose-50 text-rose-600 px-1">requerido</span>
+                                    <span v-else class="ml-1 text-[10px] rounded bg-slate-100 text-slate-500 px-1">opcional</span>
+                                </p>
+                                <p v-if="it.normativa" class="text-xs text-slate-400">{{ it.normativa }}</p>
+                                <div v-for="f in it.files" :key="f.id" class="mt-1 flex items-center gap-2 text-xs">
+                                    <button class="text-blue-600 hover:underline truncate" @click="downloadDoc(f)">{{ f.original_name }}</button>
+                                    <button v-if="canEdit" class="text-rose-400 hover:text-rose-600 shrink-0" @click="deleteDoc(f.id)">✕</button>
+                                </div>
+                                <p v-if="!it.files.length" class="mt-1 text-xs" :class="it.is_required ? 'text-rose-500' : 'text-slate-400'">Sin subir</p>
+                            </div>
+                            <label v-if="canEdit" class="shrink-0 cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                                Subir
+                                <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" @change="uploadDoc(it.document_type_id, $event)" />
+                            </label>
+                        </div>
+                    </div>
+                    <div v-if="docs.extra && docs.extra.length" class="pt-1">
+                        <p class="text-xs text-slate-400 mb-1">Otros adjuntos</p>
+                        <div v-for="f in docs.extra" :key="f.id" class="flex items-center gap-2 text-xs">
+                            <button class="text-blue-600 hover:underline truncate" @click="downloadDoc(f)">{{ f.original_name }} <span class="text-slate-400">({{ f.document_type }})</span></button>
+                            <button v-if="canEdit" class="text-rose-400 hover:text-rose-600" @click="deleteDoc(f.id)">✕</button>
+                        </div>
+                    </div>
+                </div>
+                <p v-else class="text-sm text-slate-400">Cargando documentos…</p>
+            </div>
+
             <!-- Acciones de flujo -->
             <div class="rounded-xl border border-slate-200 p-5">
                 <h2 class="font-semibold text-slate-800 mb-3">Acciones</h2>
@@ -228,6 +267,7 @@ const numControl = ref('')
 const periodNumber = ref<number | null>(null)
 
 const cert = ref<any>(null)
+const docs = ref<any>(null)
 const canEdit = computed(() => c.value && ['draft', 'in_review'].includes(c.value.status))
 const isExternal = computed(() => c.value?.scope === 'external')
 const isOutbound = computed(() => c.value?.direction === 'outbound' && isExternal.value)
@@ -253,8 +293,53 @@ async function load() {
         if (isOutbound.value) {
             try { cert.value = (await api.get(API.SCHOOL_SERVICES_API.mobility.certificate(id))).data } catch { /* sin certificado */ }
         }
+        if (data.requirement_set_id) await loadDocuments()
     } finally {
         loading.value = false
+    }
+}
+
+async function loadDocuments() {
+    try { docs.value = (await api.get(API.SCHOOL_SERVICES_API.mobility.documents(id))).data } catch { /* sin requisitos */ }
+}
+
+async function uploadDoc(typeId: number, ev: Event) {
+    const input = ev.target as HTMLInputElement
+    const file = input.files?.[0]
+    if (!file) return
+    const fd = new FormData()
+    fd.append('document_type_id', String(typeId))
+    fd.append('file', file)
+    try {
+        await api.post(API.SCHOOL_SERVICES_API.mobility.documents(id), fd)
+        toast.success('Documento subido')
+        await loadDocuments()
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo subir el documento')
+    } finally {
+        input.value = ''
+    }
+}
+
+async function downloadDoc(f: any) {
+    try {
+        const res = await api.get(API.SCHOOL_SERVICES_API.mobility.documentDownload(id, f.id), { responseType: 'blob' })
+        const url = URL.createObjectURL(res.data)
+        const a = document.createElement('a')
+        a.href = url; a.download = f.original_name; a.click()
+        URL.revokeObjectURL(url)
+    } catch {
+        toast.error('No se pudo descargar')
+    }
+}
+
+async function deleteDoc(docId: number) {
+    if (!await confirm({ title: 'Eliminar documento', message: '¿Eliminar este documento?', variant: 'danger' })) return
+    try {
+        await api.delete(API.SCHOOL_SERVICES_API.mobility.documentDelete(id, docId))
+        await loadDocuments()
+    } catch {
+        toast.error('No se pudo eliminar')
     }
 }
 
