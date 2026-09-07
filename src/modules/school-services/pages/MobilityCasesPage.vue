@@ -74,15 +74,15 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div class="col-span-2">
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre(s) *</label>
-                        <input v-model="xt.names" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        <input v-uppercase v-model="xt.names" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Apellido paterno *</label>
-                        <input v-model="xt.first_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        <input v-uppercase v-model="xt.first_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Apellido materno</label>
-                        <input v-model="xt.second_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        <input v-uppercase v-model="xt.second_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Correo *</label>
@@ -90,7 +90,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">CURP</label>
-                        <input v-model="xt.curp" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        <input v-uppercase v-model="xt.curp" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                     </div>
                 </div>
 
@@ -100,7 +100,7 @@
                 </label>
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Institución de origen *</label>
-                    <input v-model="xt.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="Nombre de la institución" />
+                    <input v-uppercase v-model="xt.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="Nombre de la institución" />
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <FormRemoteSelect
@@ -114,7 +114,7 @@
                     />
                     <div v-else>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">País</label>
-                        <input v-model="xt.external_institution_place" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="País de origen" />
+                        <input v-uppercase v-model="xt.external_institution_place" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="País de origen" />
                     </div>
                     <FormRemoteSelect
                         v-model="xt.destination_study_plan_id"
@@ -163,7 +163,7 @@
                         item-value="label"
                         placeholder="Selecciona plantel del SGI…"
                     />
-                    <input v-else v-model="ext.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" :placeholder="ext.is_foreign ? 'Nombre de la institución (extranjera)' : 'Nombre de la institución'" />
+                    <input v-else v-uppercase v-model="ext.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" :placeholder="ext.is_foreign ? 'Nombre de la institución (extranjera)' : 'Nombre de la institución'" />
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -178,7 +178,7 @@
                     />
                     <div v-else>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">País</label>
-                        <input v-model="ext.external_institution_place" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="País de origen" />
+                        <input v-uppercase v-model="ext.external_institution_place" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="País de origen" />
                     </div>
                     <FormRemoteSelect
                         v-model="ext.destination_study_plan_id"
@@ -236,7 +236,7 @@
                 <template v-else>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Institución de destino</label>
-                        <input v-model="out.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        <input v-uppercase v-model="out.external_institution_name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                     </div>
                     <FormRemoteSelect
                         v-model="out.external_institution_place"

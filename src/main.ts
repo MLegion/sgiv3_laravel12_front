@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from '@/app/App.vue'
 import router from '@/app/router'
+import { uppercase } from '@/app/directives/uppercase'
 
 // Importación de estilos globales (Tailwind CSS)
 import '@/assets/styles/main.css'
@@ -26,6 +27,9 @@ async function bootstrap() {
     // Registrar plugins
     app.use(pinia)
     app.use(router)
+
+    // Directivas globales
+    app.directive('uppercase', uppercase)
 
     // Montar la aplicación en el DOM
     // El router.isReady() asegura que las rutas iniciales y guards
