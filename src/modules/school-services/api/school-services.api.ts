@@ -165,6 +165,7 @@ export default {
             reject:    (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/reject`),
             cancel:    (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/cancel`),
             apply:     (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/apply`),
+            delete:    (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}`),
             config: {
                 normativas:        apiUrl('/school-services/mobility/config/normativas'),
                 normativaById:     (id: string | number) => apiUrl(`/school-services/mobility/config/normativas/${id}`),

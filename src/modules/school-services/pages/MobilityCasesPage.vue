@@ -58,8 +58,9 @@
                         <td class="px-4 py-2 text-slate-600">C{{ r.origin_college_id ?? '—' }} → C{{ r.destination_college_id ?? '—' }}</td>
                         <td class="px-4 py-2 text-slate-600">{{ r.dictamen_number || '—' }}</td>
                         <td class="px-4 py-2"><span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusClass(r.status)">{{ statusLabel(r.status) }}</span></td>
-                        <td class="px-4 py-2 text-right">
+                        <td class="px-4 py-2 text-right space-x-3">
                             <router-link :to="`/school-services/mobility/${r.id}`" class="text-slate-700 hover:text-slate-900 font-medium">Abrir</router-link>
+                            <button v-if="r.status !== 'applied'" class="text-red-500 hover:text-red-600 font-medium" @click="removeCase(r)">Eliminar</button>
                         </td>
                     </tr>
                 </tbody>
@@ -277,6 +278,17 @@ const externalValid = computed(() => {
     // Alumno nuevo: nombre + apellido + correo + plan de inscripción.
     return !!ext.value.ns.names && !!ext.value.ns.first_surname && !!ext.value.ns.email && !!ext.value.destination_study_plan_id
 })
+
+async function removeCase(r: any) {
+    if (!confirm(`¿Eliminar el expediente #${r.id}? Esta acción borra el caso y su evidencia.`)) return
+    try {
+        await api.delete(API.SCHOOL_SERVICES_API.mobility.delete(r.id))
+        toast.success('Expediente eliminado')
+        await load()
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo eliminar')
+    }
+}
 
 async function load() {
     loading.value = true
