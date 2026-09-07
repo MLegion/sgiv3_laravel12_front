@@ -113,8 +113,18 @@
 
         <BaseModal v-model="openExternal" title="Nueva equivalencia / revalidación externa" size="md">
             <div class="space-y-3">
-                <p class="text-sm text-slate-500">Reconocimiento de estudios de una institución fuera del sistema, sobre un alumno ya inscrito en este plantel.</p>
+                <p class="text-sm text-slate-500">Reconocimiento de estudios de una institución fuera del sistema. El alumno puede estar ya inscrito o darse de alta al aplicar.</p>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">¿El alumno ya está inscrito?</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 text-sm text-slate-600"><input type="radio" value="existing" v-model="ext.mode" /> Ya inscrito</label>
+                        <label class="flex items-center gap-2 text-sm text-slate-600"><input type="radio" value="new" v-model="ext.mode" /> Alumno nuevo (dar de alta)</label>
+                    </div>
+                </div>
+
                 <FormRemoteSelect
+                    v-if="ext.mode === 'existing'"
                     v-model="ext.student_id"
                     label="Alumno (ya inscrito)"
                     :endpoint="API.SCHOOL_SERVICES_API.mobility.students"
@@ -123,6 +133,33 @@
                     item-value="id"
                     placeholder="Buscar por num. control, nombre, apellidos o carrera…"
                 />
+
+                <template v-else>
+                    <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Datos del alumno nuevo</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre(s) *</label>
+                            <input v-uppercase v-model="ext.ns.names" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Apellido paterno *</label>
+                            <input v-uppercase v-model="ext.ns.first_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Apellido materno</label>
+                            <input v-uppercase v-model="ext.ns.second_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Correo *</label>
+                            <input v-model="ext.ns.email" type="email" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">CURP</label>
+                            <input v-uppercase v-model="ext.ns.curp" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        </div>
+                    </div>
+                </template>
+
                 <!-- La institución del catálogo determina nacional (equivalencia) vs extranjera (revalidación). -->
                 <InstitutionPicker v-model="ext.origin_institution_id" label="Institución de origen *" @selected="ext.selected = $event" />
                 <p v-if="ext.selected" class="text-xs font-semibold" :class="ext.selected.is_foreign ? 'text-purple-600' : 'text-blue-600'">
@@ -131,7 +168,7 @@
 
                 <FormRemoteSelect
                     v-model="ext.destination_study_plan_id"
-                    label="Plan destino"
+                    :label="ext.mode === 'new' ? 'Plan destino (de inscripción) *' : 'Plan destino'"
                     :endpoint="API.SCHOOL_SERVICES_API.mobility.studyPlans"
                     item-label="label"
                     item-value="id"
@@ -140,7 +177,7 @@
             </div>
             <template #footer>
                 <button class="rounded-lg px-4 py-2 text-sm text-slate-600" @click="openExternal = false">Cancelar</button>
-                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40" :disabled="creating || !ext.student_id || !ext.origin_institution_id" @click="createExternal">Crear</button>
+                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40" :disabled="creating || !externalValid" @click="createExternal">Crear</button>
             </template>
         </BaseModal>
 
@@ -226,12 +263,19 @@ const openOutbound = ref(false)
 const creating = ref(false)
 type InstSel = { id: number; label: string; is_foreign: boolean; is_active: boolean } | null
 const xt = ref<{ names: string; first_surname: string; second_surname: string; email: string; curp: string; origin_institution_id: number | null; destination_study_plan_id: number | null }>({ names: '', first_surname: '', second_surname: '', email: '', curp: '', origin_institution_id: null, destination_study_plan_id: null })
-const ext = ref<{ student_id: number | null; origin_institution_id: number | null; selected: InstSel; destination_study_plan_id: number | null }>({ student_id: null, origin_institution_id: null, selected: null, destination_study_plan_id: null })
+const ext = ref<{ mode: 'existing' | 'new'; student_id: number | null; ns: { names: string; first_surname: string; second_surname: string; email: string; curp: string }; origin_institution_id: number | null; selected: InstSel; destination_study_plan_id: number | null }>({ mode: 'existing', student_id: null, ns: { names: '', first_surname: '', second_surname: '', email: '', curp: '' }, origin_institution_id: null, selected: null, destination_study_plan_id: null })
 const out = ref<{ student_id: number | null; dest: 'sgi' | 'external'; destination_college_id: number | null; origin_institution_id: number | null }>({ student_id: null, dest: 'sgi', destination_college_id: null, origin_institution_id: null })
 
 const outboundValid = computed(() => {
     if (!out.value.student_id) return false
     return out.value.dest === 'sgi' ? !!out.value.destination_college_id : !!out.value.origin_institution_id
+})
+
+const externalValid = computed(() => {
+    if (!ext.value.origin_institution_id) return false
+    if (ext.value.mode === 'existing') return !!ext.value.student_id
+    // Alumno nuevo: nombre + apellido + correo + plan de inscripción.
+    return !!ext.value.ns.names && !!ext.value.ns.first_surname && !!ext.value.ns.email && !!ext.value.destination_study_plan_id
 })
 
 async function load() {
@@ -248,11 +292,22 @@ async function load() {
 async function createExternal() {
     creating.value = true
     try {
-        const { data } = await api.post(API.SCHOOL_SERVICES_API.mobility.external, {
-            student_id: ext.value.student_id,
+        const payload: Record<string, any> = {
             origin_institution_id: ext.value.origin_institution_id,
             destination_study_plan_id: ext.value.destination_study_plan_id,
-        })
+        }
+        if (ext.value.mode === 'existing') {
+            payload.student_id = ext.value.student_id
+        } else {
+            payload.incoming_student = {
+                names: ext.value.ns.names,
+                first_surname: ext.value.ns.first_surname,
+                second_surname: ext.value.ns.second_surname || null,
+                email: ext.value.ns.email,
+                curp: ext.value.ns.curp || null,
+            }
+        }
+        const { data } = await api.post(API.SCHOOL_SERVICES_API.mobility.external, payload)
         toast.success('Expediente de equivalencia creado')
         openExternal.value = false
         router.push(`/school-services/mobility/${data.id}`)
