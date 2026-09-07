@@ -50,10 +50,13 @@ import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 
 const props = defineProps<{
     modelValue: boolean
-    signableType: string
-    signableId: number | string
-    purpose: string
+    // Firma genérica de un signable…
+    signableType?: string
+    signableId?: number | string
+    purpose?: string
     provider?: string
+    // …o firma contra un endpoint propio (p. ej. firmar un slot de dictamen).
+    endpoint?: string
     label?: string
     signerRole?: string
 }>()
@@ -82,16 +85,21 @@ async function submit() {
     submitting.value = true
     error.value = ''
     try {
-        const { data } = await api.post(API.SIGNATURES_API.sign, {
-            signable_type: props.signableType,
-            signable_id: props.signableId,
-            purpose: props.purpose,
-            provider: props.provider ?? 'internal_mfa',
+        const body: Record<string, unknown> = {
             totp_code: usePassword.value ? null : totp.value,
             password: usePassword.value ? password.value : null,
-            signer_role: props.signerRole ?? null,
-        })
-        toast.success(`Documento firmado — folio ${data.folio}`)
+        }
+        if (! props.endpoint) {
+            Object.assign(body, {
+                signable_type: props.signableType,
+                signable_id: props.signableId,
+                purpose: props.purpose,
+                provider: props.provider ?? 'internal_mfa',
+                signer_role: props.signerRole ?? null,
+            })
+        }
+        const { data } = await api.post(props.endpoint ?? API.SIGNATURES_API.sign, body)
+        toast.success(data.folio ? `Documento firmado — folio ${data.folio}` : 'Documento firmado')
         emit('signed', data.folio)
         emit('update:modelValue', false)
         totp.value = ''

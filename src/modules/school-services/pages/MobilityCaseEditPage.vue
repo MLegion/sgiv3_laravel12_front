@@ -165,6 +165,8 @@
                                 <p v-if="it.normativa" class="text-xs text-slate-400">{{ it.normativa }}</p>
                                 <div v-for="f in it.files" :key="f.id" class="mt-1 flex items-center gap-2 text-xs">
                                     <button class="text-blue-600 hover:underline truncate" @click="downloadDoc(f)">{{ f.original_name }}</button>
+                                    <span v-if="f.validated" class="text-emerald-600 shrink-0" :title="'Validado por ' + (f.validated_by || '')">✓ validado</span>
+                                    <button v-else-if="canEdit" class="text-slate-500 hover:text-emerald-600 shrink-0" @click="validateDoc(f.id)">Validar</button>
                                     <button v-if="canEdit" class="text-rose-400 hover:text-rose-600 shrink-0" @click="deleteDoc(f.id)">✕</button>
                                 </div>
                                 <p v-if="!it.files.length" class="mt-1 text-xs" :class="it.is_required ? 'text-rose-500' : 'text-slate-400'">Sin subir</p>
@@ -200,7 +202,6 @@
                     </template>
 
                     <template v-if="c.status === 'approved'">
-                        <button class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-40" :disabled="busy" @click="signOpen = true">Firmar dictamen</button>
                         <input v-model="numControl" placeholder="Núm. control (opc.)" class="h-9 w-44 rounded-lg border border-slate-300 px-3 text-sm" />
                         <input v-model.number="periodNumber" type="number" placeholder="Semestre" class="h-9 w-28 rounded-lg border border-slate-300 px-3 text-sm" />
                         <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="busy" @click="apply">Aplicar traslado</button>
@@ -209,7 +210,25 @@
                     <button v-if="['sent','in_review'].includes(c.status)" class="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-40" :disabled="busy" @click="reject">Rechazar</button>
                     <button v-if="['draft','sent','in_review','approved'].includes(c.status)" class="rounded-lg px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 disabled:opacity-40" :disabled="busy" @click="act('cancel')">Cancelar</button>
                 </div>
-                <p v-if="c.status === 'approved'" class="mt-2 text-xs text-amber-600">El traslado no se aplica sin una firma válida del dictamen.</p>
+                <p v-if="c.status === 'approved'" class="mt-2 text-xs text-amber-600">El traslado no se aplica hasta reunir todas las firmas requeridas del dictamen.</p>
+            </div>
+
+            <!-- Firmas del dictamen -->
+            <div v-if="signers.length" class="rounded-xl border border-slate-200 p-5 space-y-3">
+                <h2 class="font-semibold text-slate-800">Firmas del dictamen</h2>
+                <p class="text-xs text-slate-400">Estas firmas avalan el dictamen; hasta reunirlas todas no puede aplicarse.</p>
+                <div v-for="s in signers" :key="s.slot" class="flex items-center justify-between gap-3 rounded-lg border border-slate-100 p-3">
+                    <div class="min-w-0">
+                        <p class="text-sm font-medium text-slate-700">{{ s.avala || s.slot }}</p>
+                        <p class="text-xs text-slate-400">
+                            {{ s.role_code }}<span v-if="s.context === 'career'"> · de la carrera del caso</span><span v-else-if="s.context === 'college'"> · del plantel</span>
+                        </p>
+                        <p v-if="s.signed" class="text-xs text-emerald-600 mt-1">✓ Firmado por {{ s.signed.signer_name }} · folio {{ s.signed.folio }}</p>
+                        <p v-else class="text-xs text-amber-600 mt-1">Pendiente</p>
+                    </div>
+                    <button v-if="!s.signed && s.can_sign" class="shrink-0 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700" @click="openSign(s)">Firmar</button>
+                    <span v-else-if="!s.signed" class="shrink-0 text-xs text-slate-400">No te corresponde</span>
+                </div>
             </div>
 
             <!-- Documentos (reporteador: DAO + plantilla .docx → PDF) -->
@@ -226,11 +245,9 @@
 
         <SignDocumentModal
             v-model="signOpen"
-            :signable-type="SIGNABLE_TYPE"
-            :signable-id="id"
-            purpose="aplicar_traslado"
-            label="Dictamen de traslado"
-            @signed="onSigned"
+            :endpoint="signEndpoint"
+            :label="signLabel"
+            @signed="onSlotSigned"
         />
     </div>
 </template>
@@ -248,8 +265,6 @@ import ReportGenerateButton from '@/modules/reports/components/ReportGenerateBut
 import { statusClass, statusLabel } from '@/modules/school-services/mobility.status'
 import { mobilityKind } from '@/modules/school-services/mobility.labels'
 
-const SIGNABLE_TYPE = 'Modules\\SchoolServices\\Infrastructure\\Models\\StudentMobilityCase'
-
 const route = useRoute()
 const toast = useToast()
 const { confirm } = useConfirm()
@@ -260,6 +275,9 @@ const items = ref<any[]>([])
 const loading = ref(true)
 const busy = ref(false)
 const signOpen = ref(false)
+const signers = ref<any[]>([])
+const signEndpoint = ref('')
+const signLabel = ref('')
 const destPlanId = ref<number | null>(null)
 const dictamen = ref('')
 const resolutionDate = ref('')
@@ -294,6 +312,7 @@ async function load() {
             try { cert.value = (await api.get(API.SCHOOL_SERVICES_API.mobility.certificate(id))).data } catch { /* sin certificado */ }
         }
         if (data.requirement_set_id) await loadDocuments()
+        await loadSignatures()
     } finally {
         loading.value = false
     }
@@ -372,7 +391,28 @@ async function apply() {
     await run(() => api.post(API.SCHOOL_SERVICES_API.mobility.apply(id), { num_control: numControl.value || null, current_period_number: periodNumber.value || null }), 'Traslado aplicado')
 }
 
-function onSigned() { toast.success('Dictamen firmado. Ya puedes aplicar el traslado.') }
+async function loadSignatures() {
+    try { signers.value = (await api.get(API.SCHOOL_SERVICES_API.mobility.signatures(id))).data.data ?? [] } catch { signers.value = [] }
+}
+
+function openSign(s: any) {
+    signEndpoint.value = API.SCHOOL_SERVICES_API.mobility.sign(id, s.slot)
+    signLabel.value = s.avala || s.slot
+    signOpen.value = true
+}
+
+async function onSlotSigned() {
+    await loadSignatures()
+}
+
+async function validateDoc(docId: number) {
+    try {
+        await api.post(API.SCHOOL_SERVICES_API.mobility.documentValidate(id, docId))
+        await loadDocuments()
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo validar')
+    }
+}
 
 onMounted(load)
 </script>
