@@ -147,6 +147,8 @@ export default {
             colleges:    apiUrl('/school-services/mobility/colleges'),
             studyPlans:  apiUrl('/school-services/mobility/study-plans'),
             students:    apiUrl('/school-services/mobility/students'),
+            institutions: apiUrl('/school-services/mobility/institutions'),
+            institutionById: (id: string | number) => apiUrl(`/school-services/mobility/institutions/${id}`),
             byId:        (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}`),
             certificate: (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/certificate`),
             documents:   (id: string | number) => apiUrl(`/school-services/mobility/cases/${id}/documents`),
