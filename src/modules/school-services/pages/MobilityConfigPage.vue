@@ -13,8 +13,10 @@
 
         <!-- ============================ NORMATIVAS ============================ -->
         <div v-if="tab === 'normativas'" class="space-y-4">
-            <div class="flex justify-end">
-                <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white" @click="openNormativa()">Nueva normativa</button>
+            <div class="flex items-center justify-between gap-3">
+                <p v-if="!canEditGlobal" class="text-xs text-slate-500">Catálogo <b>global</b> (institucional). Solo lectura — lo administra el superadministrador.</p>
+                <span v-else></span>
+                <button v-if="canEditGlobal" class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white" @click="openNormativa()">Nueva normativa</button>
             </div>
             <div class="rounded-xl border border-slate-200 overflow-hidden">
                 <table class="w-full text-sm">
@@ -36,7 +38,7 @@
                             <td class="px-4 py-2 text-slate-500">{{ n.issuer || '—' }}</td>
                             <td class="px-4 py-2 text-slate-500">{{ n.effective_from || '—' }}</td>
                             <td class="px-4 py-2">{{ n.is_active ? 'Sí' : 'No' }}</td>
-                            <td class="px-4 py-2 text-right"><button class="text-blue-600 font-medium" @click="openNormativa(n)">Editar</button></td>
+                            <td class="px-4 py-2 text-right"><button v-if="canEditGlobal" class="text-blue-600 font-medium" @click="openNormativa(n)">Editar</button><span v-else class="text-slate-300">—</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -71,8 +73,12 @@
                         <span v-if="req.baseVersion" class="text-slate-400"> — vigente v{{ req.baseVersion }}. Guardar publica una <b>nueva versión</b> (los expedientes previos quedan congelados).</span>
                         <span v-else class="text-slate-400"> — sin versión vigente aún.</span>
                     </p>
-                    <button class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700" @click="addReqRow">+ Documento</button>
+                    <button v-if="!globalReadOnly" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700" @click="addReqRow">+ Documento</button>
                 </div>
+
+                <p v-if="globalReadOnly" class="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700">
+                    Estás viendo el catálogo <b>global</b> en solo lectura. Para personalizar los requisitos de tu plantel, cambia el ámbito a <b>“Este plantel (override)”</b>. El global lo administra el superadministrador.
+                </p>
 
                 <table class="w-full text-sm">
                     <thead class="text-slate-400">
@@ -87,24 +93,24 @@
                         <tr v-if="!req.items.length"><td colspan="4" class="py-4 text-center text-slate-400">Agrega los documentos requeridos.</td></tr>
                         <tr v-for="(it, i) in req.items" :key="i" class="border-t border-slate-100">
                             <td class="py-1.5 pr-2">
-                                <select v-model.number="it.document_type_id" class="w-full h-9 rounded-lg border border-slate-300 px-2 text-sm">
+                                <select v-model.number="it.document_type_id" :disabled="globalReadOnly" class="w-full h-9 rounded-lg border border-slate-300 px-2 text-sm disabled:bg-slate-50 disabled:text-slate-500">
                                     <option :value="null" disabled>Selecciona…</option>
                                     <option v-for="d in documentTypes" :key="d.id" :value="d.id">{{ d.name }}</option>
                                 </select>
                             </td>
                             <td class="py-1.5 pr-2">
-                                <select v-model.number="it.normativa_id" class="w-full h-9 rounded-lg border border-slate-300 px-2 text-sm">
+                                <select v-model.number="it.normativa_id" :disabled="globalReadOnly" class="w-full h-9 rounded-lg border border-slate-300 px-2 text-sm disabled:bg-slate-50 disabled:text-slate-500">
                                     <option :value="null">— sin normativa —</option>
                                     <option v-for="n in normativas" :key="n.id" :value="n.id">{{ n.code }}</option>
                                 </select>
                             </td>
-                            <td class="py-1.5 text-center"><input type="checkbox" v-model="it.is_required" /></td>
-                            <td class="py-1.5 text-right"><button class="text-red-500 text-xs font-semibold" @click="req.items.splice(i, 1)">Quitar</button></td>
+                            <td class="py-1.5 text-center"><input type="checkbox" v-model="it.is_required" :disabled="globalReadOnly" /></td>
+                            <td class="py-1.5 text-right"><button v-if="!globalReadOnly" class="text-red-500 text-xs font-semibold" @click="req.items.splice(i, 1)">Quitar</button></td>
                         </tr>
                     </tbody>
                 </table>
 
-                <div class="flex justify-end">
+                <div v-if="!globalReadOnly" class="flex justify-end">
                     <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40" :disabled="publishing || !canPublish" @click="publishRequirements">
                         {{ publishing ? 'Publicando…' : 'Publicar nueva versión' }}
                     </button>
@@ -246,6 +252,12 @@ const documentTypes = ref<any[]>([])
 const roles = ref<any[]>([])
 const signerReports = ref<any[]>([])
 
+// El catálogo global (normativas, tipos de documento, requisitos scope=global)
+// solo lo administra el superadministrador. El SES_MANAGER lo ve en solo-lectura
+// y publica overrides por plantel. El backend lo confirma vía meta.can_edit_global.
+const canEditGlobal = ref(false)
+const globalReadOnly = computed(() => req.value.scope === 'global' && !canEditGlobal.value)
+
 // -------- Normativas --------
 const nmModal = ref<{ open: boolean; form: any }>({ open: false, form: {} })
 const savingNm = ref(false)
@@ -269,6 +281,9 @@ async function saveNormativa() {
 async function loadNormativas() {
     const { data } = await api.get(CFG.normativas)
     normativas.value = data.data ?? []
+    canEditGlobal.value = !!data.meta?.can_edit_global
+    // Sin permiso global el ámbito por defecto de requisitos es el override del plantel.
+    if (!canEditGlobal.value && req.value.scope === 'global') req.value.scope = 'college'
 }
 
 // -------- Requisitos --------
