@@ -17,6 +17,17 @@ export default {
             publish:         (id: string | number) => apiUrl(`/midocencia/rubrics/${id}/publish`),
             assignPeriod:    (id: string | number) => apiUrl(`/midocencia/rubrics/${id}/assign-period`),
         },
+        // Tipos de Descarga (tipo de hora ↔ rubro/criterio) — dirección académica.
+        descargaTypes: {
+            list:   apiUrl('/midocencia/descarga-types'),
+            update: (id: string | number) => apiUrl(`/midocencia/descarga-types/${id}`),
+        },
+        // Oficios Emitidos (archivo/buscador) — jefatura de carrera y secciones.
+        oficios: {
+            periods: apiUrl('/midocencia/oficios/periods'),
+            list:    apiUrl('/midocencia/oficios'),
+            context: (id: string | number) => apiUrl(`/midocencia/oficios/${id}/context`),
+        },
         // F2 — Plaza (captura por jefatura).
         plaza: {
             list: apiUrl('/midocencia/plaza/list'),

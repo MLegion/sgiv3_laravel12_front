@@ -281,13 +281,14 @@
                                 :disabled="!oficio.teacherId" />
                         </div>
                     </div>
-                    <!-- Botón generar -->
-                    <div class="mt-4 flex justify-end">
+                    <!-- Botón emitir y firmar -->
+                    <div class="mt-4 flex items-center justify-end gap-3">
+                        <span class="text-[11px] text-slate-400">Emitir el oficio requiere firmarlo (MFA/contraseña); si no firma, no se emite.</span>
                         <button
                             class="px-5 py-2 text-xs font-bold rounded-lg bg-red-600 text-white hover:bg-red-700 uppercase disabled:opacity-40"
                             :disabled="!oficioReady || oficioGenerating"
-                            @click="generateOficioInline"
-                        >GENERAR OFICIO</button>
+                            @click="showOficioSign = true"
+                        >EMITIR Y FIRMAR</button>
                     </div>
                 </div>
 
@@ -312,6 +313,17 @@
                     <div v-if="oficioError" class="p-4 text-sm text-red-600 bg-red-50">{{ oficioError }}</div>
                     <iframe v-if="oficioPdfUrl" :src="oficioPdfUrl" class="w-full h-[700px] border-0"></iframe>
                 </div>
+
+                <!-- Emitir el oficio = firmarlo. Al firmar se emite, se renderiza y se
+                     auto-archiva como evidencia (Capa B). -->
+                <SignDocumentModal
+                    v-if="oficio.teacherId && selectedPeriodId"
+                    v-model="showOficioSign"
+                    :endpoint="API.SCA_API.assignmentLetters.issue(oficio.teacherId, selectedPeriodId)"
+                    :extra-body="{ letter_number: oficio.folio.trim() }"
+                    label="Oficio de asignación docente"
+                    @signed="onOficioSigned"
+                />
             </div>
 
             <!-- ═══ Tab: Horario ═══ -->
@@ -410,6 +422,7 @@ import { API } from '@/shared/api'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
 import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
 import FormatUnavailableModal from '@/modules/reports/components/FormatUnavailableModal.vue'
+import SignDocumentModal from '@/modules/signatures/modals/SignDocumentModal.vue'
 import { ReportCode } from '@/modules/reports/types/reportCodes'
 import type { Ref } from 'vue'
 
@@ -1052,9 +1065,10 @@ const oficioResolvedModalityId = computed(() => {
 })
 
 const oficioReady = computed(() =>
-    !!(oficio.teacherId && oficio.folio.trim() && oficio.fecha)
+    !!(oficio.teacherId && oficio.folio.trim())
 )
 
+const showOficioSign = ref(false)
 const oficioPreviewVisible = ref(false)
 const oficioGenerating     = ref(false)
 const oficioBlob           = ref<Blob | null>(null)
@@ -1123,7 +1137,10 @@ async function fetchOficioTeachers() {
     } catch { oficioTeachers.value = [] }
 }
 
-async function generateOficioInline() {
+// Tras EMITIR Y FIRMAR (SignDocumentModal contra el endpoint issue): el oficio ya
+// quedó emitido con folio+QR. Lo renderizamos, lo mostramos y lo AUTO-ARCHIVAMOS
+// como evidencia (Capa B), para que después solo se presente sin regenerarse.
+async function onOficioSigned() {
     oficioError.value = null
     oficioPreviewVisible.value = true
     oficioGenerating.value = true
@@ -1137,16 +1154,29 @@ async function generateOficioInline() {
                 modality_id: oficioResolvedModalityId.value,
                 career_id:   oficio.careerId,
                 teacher_id:  oficio.teacherId,
-                folio:       oficio.folio.trim(),
-                fecha:       oficio.fecha,
             },
         })
         oficioBlob.value = blob
         oficioPdfUrl.value = URL.createObjectURL(blob)
+        await archiveOficioEvidence(blob)
     } catch (e: any) {
         handleReportError(e, oficioError, 'Error al generar el oficio.')
     } finally {
         oficioGenerating.value = false
+    }
+}
+
+/** Sube el PDF emitido como evidencia inmutable (Capa B). No bloquea si falla. */
+async function archiveOficioEvidence(blob: Blob) {
+    try {
+        const { data } = await api.get(API.SCA_API.assignmentLetters.show(oficio.teacherId!, selectedPeriodId.value!))
+        const folio = data?.signed?.folio
+        if (!folio) return
+        const form = new FormData()
+        form.append('document', blob, `${folio}.pdf`)
+        await api.post(API.SIGNATURES_API.archiveDocument(folio), form)
+    } catch {
+        // La evidencia se puede reintentar luego; no bloquea la emisión.
     }
 }
 

@@ -59,6 +59,9 @@ const props = defineProps<{
     endpoint?: string
     label?: string
     signerRole?: string
+    // Campos extra a enviar junto con las credenciales (p. ej. { folio } cuando el
+    // endpoint hace firmar+aprobar en un solo paso).
+    extraBody?: Record<string, unknown>
 }>()
 
 const emit = defineEmits<{
@@ -97,6 +100,9 @@ async function submit() {
                 provider: props.provider ?? 'internal_mfa',
                 signer_role: props.signerRole ?? null,
             })
+        }
+        if (props.extraBody) {
+            Object.assign(body, props.extraBody)
         }
         const { data } = await api.post(props.endpoint ?? API.SIGNATURES_API.sign, body)
         toast.success(data.folio ? `Documento firmado — folio ${data.folio}` : 'Documento firmado')

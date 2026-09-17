@@ -142,7 +142,8 @@
                     </table>
                 </div>
 
-                <div v-if="canEdit && items.length" class="flex justify-end">
+                <div v-if="canEdit && items.length" class="flex items-center justify-end gap-3">
+                    <span v-if="c.status === 'approved' && allSigned" class="text-xs text-amber-600">Guardar cambios revocará las firmas y exigirá re-firmar.</span>
                     <button class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40" :disabled="busy" @click="saveItems">Guardar dictamen</button>
                 </div>
             </div>
@@ -217,6 +218,9 @@
             <div v-if="signers.length" class="rounded-xl border border-slate-200 p-5 space-y-3">
                 <h2 class="font-semibold text-slate-800">Firmas del dictamen</h2>
                 <p class="text-xs text-slate-400">Estas firmas avalan el dictamen; hasta reunirlas todas no puede aplicarse. Cada firmante las realiza desde <b>Trámites → Movilidad → Por firmar</b>.</p>
+                <div v-if="pendingResign" class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                    ⚠️ El dictamen se modificó tras firmarse (revisión v{{ revisions?.current_revision_no }}). Las firmas previas se revocaron y debe re-firmarse la cadena completa antes de aplicar.
+                </div>
                 <div v-for="s in signers" :key="s.slot" class="flex items-center justify-between gap-3 rounded-lg border border-slate-100 p-3">
                     <div class="min-w-0">
                         <p class="text-sm font-medium text-slate-700">{{ s.avala || s.slot }}</p>
@@ -228,6 +232,35 @@
                     </div>
                     <span class="shrink-0 text-xs font-semibold" :class="s.signed ? 'text-emerald-600' : 'text-amber-500'">{{ s.signed ? 'Firmado' : 'Pendiente' }}</span>
                 </div>
+            </div>
+
+            <!-- Historial de revisiones del dictamen (soft-lock versionado) -->
+            <div v-if="revisions && revisions.revisions.length > 1" class="rounded-xl border border-slate-200 p-5 space-y-3">
+                <h2 class="font-semibold text-slate-800">Historial de cambios</h2>
+                <p class="text-xs text-slate-400">Cada modificación tras firmar genera una revisión y revoca las firmas para re-revisión.</p>
+                <ol class="relative border-l border-slate-200 ml-2">
+                    <li v-for="rev in revisions.revisions" :key="rev.revision_no" class="ml-4 pb-4">
+                        <span class="absolute -left-1.5 mt-1 h-3 w-3 rounded-full" :class="rev.revision_no === revisions.current_revision_no ? 'bg-emerald-500' : 'bg-slate-300'"></span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-semibold text-slate-700">v{{ rev.revision_no }}</span>
+                            <span class="text-[10px] rounded px-1.5 py-0.5" :class="rev.reason === 'initial' ? 'bg-slate-100 text-slate-500' : 'bg-amber-50 text-amber-600'">{{ rev.reason === 'initial' ? 'inicial' : 'edición' }}</span>
+                            <span class="text-xs text-slate-400">{{ rev.created_at?.slice(0, 10) }}</span>
+                        </div>
+                        <!-- Diff semántico -->
+                        <ul v-if="rev.change_summary" class="mt-1 space-y-0.5 text-xs">
+                            <li v-for="m in (rev.change_summary.items_added || [])" :key="'a'+m" class="text-emerald-600">+ {{ m }}</li>
+                            <li v-for="m in (rev.change_summary.items_removed || [])" :key="'r'+m" class="text-rose-600">− {{ m }}</li>
+                            <li v-for="m in (rev.change_summary.items_modified || [])" :key="'m'+m" class="text-amber-600">± {{ m }}</li>
+                            <li v-for="(v, k) in (rev.change_summary.fields || {})" :key="'f'+k" class="text-slate-500">{{ k }}: {{ v.from ?? '—' }} → {{ v.to ?? '—' }}</li>
+                        </ul>
+                        <!-- Firmas ancladas a esta revisión -->
+                        <div v-if="rev.signatures.length" class="mt-1 space-y-0.5">
+                            <p v-for="s in rev.signatures" :key="s.folio" class="text-xs" :class="s.revoked ? 'text-slate-400 line-through' : 'text-emerald-600'">
+                                {{ s.revoked ? '✗' : '✓' }} {{ s.signer_name }} · {{ s.purpose }}<span v-if="s.revoked" class="no-underline"> ({{ s.revoke_reason }})</span>
+                            </p>
+                        </div>
+                    </li>
+                </ol>
             </div>
 
             <!-- Documentos (reporteador: DAO + plantilla .docx → PDF) -->
@@ -254,6 +287,7 @@ import { useToast } from '@/app/composables/useToast'
 import { useConfirm } from '@/app/composables/useConfirm'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import ReportGenerateButton from '@/modules/reports/components/ReportGenerateButton.vue'
+import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import { statusClass, statusLabel } from '@/modules/school-services/mobility.status'
 import { mobilityKind } from '@/modules/school-services/mobility.labels'
 
@@ -267,6 +301,7 @@ const items = ref<any[]>([])
 const loading = ref(true)
 const busy = ref(false)
 const signers = ref<any[]>([])
+const revisions = ref<any>(null)
 const destPlanId = ref<number | null>(null)
 const dictamen = ref('')
 const resolutionDate = ref('')
@@ -275,7 +310,14 @@ const periodNumber = ref<number | null>(null)
 
 const cert = ref<any>(null)
 const docs = ref<any>(null)
-const canEdit = computed(() => c.value && ['draft', 'in_review'].includes(c.value.status))
+// Editable en borrador/revisión y también tras aprobar: el dictamen puede corregirse
+// semanas después (asignar/quitar materias). Al editar un dictamen ya firmado se crea
+// una revisión nueva y se revocan las firmas (re-firma toda la cadena). No editable
+// una vez APLICADO (ya generó alta/baja/kardex).
+const canEdit = computed(() => c.value && ['draft', 'in_review', 'approved'].includes(c.value.status))
+const allSigned = computed(() => signers.value.length > 0 && signers.value.every((s) => s.signed))
+// Se modificó tras firmar y aún falta re-firmar (hay revisión posterior sin firmas completas).
+const pendingResign = computed(() => !!revisions.value?.modified_after_signing && !allSigned.value)
 const isExternal = computed(() => c.value?.scope === 'external')
 const isOutbound = computed(() => c.value?.direction === 'outbound' && isExternal.value)
 const recognizedCount = computed(() => items.value.filter((i) => i.decision === 'recognized').length)
@@ -302,6 +344,8 @@ async function load() {
         }
         if (data.requirement_set_id) await loadDocuments()
         await loadSignatures()
+        await loadRevisions()
+        await maybeArchiveDocument()
     } finally {
         loading.value = false
     }
@@ -364,8 +408,10 @@ async function run(fn: () => Promise<any>, okMsg?: string) {
     }
 }
 
-const autoMatch = () => run(() => api.post(API.SCHOOL_SERVICES_API.mobility.autoMatch(id), { destination_study_plan_id: destPlanId.value }), 'Convalidación generada')
-const saveItems = () => run(() => api.put(API.SCHOOL_SERVICES_API.mobility.items(id), { items: items.value }), 'Dictamen guardado')
+// Tras mutar el dictamen recargamos firmas/revisiones: si ya estaba firmado, editar
+// crea una revisión nueva y revoca las firmas (queda pendiente re-firma).
+const autoMatch = async () => { await run(() => api.post(API.SCHOOL_SERVICES_API.mobility.autoMatch(id), { destination_study_plan_id: destPlanId.value }), 'Convalidación generada'); await loadSignatures(); await loadRevisions() }
+const saveItems = async () => { await run(() => api.put(API.SCHOOL_SERVICES_API.mobility.items(id), { items: items.value }), 'Dictamen guardado'); await loadSignatures(); await loadRevisions() }
 const act = (action: 'send' | 'review' | 'cancel') => run(() => api.post((API.SCHOOL_SERVICES_API.mobility as any)[action](id), {}))
 const approve = () => run(() => api.post(API.SCHOOL_SERVICES_API.mobility.approve(id), { dictamen_number: dictamen.value || null, resolution_date: resolutionDate.value || null }), 'Dictamen aprobado')
 
@@ -382,6 +428,28 @@ async function apply() {
 
 async function loadSignatures() {
     try { signers.value = (await api.get(API.SCHOOL_SERVICES_API.mobility.signatures(id))).data.data ?? [] } catch { signers.value = [] }
+}
+
+async function loadRevisions() {
+    try { revisions.value = (await api.get(API.SCHOOL_SERVICES_API.mobility.revisions(id))).data.data ?? null } catch { revisions.value = null }
+}
+
+// Capa B: cuando el dictamen queda completamente firmado, se archiva el PDF como
+// evidencia (una sola vez) para que solo se presente y no se regenere. El QR de
+// cualquier firmante lo ofrece.
+const { renderPdf } = useReportGenerator()
+async function maybeArchiveDocument() {
+    try {
+        const { data } = await api.get(API.SCHOOL_SERVICES_API.mobility.documentStatus(id))
+        if (!data.full_signed || data.archived) return
+        const reportCode = isOutbound.value ? 'RPT.MOV_OFICIO' : 'RPT.MOV_DICTAMEN'
+        const { blob } = await renderPdf({ reportCode, params: { case_id: id }, filename: `dictamen-${id}` })
+        const form = new FormData()
+        form.append('document', blob, `dictamen-${id}.pdf`)
+        await api.post(API.SCHOOL_SERVICES_API.mobility.archiveDocument(id), form)
+    } catch {
+        // No bloquea; se reintenta al reabrir el expediente ya firmado.
+    }
 }
 
 async function validateDoc(docId: number) {

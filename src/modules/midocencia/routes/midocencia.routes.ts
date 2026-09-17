@@ -95,4 +95,16 @@ export default [
         component: () => import('@/modules/midocencia/pages/PlazaPage.vue'),
         meta: { title: 'Horas de Plaza' },
     },
+    {
+        path: 'midocencia/descarga-types',
+        name: 'midocencia.descarga-types',
+        component: () => import('@/modules/midocencia/pages/DescargaTypesPage.vue'),
+        meta: { title: 'Tipos de Descarga' },
+    },
+    {
+        path: 'midocencia/oficios',
+        name: 'midocencia.oficios',
+        component: () => import('@/modules/midocencia/pages/OficiosEmitidosPage.vue'),
+        meta: { title: 'Oficios Emitidos' },
+    },
 ]

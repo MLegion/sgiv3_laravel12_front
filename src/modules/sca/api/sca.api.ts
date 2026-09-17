@@ -12,6 +12,10 @@ export default {
             delete: (id: string | number) => apiUrl(`/sca/teachers/${id}`),
             workload: (id: string | number) => apiUrl(`/sca/teachers/${id}/workload`),
         },
+        assignmentLetters: {
+            show:  (teacherId: string | number, periodId: string | number) => apiUrl(`/sca/assignment-letters/${teacherId}/${periodId}`),
+            issue: (teacherId: string | number, periodId: string | number) => apiUrl(`/sca/assignment-letters/${teacherId}/${periodId}/issue`),
+        },
         teacherAcademicOffers: {
             assigned:  (aoId: string | number) => apiUrl(`/sca/teacher-academic-offers/assigned/${aoId}`),
             available: (aoId: string | number) => apiUrl(`/sca/teacher-academic-offers/available/${aoId}`),

@@ -13,6 +13,10 @@ export default {
         sign:    apiUrl('/signatures/sign'),
         for:     apiUrl('/signatures/for'),
         pending: apiUrl('/signatures/pending'),
-        verify: (folio: string) => apiUrl(`/signatures/verify/${folio}`),
+        verify: (folio: string, token?: string) => apiUrl(`/signatures/verify/${folio}${token ? `?t=${encodeURIComponent(token)}` : ''}`),
+        // Capa B: archivar el PDF emitido como evidencia (auto-subida tras firmar).
+        archiveDocument: (folio: string) => apiUrl(`/signatures/${folio}/document`),
+        // Presentación pública del documento archivado (token-gated por el QR).
+        documentUrl: (folio: string, token: string) => apiUrl(`/signatures/verify/${folio}/document?t=${encodeURIComponent(token)}`),
     },
 } satisfies ApiModule

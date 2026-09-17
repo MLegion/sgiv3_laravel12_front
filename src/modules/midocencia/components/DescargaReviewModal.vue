@@ -84,10 +84,19 @@
                     :disabled="busy || !reason.trim()" @click="reject">✕ Rechazar</button>
                 <button v-if="request.status === 'submitted'"
                     class="px-3 py-1.5 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
-                    :disabled="busy || !folio.trim()" @click="approve">✔ Aprobar</button>
+                    :disabled="busy || !folio.trim()" @click="showSign = true">✔ Aprobar y firmar</button>
                 <button class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 hover:bg-slate-50" @click="$emit('close')">Cerrar</button>
             </div>
         </div>
+
+        <!-- Aprobar el oficio EXIGE firmarlo (MFA/contraseña): si no firma, no se aprueba. -->
+        <SignDocumentModal
+            v-model="showSign"
+            :endpoint="A.approve(request.id)"
+            :extra-body="{ folio }"
+            label="Oficio de función académica"
+            @signed="onSigned"
+        />
     </div>
 </template>
 
@@ -96,6 +105,8 @@ import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import SignDocumentModal from '@/modules/signatures/modals/SignDocumentModal.vue'
+import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import type { DistributionRequest } from '@/modules/midocencia/types/distribution.type'
 
 const props = defineProps<{ request: DistributionRequest; teacherName: string }>()
@@ -103,10 +114,12 @@ const emit = defineEmits<{ (e: 'close'): void; (e: 'changed'): void }>()
 
 const toast = useToast()
 const A = API.MIDOCENCIA_API.approval
+const { generateFromContext, convertToPdf } = useReportGenerator()
 
 const folio = ref(props.request.folio ?? '')
 const reason = ref('')
 const busy = ref(false)
+const showSign = ref(false)
 const loadingTree = ref(true)
 
 interface TreeProduct { id: number; name: string }
@@ -155,14 +168,29 @@ onMounted(async () => {
     loadingTree.value = false
 })
 
-async function approve() {
-    busy.value = true
+// La firma (MFA/contraseña) contra el endpoint approve hace firmar + aprobar en un
+// solo paso; SignDocumentModal emite 'signed' al concluir con éxito. Tras aprobar,
+// el oficio ya tiene folio+QR: lo renderizamos y lo AUTO-ARCHIVAMOS como evidencia
+// (Capa B), para que después solo se presente sin regenerarse.
+async function onSigned() {
+    toast.success('Distribución aprobada y firmada.')
+    emit('changed')
+    await archiveEvidence()
+}
+
+async function archiveEvidence() {
     try {
-        await api.post(A.approve(props.request.id), { folio: folio.value })
-        toast.success('Distribución aprobada.')
-        emit('changed')
-    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo aprobar.') }
-    finally { busy.value = false }
+        const { data } = await api.get(A.oficio(props.request.id))
+        const folio = data?.context?.datos?.[0]?.firma_folio ?? null
+        if (!folio) return
+        const { blob } = await generateFromContext({ reportCode: data.reportCode, context: data.context, filename: 'OFICIO_FUNCION_ACADEMICA' })
+        const pdf = await convertToPdf(blob, 'OFICIO_FUNCION_ACADEMICA.docx')
+        const form = new FormData()
+        form.append('document', pdf, `${folio}.pdf`)
+        await api.post(API.SIGNATURES_API.archiveDocument(folio), form)
+    } catch {
+        // La evidencia se puede reintentar luego; no bloquea la aprobación.
+    }
 }
 
 async function reject() {
