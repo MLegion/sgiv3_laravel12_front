@@ -3,7 +3,7 @@
         <div>
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Evidencias por sección</h1>
             <p class="text-sm text-slate-500">
-                Evidencias de tu sección<span v-if="rubros.length">: <strong>{{ rubros.join(', ') }}</strong></span>.
+                Evidencias de tu(s) sección(es)<span v-if="sectionTitles.length">: <strong>{{ sectionTitles.join(', ') }}</strong></span>.
             </p>
         </div>
 
@@ -22,9 +22,23 @@
             <input v-model="search" placeholder="Buscar docente…" class="border rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px]" />
         </div>
 
+        <!-- Pestañas: una por sección (rubro). Con una sola sección no se muestran. -->
+        <div v-if="periodId && sections.length > 1" class="flex flex-wrap gap-2">
+            <button
+                v-for="(s, i) in sections" :key="s.rubroId"
+                class="px-3.5 py-1.5 rounded-full text-sm font-semibold border transition"
+                :class="i === activeTab ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-300'"
+                @click="activeTab = i"
+            >
+                {{ s.title }}
+                <span class="ml-1 text-xs opacity-70">({{ s.teachers.length }})</span>
+            </button>
+        </div>
+
         <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
         <div v-else-if="!periodId" class="text-center py-8 text-slate-400">Selecciona un periodo.</div>
-        <div v-else-if="filtered.length === 0" class="text-center py-8 text-slate-400">Sin evidencias para este periodo.</div>
+        <div v-else-if="!sections.length" class="text-center py-8 text-slate-400">No tienes secciones asignadas.</div>
+        <div v-else-if="filtered.length === 0" class="text-center py-8 text-slate-400">Sin evidencias en esta sección para el periodo.</div>
 
         <div v-else class="space-y-3">
             <div v-for="t in filtered" :key="t.teacherId" class="bg-white border rounded-xl shadow-sm overflow-hidden">
@@ -58,39 +72,43 @@ import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 interface EvFile { id: number; evidence: string; originalName: string; mime: string | null }
 interface Crit { criterion: string; files: EvFile[] }
 interface Teacher { teacherId: number; teacherName: string; criteria: Crit[] }
+interface Section { rubroId: number; title: string; teachers: Teacher[] }
 
 const toast = useToast()
 const S = API.MIDOCENCIA_API.sections
 
-const rubros = ref<string[]>([])
 const periodId = ref<number | null>(null)
-const teachers = ref<Teacher[]>([])
+const sections = ref<Section[]>([])
+const activeTab = ref(0)
 const loading = ref(false)
 const search = ref('')
 const open = ref<Set<number>>(new Set())
 
+const sectionTitles = computed(() => sections.value.map(s => s.title))
+const activeTeachers = computed<Teacher[]>(() => sections.value[activeTab.value]?.teachers ?? [])
+
 const filtered = computed(() => {
     const q = search.value.trim().toLowerCase()
-    if (!q) return teachers.value
-    return teachers.value.filter(t => t.teacherName.toLowerCase().includes(q))
+    if (!q) return activeTeachers.value
+    return activeTeachers.value.filter(t => t.teacherName.toLowerCase().includes(q))
 })
 
 function fileCount(t: Teacher) { return t.criteria.reduce((a, c) => a + c.files.length, 0) }
 function toggle(id: number) { open.value.has(id) ? open.value.delete(id) : open.value.add(id); open.value = new Set(open.value) }
 
-onMounted(async () => {
-    try { const { data } = await api.get(S.scope); rubros.value = data.rubros ?? [] } catch { /* noop */ }
-})
+onMounted(() => { /* las secciones se cargan al elegir periodo */ })
 
 async function loadEvidences() {
-    if (!periodId.value) { teachers.value = []; return }
+    if (!periodId.value) { sections.value = []; return }
     loading.value = true
     try {
         const { data } = await api.get(S.evidences, { params: { period_id: periodId.value } })
-        teachers.value = data.teachers ?? []
+        sections.value = data.sections ?? []
+        if (activeTab.value >= sections.value.length) activeTab.value = 0
+        open.value = new Set()
     } catch (e: any) {
         toast.error(e?.response?.data?.message ?? 'No se pudieron cargar las evidencias.')
-        teachers.value = []
+        sections.value = []
     } finally { loading.value = false }
 }
 
