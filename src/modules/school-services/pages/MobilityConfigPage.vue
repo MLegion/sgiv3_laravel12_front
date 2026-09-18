@@ -181,6 +181,11 @@
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Referencia</label>
                     <textarea v-model="nmModal.form.reference" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2"></textarea>
                 </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">% máx. reconocible (equivalencia/revalidación)</label>
+                    <input v-model.number="nmModal.form.max_recognized_percent" type="number" min="0" max="100" class="w-32 h-10 rounded-lg border border-slate-300 px-3" placeholder="ej. 40" />
+                    <p class="mt-1 text-xs text-slate-400">Vacío = este lineamiento no fija tope. El validador usa la normativa activa que lo defina (fallback 40%).</p>
+                </div>
                 <label class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" v-model="nmModal.form.is_active" /> Activa</label>
             </div>
             <template #footer>
@@ -263,7 +268,7 @@ const nmModal = ref<{ open: boolean; form: any }>({ open: false, form: {} })
 const savingNm = ref(false)
 
 function openNormativa(n?: any) {
-    nmModal.value = { open: true, form: n ? { ...n } : { code: '', name: '', issuer: '', effective_from: '', reference: '', is_active: true } }
+    nmModal.value = { open: true, form: n ? { ...n } : { code: '', name: '', issuer: '', effective_from: '', reference: '', max_recognized_percent: null, is_active: true } }
 }
 async function saveNormativa() {
     savingNm.value = true
