@@ -210,6 +210,7 @@
 
                     <button v-if="['sent','in_review'].includes(c.status)" class="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-40" :disabled="busy" @click="reject">Rechazar</button>
                     <button v-if="['draft','sent','in_review','approved'].includes(c.status)" class="rounded-lg px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 disabled:opacity-40" :disabled="busy" @click="act('cancel')">Cancelar</button>
+                    <button v-if="c.status !== 'applied'" class="ml-auto rounded-lg border border-rose-300 px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 disabled:opacity-40" :disabled="busy" @click="removeCase">Eliminar expediente</button>
                 </div>
                 <p v-if="c.status === 'approved'" class="mt-2 text-xs text-amber-600">El traslado no se aplica hasta reunir todas las firmas requeridas del dictamen.</p>
             </div>
@@ -280,7 +281,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
@@ -292,6 +293,7 @@ import { statusClass, statusLabel } from '@/modules/school-services/mobility.sta
 import { mobilityKind } from '@/modules/school-services/mobility.labels'
 
 const route = useRoute()
+const router = useRouter()
 const toast = useToast()
 const { confirm } = useConfirm()
 const id = Number(route.params.id)
@@ -413,6 +415,22 @@ async function run(fn: () => Promise<any>, okMsg?: string) {
 const autoMatch = async () => { await run(() => api.post(API.SCHOOL_SERVICES_API.mobility.autoMatch(id), { destination_study_plan_id: destPlanId.value }), 'Convalidación generada'); await loadSignatures(); await loadRevisions() }
 const saveItems = async () => { await run(() => api.put(API.SCHOOL_SERVICES_API.mobility.items(id), { items: items.value }), 'Dictamen guardado'); await loadSignatures(); await loadRevisions() }
 const act = (action: 'send' | 'review' | 'cancel') => run(() => api.post((API.SCHOOL_SERVICES_API.mobility as any)[action](id), {}))
+
+// Eliminar el expediente desde el detalle (mismo guard que la lista: bloqueado si aplicado).
+async function removeCase() {
+    if (!c.value || c.value.status === 'applied') return
+    if (!await confirm({ title: 'Eliminar expediente', message: `¿Eliminar el expediente #${c.value.id}? Se borra el caso y su evidencia. Esta acción no se puede deshacer.`, variant: 'danger' })) return
+    busy.value = true
+    try {
+        await api.delete(API.SCHOOL_SERVICES_API.mobility.delete(id))
+        toast.success('Expediente eliminado')
+        router.push({ name: 'school-services.mobility' })
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo eliminar')
+    } finally {
+        busy.value = false
+    }
+}
 const approve = () => run(() => api.post(API.SCHOOL_SERVICES_API.mobility.approve(id), { dictamen_number: dictamen.value || null, resolution_date: resolutionDate.value || null }), 'Dictamen aprobado')
 
 async function reject() {
