@@ -99,7 +99,7 @@ const reg = reactive({ student_id: null as number | null, college_academic_perio
 const regMsg = ref('')
 
 function statusClass(s: string) {
-    return { pending_activation: 'bg-amber-100 text-amber-700', registered: 'bg-sky-100 text-sky-700', in_progress: 'bg-blue-100 text-blue-700', concluded: 'bg-emerald-100 text-emerald-700', dropped: 'bg-slate-200 text-slate-500' }[s] ?? 'bg-slate-100'
+    return { pending_activation: 'bg-amber-100 text-amber-700', registered: 'bg-sky-100 text-sky-700', in_progress: 'bg-blue-100 text-blue-700', pending_release: 'bg-indigo-100 text-indigo-700', concluded: 'bg-emerald-100 text-emerald-700', dropped: 'bg-slate-200 text-slate-500' }[s] ?? 'bg-slate-100'
 }
 
 async function fetchList() {

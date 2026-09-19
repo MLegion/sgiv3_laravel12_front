@@ -18,6 +18,7 @@
             <!-- Acciones -->
             <div class="flex flex-wrap gap-2">
                 <button v-if="record.status === 'pending_activation' && canManage" @click="activate" class="px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-semibold">Activar</button>
+                <button v-if="canSendRelease" @click="sendRelease" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold">Enviar a liberación</button>
                 <button v-if="canRelease" @click="release" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold">Liberar (acreditar)</button>
                 <button v-if="canManage && record.status !== 'concluded'" @click="drop" class="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 border border-red-200 text-xs font-semibold">Dar de baja</button>
                 <button v-if="canManage && !record.process_exception_until" @click="grantException" class="px-3 py-1.5 rounded-lg border text-xs font-semibold text-slate-600">Otorgar excepción</button>
@@ -145,13 +146,13 @@ const form = reactive({ company_id: null as number | null, internal_advisor_id: 
 // expediente; el coordinador/asesor ven las acciones que su permiso permita ejecutar.
 const canManage = true
 const canReview = true
-const canRelease = computed(() =>
-    record.value?.status === 'in_progress'
-    && (record.value?.accumulated_hours ?? 0) >= (record.value?.required_hours ?? 0)
-    && !record.value?.kardex_synced_at)
+// El coordinador envía a liberación cuando el expediente está en proceso.
+const canSendRelease = computed(() => record.value?.status === 'in_progress')
+// La dirección libera cuando ya fue enviado (por liberar).
+const canRelease = computed(() => record.value?.status === 'pending_release')
 
 function statusClass(s: string) {
-    return { pending_activation: 'bg-amber-100 text-amber-700', registered: 'bg-sky-100 text-sky-700', in_progress: 'bg-blue-100 text-blue-700', concluded: 'bg-emerald-100 text-emerald-700', dropped: 'bg-slate-200 text-slate-500' }[s] ?? 'bg-slate-100'
+    return { pending_activation: 'bg-amber-100 text-amber-700', registered: 'bg-sky-100 text-sky-700', in_progress: 'bg-blue-100 text-blue-700', pending_release: 'bg-indigo-100 text-indigo-700', concluded: 'bg-emerald-100 text-emerald-700', dropped: 'bg-slate-200 text-slate-500' }[s] ?? 'bg-slate-100'
 }
 function reportClass(s: string) { return { pending: 'bg-amber-100 text-amber-700', approved: 'bg-emerald-100 text-emerald-700', rejected: 'bg-red-100 text-red-700' }[s] ?? 'bg-slate-100' }
 function reportLabel(s: string) { return { pending: 'Por revisar', approved: 'Aprobado', rejected: 'Rechazado' }[s] ?? s }
@@ -197,6 +198,7 @@ async function saveProcess() {
 }
 
 async function activate() { await act(() => api.post(S.records.activate(props.id), {}), 'Servicio social activado.') }
+async function sendRelease() { await act(() => api.post(S.records.sendRelease(props.id), {}), 'Expediente enviado a liberación.') }
 async function release() { await act(() => api.post(S.records.release(props.id), {}), 'Servicio social liberado y acreditado.') }
 async function drop() {
     if (!confirm('¿Dar de baja este servicio social?')) return

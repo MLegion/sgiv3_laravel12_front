@@ -27,6 +27,7 @@ const socialServiceApi: ApiModule = {
             byId:          (id: string | number) => apiUrl(`/social-service/records/${id}`),
             process:       (id: string | number) => apiUrl(`/social-service/records/${id}/process`),
             activate:      (id: string | number) => apiUrl(`/social-service/records/${id}/activate`),
+            sendRelease:   (id: string | number) => apiUrl(`/social-service/records/${id}/send-release`),
             release:       (id: string | number) => apiUrl(`/social-service/records/${id}/release`),
             drop:          (id: string | number) => apiUrl(`/social-service/records/${id}`),
             grantException:  (id: string | number) => apiUrl(`/social-service/records/${id}/process-exception`),

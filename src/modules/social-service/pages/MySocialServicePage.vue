@@ -182,7 +182,7 @@ const isPending = computed(() => record.value?.status === 'pending_activation')
 const canEdit = computed(() => !!record.value && !isPending.value && record.value.processOpen && record.value.status !== 'concluded' && record.value.status !== 'dropped')
 
 function statusClass(s: string) {
-    return { pending_activation: 'bg-amber-100 text-amber-700', registered: 'bg-sky-100 text-sky-700', in_progress: 'bg-blue-100 text-blue-700', concluded: 'bg-emerald-100 text-emerald-700', dropped: 'bg-slate-200 text-slate-500' }[s] ?? 'bg-slate-100'
+    return { pending_activation: 'bg-amber-100 text-amber-700', registered: 'bg-sky-100 text-sky-700', in_progress: 'bg-blue-100 text-blue-700', pending_release: 'bg-indigo-100 text-indigo-700', concluded: 'bg-emerald-100 text-emerald-700', dropped: 'bg-slate-200 text-slate-500' }[s] ?? 'bg-slate-100'
 }
 function reportClass(s: string) {
     return { pending: 'bg-amber-100 text-amber-700', approved: 'bg-emerald-100 text-emerald-700', rejected: 'bg-red-100 text-red-700' }[s] ?? 'bg-slate-100'

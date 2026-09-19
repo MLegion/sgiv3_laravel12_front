@@ -2,6 +2,7 @@ export type SocialServiceStatus =
     | 'pending_activation'
     | 'registered'
     | 'in_progress'
+    | 'pending_release'
     | 'concluded'
     | 'dropped'
 
@@ -124,6 +125,7 @@ export const STATUS_LABELS: Record<SocialServiceStatus, string> = {
     pending_activation: 'Por activar',
     registered: 'Registrado',
     in_progress: 'En proceso',
+    pending_release: 'Por liberar',
     concluded: 'Liberado',
     dropped: 'Baja',
 }
