@@ -128,6 +128,31 @@
                     </label>
                 </div>
             </div>
+
+            <!-- Documentos -->
+            <div class="rounded-xl border bg-white p-5 space-y-3">
+                <h2 class="text-sm font-bold text-slate-700 uppercase">Documentos</h2>
+                <div v-for="d in documents" :key="d.code" class="flex items-center justify-between border-b last:border-0 py-2">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-700">{{ d.name }}
+                            <span v-if="d.kind === 'generated'" class="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-700">lo genera el sistema</span>
+                        </p>
+                        <p v-if="d.document" class="text-xs">
+                            <span class="px-2 py-0.5 rounded-full font-bold" :class="reportClass(d.document.status)">{{ reportLabel(d.document.status) }}</span>
+                            <span v-if="d.document.rejection_reason" class="ml-2 text-red-500">{{ d.document.rejection_reason }}</span>
+                        </p>
+                        <p v-else class="text-xs text-slate-400">Sin subir</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button v-if="d.document" @click="viewDoc(d.document.id)" class="text-xs text-blue-600 font-semibold">Ver</button>
+                        <label v-if="canEdit && d.kind === 'upload'" class="text-xs text-slate-600 font-semibold cursor-pointer">
+                            {{ d.document ? 'Reemplazar' : 'Subir' }}
+                            <input type="file" class="hidden" @change="uploadDoc($event, d.code)" />
+                        </label>
+                    </div>
+                </div>
+                <p v-if="!documents.length" class="text-sm text-slate-400">No hay documentos requeridos configurados.</p>
+            </div>
         </template>
     </div>
 </template>
@@ -136,7 +161,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import { STATUS_LABELS, type SocialServiceRecord, type SocialServiceReport, type SocialServiceProgram, type DependencyOption } from '@/modules/social-service/types/social-service.type'
+import { STATUS_LABELS, type SocialServiceRecord, type SocialServiceReport, type SocialServiceProgram, type DependencyOption, type DocumentChecklistItem } from '@/modules/social-service/types/social-service.type'
 
 const S = API.SOCIAL_SERVICE_API
 
@@ -144,6 +169,7 @@ const loading = ref(true)
 const saving = ref(false)
 const record = ref<SocialServiceRecord | null>(null)
 const reports = ref<SocialServiceReport[]>([])
+const documents = ref<DocumentChecklistItem[]>([])
 const dependencies = ref<DependencyOption[]>([])
 const programs = ref<SocialServiceProgram[]>([])
 const msg = ref('')
@@ -180,14 +206,16 @@ async function load() {
                 expected_end_at: record.value.expected_end_at ?? '',
             }
             reportForm.value.report_number = reports.value.length + 1
-            const [rep, dep, prog] = await Promise.all([
+            const [rep, dep, prog, docs] = await Promise.all([
                 api.get(S.me.reports),
                 api.get(S.dependencies),
                 api.get(S.availablePrograms),
+                api.get(S.me.documents),
             ])
             reports.value = rep.data ?? []
             dependencies.value = dep.data ?? []
             programs.value = prog.data ?? []
+            documents.value = docs.data ?? []
             reportForm.value.report_number = reports.value.length + 1
         }
     } finally {
@@ -233,6 +261,31 @@ async function submitReport() {
     } finally {
         saving.value = false
     }
+}
+
+async function uploadDoc(e: Event, code: string) {
+    const input = e.target as HTMLInputElement
+    const file = input.files?.[0]
+    if (!file) return
+    saving.value = true
+    try {
+        const fd = new FormData()
+        fd.append('code', code)
+        fd.append('file', file)
+        await api.post(S.me.uploadDocument, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+        await load()
+        flash('Documento subido.')
+    } catch (e: any) {
+        flash(e?.response?.data?.message ?? 'No se pudo subir el documento.', true)
+    } finally {
+        saving.value = false
+        input.value = ''
+    }
+}
+
+async function viewDoc(id: number) {
+    const { data } = await api.get(S.me.downloadDocument(id), { responseType: 'blob' })
+    window.open(URL.createObjectURL(data), '_blank')
 }
 
 onMounted(load)

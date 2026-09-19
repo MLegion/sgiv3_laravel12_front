@@ -85,6 +85,34 @@ export interface SocialServiceProgram {
     careers: { id: number; name: string }[]
 }
 
+export interface DocumentChecklistItem {
+    code: string
+    name: string
+    short_name: string | null
+    kind: 'upload' | 'generated'
+    is_required: boolean
+    accepts_formats: string[] | null
+    max_size_kb: number | null
+    document: {
+        id: number
+        status: 'pending' | 'approved' | 'rejected'
+        original_name: string | null
+        rejection_reason: string | null
+        uploaded_at: string | null
+    } | null
+}
+
+export interface RequirementSetSummary {
+    id: number
+    college_id: number | null
+    is_global: boolean
+    name: string
+    status: 'draft' | 'published' | 'archived'
+    effective_from: string | null
+    notes: string | null
+    items_count: number
+}
+
 export interface DependencyOption {
     id: number
     name: string

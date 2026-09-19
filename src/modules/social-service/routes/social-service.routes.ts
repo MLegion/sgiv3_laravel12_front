@@ -27,4 +27,10 @@ export default [
         component: () => import('@/modules/social-service/pages/SocialServiceProgramsPage.vue'),
         meta: { title: 'Banco de Programas' },
     },
+    {
+        path: 'social-service/requirements',
+        name: 'social-service.requirements',
+        component: () => import('@/modules/social-service/pages/RequirementSetsPage.vue'),
+        meta: { title: 'Requisitos de Documentos' },
+    },
 ]

@@ -10,6 +10,9 @@ const socialServiceApi: ApiModule = {
             update:       apiUrl('/social-service/me'),
             reports:      apiUrl('/social-service/me/reports'),
             submitReport: apiUrl('/social-service/me/reports'),
+            documents:    apiUrl('/social-service/me/documents'),
+            uploadDocument: apiUrl('/social-service/me/documents'),
+            downloadDocument: (id: string | number) => apiUrl(`/social-service/me/documents/${id}/download`),
         },
 
         // ── Catálogos para el prestador ──
@@ -29,11 +32,32 @@ const socialServiceApi: ApiModule = {
             grantException:  (id: string | number) => apiUrl(`/social-service/records/${id}/process-exception`),
             revokeException: (id: string | number) => apiUrl(`/social-service/records/${id}/process-exception`),
             reports:       (id: string | number) => apiUrl(`/social-service/records/${id}/reports`),
+            documents:     (id: string | number) => apiUrl(`/social-service/records/${id}/documents`),
         },
 
         // ── Reportes de avance (revisión) ──
         reports: {
             review: (id: string | number) => apiUrl(`/social-service/reports/${id}/review`),
+        },
+
+        // ── Documentos (descarga + revisión) ──
+        documents: {
+            download: (id: string | number) => apiUrl(`/social-service/documents/${id}/download`),
+            approve:  (id: string | number) => apiUrl(`/social-service/documents/${id}/approve`),
+            reject:   (id: string | number) => apiUrl(`/social-service/documents/${id}/reject`),
+        },
+
+        // ── Requisitos documentales versionados ──
+        requirementSets: {
+            list:     apiUrl('/social-service/requirement-sets'),
+            create:   apiUrl('/social-service/requirement-sets'),
+            byId:     (id: string | number) => apiUrl(`/social-service/requirement-sets/${id}`),
+            update:   (id: string | number) => apiUrl(`/social-service/requirement-sets/${id}`),
+            destroy:  (id: string | number) => apiUrl(`/social-service/requirement-sets/${id}`),
+            saveItems: (id: string | number) => apiUrl(`/social-service/requirement-sets/${id}/items`),
+            publish:  (id: string | number) => apiUrl(`/social-service/requirement-sets/${id}/publish`),
+            archive:  (id: string | number) => apiUrl(`/social-service/requirement-sets/${id}/archive`),
+            clone:    (id: string | number) => apiUrl(`/social-service/requirement-sets/${id}/clone`),
         },
 
         // ── Banco de programas ──
