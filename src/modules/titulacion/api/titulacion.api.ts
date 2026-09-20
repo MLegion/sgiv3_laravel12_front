@@ -32,6 +32,7 @@ const titulacionApi: ApiModule = {
 
         rooms: {
             list: apiUrl('/titulacion/rooms'),
+            week: (placeId: string | number) => apiUrl(`/titulacion/rooms/${placeId}/week`),
             set:  (placeId: string | number) => apiUrl(`/titulacion/rooms/${placeId}`),
         },
     },

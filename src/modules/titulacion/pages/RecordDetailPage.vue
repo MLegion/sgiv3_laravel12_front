@@ -79,35 +79,14 @@
             </table>
         </div>
 
-        <!-- Modal programar acto -->
-        <div v-if="showSchedule" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showSchedule = false">
-            <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">Programar acto</h2>
-                <label class="block"><span class="text-xs font-semibold text-slate-500">Aula de titulación</span>
-                    <select v-model.number="actForm.place_id" @change="checkAvail" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
-                        <option :value="null">— Selecciona —</option>
-                        <option v-for="r in rooms" :key="r.id" :value="r.id">{{ r.name }} ({{ r.building_name }})</option>
-                    </select></label>
-                <div class="grid grid-cols-3 gap-2">
-                    <label class="block col-span-1"><span class="text-xs font-semibold text-slate-500">Fecha</span>
-                        <input type="date" v-model="actForm.date" @change="checkAvail" class="mt-1 w-full rounded-lg border-slate-300 text-sm" /></label>
-                    <label class="block"><span class="text-xs font-semibold text-slate-500">Inicio</span>
-                        <input type="time" v-model="actForm.start_time" @change="checkAvail" class="mt-1 w-full rounded-lg border-slate-300 text-sm" /></label>
-                    <label class="block"><span class="text-xs font-semibold text-slate-500">Fin</span>
-                        <input type="time" v-model="actForm.end_time" @change="checkAvail" class="mt-1 w-full rounded-lg border-slate-300 text-sm" /></label>
-                </div>
-                <p v-if="avail !== null" class="text-sm" :class="avail ? 'text-emerald-600' : 'text-red-600'">
-                    {{ avail ? 'Aula disponible en ese horario.' : 'El aula está ocupada en ese horario.' }}
-                </p>
-                <label class="block"><span class="text-xs font-semibold text-slate-500">Notas (opcional)</span>
-                    <textarea v-model="actForm.notes" rows="2" class="mt-1 w-full rounded-lg border-slate-300 text-sm"></textarea></label>
-                <p v-if="actMsg" class="text-sm text-red-600">{{ actMsg }}</p>
-                <div class="flex justify-end gap-2">
-                    <button @click="showSchedule = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
-                    <button @click="schedule" :disabled="!canSchedule || scheduling" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold disabled:opacity-50">Programar</button>
-                </div>
-            </div>
-        </div>
+        <!-- Modal programar acto (calendario semanal del aula) -->
+        <ActSchedulerModal
+            v-if="showSchedule"
+            :record-id="props.id"
+            :college-academic-period-id="rec.college_academic_period_id"
+            @close="showSchedule = false"
+            @scheduled="onScheduled"
+        />
     </div>
 </template>
 
@@ -115,8 +94,9 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { TitulacionRecord, TitulacionOption, EligibleResidency, TitulacionRoom } from '@/modules/titulacion/types/titulacion.type'
+import type { TitulacionRecord, TitulacionOption, EligibleResidency } from '@/modules/titulacion/types/titulacion.type'
 import { statusLabel, statusClass, actStatusLabel, actStatusClass, outcomeLabel } from '@/modules/titulacion/pages/status'
+import ActSchedulerModal from '@/modules/titulacion/pages/ActSchedulerModal.vue'
 
 const props = defineProps<{ id: string | number }>()
 const T = API.TITULACION_API
@@ -124,17 +104,14 @@ const T = API.TITULACION_API
 const rec = ref<TitulacionRecord | null>(null)
 const opts = ref<TitulacionOption[]>([])
 const eligibleResidencies = ref<EligibleResidency[]>([])
-const rooms = ref<TitulacionRoom[]>([])
 const saving = ref(false)
 
 const edit = reactive({ titulacion_option_id: null as number | null, residency_id: null as number | null, project_title: '', english_b1: false, english_b1_at: '' as string | null, no_adeudos: false })
 const juryForm = reactive({ user_id: null as number | null, role: 'presidente' })
 
-const showSchedule = ref(false), scheduling = ref(false), actMsg = ref(''), avail = ref<boolean | null>(null)
-const actForm = reactive({ place_id: null as number | null, date: '', start_time: '', end_time: '', notes: '' })
+const showSchedule = ref(false)
 
 const selectedOption = computed(() => opts.value.find(o => o.id === edit.titulacion_option_id) || null)
-const canSchedule = computed(() => !!actForm.place_id && !!actForm.date && !!actForm.start_time && !!actForm.end_time && actForm.start_time < actForm.end_time)
 
 function onOptionChange() { if (!selectedOption.value?.requires_residency) edit.residency_id = null }
 
@@ -174,29 +151,8 @@ async function removeJury(juryId: number) {
     await api.delete(T.records.removeJury(props.id, juryId)); await fetch()
 }
 
-async function openSchedule() {
-    Object.assign(actForm, { place_id: null, date: '', start_time: '', end_time: '', notes: '' })
-    actMsg.value = ''; avail.value = null; showSchedule.value = true
-    if (!rooms.value.length) rooms.value = (await api.get(T.rooms.list, { params: { only_titulacion: true } })).data ?? []
-}
-async function checkAvail() {
-    avail.value = null
-    if (!canSchedule.value) return
-    const { data } = await api.post(T.acts.checkAvailability, {
-        place_id: actForm.place_id, date: actForm.date, start_time: actForm.start_time, end_time: actForm.end_time,
-    })
-    avail.value = data.available
-}
-async function schedule() {
-    scheduling.value = true; actMsg.value = ''
-    try {
-        await api.post(T.records.scheduleAct(props.id), {
-            place_id: actForm.place_id, date: actForm.date, start_time: actForm.start_time, end_time: actForm.end_time, notes: actForm.notes || null,
-        })
-        showSchedule.value = false; await fetch()
-    } catch (e: any) { actMsg.value = e?.response?.data?.message ?? 'No se pudo programar.' }
-    finally { scheduling.value = false }
-}
+function openSchedule() { showSchedule.value = true }
+async function onScheduled() { showSchedule.value = false; await fetch() }
 
 onMounted(async () => { opts.value = (await api.get(T.options)).data ?? []; await fetch() })
 </script>

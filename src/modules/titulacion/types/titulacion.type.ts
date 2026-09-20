@@ -33,12 +33,32 @@ export interface TitulacionAct {
     my_role?: string
 }
 
+export interface OccupancyBlock {
+    source_type: string
+    source_id: number
+    start_time: string
+    end_time: string
+    label: string
+}
+
+export interface OccupancyDay {
+    date: string
+    day_of_week: number
+    blocks: OccupancyBlock[]
+}
+
+export interface RoomWeekOccupancy {
+    week_start: string
+    days: OccupancyDay[]
+}
+
 export interface TitulacionRecord {
     id: number
     student_id: number
     student_name: string
     num_control: string | null
     college_id: number
+    college_academic_period_id: number | null
     career_id: number | null
     career_name: string | null
     titulacion_option_id: number | null
