@@ -5,6 +5,7 @@ export interface DeskDocument {
     description: string | null
     requires_folio: boolean
     requires_signature: boolean
+    is_controlled?: boolean | number
 }
 
 export interface StudentSummary {

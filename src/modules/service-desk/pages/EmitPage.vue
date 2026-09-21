@@ -41,6 +41,15 @@
                 </div>
             </div>
 
+            <div v-if="selectedDoc?.is_controlled" class="border-t pt-3">
+                <span class="text-xs font-semibold text-slate-500">Datos de control del certificado (opcional)</span>
+                <div class="grid grid-cols-3 gap-2 mt-2">
+                    <input v-model="control.number" placeholder="No. de certificado" class="rounded-lg border-slate-300 text-sm" />
+                    <input v-model="control.book" placeholder="Libro" class="rounded-lg border-slate-300 text-sm" />
+                    <input v-model="control.sheet" placeholder="Foja" class="rounded-lg border-slate-300 text-sm" />
+                </div>
+            </div>
+
             <p v-if="msg" class="text-sm" :class="msgError ? 'text-red-600' : 'text-emerald-600'">{{ msg }}</p>
             <div class="flex justify-end">
                 <button @click="emit" :disabled="!docCode || busy" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold disabled:opacity-50">Emitir</button>
@@ -50,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { DeskDocument, StudentSummary } from '@/modules/service-desk/types/service-desk.type'
@@ -63,8 +72,11 @@ const q = ref(''), results = ref<any[]>([])
 const summary = ref<StudentSummary | null>(null)
 const documents = ref<DeskDocument[]>([])
 const docCode = ref('')
+const control = reactive({ number: '', book: '', sheet: '' })
 const busy = ref(false), msg = ref(''), msgError = ref(false)
 let timer: any = null
+
+const selectedDoc = computed(() => documents.value.find(d => d.code === docCode.value) || null)
 
 function search() {
     clearTimeout(timer)
@@ -78,13 +90,16 @@ async function pick(s: any) {
     results.value = []; msg.value = ''
     summary.value = (await api.get(D.studentSummary(s.id))).data
 }
-function clear() { summary.value = null; docCode.value = ''; q.value = ''; msg.value = '' }
+function clear() { summary.value = null; docCode.value = ''; q.value = ''; msg.value = ''; Object.assign(control, { number: '', book: '', sheet: '' }) }
 
 async function emit() {
     if (!summary.value) return
     busy.value = true; msg.value = ''; msgError.value = false
     try {
-        const { data } = await api.post(D.emit, { student_id: summary.value.student_id, document_code: docCode.value })
+        const { data } = await api.post(D.emit, {
+            student_id: summary.value.student_id, document_code: docCode.value,
+            control_number: control.number || null, control_book: control.book || null, control_sheet: control.sheet || null,
+        })
         msg.value = `Emitido con folio ${data.folio ?? 's/f'}. Abriendo documento…`
         await openDocument(data.id)
     } catch (e: any) { msg.value = e?.response?.data?.message ?? 'No se pudo emitir.'; msgError.value = true }
