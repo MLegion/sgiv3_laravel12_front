@@ -10,7 +10,7 @@ export default [
         name: 'service-desk.emissions',
         component: () => import('@/modules/service-desk/pages/EmissionsPage.vue'),
         meta: { title: 'Emisiones de ventanilla' },
-    },,
+    },
     {
         path: 'service-desk/my-requests',
         name: 'service-desk.my-requests',
@@ -22,7 +22,7 @@ export default [
         name: 'service-desk.requests',
         component: () => import('@/modules/service-desk/pages/RequestsPage.vue'),
         meta: { title: 'Solicitudes de ventanilla' },
-    },,
+    },
     {
         path: 'service-desk/config',
         name: 'service-desk.config',

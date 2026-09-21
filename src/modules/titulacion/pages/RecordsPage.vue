@@ -56,8 +56,8 @@
                 </label>
                 <div v-if="studentResults.length && !form.student_id" class="border rounded-lg max-h-40 overflow-auto text-sm">
                     <div v-for="s in studentResults" :key="s.id" @click="pickStudent(s)" class="px-3 py-2 hover:bg-slate-50 cursor-pointer">
-                        <span class="font-semibold text-slate-700">{{ s.full_name ?? (s.names + ' ' + (s.first_surname ?? '')) }}</span>
-                        <span class="text-xs text-slate-400"> · {{ s.num_control }}</span>
+                        <span class="font-semibold text-slate-700">{{ (s.names + ' ' + (s.firstSurname ?? '') + ' ' + (s.secondSurname ?? '')).trim() }}</span>
+                        <span class="text-xs text-slate-400"> · {{ s.numControl }}</span>
                     </div>
                 </div>
                 <div v-if="form.student_id" class="text-sm text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2 flex justify-between items-center">
@@ -154,12 +154,12 @@ function searchStudents() {
     if (studentQuery.value.trim().length < 2) { studentResults.value = []; return }
     searchTimer = setTimeout(async () => {
         const { data } = await api.get(SS.students.list, { params: { 'search[num_control]': studentQuery.value, per_page: 8 } })
-        studentResults.value = data.data ?? data ?? []
+        studentResults.value = data.items ?? data.data ?? []
     }, 300)
 }
 async function pickStudent(s: any) {
     form.student_id = s.id
-    pickedStudentLabel.value = `${s.full_name ?? (s.names + ' ' + (s.first_surname ?? ''))} · ${s.num_control}`
+    pickedStudentLabel.value = `${(s.names + ' ' + (s.firstSurname ?? '')).trim()} · ${s.numControl}`
     studentResults.value = []
     eligibleResidencies.value = (await api.get(T.eligibleResidencies(s.id))).data ?? []
 }

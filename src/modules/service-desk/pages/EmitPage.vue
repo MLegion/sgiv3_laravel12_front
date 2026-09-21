@@ -9,8 +9,8 @@
             </label>
             <div v-if="results.length && !summary" class="border rounded-lg max-h-48 overflow-auto text-sm">
                 <div v-for="s in results" :key="s.id" @click="pick(s)" class="px-3 py-2 hover:bg-slate-50 cursor-pointer">
-                    <span class="font-semibold text-slate-700">{{ s.full_name ?? (s.names + ' ' + (s.first_surname ?? '')) }}</span>
-                    <span class="text-xs text-slate-400"> · {{ s.num_control }}</span>
+                    <span class="font-semibold text-slate-700">{{ (s.names + ' ' + (s.firstSurname ?? '') + ' ' + (s.secondSurname ?? '')).trim() }}</span>
+                    <span class="text-xs text-slate-400"> · {{ s.numControl }}</span>
                 </div>
             </div>
         </div>
@@ -83,7 +83,7 @@ function search() {
     if (q.value.trim().length < 2) { results.value = []; return }
     timer = setTimeout(async () => {
         const { data } = await api.get(SS.students.list, { params: { 'search[num_control]': q.value, per_page: 8 } })
-        results.value = data.data ?? data ?? []
+        results.value = data.items ?? data.data ?? []
     }, 300)
 }
 async function pick(s: any) {
