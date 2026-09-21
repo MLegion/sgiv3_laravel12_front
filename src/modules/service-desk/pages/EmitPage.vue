@@ -87,8 +87,16 @@ function search() {
     }, 300)
 }
 async function pick(s: any) {
-    results.value = []; msg.value = ''
-    summary.value = (await api.get(D.studentSummary(s.id))).data
+    results.value = []; msg.value = ''; msgError.value = false
+    try {
+        summary.value = (await api.get(D.studentSummary(s.id))).data
+    } catch (e: any) {
+        summary.value = null
+        msg.value = e?.response?.status === 403
+            ? 'Este alumno no corresponde a tu ventanilla.'
+            : (e?.response?.data?.message ?? 'No se pudo cargar el alumno.')
+        msgError.value = true
+    }
 }
 function clear() { summary.value = null; docCode.value = ''; q.value = ''; msg.value = ''; Object.assign(control, { number: '', book: '', sheet: '' }) }
 

@@ -21,6 +21,7 @@ const serviceDeskApi: ApiModule = {
         myRequestDocument: (id: string | number) => apiUrl(`/service-desk/me/requests/${id}/document`),
 
         // Bandeja (ventanilla)
+        config:        apiUrl('/service-desk/config'),
         requests:      apiUrl('/service-desk/requests'),
         issueRequest:  (id: string | number) => apiUrl(`/service-desk/requests/${id}/issue`),
         rejectRequest: (id: string | number) => apiUrl(`/service-desk/requests/${id}/reject`),

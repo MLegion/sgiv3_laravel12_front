@@ -22,5 +22,11 @@ export default [
         name: 'service-desk.requests',
         component: () => import('@/modules/service-desk/pages/RequestsPage.vue'),
         meta: { title: 'Solicitudes de ventanilla' },
+    },,
+    {
+        path: 'service-desk/config',
+        name: 'service-desk.config',
+        component: () => import('@/modules/service-desk/pages/ConfigPage.vue'),
+        meta: { title: 'Configuración de ventanilla' },
     },
 ]
