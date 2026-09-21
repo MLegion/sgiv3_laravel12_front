@@ -281,9 +281,14 @@
                                 :disabled="!oficio.teacherId" />
                         </div>
                     </div>
-                    <!-- Botón emitir y firmar -->
+                    <!-- Previsualizar (borrador, sin folio ni firma) + Emitir y firmar -->
                     <div class="mt-4 flex items-center justify-end gap-3">
-                        <span class="text-[11px] text-slate-400">Emitir el oficio requiere firmarlo (MFA/contraseña); si no firma, no se emite.</span>
+                        <span class="text-[11px] text-slate-400">Previsualiza el borrador antes de emitir. Emitir el oficio requiere firmarlo (MFA/contraseña); si no firma, no se emite.</span>
+                        <button
+                            class="px-5 py-2 text-xs font-bold rounded-lg border-2 border-blue-500 text-blue-600 hover:bg-blue-50 uppercase disabled:opacity-40"
+                            :disabled="!oficioCanPreview || oficioGenerating"
+                            @click="previewOficioInline"
+                        >PREVISUALIZAR</button>
                         <button
                             class="px-5 py-2 text-xs font-bold rounded-lg bg-red-600 text-white hover:bg-red-700 uppercase disabled:opacity-40"
                             :disabled="!oficioReady || oficioGenerating"
@@ -295,7 +300,10 @@
                 <!-- Contenedor inline -->
                 <div v-if="oficioPreviewVisible" class="bg-white border rounded-xl shadow-sm overflow-hidden">
                     <div class="bg-indigo-50 border-b px-4 py-3 flex items-center justify-between">
-                        <span class="text-sm font-bold text-indigo-800 uppercase">Oficio de Asignación de Carga</span>
+                        <span class="text-sm font-bold text-indigo-800 uppercase">
+                            Oficio de Asignación de Carga
+                            <span v-if="oficioIsDraft" class="ml-2 px-2 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px]">BORRADOR — sin folio ni firma</span>
+                        </span>
                         <div class="flex items-center gap-2">
                             <button v-if="oficioBlob"
                                 class="px-3 py-1.5 text-xs font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700"
@@ -571,7 +579,7 @@ function onProyCareerChange() {
 }
 
 /* ── Generación inline ──────────────────────────────────────────── */
-const { generate, generatePdf } = useReportGenerator()
+const { generate, renderPdf } = useReportGenerator()
 
 /* ── Modal "Formato no disponible" compartido entre todos los tabs ── */
 const unavailableModalOpen = ref(false)
@@ -613,7 +621,7 @@ async function generateProyInline(code: string, format: 'pdf' | 'docx') {
 
     try {
         if (format === 'pdf') {
-            const { blob } = await generatePdf({ reportCode: code, params })
+            const { blob } = await renderPdf({ reportCode: code, params })
             proyBlob.value = blob
             proyPdfUrl.value = URL.createObjectURL(blob)
         } else {
@@ -789,12 +797,18 @@ async function fetchHorFilterOptions() {
     horFilterOptions.value = []
     try {
         if (hor.filterType === 'docente') {
-            const { data } = await api.get(API.SCA_API.teachers.list, { params: { per_page: 500 } })
-            const items = data?.items ?? data?.data ?? data ?? []
-            horFilterOptions.value = items.map((t: any) => ({
-                id:   t.id,
-                name: t.employeeName ?? t.employee_name ?? t.name ?? `Docente #${t.id}`,
-            }))
+            // Solo los docentes con asignación en esta config + carrera (los que
+            // realmente tienen horario); evita listar toda la plantilla y horarios en blanco.
+            if (!horConfigId.value) { horFilterOptions.value = []; return }
+            const { data } = await api.get(API.SCA_API.teacherAssignments.assigned(horConfigId.value), {
+                params: hor.careerId ? { career_id: hor.careerId } : {},
+            })
+            const items = Array.isArray(data) ? data : (data?.items ?? data?.data ?? [])
+            const seen = new Set<number>()
+            horFilterOptions.value = items
+                .filter((a: any) => a.teacherId != null && !seen.has(a.teacherId) && seen.add(a.teacherId))
+                .map((a: any) => ({ id: a.teacherId, name: a.teacherName ?? `Docente #${a.teacherId}` }))
+                .sort((a: any, b: any) => a.name.localeCompare(b.name))
         } else if (hor.filterType === 'grupo' && horConfigId.value) {
             const { data } = await api.get(API.SCA_API.groups.list(horConfigId.value))
             const items = Array.isArray(data) ? data : (data?.items ?? data?.data ?? [])
@@ -850,7 +864,7 @@ async function generateHorInline() {
     }
 
     try {
-        const { blob } = await generatePdf({ reportCode: horReportCode(), params })
+        const { blob } = await renderPdf({ reportCode: horReportCode(), params })
         horBlob.value = blob
         horPdfUrl.value = URL.createObjectURL(blob)
     } catch (e: any) {
@@ -993,7 +1007,7 @@ async function generateCargaInline(code: string) {
     }
 
     try {
-        const { blob } = await generatePdf({ reportCode: code, params })
+        const { blob } = await renderPdf({ reportCode: code, params })
         cargaBlob.value = blob
         cargaPdfUrl.value = URL.createObjectURL(blob)
     } catch (e: any) {
@@ -1067,6 +1081,9 @@ const oficioResolvedModalityId = computed(() => {
 const oficioReady = computed(() =>
     !!(oficio.teacherId && oficio.folio.trim())
 )
+// Para previsualizar solo se necesita el docente (el borrador se arma de la carga,
+// sin folio ni firma); el folio se exige únicamente al emitir.
+const oficioCanPreview = computed(() => !!oficio.teacherId)
 
 const showOficioSign = ref(false)
 const oficioPreviewVisible = ref(false)
@@ -1074,6 +1091,33 @@ const oficioGenerating     = ref(false)
 const oficioBlob           = ref<Blob | null>(null)
 const oficioPdfUrl         = ref<string | null>(null)
 const oficioError          = ref<string | null>(null)
+const oficioIsDraft        = ref(false)
+
+async function previewOficioInline() {
+    oficioError.value = null
+    oficioIsDraft.value = true
+    oficioPreviewVisible.value = true
+    oficioGenerating.value = true
+    if (oficioPdfUrl.value) { URL.revokeObjectURL(oficioPdfUrl.value); oficioPdfUrl.value = null }
+
+    try {
+        const { blob } = await renderPdf({
+            reportCode: ReportCode.ASSIGNMENT_OFFICIAL_LETTER,
+            params: {
+                period_id:   selectedPeriodId.value,
+                modality_id: oficioResolvedModalityId.value,
+                career_id:   oficio.careerId,
+                teacher_id:  oficio.teacherId,
+            },
+        })
+        oficioBlob.value = blob
+        oficioPdfUrl.value = URL.createObjectURL(blob)
+    } catch (e: any) {
+        handleReportError(e, oficioError, 'Error al generar la vista previa del oficio.')
+    } finally {
+        oficioGenerating.value = false
+    }
+}
 
 function onOficioCampusChange() {
     oficio.modalityTypeId = null
@@ -1142,12 +1186,13 @@ async function fetchOficioTeachers() {
 // como evidencia (Capa B), para que después solo se presente sin regenerarse.
 async function onOficioSigned() {
     oficioError.value = null
+    oficioIsDraft.value = false
     oficioPreviewVisible.value = true
     oficioGenerating.value = true
     if (oficioPdfUrl.value) { URL.revokeObjectURL(oficioPdfUrl.value); oficioPdfUrl.value = null }
 
     try {
-        const { blob } = await generatePdf({
+        const { blob } = await renderPdf({
             reportCode: ReportCode.ASSIGNMENT_OFFICIAL_LETTER,
             params: {
                 period_id:   selectedPeriodId.value,
@@ -1194,6 +1239,7 @@ function closeOficioPreview() {
     oficioPreviewVisible.value = false
     oficioBlob.value = null
     oficioError.value = null
+    oficioIsDraft.value = false
     if (oficioPdfUrl.value) { URL.revokeObjectURL(oficioPdfUrl.value); oficioPdfUrl.value = null }
 }
 
@@ -1206,6 +1252,7 @@ const sol = reactive({
 })
 
 const solTeachers = ref<any[]>([])
+const solConfigId  = ref<number | null>(null)
 
 const solCampuses = computed(() => {
     if (!ctx.value) return []
@@ -1247,14 +1294,19 @@ function onSolCampusChange() {
     sol.modalityTypeId = null
     sol.teacherId = null
     solTeachers.value = []
+    solConfigId.value = null
     closeSolPreview()
 }
 
-function onSolModalityTypeChange() {
+async function onSolModalityTypeChange() {
     sol.teacherId = null
     solTeachers.value = []
+    solConfigId.value = null
     closeSolPreview()
-    if (solResolvedModalityId.value) fetchSolTeachers()
+    if (solResolvedModalityId.value) {
+        await resolveSolConfig()
+        await fetchSolTeachers()
+    }
 }
 
 function onSolTeacherChange() {
@@ -1264,14 +1316,27 @@ function onSolTeacherChange() {
     }
 }
 
-async function fetchSolTeachers() {
-    if (!solResolvedModalityId.value) return
+async function resolveSolConfig() {
+    solConfigId.value = null
+    if (!selectedPeriodId.value || !solResolvedModalityId.value) return
     try {
-        const { data } = await api.get(API.SCA_API.teachers.list, { params: { per_page: 500 } })
-        const items = data?.items ?? data?.data ?? data ?? []
+        const { data } = await api.get(API.SCA_API.academicLoadConfigs.list, {
+            params: { per_page: 1, search: { college_academic_period_id: selectedPeriodId.value, modality_id: solResolvedModalityId.value } },
+        })
+        const items = data?.items ?? data?.data ?? []
+        if (items.length > 0) solConfigId.value = items[0].id
+    } catch { /* silent */ }
+}
+
+async function fetchSolTeachers() {
+    // Solo docentes que hicieron alguna solicitud de materia en este periodo/modalidad.
+    if (!solConfigId.value) { solTeachers.value = []; return }
+    try {
+        const { data } = await api.get(API.SCA_API.teacherRequests.requesters(solConfigId.value))
+        const items = Array.isArray(data) ? data : (data?.items ?? data?.data ?? [])
         solTeachers.value = items.map((t: any) => ({
-            id:   t.id,
-            name: t.employeeName ?? t.employee_name ?? t.name ?? `Docente #${t.id}`,
+            id:   t.teacherId ?? t.id,
+            name: t.teacherName ?? t.name ?? `Docente #${t.teacherId ?? t.id}`,
         }))
     } catch { solTeachers.value = [] }
 }
@@ -1283,7 +1348,7 @@ async function generateSolInline() {
     if (solPdfUrl.value) { URL.revokeObjectURL(solPdfUrl.value); solPdfUrl.value = null }
 
     try {
-        const { blob } = await generatePdf({
+        const { blob } = await renderPdf({
             reportCode: ReportCode.TEACHER_SUBJECT_REQUEST,
             params: {
                 period_id:   selectedPeriodId.value,

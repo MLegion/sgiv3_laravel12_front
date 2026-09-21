@@ -105,6 +105,7 @@ export default {
             me:        apiUrl('/sca/teacher-requests/me'),
             list:      (configId: string | number) => apiUrl(`/sca/teacher-requests/${configId}`),
             available: (configId: string | number) => apiUrl(`/sca/teacher-requests/${configId}/available`),
+            requesters: (configId: string | number) => apiUrl(`/sca/teacher-requests/${configId}/requesters`),
             create:    apiUrl('/sca/teacher-requests'),
             update:    (id: string | number) => apiUrl(`/sca/teacher-requests/${id}`),
             delete:    (id: string | number) => apiUrl(`/sca/teacher-requests/${id}`),
