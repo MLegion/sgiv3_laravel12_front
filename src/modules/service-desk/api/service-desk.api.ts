@@ -14,7 +14,7 @@ const serviceDeskApi: ApiModule = {
         deliver:   (id: string | number) => apiUrl(`/service-desk/emissions/${id}/deliver`),
         cancel:    (id: string | number) => apiUrl(`/service-desk/emissions/${id}/cancel`),
 
-        // Portal del alumno
+        // Portal del estudiante
         myRequestableDocuments: apiUrl('/service-desk/me/requestable-documents'),
         myRequests:             apiUrl('/service-desk/me/requests'),
         createRequest:          apiUrl('/service-desk/me/requests'),

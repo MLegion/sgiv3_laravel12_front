@@ -6,7 +6,7 @@
             <span class="text-xs font-bold text-slate-500 uppercase">División del trabajo</span>
             <label class="flex items-start gap-2 rounded-lg border p-3 cursor-pointer" :class="mode === 'none' ? 'border-blue-500 bg-blue-50' : 'border-slate-200'">
                 <input type="radio" value="none" v-model="mode" class="mt-1" />
-                <span><b class="text-sm text-slate-700">Sin división</b><br><span class="text-xs text-slate-400">Cualquier ventanilla atiende a cualquier alumno del plantel.</span></span>
+                <span><b class="text-sm text-slate-700">Sin división</b><br><span class="text-xs text-slate-400">Cualquier ventanilla atiende a cualquier estudiante del plantel.</span></span>
             </label>
             <label class="flex items-start gap-2 rounded-lg border p-3 cursor-pointer" :class="mode === 'by_career' ? 'border-blue-500 bg-blue-50' : 'border-slate-200'">
                 <input type="radio" value="by_career" v-model="mode" class="mt-1" />

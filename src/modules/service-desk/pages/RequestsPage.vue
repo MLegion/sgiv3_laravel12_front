@@ -14,7 +14,7 @@
         <div class="rounded-xl border bg-white overflow-hidden">
             <table class="w-full text-sm">
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Alumno</th><th>Documento</th><th>Comentario</th><th>Estado</th><th></th>
+                    <th class="px-4 py-2">Estudiante</th><th>Documento</th><th>Comentario</th><th>Estado</th><th></th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="r in rows" :key="r.id" class="border-b last:border-0 hover:bg-slate-50">

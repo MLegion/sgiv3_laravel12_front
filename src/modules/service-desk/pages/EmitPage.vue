@@ -2,9 +2,9 @@
     <div class="space-y-5 max-w-3xl">
         <h1 class="text-xl font-semibold text-slate-800 uppercase">Emitir constancia</h1>
 
-        <!-- Buscar alumno -->
+        <!-- Buscar estudiante -->
         <div class="rounded-xl border bg-white p-4 space-y-3">
-            <label class="block"><span class="text-xs font-semibold text-slate-500">Buscar alumno (nombre o núm. control)</span>
+            <label class="block"><span class="text-xs font-semibold text-slate-500">Buscar estudiante (nombre o núm. control)</span>
                 <input v-model="q" @input="search" placeholder="Escribe para buscar…" class="mt-1 w-full rounded-lg border-slate-300 text-sm" />
             </label>
             <div v-if="results.length && !summary" class="border rounded-lg max-h-48 overflow-auto text-sm">
@@ -15,14 +15,14 @@
             </div>
         </div>
 
-        <!-- Resumen del alumno + emisión -->
+        <!-- Resumen del estudiante + emisión -->
         <div v-if="summary" class="rounded-xl border bg-white p-5 space-y-4">
             <div class="flex justify-between items-start">
                 <div>
                     <div class="font-semibold text-slate-800">{{ summary.full_name }}</div>
                     <div class="text-xs text-slate-400">{{ summary.num_control }} · {{ summary.career_name ?? '—' }}</div>
                 </div>
-                <button @click="clear" class="text-xs text-slate-500">cambiar alumno</button>
+                <button @click="clear" class="text-xs text-slate-500">cambiar estudiante</button>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                 <div><div class="text-[10px] uppercase text-slate-400">Estatus</div>{{ summary.status_name ?? '—' }}</div>
@@ -93,8 +93,8 @@ async function pick(s: any) {
     } catch (e: any) {
         summary.value = null
         msg.value = e?.response?.status === 403
-            ? 'Este alumno no corresponde a tu ventanilla.'
-            : (e?.response?.data?.message ?? 'No se pudo cargar el alumno.')
+            ? 'Este estudiante no corresponde a tu ventanilla.'
+            : (e?.response?.data?.message ?? 'No se pudo cargar el estudiante.')
         msgError.value = true
     }
 }
