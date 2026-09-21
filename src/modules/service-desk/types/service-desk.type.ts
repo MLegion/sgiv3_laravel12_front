@@ -30,4 +30,5 @@ export interface Emission {
     delivered_at: string | null
     num_control?: string | null
     student_name?: string
+    signed?: boolean | number
 }

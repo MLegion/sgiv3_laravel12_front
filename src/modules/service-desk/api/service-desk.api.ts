@@ -10,6 +10,7 @@ const serviceDeskApi: ApiModule = {
         emissions:      apiUrl('/service-desk/emissions'),
         emission:  (id: string | number) => apiUrl(`/service-desk/emissions/${id}`),
         document:  (id: string | number) => apiUrl(`/service-desk/emissions/${id}/document`),
+        sign:      (id: string | number) => apiUrl(`/service-desk/emissions/${id}/sign`),
         deliver:   (id: string | number) => apiUrl(`/service-desk/emissions/${id}/deliver`),
         cancel:    (id: string | number) => apiUrl(`/service-desk/emissions/${id}/cancel`),
     },
