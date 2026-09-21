@@ -17,6 +17,7 @@
                 <div><div class="text-2xl font-bold text-emerald-600">{{ wave.counts?.responded ?? 0 }}</div><div class="text-xs text-slate-400 uppercase">Respondidas</div></div>
             </div>
             <div class="flex flex-wrap gap-2 justify-end border-t pt-3">
+                <button @click="previewSurvey" :disabled="busy" class="px-3 py-1.5 rounded-lg border text-sm font-semibold text-indigo-600 disabled:opacity-50">Ver encuesta</button>
                 <button @click="act('generate')" :disabled="busy" class="px-3 py-1.5 rounded-lg border text-sm font-semibold text-slate-600 disabled:opacity-50">Generar invitaciones</button>
                 <button @click="act('send')" :disabled="busy || (wave.counts?.invited ?? 0) === 0" class="px-3 py-1.5 rounded-lg border text-sm font-semibold text-blue-600 disabled:opacity-50">Enviar ligas</button>
                 <button v-if="wave.status === 'draft'" @click="act('open')" :disabled="busy" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Abrir oleada</button>
@@ -147,6 +148,14 @@ async function act(kind: 'generate' | 'send' | 'open' | 'close') {
         if (kind === 'send') msg.value = `Se enviaron ${data.sent} ligas.`
         await fetchWave(); await loadInvitations()
     } catch (e: any) { msg.value = e?.response?.data?.message ?? 'No se pudo completar la acción.'; msgError.value = true }
+    finally { busy.value = false }
+}
+async function previewSurvey() {
+    busy.value = true; msg.value = ''; msgError.value = false
+    try {
+        const { data } = await api.get(G.waves.previewLink(props.id))
+        if (data.url) window.open(data.url, '_blank')
+    } catch (e: any) { msg.value = e?.response?.data?.message ?? 'No se pudo abrir la vista previa.'; msgError.value = true }
     finally { busy.value = false }
 }
 async function remove() {

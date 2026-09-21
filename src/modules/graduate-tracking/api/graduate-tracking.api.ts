@@ -10,6 +10,7 @@ const graduateTrackingApi: ApiModule = {
             previewCohort: apiUrl('/graduate-tracking/waves/preview-cohort'),
             create:        apiUrl('/graduate-tracking/waves'),
             byId:   (id: string | number) => apiUrl(`/graduate-tracking/waves/${id}`),
+            previewLink: (id: string | number) => apiUrl(`/graduate-tracking/waves/${id}/preview-link`),
             update: (id: string | number) => apiUrl(`/graduate-tracking/waves/${id}`),
             destroy:(id: string | number) => apiUrl(`/graduate-tracking/waves/${id}`),
             generate: (id: string | number) => apiUrl(`/graduate-tracking/waves/${id}/generate-invitations`),
