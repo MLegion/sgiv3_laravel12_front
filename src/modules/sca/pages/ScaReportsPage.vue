@@ -800,8 +800,10 @@ async function fetchHorFilterOptions() {
             // Solo los docentes con asignación en esta config + carrera (los que
             // realmente tienen horario); evita listar toda la plantilla y horarios en blanco.
             if (!horConfigId.value) { horFilterOptions.value = []; return }
+            // hor.careerId es el id de la OFERTA; el endpoint espera el career_id real.
+            const realCareerId = horCareers.value.find((c: any) => c.id === hor.careerId)?.careerId ?? null
             const { data } = await api.get(API.SCA_API.teacherAssignments.assigned(horConfigId.value), {
-                params: hor.careerId ? { career_id: hor.careerId } : {},
+                params: realCareerId ? { career_id: realCareerId } : {},
             })
             const items = Array.isArray(data) ? data : (data?.items ?? data?.data ?? [])
             const seen = new Set<number>()
@@ -1047,6 +1049,7 @@ const oficio = reactive({
 
 const oficioCareers  = ref<any[]>([])
 const oficioTeachers = ref<any[]>([])
+const oficioConfigId = ref<number | null>(null)
 
 const oficioCampuses = computed(() => {
     if (!ctx.value) return []
@@ -1125,16 +1128,21 @@ function onOficioCampusChange() {
     oficio.teacherId = null
     oficioCareers.value = []
     oficioTeachers.value = []
+    oficioConfigId.value = null
     closeOficioPreview()
 }
 
-function onOficioModalityTypeChange() {
+async function onOficioModalityTypeChange() {
     oficio.careerId = null
     oficio.teacherId = null
     oficioCareers.value = []
     oficioTeachers.value = []
+    oficioConfigId.value = null
     closeOficioPreview()
-    if (oficioResolvedModalityId.value) fetchOficioCareers()
+    if (oficioResolvedModalityId.value) {
+        await resolveOficioConfig()
+        await fetchOficioCareers()
+    }
 }
 
 function onOficioCareerChange() {
@@ -1142,6 +1150,18 @@ function onOficioCareerChange() {
     oficioTeachers.value = []
     closeOficioPreview()
     if (oficio.careerId) fetchOficioTeachers()
+}
+
+async function resolveOficioConfig() {
+    oficioConfigId.value = null
+    if (!selectedPeriodId.value || !oficioResolvedModalityId.value) return
+    try {
+        const { data } = await api.get(API.SCA_API.academicLoadConfigs.list, {
+            params: { per_page: 1, search: { college_academic_period_id: selectedPeriodId.value, modality_id: oficioResolvedModalityId.value } },
+        })
+        const items = data?.items ?? data?.data ?? []
+        if (items.length > 0) oficioConfigId.value = items[0].id
+    } catch { /* silent */ }
 }
 
 function onOficioTeacherChange() {
@@ -1171,13 +1191,20 @@ async function fetchOficioCareers() {
 }
 
 async function fetchOficioTeachers() {
+    // Solo los docentes con asignación en esta carrera + config (no toda la plantilla).
+    if (!oficioConfigId.value) { oficioTeachers.value = []; return }
     try {
-        const { data } = await api.get(API.SCA_API.teachers.list, { params: { per_page: 500 } })
-        const items = data?.items ?? data?.data ?? data ?? []
-        oficioTeachers.value = items.map((t: any) => ({
-            id:   t.id,
-            name: t.employeeName ?? t.employee_name ?? t.name ?? `Docente #${t.id}`,
-        }))
+        // oficio.careerId es el id de la OFERTA; el endpoint espera el career_id real.
+        const realCareerId = oficioCareers.value.find((c: any) => c.id === oficio.careerId)?.careerId ?? null
+        const { data } = await api.get(API.SCA_API.teacherAssignments.assigned(oficioConfigId.value), {
+            params: realCareerId ? { career_id: realCareerId } : {},
+        })
+        const items = Array.isArray(data) ? data : (data?.items ?? data?.data ?? [])
+        const seen = new Set<number>()
+        oficioTeachers.value = items
+            .filter((a: any) => a.teacherId != null && !seen.has(a.teacherId) && seen.add(a.teacherId))
+            .map((a: any) => ({ id: a.teacherId, name: a.teacherName ?? `Docente #${a.teacherId}` }))
+            .sort((a: any, b: any) => a.name.localeCompare(b.name))
     } catch { oficioTeachers.value = [] }
 }
 
