@@ -43,16 +43,17 @@
             <div class="rounded-xl border bg-white overflow-hidden">
                 <table class="w-full text-sm">
                     <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                        <th class="px-4 py-2">Egresado</th><th>Carrera</th><th>Correo</th><th>Estado</th>
+                        <th class="px-4 py-2">Egresado</th><th>Generación</th><th>Carrera</th><th>Correo</th><th>Estado</th>
                     </tr></thead>
                     <tbody>
                         <tr v-for="i in invitations" :key="i.id" class="border-b last:border-0">
                             <td class="px-4 py-2"><div class="text-slate-700">{{ i.student_name }}</div><div class="text-xs text-slate-400">{{ i.num_control }}</div></td>
+                            <td class="text-slate-600">{{ i.generation ?? '—' }}</td>
                             <td class="text-slate-600">{{ i.career_name ?? '—' }}</td>
                             <td class="text-slate-500 text-xs">{{ i.contact_email ?? '—' }}</td>
                             <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="invStatusClass(i.status)">{{ invStatusLabel(i.status) }}</span></td>
                         </tr>
-                        <tr v-if="!invitations.length"><td colspan="4" class="px-4 py-6 text-center text-slate-400">Sin invitaciones. Usa "Generar invitaciones".</td></tr>
+                        <tr v-if="!invitations.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin invitaciones. Usa "Generar invitaciones".</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -62,14 +63,32 @@
         <div v-if="tab === 'stats'" class="space-y-4">
             <div v-if="stats" class="rounded-xl border bg-white p-5">
                 <div class="flex items-baseline gap-3"><span class="text-3xl font-bold text-emerald-600">{{ stats.rate }}%</span><span class="text-sm text-slate-400">tasa de respuesta ({{ stats.counts.responded }}/{{ stats.counts.invited }})</span></div>
-                <div v-if="stats.by_career.length" class="mt-3">
-                    <p class="text-xs font-bold text-slate-500 uppercase mb-1">Por carrera</p>
-                    <div v-for="c in stats.by_career" :key="c.career_name" class="flex items-center gap-2 text-sm py-0.5">
-                        <span class="w-56 truncate text-slate-600">{{ c.career_name }}</span>
-                        <div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" :style="{ width: c.rate + '%' }"></div></div>
-                        <span class="text-xs text-slate-500 w-24 text-right">{{ c.responded }}/{{ c.invited }} ({{ c.rate }}%)</span>
+                <div class="grid md:grid-cols-2 gap-6 mt-3">
+                    <div v-if="stats.by_generation.length">
+                        <p class="text-xs font-bold text-slate-500 uppercase mb-1">Por generación (año de ingreso)</p>
+                        <div v-for="g in stats.by_generation" :key="g.generation" class="flex items-center gap-2 text-sm py-0.5">
+                            <span class="w-24 truncate text-slate-600">{{ g.generation }}</span>
+                            <div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-indigo-500 h-2 rounded-full" :style="{ width: g.rate + '%' }"></div></div>
+                            <span class="text-xs text-slate-500 w-24 text-right">{{ g.responded }}/{{ g.invited }} ({{ g.rate }}%)</span>
+                        </div>
+                    </div>
+                    <div v-if="stats.by_career.length">
+                        <p class="text-xs font-bold text-slate-500 uppercase mb-1">Por carrera</p>
+                        <div v-for="c in stats.by_career" :key="c.career_name" class="flex items-center gap-2 text-sm py-0.5">
+                            <span class="w-40 truncate text-slate-600">{{ c.career_name }}</span>
+                            <div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" :style="{ width: c.rate + '%' }"></div></div>
+                            <span class="text-xs text-slate-500 w-24 text-right">{{ c.responded }}/{{ c.invited }} ({{ c.rate }}%)</span>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <div v-if="stats" class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-500">Ver respuestas de la generación:</span>
+                <select v-model="genFilter" @change="loadStats" class="rounded-lg border-slate-300 text-sm">
+                    <option value="">Todas</option>
+                    <option v-for="g in stats.by_generation" :key="g.generation" :value="g.generation">{{ g.generation }}</option>
+                </select>
             </div>
 
             <div v-for="q in stats?.questions ?? []" :key="q.question_id" class="rounded-xl border bg-white p-5 space-y-2">
@@ -104,6 +123,7 @@ const invitations = ref<WaveInvitation[]>([])
 const stats = ref<WaveStatistics | null>(null)
 const tab = ref<'invitations' | 'stats'>('invitations')
 const invFilter = ref('')
+const genFilter = ref('')
 const busy = ref(false), msg = ref(''), msgError = ref(false)
 
 function tabClass(t: string) {
@@ -114,7 +134,9 @@ async function fetchWave() { wave.value = (await api.get(G.waves.byId(props.id))
 async function loadInvitations() {
     invitations.value = (await api.get(G.waves.invitations(props.id), { params: { status: invFilter.value || undefined, per_page: 100 } })).data.data ?? []
 }
-async function loadStats() { stats.value = (await api.get(G.waves.statistics(props.id))).data }
+async function loadStats() {
+    stats.value = (await api.get(G.waves.statistics(props.id), { params: { generation: genFilter.value || undefined } })).data
+}
 
 async function act(kind: 'generate' | 'send' | 'open' | 'close') {
     busy.value = true; msg.value = ''; msgError.value = false

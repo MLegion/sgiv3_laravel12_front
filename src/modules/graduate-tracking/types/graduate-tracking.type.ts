@@ -25,6 +25,7 @@ export interface WaveInvitation {
     num_control: string | null
     career_name: string | null
     contact_email: string | null
+    generation: string | null
     status: 'pending' | 'sent' | 'responded'
     sent_at: string | null
     responded_at: string | null
@@ -44,10 +45,13 @@ export interface StatQuestion {
     texts: string[]
 }
 export interface CareerStat { career_name: string; invited: number; responded: number; rate: number }
+export interface GenerationStat { generation: string; invited: number; responded: number; rate: number }
 export interface WaveStatistics {
     wave: { id: number; name: string; status: string }
     counts: WaveCounts
     rate: number
     by_career: CareerStat[]
+    by_generation: GenerationStat[]
+    generation: string | null
     questions: StatQuestion[]
 }
