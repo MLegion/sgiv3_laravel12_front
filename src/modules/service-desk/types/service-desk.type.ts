@@ -33,3 +33,18 @@ export interface Emission {
     student_name?: string
     signed?: boolean | number
 }
+
+export interface DeskRequest {
+    id: number
+    document_code: string
+    document_name: string
+    status: 'requested' | 'issued' | 'rejected' | 'cancelled'
+    emission_id: number | null
+    folio?: string | null
+    reject_reason?: string | null
+    requested_at: string | null
+    resolved_at?: string | null
+    notes?: string | null
+    num_control?: string | null
+    student_name?: string
+}

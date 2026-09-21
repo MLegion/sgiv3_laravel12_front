@@ -13,6 +13,17 @@ const serviceDeskApi: ApiModule = {
         sign:      (id: string | number) => apiUrl(`/service-desk/emissions/${id}/sign`),
         deliver:   (id: string | number) => apiUrl(`/service-desk/emissions/${id}/deliver`),
         cancel:    (id: string | number) => apiUrl(`/service-desk/emissions/${id}/cancel`),
+
+        // Portal del alumno
+        myRequestableDocuments: apiUrl('/service-desk/me/requestable-documents'),
+        myRequests:             apiUrl('/service-desk/me/requests'),
+        createRequest:          apiUrl('/service-desk/me/requests'),
+        myRequestDocument: (id: string | number) => apiUrl(`/service-desk/me/requests/${id}/document`),
+
+        // Bandeja (ventanilla)
+        requests:      apiUrl('/service-desk/requests'),
+        issueRequest:  (id: string | number) => apiUrl(`/service-desk/requests/${id}/issue`),
+        rejectRequest: (id: string | number) => apiUrl(`/service-desk/requests/${id}/reject`),
     },
 }
 
