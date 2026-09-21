@@ -59,18 +59,38 @@
                         </div>
                     </label>
 
-                    <div>
-                        <span class="text-xs font-semibold text-slate-600 block mb-2">Pesos soft (0 = desactivado)</span>
-                        <div class="space-y-2">
-                            <label v-for="k in weightKeys" :key="k" class="flex items-center gap-3">
-                                <span class="text-xs text-slate-700 w-52">{{ weightLabels[k] }}</span>
-                                <input type="range" min="0" max="10" v-model.number="form.weights[k]" class="flex-1" />
-                                <span class="text-xs font-mono text-slate-500 w-6 text-right">{{ form.weights[k] }}</span>
-                            </label>
+                    <div class="border rounded-lg">
+                        <!-- Encabezado colapsable: por defecto usa la configuración
+                             recomendada según el tipo (escolarizado / semiescolarizado).
+                             Se despliega solo si el director quiere ajustar los pesos. -->
+                        <button type="button"
+                            class="w-full flex items-center justify-between px-3 py-2 text-left"
+                            @click="showWeights = !showWeights">
+                            <span class="text-xs font-semibold text-slate-600">
+                                Configuración avanzada (pesos)
+                                <span class="ml-1 font-normal text-slate-400">
+                                    · usando perfil
+                                    {{ genMode === 'dated' ? 'Semiescolarizado' : genMode === 'weekly' ? 'Escolarizado' : 'por defecto' }}
+                                </span>
+                            </span>
+                            <svg class="w-4 h-4 text-slate-400 transition-transform" :class="showWeights ? 'rotate-180' : ''"
+                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div v-show="showWeights" class="px-3 pb-3 border-t pt-2">
+                            <span class="text-[10px] text-slate-500 block mb-2">Pesos soft (0 = desactivado). Ya vienen ajustados para el tipo de horario.</span>
+                            <div class="space-y-2">
+                                <label v-for="k in weightKeys" :key="k" class="flex items-center gap-3">
+                                    <span class="text-xs text-slate-700 w-52">{{ weightLabels[k] }}</span>
+                                    <input type="range" min="0" max="10" v-model.number="form.weights[k]" class="flex-1" />
+                                    <span class="text-xs font-mono text-slate-500 w-6 text-right">{{ form.weights[k] }}</span>
+                                </label>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-2">
+                                Sugerencia: con cargas grandes, usar sólo 1-2 pesos simultáneos para evitar timeout.
+                            </p>
                         </div>
-                        <p class="text-[10px] text-slate-400 mt-2">
-                            Sugerencia: con cargas grandes, usar sólo 1-2 pesos simultáneos para evitar timeout.
-                        </p>
                     </div>
 
                     <div class="flex justify-end gap-2 pt-2 border-t">
@@ -373,9 +393,33 @@ const form = reactive({
     decomposeBySemester: false,
     weights: Object.fromEntries(WEIGHT_KEYS.map(k => [k, 0])) as Record<WeightKey, number>,
 })
-// Default: 2 pesos activos moderados
+// Default: 2 pesos activos moderados (se sobrescriben con los defaults reales
+// del college en cuanto carga provider-status).
 form.weights.preferShift = 5
 form.weights.minimizeTeacherGaps = 7
+
+// Carga los pesos por defecto efectivos del college (AppConfig + schema) para
+// que los sliders reflejen la config real, incluidas claves nuevas
+// (contigüidad de fechas / evitar doble sesión). Solo la primera vez.
+const weightsLoaded = ref(false)
+const genMode = ref<'weekly' | 'dated' | null>(null)
+const showWeights = ref(false)   // colapsado por defecto; se usa el perfil recomendado
+async function loadDefaultWeights() {
+    if (weightsLoaded.value) return
+    try {
+        const { data } = await api.get(API.SCHEDULES_API.generation.providerStatus, {
+            params: { config_id: props.configId },
+        })
+        genMode.value = data?.mode ?? null
+        const dw = data?.defaultWeights
+        if (dw && typeof dw === 'object') {
+            for (const k of WEIGHT_KEYS) {
+                if (typeof dw[k] === 'number') form.weights[k] = dw[k]
+            }
+            weightsLoaded.value = true
+        }
+    } catch { /* deja los defaults locales */ }
+}
 
 const saving     = ref(false)
 const loadingRuns = ref(false)
@@ -849,6 +893,7 @@ async function deleteRun(r: RunListItem) {
 // dejando al usuario sin ver un run activo existente hasta refrescar.
 watch(() => props.open, (isOpen) => {
     if (isOpen) {
+        loadDefaultWeights()
         loadRuns()
     } else {
         clearPoll()
