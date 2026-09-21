@@ -9,6 +9,19 @@
             <span class="px-3 py-1 rounded-full text-xs font-bold" :class="statusClass(wave.status)">{{ statusLabel(wave.status) }}</span>
         </div>
 
+        <!-- Advertencia: falta la encuesta del año en sgi_forms -->
+        <div v-if="survey && !survey.exists" class="rounded-xl border border-amber-300 bg-amber-50 p-4 flex items-start gap-3">
+            <span class="text-amber-500 text-xl leading-none">⚠</span>
+            <div class="flex-1">
+                <p class="text-sm font-semibold text-amber-800">Aún no existe la encuesta de este año en sgi_forms.</p>
+                <p class="text-xs text-amber-700 mt-0.5">
+                    Genera la encuesta antes de enviar las ligas.
+                    {{ survey.has_prior ? 'Se clonará la del año anterior (podrás ajustarla).' : 'Se creará desde la plantilla estándar de egresados.' }}
+                </p>
+            </div>
+            <button @click="generateSurvey" :disabled="busy" class="px-3 py-1.5 rounded-lg bg-amber-600 text-white text-sm font-semibold disabled:opacity-50">Generar encuesta</button>
+        </div>
+
         <!-- Resumen + acciones -->
         <div class="rounded-xl border bg-white p-5 space-y-4">
             <div class="grid grid-cols-3 gap-4 text-center">
@@ -120,6 +133,7 @@ const props = defineProps<{ id: string | number }>()
 const G = API.GRADUATE_TRACKING_API
 
 const wave = ref<GraduateWave | null>(null)
+const survey = ref<{ exists: boolean; has_prior: boolean; status: string | null } | null>(null)
 const invitations = ref<WaveInvitation[]>([])
 const stats = ref<WaveStatistics | null>(null)
 const tab = ref<'invitations' | 'stats'>('invitations')
@@ -132,6 +146,19 @@ function tabClass(t: string) {
 }
 
 async function fetchWave() { wave.value = (await api.get(G.waves.byId(props.id))).data }
+async function loadSurveyStatus() {
+    try { survey.value = (await api.get(G.waves.surveyStatus(props.id))).data }
+    catch { survey.value = null }
+}
+async function generateSurvey() {
+    busy.value = true; msg.value = ''; msgError.value = false
+    try {
+        const { data } = await api.post(G.waves.generateSurvey(props.id))
+        msg.value = data.mode === 'clone' ? 'Encuesta generada (clonada del año anterior).' : 'Encuesta generada desde la plantilla estándar.'
+        await loadSurveyStatus()
+    } catch (e: any) { msg.value = e?.response?.data?.message ?? 'No se pudo generar la encuesta.'; msgError.value = true }
+    finally { busy.value = false }
+}
 async function loadInvitations() {
     invitations.value = (await api.get(G.waves.invitations(props.id), { params: { status: invFilter.value || undefined, per_page: 100 } })).data.data ?? []
 }
@@ -164,5 +191,5 @@ async function remove() {
     window.history.back()
 }
 
-onMounted(async () => { await fetchWave(); await loadInvitations() })
+onMounted(async () => { await fetchWave(); await loadInvitations(); await loadSurveyStatus() })
 </script>
