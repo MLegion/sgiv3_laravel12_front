@@ -141,6 +141,8 @@ const { renderPdf } = useReportGenerator()
 const REPORT_BY_DOC: Record<string, string> = {
     CONSTANCIA_ESTUDIOS: 'RPT.CONSTANCIA_ESTUDIOS',
     CONSTANCIA_INSCRIPCION: 'RPT.CONSTANCIA_INSCRIPCION',
+    CONSTANCIA_CREDITOS: 'RPT.CONSTANCIA_CREDITOS',
+    CONSTANCIA_NO_ADEUDO: 'RPT.CONSTANCIA_NO_ADEUDO',
 }
 
 const summary = ref<StudentSummary | null>(null)
