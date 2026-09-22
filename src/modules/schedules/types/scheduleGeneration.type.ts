@@ -110,6 +110,8 @@ export const WEIGHT_KEYS = [
     'pairDailySlots',
     'datedSessionContiguity',
     'avoidSameDaySessions',
+    'datedFillEarly',
+    'sameTimeBandPerSubject',
 ] as const
 export type WeightKey = typeof WEIGHT_KEYS[number]
 
@@ -124,6 +126,8 @@ export const WEIGHT_LABELS: Record<WeightKey, string> = {
     pairDailySlots:           'Usar mañana y tarde en la misma fecha',
     datedSessionContiguity:   'Fechas seguidas por materia (sabatino)',
     avoidSameDaySessions:     'Evitar doble sesión el mismo día (sabatino)',
+    datedFillEarly:           'Concentrar al inicio (huecos al final) (sabatino)',
+    sameTimeBandPerSubject:   'Misma banda horaria por materia (sabatino)',
 }
 
 export const STATUS_LABELS: Record<RunStatus, string> = {

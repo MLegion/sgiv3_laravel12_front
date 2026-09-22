@@ -83,7 +83,7 @@
                             <div class="space-y-2">
                                 <label v-for="k in weightKeys" :key="k" class="flex items-center gap-3">
                                     <span class="text-xs text-slate-700 w-52">{{ weightLabels[k] }}</span>
-                                    <input type="range" min="0" max="10" v-model.number="form.weights[k]" class="flex-1" />
+                                    <input type="range" min="0" max="20" v-model.number="form.weights[k]" class="flex-1" />
                                     <span class="text-xs font-mono text-slate-500 w-6 text-right">{{ form.weights[k] }}</span>
                                 </label>
                             </div>
