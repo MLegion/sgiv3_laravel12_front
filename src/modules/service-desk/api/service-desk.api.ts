@@ -6,6 +6,7 @@ const serviceDeskApi: ApiModule = {
     api: {
         documents:      apiUrl('/service-desk/documents'),
         studentSummary: (id: string | number) => apiUrl(`/service-desk/students/${id}/summary`),
+        preview:        apiUrl('/service-desk/preview'),
         emit:           apiUrl('/service-desk/emissions'),
         emissions:      apiUrl('/service-desk/emissions'),
         emission:  (id: string | number) => apiUrl(`/service-desk/emissions/${id}`),
