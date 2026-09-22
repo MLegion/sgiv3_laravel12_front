@@ -47,16 +47,7 @@
 
             <!-- Lista -->
             <div class="flex-1 overflow-auto">
-                <div v-if="loading" class="flex justify-center py-12">
-                    <svg class="animate-spin w-7 h-7 text-blue-500" viewBox="0 0 24 24" fill="none">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                    </svg>
-                </div>
-                <div v-else-if="items.length === 0" class="text-center text-slate-400 text-sm py-12">
-                    No se encontraron estudiantes con esos filtros.
-                </div>
-                <table v-else class="min-w-full text-sm">
+                <table class="min-w-full text-sm">
                     <thead class="bg-slate-50 border-b text-[10px] uppercase text-slate-400 font-semibold sticky top-0">
                         <tr>
                             <th class="px-4 py-2 text-left">No. Control</th>
@@ -67,15 +58,34 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        <tr v-for="s in items" :key="s.id" class="hover:bg-blue-50/50 cursor-pointer" @click="pick(s)">
-                            <td class="px-4 py-2 font-mono text-xs font-bold text-slate-700">{{ s.numControl ?? '—' }}</td>
-                            <td class="px-4 py-2 font-medium text-slate-800">{{ fullName(s) }}</td>
-                            <td class="px-4 py-2 text-xs text-slate-600">{{ careerOf(s) }}</td>
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase" :class="statusClass(statusOf(s))">{{ statusOf(s) ?? '—' }}</span>
-                            </td>
-                            <td class="px-4 py-2 text-right">
-                                <button class="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700" @click.stop="pick(s)">Seleccionar</button>
+                        <!-- Skeleton por fila mientras carga (mantiene la estructura de la tabla) -->
+                        <template v-if="loading">
+                            <tr v-for="n in skeletonRows" :key="`sk-${n}`" class="animate-pulse">
+                                <td class="px-4 py-2.5"><div class="h-3 w-20 bg-slate-200 rounded"></div></td>
+                                <td class="px-4 py-2.5"><div class="h-3 w-48 bg-slate-200 rounded"></div></td>
+                                <td class="px-4 py-2.5"><div class="h-3 w-32 bg-slate-200 rounded"></div></td>
+                                <td class="px-4 py-2.5"><div class="h-4 w-16 bg-slate-200 rounded-full"></div></td>
+                                <td class="px-4 py-2.5"><div class="h-6 w-20 bg-slate-200 rounded-lg ml-auto"></div></td>
+                            </tr>
+                        </template>
+                        <!-- Resultados -->
+                        <template v-else-if="items.length">
+                            <tr v-for="s in items" :key="s.id" class="hover:bg-blue-50/50 cursor-pointer" @click="pick(s)">
+                                <td class="px-4 py-2 font-mono text-xs font-bold text-slate-700">{{ s.numControl ?? '—' }}</td>
+                                <td class="px-4 py-2 font-medium text-slate-800">{{ fullName(s) }}</td>
+                                <td class="px-4 py-2 text-xs text-slate-600">{{ careerOf(s) }}</td>
+                                <td class="px-4 py-2">
+                                    <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase" :class="statusClass(statusOf(s))">{{ statusOf(s) ?? '—' }}</span>
+                                </td>
+                                <td class="px-4 py-2 text-right">
+                                    <button class="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700" @click.stop="pick(s)">Seleccionar</button>
+                                </td>
+                            </tr>
+                        </template>
+                        <!-- Vacío -->
+                        <tr v-else>
+                            <td colspan="5" class="text-center text-slate-400 text-sm py-12">
+                                No se encontraron estudiantes con esos filtros.
                             </td>
                         </tr>
                     </tbody>
@@ -125,6 +135,9 @@ let catalogsLoaded = false
 const hasActiveFilters = computed(() =>
     filters.campusId || filters.modalityTypeId || filters.careerId || filters.studentStatusId || search.value.trim(),
 )
+
+// Filas de skeleton: mantiene la misma altura que la carga previa (o 8 al inicio).
+const skeletonRows = computed(() => items.value.length || 8)
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 function debouncedFetch() {
