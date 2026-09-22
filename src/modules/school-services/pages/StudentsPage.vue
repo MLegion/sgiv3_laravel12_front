@@ -64,8 +64,18 @@
                     </select>
                 </div>
             </div>
-            <div v-if="hasActiveFilters" class="flex justify-end">
-                <button class="text-xs text-blue-600 hover:underline" @click="clearFilters">Limpiar filtros</button>
+            <div class="flex justify-end">
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    :disabled="!hasActiveFilters"
+                    @click="clearFilters"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                    Limpiar filtros
+                </button>
             </div>
         </div>
 
@@ -215,6 +225,26 @@ const filters = reactive<Filters>({
     studentStatusId: null, semester: null,
 })
 
+// Persistencia temporal de filtros (sobrevive F5; se limpia al cerrar la pestaña).
+const FILTERS_STORAGE_KEY = 'ses.students.filters'
+function persistFilters() {
+    try {
+        sessionStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify({
+            filters: { ...filters }, search: search.value, page: page.value,
+        }))
+    } catch { /* almacenamiento no disponible */ }
+}
+function restoreFilters() {
+    try {
+        const raw = sessionStorage.getItem(FILTERS_STORAGE_KEY)
+        if (!raw) return
+        const s = JSON.parse(raw)
+        if (s?.filters) Object.assign(filters, s.filters)
+        if (typeof s?.search === 'string') search.value = s.search
+        if (Number.isInteger(s?.page) && s.page > 0) page.value = s.page
+    } catch { /* payload inválido */ }
+}
+
 const campuses        = ref<any[]>([])
 const modalityTypes   = ref<any[]>([])
 const careers         = ref<any[]>([])
@@ -244,6 +274,7 @@ function clearFilters() {
     filters.semester = null
     search.value = ''
     page.value = 1
+    try { sessionStorage.removeItem(FILTERS_STORAGE_KEY) } catch { /* noop */ }
     fetchStudents()
 }
 
@@ -307,6 +338,7 @@ async function fetchStudents() {
         items.value    = data.items ?? []
         total.value    = data.total ?? 0
         lastPage.value = data.lastPage ?? 1
+        persistFilters()
     } catch (e: any) {
         items.value = []
         total.value = 0
@@ -321,6 +353,7 @@ async function fetchStudents() {
 function changePage(p: number) { page.value = p; fetchStudents() }
 
 onMounted(async () => {
+    restoreFilters()          // reaplica los filtros guardados antes de consultar
     await loadCatalogs()
     await fetchStudents()
 })
