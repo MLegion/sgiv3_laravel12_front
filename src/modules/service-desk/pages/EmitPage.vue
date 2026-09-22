@@ -140,6 +140,7 @@ const { renderPdf } = useReportGenerator()
 // La vista previa/emisión de estas usa plantilla .docx + DAO + LibreOffice (PDF real).
 const REPORT_BY_DOC: Record<string, string> = {
     CONSTANCIA_ESTUDIOS: 'RPT.CONSTANCIA_ESTUDIOS',
+    CONSTANCIA_INSCRIPCION: 'RPT.CONSTANCIA_INSCRIPCION',
 }
 
 const summary = ref<StudentSummary | null>(null)
