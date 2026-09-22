@@ -131,8 +131,16 @@ import { API } from '@/shared/api'
 import type { DeskDocument, StudentSummary } from '@/modules/service-desk/types/service-desk.type'
 import { openDocument } from '@/modules/service-desk/pages/openDocument'
 import StudentPickerModal from '@/modules/service-desk/components/StudentPickerModal.vue'
+import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 
 const D = API.SERVICE_DESK_API
+const { renderPdf } = useReportGenerator()
+
+// Constancias migradas al REPORTEADOR (code de service_desk_document → code del reporte).
+// La vista previa/emisión de estas usa plantilla .docx + DAO + LibreOffice (PDF real).
+const REPORT_BY_DOC: Record<string, string> = {
+    CONSTANCIA_ESTUDIOS: 'RPT.CONSTANCIA_ESTUDIOS',
+}
 
 const summary = ref<StudentSummary | null>(null)
 const documents = ref<DeskDocument[]>([])
@@ -160,15 +168,27 @@ async function fetchPreview() {
     previewLoading.value = true
     previewError.value = ''
     try {
-        const { data } = await api.post(D.preview, {
-            student_id: summary.value.student_id,
-            document_code: docCode.value,
-            control_number: control.number || null,
-            control_book: control.book || null,
-            control_sheet: control.sheet || null,
-        }, { responseType: 'blob' })
-        revokePreview()
-        previewUrl.value = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
+        const reportCode = REPORT_BY_DOC[docCode.value]
+        if (reportCode) {
+            // Reporteador: plantilla + DAO → PDF (borrador sin folio ni firma).
+            const { blob } = await renderPdf({
+                reportCode,
+                params: { student_id: summary.value.student_id, emission_id: null },
+            })
+            revokePreview()
+            previewUrl.value = URL.createObjectURL(blob)
+        } else {
+            // Documentos aún no migrados al reporteador: preview HTML del renderer.
+            const { data } = await api.post(D.preview, {
+                student_id: summary.value.student_id,
+                document_code: docCode.value,
+                control_number: control.number || null,
+                control_book: control.book || null,
+                control_sheet: control.sheet || null,
+            }, { responseType: 'blob' })
+            revokePreview()
+            previewUrl.value = URL.createObjectURL(new Blob([data], { type: 'text/html' }))
+        }
     } catch (e: any) {
         revokePreview()
         previewError.value = e?.response?.data?.message ?? 'No se pudo generar la vista previa.'
