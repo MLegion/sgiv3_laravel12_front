@@ -63,7 +63,7 @@
                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Documento a emitir</span>
                     <div class="grid sm:grid-cols-2 gap-2.5">
                         <label
-                            v-for="d in documents" :key="d.code"
+                            v-for="d in visibleDocuments" :key="d.code"
                             class="flex items-start gap-3 rounded-xl border p-3 cursor-pointer transition"
                             :class="docCode === d.code ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-slate-200 hover:border-slate-300'"
                         >
@@ -160,6 +160,8 @@ const previewUrl = ref<string | null>(null)
 const previewLoading = ref(false)
 const previewError = ref('')
 
+// Solo se ofrecen los documentos respaldados por un reporte del reporteador.
+const visibleDocuments = computed(() => documents.value.filter(d => !!REPORT_BY_DOC[d.code]))
 const selectedDoc = computed(() => documents.value.find(d => d.code === docCode.value) || null)
 const initials = computed(() => {
     const parts = (summary.value?.full_name?.trim() ?? '').split(/\s+/).filter(Boolean)
