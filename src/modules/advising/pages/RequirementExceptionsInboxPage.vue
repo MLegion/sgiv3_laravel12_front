@@ -28,12 +28,17 @@
                     <option value="rejected">RECHAZADAS</option>
                 </select>
             </div>
-            <div v-if="hasActiveFilters" class="flex justify-end mt-2">
-                <button type="button" class="text-xs text-blue-600 hover:underline" @click="clearFilters">Limpiar filtros</button>
+            <div class="flex items-center justify-between mt-2">
+                <span class="text-xs text-slate-400">{{ items.length }} de {{ allItems.length }} solicitud(es)</span>
+                <div class="flex items-center gap-3">
+                    <button v-if="hasActiveFilters" type="button" class="text-xs text-blue-600 hover:underline" @click="clearFilters">Limpiar filtros</button>
+                    <button type="button" class="text-xs text-slate-500 hover:text-slate-700 hover:underline" @click="load">Actualizar</button>
+                </div>
             </div>
         </div>
 
         <div v-if="okMsg" class="text-sm px-4 py-3 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100">{{ okMsg }}</div>
+        <div v-if="loadError" class="text-sm px-4 py-3 rounded-lg bg-red-50 text-red-700 border border-red-100">{{ loadError }}</div>
 
         <div v-if="loading" class="bg-white border rounded-xl p-6 text-center text-sm text-slate-400">Cargando…</div>
         <div v-else-if="!items.length" class="bg-white border rounded-xl p-8 text-center text-sm text-slate-400 italic">
@@ -123,13 +128,14 @@ import type { PendingRequirementException, RequirementExceptionStatus } from '@/
 
 const allItems = ref<PendingRequirementException[]>([])
 const loading = ref(false)
+const loadError = ref('')
 const okMsg = ref('')
 
 // Filtros (client-side: el conjunto por jefe de carrera es pequeño).
 const search = ref('')
 const periodFilter = ref('')
 const careerFilter = ref('')
-const statusFilter = ref('pending')
+const statusFilter = ref('')
 
 const periodOptions = computed(() =>
     [...new Set(allItems.value.map(i => i.periodName).filter(Boolean) as string[])].sort())
@@ -175,12 +181,18 @@ function statusClass(s: RequirementExceptionStatus): string {
 
 async function load() {
     loading.value = true
+    loadError.value = ''
     try {
         // Se traen TODOS los estados; el filtrado se hace en el cliente.
         const { data } = await api.get(API.ADVISING_API.requirementExceptions.pending, {
             params: { status: '' },
         })
         allItems.value = Array.isArray(data?.data) ? data.data : []
+    } catch (e: any) {
+        allItems.value = []
+        loadError.value = e?.response?.status === 403
+            ? 'No tienes permiso para ver esta bandeja.'
+            : (e?.response?.data?.message ?? 'No se pudieron cargar las solicitudes.')
     } finally {
         loading.value = false
     }
