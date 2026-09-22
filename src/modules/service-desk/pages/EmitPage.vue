@@ -166,9 +166,9 @@ async function fetchPreview() {
             control_number: control.number || null,
             control_book: control.book || null,
             control_sheet: control.sheet || null,
-        }, { responseType: 'text' })
+        }, { responseType: 'blob' })
         revokePreview()
-        previewUrl.value = URL.createObjectURL(new Blob([data], { type: 'text/html' }))
+        previewUrl.value = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
     } catch (e: any) {
         revokePreview()
         previewError.value = e?.response?.data?.message ?? 'No se pudo generar la vista previa.'
