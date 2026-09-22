@@ -1,19 +1,36 @@
 <template>
     <div class="space-y-4 max-w-5xl">
-        <div class="flex items-center justify-between flex-wrap gap-3">
-            <div>
-                <h1 class="text-xl font-semibold text-slate-800 uppercase">Excepciones de Requisitos</h1>
-                <p class="text-xs text-slate-500 mt-1">
-                    Solicitudes de tus alumnos para saltarse un requisito de reinscripción. Al aprobar, el
-                    requisito se da por cubierto y el alumno puede continuar.
-                </p>
+        <div>
+            <h1 class="text-xl font-semibold text-slate-800 uppercase">Excepciones de Requisitos</h1>
+            <p class="text-xs text-slate-500 mt-1">
+                Solicitudes de tus alumnos para saltarse un requisito de reinscripción. Al aprobar, el
+                requisito se da por cubierto y el alumno puede continuar.
+            </p>
+        </div>
+
+        <!-- Filtros -->
+        <div class="bg-white border rounded-xl p-3 shadow-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+                <input v-model="search" type="search" placeholder="Alumno o núm. control…"
+                    class="lg:col-span-2 border rounded-md px-3 py-1.5 text-sm" />
+                <select v-model="periodFilter" class="border rounded-md px-3 py-1.5 text-sm">
+                    <option value="">Todos los periodos</option>
+                    <option v-for="p in periodOptions" :key="p" :value="p">{{ p }}</option>
+                </select>
+                <select v-model="careerFilter" class="border rounded-md px-3 py-1.5 text-sm">
+                    <option value="">Todas las carreras</option>
+                    <option v-for="c in careerOptions" :key="c" :value="c">{{ c }}</option>
+                </select>
+                <select v-model="statusFilter" class="border rounded-md px-3 py-1.5 text-sm">
+                    <option value="">Todos los estados</option>
+                    <option value="pending">PENDIENTES</option>
+                    <option value="approved">APROBADAS</option>
+                    <option value="rejected">RECHAZADAS</option>
+                </select>
             </div>
-            <select v-model="statusFilter" class="border rounded-md px-3 py-1.5 text-sm" @change="load">
-                <option value="pending">PENDIENTES</option>
-                <option value="approved">APROBADAS</option>
-                <option value="rejected">RECHAZADAS</option>
-                <option value="">TODAS</option>
-            </select>
+            <div v-if="hasActiveFilters" class="flex justify-end mt-2">
+                <button type="button" class="text-xs text-blue-600 hover:underline" @click="clearFilters">Limpiar filtros</button>
+            </div>
         </div>
 
         <div v-if="okMsg" class="text-sm px-4 py-3 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100">{{ okMsg }}</div>
@@ -99,15 +116,46 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { PendingRequirementException, RequirementExceptionStatus } from '@/modules/advising/types/advising.type'
 
-const items = ref<PendingRequirementException[]>([])
+const allItems = ref<PendingRequirementException[]>([])
 const loading = ref(false)
-const statusFilter = ref('pending')
 const okMsg = ref('')
+
+// Filtros (client-side: el conjunto por jefe de carrera es pequeño).
+const search = ref('')
+const periodFilter = ref('')
+const careerFilter = ref('')
+const statusFilter = ref('pending')
+
+const periodOptions = computed(() =>
+    [...new Set(allItems.value.map(i => i.periodName).filter(Boolean) as string[])].sort())
+const careerOptions = computed(() =>
+    [...new Set(allItems.value.map(i => i.careerName).filter(Boolean) as string[])].sort())
+
+const hasActiveFilters = computed(() =>
+    !!(search.value.trim() || periodFilter.value || careerFilter.value || statusFilter.value))
+
+const items = computed(() => {
+    const q = search.value.trim().toLowerCase()
+    return allItems.value.filter((ex) => {
+        if (statusFilter.value && ex.status !== statusFilter.value) return false
+        if (periodFilter.value && ex.periodName !== periodFilter.value) return false
+        if (careerFilter.value && ex.careerName !== careerFilter.value) return false
+        if (q && !`${ex.student} ${ex.numControl ?? ''}`.toLowerCase().includes(q)) return false
+        return true
+    })
+})
+
+function clearFilters() {
+    search.value = ''
+    periodFilter.value = ''
+    careerFilter.value = ''
+    statusFilter.value = ''
+}
 
 const resolveModal = reactive<{
     open: boolean; id: number | null; approve: boolean; label: string; student: string;
@@ -128,10 +176,11 @@ function statusClass(s: RequirementExceptionStatus): string {
 async function load() {
     loading.value = true
     try {
+        // Se traen TODOS los estados; el filtrado se hace en el cliente.
         const { data } = await api.get(API.ADVISING_API.requirementExceptions.pending, {
-            params: { status: statusFilter.value || undefined },
+            params: { status: '' },
         })
-        items.value = Array.isArray(data?.data) ? data.data : []
+        allItems.value = Array.isArray(data?.data) ? data.data : []
     } finally {
         loading.value = false
     }
