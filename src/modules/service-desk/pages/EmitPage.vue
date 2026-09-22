@@ -156,6 +156,10 @@ const control = reactive({ number: '', book: '', sheet: '' })
 const busy = ref(false), msg = ref(''), msgError = ref(false)
 const pickerOpen = ref(false)
 
+// Persistencia temporal (sobrevive un F5, se limpia al cerrar la pestaña).
+const STORAGE_KEY = 'ses.emit.state'
+const pickedId = ref<number | string | null>(null)
+
 const previewUrl = ref<string | null>(null)
 const previewLoading = ref(false)
 const previewError = ref('')
@@ -212,7 +216,32 @@ function debouncedPreview() {
     previewTimer = setTimeout(fetchPreview, 400)
 }
 
-watch(docCode, () => { fetchPreview() })
+function persistState() {
+    try {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+            studentId: pickedId.value,
+            docCode: docCode.value,
+            control: { ...control },
+        }))
+    } catch { /* almacenamiento no disponible */ }
+}
+
+async function loadSummaryById(id: number | string): Promise<boolean> {
+    try {
+        summary.value = (await api.get(D.studentSummary(id))).data
+        return true
+    } catch (e: any) {
+        summary.value = null
+        msg.value = e?.response?.status === 403
+            ? 'Este estudiante no corresponde a tu ventanilla.'
+            : (e?.response?.data?.message ?? 'No se pudo cargar el estudiante.')
+        msgError.value = true
+        return false
+    }
+}
+
+watch(docCode, () => { fetchPreview(); persistState() })
+watch(() => ({ ...control }), persistState, { deep: true })
 
 async function onPickStudent(s: any) {
     pickerOpen.value = false
@@ -220,15 +249,9 @@ async function onPickStudent(s: any) {
     docCode.value = ''
     revokePreview()
     Object.assign(control, { number: '', book: '', sheet: '' })
-    try {
-        summary.value = (await api.get(D.studentSummary(s.id))).data
-    } catch (e: any) {
-        summary.value = null
-        msg.value = e?.response?.status === 403
-            ? 'Este estudiante no corresponde a tu ventanilla.'
-            : (e?.response?.data?.message ?? 'No se pudo cargar el estudiante.')
-        msgError.value = true
-    }
+    pickedId.value = s.id
+    await loadSummaryById(s.id)
+    persistState()
 }
 
 async function emit() {
@@ -245,6 +268,21 @@ async function emit() {
     finally { busy.value = false }
 }
 
-onMounted(async () => { documents.value = (await api.get(D.documents)).data ?? [] })
+onMounted(async () => {
+    documents.value = (await api.get(D.documents)).data ?? []
+    // Restaura la selección temporal tras un F5.
+    try {
+        const raw = sessionStorage.getItem(STORAGE_KEY)
+        if (!raw) return
+        const st = JSON.parse(raw)
+        if (st.control) Object.assign(control, { number: '', book: '', sheet: '', ...st.control })
+        if (st.studentId) {
+            pickedId.value = st.studentId
+            const ok = await loadSummaryById(st.studentId)
+            // Solo se restaura el documento si sigue siendo uno de los ofrecidos (reporteador).
+            if (ok && st.docCode && REPORT_BY_DOC[st.docCode]) docCode.value = st.docCode
+        }
+    } catch { /* estado inválido: se ignora */ }
+})
 onBeforeUnmount(revokePreview)
 </script>
