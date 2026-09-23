@@ -402,4 +402,5 @@ export interface PendingRequirementException {
     careerName: string | null
     modalityName: string | null
     periodName: string | null
+    periodId: number | null
 }

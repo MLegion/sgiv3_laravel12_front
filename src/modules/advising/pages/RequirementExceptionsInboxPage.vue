@@ -14,8 +14,8 @@
                 <input v-model="search" type="search" placeholder="Alumno o núm. control…"
                     class="lg:col-span-2 border rounded-md px-3 py-1.5 text-sm" />
                 <select v-model="periodFilter" class="border rounded-md px-3 py-1.5 text-sm">
-                    <option value="">Todos los periodos</option>
-                    <option v-for="p in periodOptions" :key="p" :value="p">{{ p }}</option>
+                    <option :value="null">Todos los periodos</option>
+                    <option v-for="p in periodOptions" :key="p.id" :value="p.id">{{ p.name }}</option>
                 </select>
                 <select v-model="careerFilter" class="border rounded-md px-3 py-1.5 text-sm">
                     <option value="">Todas las carreras</option>
@@ -133,23 +133,29 @@ const okMsg = ref('')
 
 // Filtros (client-side: el conjunto por jefe de carrera es pequeño).
 const search = ref('')
-const periodFilter = ref('')
+const periodFilter = ref<number | null>(null)
 const careerFilter = ref('')
 const statusFilter = ref('')
 
-const periodOptions = computed(() =>
-    [...new Set(allItems.value.map(i => i.periodName).filter(Boolean) as string[])].sort())
+// Periodo por id (nombre para mostrar): distintos periodos presentes.
+const periodOptions = computed(() => {
+    const map = new Map<number, string>()
+    for (const i of allItems.value) {
+        if (i.periodId != null) map.set(i.periodId, i.periodName ?? `Periodo ${i.periodId}`)
+    }
+    return [...map.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => b.id - a.id)
+})
 const careerOptions = computed(() =>
     [...new Set(allItems.value.map(i => i.careerName).filter(Boolean) as string[])].sort())
 
 const hasActiveFilters = computed(() =>
-    !!(search.value.trim() || periodFilter.value || careerFilter.value || statusFilter.value))
+    !!(search.value.trim() || periodFilter.value != null || careerFilter.value || statusFilter.value))
 
 const items = computed(() => {
     const q = search.value.trim().toLowerCase()
     return allItems.value.filter((ex) => {
         if (statusFilter.value && ex.status !== statusFilter.value) return false
-        if (periodFilter.value && ex.periodName !== periodFilter.value) return false
+        if (periodFilter.value != null && ex.periodId !== periodFilter.value) return false
         if (careerFilter.value && ex.careerName !== careerFilter.value) return false
         if (q && !`${ex.student} ${ex.numControl ?? ''}`.toLowerCase().includes(q)) return false
         return true
@@ -158,7 +164,7 @@ const items = computed(() => {
 
 function clearFilters() {
     search.value = ''
-    periodFilter.value = ''
+    periodFilter.value = null
     careerFilter.value = ''
     statusFilter.value = ''
 }
@@ -200,6 +206,19 @@ async function load() {
     }
 }
 
+// Preselecciona el periodo actual de asesoría reticular (una sola vez).
+let defaultPeriodApplied = false
+async function applyDefaultPeriod() {
+    if (defaultPeriodApplied) return
+    defaultPeriodApplied = true
+    try {
+        const { data } = await api.get(API.ADVISING_API.enrollments.adminDefaultPeriod)
+        const id = data?.college_academic_period_id ?? null
+        // Solo si ese periodo tiene solicitudes (aparece entre las opciones).
+        if (id && periodOptions.value.some(p => p.id === id)) periodFilter.value = id
+    } catch { /* sin periodo sugerido: se queda en Todos */ }
+}
+
 function openResolve(ex: PendingRequirementException, approve: boolean) {
     resolveModal.open = true
     resolveModal.id = ex.id
@@ -234,5 +253,8 @@ async function submitResolve() {
     }
 }
 
-onMounted(load)
+onMounted(async () => {
+    await load()
+    await applyDefaultPeriod()
+})
 </script>
