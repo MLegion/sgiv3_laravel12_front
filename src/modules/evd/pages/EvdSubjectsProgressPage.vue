@@ -2,6 +2,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import EvdPeriodSelect from '@/modules/evd/components/EvdPeriodSelect.vue'
 import type { EvdSubjectProgressRow } from '@/modules/evd/types/evd.type'
 
 interface CollegeAcademicPeriodOption {
@@ -88,12 +89,6 @@ async function toggleVisibility(row: EvdSubjectProgressRow, field: 'visible_for_
     }
 }
 
-function periodOptionLabel(p: CollegeAcademicPeriodOption): string {
-    const name  = p.academicPeriod?.name      ?? ''
-    const short = p.academicPeriod?.shortName ?? ''
-    if (name && short) return `${name} (${short})`
-    return name || short || `Periodo #${p.id}`
-}
 
 watch([selectedCap], () => { loadRows() })
 let searchT: ReturnType<typeof setTimeout> | null = null
@@ -120,17 +115,7 @@ onMounted(loadCaps)
 
         <!-- Filtros -->
         <div class="bg-white border border-slate-200 rounded-lg p-3 flex flex-wrap items-end gap-3">
-            <div class="flex flex-col gap-1 min-w-[260px]">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Periodo SCA</label>
-                <select v-model.number="selectedCap"
-                        :disabled="loadingCaps"
-                        class="border border-slate-300 rounded px-2 py-1.5 text-sm">
-                    <option :value="null" disabled>Selecciona…</option>
-                    <option v-for="p in caPeriods" :key="p.id" :value="p.id">
-                        {{ periodOptionLabel(p) }}
-                    </option>
-                </select>
-            </div>
+            <EvdPeriodSelect v-model="selectedCap" :periods="caPeriods" :disabled="loadingCaps" label="Periodo SCA" />
             <div class="flex flex-col gap-1 flex-1 min-w-[220px]">
                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Buscar (materia / código / docente)</label>
                 <input v-model="search" type="text" placeholder="Empieza a escribir…"

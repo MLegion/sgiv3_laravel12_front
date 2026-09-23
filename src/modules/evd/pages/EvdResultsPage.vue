@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import EvdPeriodSelect from '@/modules/evd/components/EvdPeriodSelect.vue'
 import type {
     EvdLevel,
     EvdResultsFilterOptions,
@@ -125,12 +126,6 @@ watch(search, () => {
     searchT = setTimeout(loadResults, 350)
 })
 
-function periodOptionLabel(p: CollegeAcademicPeriodOption): string {
-    const name  = p.academicPeriod?.name      ?? ''
-    const short = p.academicPeriod?.shortName ?? ''
-    if (name && short) return `${name} (${short})`
-    return name || short || `Periodo #${p.id}`
-}
 
 function avgClass(avg: number | null): string {
     if (avg === null) return 'text-slate-400'
@@ -192,16 +187,8 @@ onMounted(async () => {
 
         <!-- Filtros -->
         <div class="bg-white border border-slate-200 rounded-lg p-3 flex flex-wrap items-end gap-3">
-            <div class="flex flex-col gap-1 min-w-[240px]">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Periodo *</label>
-                <select v-model.number="selectedCap" :disabled="loadingCaps" @change="onPeriodChange"
-                        class="border border-slate-300 rounded px-2 py-1.5 text-sm">
-                    <option :value="null" disabled>Selecciona un periodo…</option>
-                    <option v-for="p in caPeriods" :key="p.id" :value="p.id">
-                        {{ periodOptionLabel(p) }}
-                    </option>
-                </select>
-            </div>
+            <EvdPeriodSelect v-model="selectedCap" :periods="caPeriods" :disabled="loadingCaps"
+                             label="Periodo *" @change="onPeriodChange" />
             <div class="flex flex-col gap-1 min-w-[170px]">
                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Campus</label>
                 <select v-model.number="campusId" :disabled="!hasPeriod"

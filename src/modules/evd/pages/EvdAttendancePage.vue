@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import EvdPeriodSelect from '@/modules/evd/components/EvdPeriodSelect.vue'
 import type { EvdAttendanceRow } from '@/modules/evd/types/evd.type'
 
 interface CollegeAcademicPeriodOption {
@@ -60,12 +61,6 @@ async function loadRows() {
     }
 }
 
-function periodOptionLabel(p: CollegeAcademicPeriodOption): string {
-    const name  = p.academicPeriod?.name      ?? ''
-    const short = p.academicPeriod?.shortName ?? ''
-    if (name && short) return `${name} (${short})`
-    return name || short || `Periodo #${p.id}`
-}
 
 function formatDate(s: string | null): string {
     if (!s) return '—'
@@ -93,17 +88,7 @@ onMounted(loadCaps)
 
         <!-- Filtros -->
         <div class="bg-white border border-slate-200 rounded-lg p-3 flex flex-wrap items-end gap-3">
-            <div class="flex flex-col gap-1 min-w-[260px]">
-                <label for="evd-att-period" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Periodo SCA</label>
-                <select id="evd-att-period" v-model.number="selectedCap"
-                        :disabled="loadingCaps"
-                        class="border border-slate-300 rounded px-2 py-1.5 text-sm">
-                    <option :value="null" disabled>Selecciona…</option>
-                    <option v-for="p in caPeriods" :key="p.id" :value="p.id">
-                        {{ periodOptionLabel(p) }}
-                    </option>
-                </select>
-            </div>
+            <EvdPeriodSelect v-model="selectedCap" :periods="caPeriods" :disabled="loadingCaps" label="Periodo SCA" />
             <div class="flex flex-col gap-1 flex-1 min-w-[220px]">
                 <label for="evd-att-search" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Buscar (nombre / nº control)</label>
                 <input id="evd-att-search" v-model="search" type="text" placeholder="Empieza a escribir…"

@@ -2,6 +2,7 @@
 import { onMounted, reactive, ref, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import EvdPeriodSelect from '@/modules/evd/components/EvdPeriodSelect.vue'
 
 interface CapOption { id: number; academicPeriod?: { name?: string | null; shortName?: string | null } | null }
 interface Career { id: number; name: string; short_name: string | null }
@@ -53,7 +54,6 @@ const expanded   = reactive<Record<number, boolean>>({})
 const students   = reactive<Record<number, StudentRow[]>>({})
 const loadingStudents = reactive<Record<number, boolean>>({})
 
-const periodLabel = (c: CapOption) => c.academicPeriod?.shortName ?? c.academicPeriod?.name ?? `Periodo ${c.id}`
 
 async function loadCaps() {
     loadingCaps.value = true
@@ -166,10 +166,7 @@ onMounted(async () => {
     <div class="space-y-4 max-w-6xl">
         <div class="flex items-center justify-between flex-wrap gap-3">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Avance de Evaluación Docente · Por Grupos</h1>
-            <select v-model.number="selectedCap" :disabled="loadingCaps"
-                    class="border border-slate-300 rounded px-2 py-1.5 text-sm">
-                <option v-for="c in caps" :key="c.id" :value="c.id">{{ periodLabel(c) }}</option>
-            </select>
+            <EvdPeriodSelect v-model="selectedCap" :periods="caps" :disabled="loadingCaps" :label="''" />
         </div>
 
         <!-- Aviso: no hay evaluación docente activa -->
