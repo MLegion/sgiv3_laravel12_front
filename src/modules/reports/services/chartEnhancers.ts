@@ -24,46 +24,60 @@ function barChartDataUrl(
     values: number[],
     opts: { yMax?: number; xTitle?: string; yTitle?: string; title?: string } = {},
 ): string {
+    // El canvas debe existir en el DOM y tener tamaño para que Chart.js dibuje
+    // de forma síncrona (con animation:false); si no, toBase64Image sale vacío.
     const canvas = document.createElement('canvas')
     canvas.width = 1120
     canvas.height = 600
-    const chart = new Chart(canvas, {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [{
-                data: values,
-                backgroundColor: '#93c5fd',
-                borderColor: '#3b82f6',
-                borderWidth: 1,
-                maxBarThickness: 70,
-            }],
-        },
-        options: {
-            responsive: false,
-            animation: false,
-            devicePixelRatio: 2,
-            plugins: {
-                legend: { display: false },
-                tooltip: { enabled: false },
-                title: opts.title ? { display: true, text: opts.title, font: { size: 18 } } : { display: false },
+    canvas.style.width = '1120px'
+    canvas.style.height = '600px'
+    canvas.style.position = 'fixed'
+    canvas.style.left = '-10000px'
+    canvas.style.top = '0'
+    document.body.appendChild(canvas)
+
+    let url = ''
+    try {
+        const chart = new Chart(canvas, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: '#93c5fd',
+                    borderColor: '#3b82f6',
+                    borderWidth: 1,
+                    maxBarThickness: 70,
+                }],
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: opts.yMax,
-                    title: opts.yTitle ? { display: true, text: opts.yTitle } : { display: false },
-                    ticks: { stepSize: 0.5 },
+            options: {
+                responsive: false,
+                animation: false,
+                devicePixelRatio: 2,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false },
+                    title: opts.title ? { display: true, text: opts.title, font: { size: 18 } } : { display: false },
                 },
-                x: {
-                    title: opts.xTitle ? { display: true, text: opts.xTitle } : { display: false },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: opts.yMax,
+                        title: opts.yTitle ? { display: true, text: opts.yTitle } : { display: false },
+                        ticks: { stepSize: 0.5 },
+                    },
+                    x: {
+                        title: opts.xTitle ? { display: true, text: opts.xTitle } : { display: false },
+                    },
                 },
             },
-        },
-    })
-    // Con animation:false el canvas queda dibujado de forma síncrona.
-    const url = canvas.toDataURL('image/png')
-    chart.destroy()
+        })
+        // Método oficial de Chart.js (más fiable que canvas.toDataURL en canvas suelto).
+        url = chart.toBase64Image('image/png', 1)
+        chart.destroy()
+    } finally {
+        canvas.remove()
+    }
     return url
 }
 
@@ -74,11 +88,16 @@ const enhancers: Record<string, Enhancer> = {
         if (!aspectos.length) { ctx.grafica = ''; return }
         const labels = aspectos.map(a => String(a.letra ?? a.area_code ?? ''))
         const values = aspectos.map(a => Number(a.puntaje ?? a.avg_score ?? 0))
-        ctx.grafica = barChartDataUrl(labels, values, {
-            yMax: 5,
-            yTitle: 'PUNTAJE',
-            xTitle: 'ASPECTOS EVALUADOS',
-        })
+        try {
+            ctx.grafica = barChartDataUrl(labels, values, {
+                yMax: 5,
+                yTitle: 'PUNTAJE',
+                xTitle: 'ASPECTOS EVALUADOS',
+            })
+        } catch (e) {
+            console.error('[chartEnhancers] RPT.EVALUACION_DOCENTE: no se pudo generar la gráfica', e)
+            ctx.grafica = ''
+        }
     },
 }
 
