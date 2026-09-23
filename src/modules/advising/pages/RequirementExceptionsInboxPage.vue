@@ -184,8 +184,10 @@ async function load() {
     loadError.value = ''
     try {
         // Se traen TODOS los estados; el filtrado se hace en el cliente.
+        // 'all' es un centinela no vacío (un status='' se puede perder y el
+        // backend caería a 'pending').
         const { data } = await api.get(API.ADVISING_API.requirementExceptions.pending, {
-            params: { status: '' },
+            params: { status: 'all' },
         })
         allItems.value = Array.isArray(data?.data) ? data.data : []
     } catch (e: any) {
