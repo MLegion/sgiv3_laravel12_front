@@ -97,8 +97,8 @@ async function createReport() {
 
 const columns: DataTableColumn<Report>[] = [
     { key: 'id',          label: '#',       field: 'id',          sortable: true },
-    { key: 'name',        label: 'NOMBRE',  field: 'name',        sortable: true },
-    { key: 'code',        label: 'CÓDIGO',  field: 'code' },
+    { key: 'name',        label: 'NOMBRE',  field: 'name',        sortable: true, searchable: true },
+    { key: 'code',        label: 'CÓDIGO',  field: 'code',        searchable: true },
     { key: 'is_template', label: 'TIPO' },
     { key: 'status',      label: 'ESTADO' },
     { key: 'opciones',    label: 'OPCIONES' },

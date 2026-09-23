@@ -58,7 +58,7 @@ const router = useRouter()
 
 const columns: DataTableColumn<DataAccessObject>[] = [
     { key: 'id',          label: '#',       field: 'id',    sortable: true },
-    { key: 'name',        label: 'NOMBRE',  field: 'name',  sortable: true },
+    { key: 'name',        label: 'NOMBRE',  field: 'name',  sortable: true, searchable: true },
     { key: 'description', label: 'DESCRIPCIÓN' },
     { key: 'type',        label: 'TIPO' },
     { key: 'opciones',    label: 'OPCIONES' },
