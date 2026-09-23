@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import EvdPeriodSelect from '@/modules/evd/components/EvdPeriodSelect.vue'
+import EvdReportDrawer from '@/modules/evd/components/EvdReportDrawer.vue'
 import type {
     EvdLevel,
     EvdResultsFilterOptions,
@@ -31,6 +32,20 @@ const filterOptions = ref<EvdResultsFilterOptions>({ campuses: [], modality_type
 const rows          = ref<EvdTeacherResultRow[]>([])
 const loading       = ref(false)
 const error         = ref('')
+
+// Drawer del reporte (a la derecha).
+const reportDrawer = ref<{ open: boolean; teacherId: number | null; teacherName: string | null; campusId: number | null; modalityTypeId: number | null }>({
+    open: false, teacherId: null, teacherName: null, campusId: null, modalityTypeId: null,
+})
+function openReport(r: EvdTeacherResultRow) {
+    reportDrawer.value = {
+        open: true,
+        teacherId: r.teacher.id,
+        teacherName: r.teacher.name,
+        campusId: r.campus_id ?? campusId.value,
+        modalityTypeId: r.modality_type_id ?? modalityTypeId.value,
+    }
+}
 
 const hasPeriod = computed(() => selectedCap.value !== null)
 
@@ -268,7 +283,10 @@ onMounted(async () => {
                                 {{ levelFromAvg(r.overall_avg) }}
                             </span>
                         </td>
-                        <td class="px-4 py-2 text-right">
+                        <td class="px-4 py-2 text-right whitespace-nowrap">
+                            <button class="text-xs px-2.5 py-1 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50 mr-1" @click="openReport(r)">
+                                Reporte
+                            </button>
                             <button class="text-blue-600 hover:underline text-sm" @click="goToTeacher(r)">
                                 Detalle →
                             </button>
@@ -277,5 +295,15 @@ onMounted(async () => {
                 </tbody>
             </table></div>
         </div>
+
+        <EvdReportDrawer
+            :open="reportDrawer.open"
+            :cap="selectedCap"
+            :teacher-id="reportDrawer.teacherId"
+            :teacher-name="reportDrawer.teacherName"
+            :campus-id="reportDrawer.campusId"
+            :modality-type-id="reportDrawer.modalityTypeId"
+            @close="reportDrawer.open = false"
+        />
     </div>
 </template>

@@ -3,9 +3,6 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import FormatUnavailableModal from '@/modules/reports/components/FormatUnavailableModal.vue'
-import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
-import { ReportCode } from '@/modules/reports/types/reportCodes'
 import type { EvdLevel, EvdTeacherDetail } from '@/modules/evd/types/evd.type'
 
 const route   = useRoute()
@@ -25,38 +22,6 @@ const campusId       = computed(() => queryNum('campus_id'))
 const modalityTypeId = computed(() => queryNum('modality_type'))
 const careerId       = computed(() => queryNum('career_id'))
 
-const { generatePdf } = useReportGenerator()
-const generatingPdf  = ref(false)
-const formatUnavailableOpen = ref(false)
-const formatUnavailableInfo = ref<{ code: string; reason: 'missing' | 'inactive' }>({ code: '', reason: 'missing' })
-
-async function downloadPdf() {
-    if (generatingPdf.value || !data.value?.teacher || capId.value === null) return
-    generatingPdf.value = true
-    error.value = ''
-    try {
-        const { blob } = await generatePdf({
-            reportCode: ReportCode.TEACHER_EVALUATION,
-            params: {
-                cap:              capId.value,
-                teacher_id:       teacherId.value,
-                modality_type_id: modalityTypeId.value ?? undefined,
-                campus_id:        campusId.value ?? undefined,
-            },
-        })
-        const url = URL.createObjectURL(blob)
-        window.open(url, '_blank')
-    } catch (e: any) {
-        if (e instanceof ReportFormatUnavailableError) {
-            formatUnavailableInfo.value = { code: e.code, reason: e.reason }
-            formatUnavailableOpen.value = true
-        } else {
-            error.value = e?.message ?? 'No se pudo generar el reporte.'
-        }
-    } finally {
-        generatingPdf.value = false
-    }
-}
 
 async function load() {
     if (capId.value === null || !teacherId.value) {
@@ -168,13 +133,6 @@ onMounted(load)
                         </div>
                     </div>
                 </div>
-                <button
-                    :disabled="generatingPdf"
-                    class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white font-bold hover:bg-blue-700 disabled:opacity-50 self-center"
-                    @click="downloadPdf"
-                >
-                    {{ generatingPdf ? 'Generando…' : 'DESCARGAR PDF' }}
-                </button>
             </div>
 
             <!-- Áreas -->
@@ -256,11 +214,5 @@ onMounted(load)
                 </table></div>
             </div>
         </template>
-
-        <FormatUnavailableModal
-            v-model="formatUnavailableOpen"
-            :code="formatUnavailableInfo.code"
-            :reason="formatUnavailableInfo.reason"
-        />
     </div>
 </template>
