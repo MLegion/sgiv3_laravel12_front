@@ -39,15 +39,13 @@
 <script setup lang="ts">
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
-import { ReportCode } from '@/modules/reports/types/reportCodes'
 
 const props = defineProps<{
     open: boolean
-    cap: number | null
-    teacherId: number | null
-    teacherName?: string | null
-    campusId?: number | null
-    modalityTypeId?: number | null
+    reportCode: string
+    params: Record<string, unknown>
+    title?: string | null
+    filename?: string | null
 }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
@@ -57,7 +55,7 @@ const error = ref('')
 const pdfUrl = ref<string | null>(null)
 let lastBlob: Blob | null = null
 
-const subtitle = computed(() => props.teacherName || '')
+const subtitle = computed(() => props.title || '')
 
 function revoke() {
     if (pdfUrl.value) { URL.revokeObjectURL(pdfUrl.value); pdfUrl.value = null }
@@ -65,23 +63,11 @@ function revoke() {
 }
 
 async function generate() {
-    if (props.cap === null || props.teacherId === null) {
-        error.value = 'Falta el periodo o el docente.'
-        return
-    }
     loading.value = true
     error.value = ''
     revoke()
     try {
-        const { blob } = await renderPdf({
-            reportCode: ReportCode.TEACHER_EVALUATION,
-            params: {
-                cap:              props.cap,
-                teacher_id:       props.teacherId,
-                modality_type_id: props.modalityTypeId ?? undefined,
-                campus_id:        props.campusId ?? undefined,
-            },
-        })
+        const { blob } = await renderPdf({ reportCode: props.reportCode, params: props.params })
         lastBlob = blob
         pdfUrl.value = URL.createObjectURL(blob)
     } catch (e: any) {
@@ -97,7 +83,7 @@ function download() {
     if (!lastBlob) return
     const a = document.createElement('a')
     a.href = URL.createObjectURL(lastBlob)
-    a.download = `evaluacion-docente-${props.teacherId ?? ''}.pdf`
+    a.download = `${props.filename || 'reporte'}.pdf`
     a.click()
     URL.revokeObjectURL(a.href)
 }

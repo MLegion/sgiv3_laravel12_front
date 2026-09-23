@@ -5,6 +5,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import EvdPeriodSelect from '@/modules/evd/components/EvdPeriodSelect.vue'
 import EvdReportDrawer from '@/modules/evd/components/EvdReportDrawer.vue'
+import { ReportCode } from '@/modules/reports/types/reportCodes'
 import type {
     EvdLevel,
     EvdResultsFilterOptions,
@@ -33,17 +34,35 @@ const rows          = ref<EvdTeacherResultRow[]>([])
 const loading       = ref(false)
 const error         = ref('')
 
-// Drawer del reporte (a la derecha).
-const reportDrawer = ref<{ open: boolean; teacherId: number | null; teacherName: string | null; campusId: number | null; modalityTypeId: number | null }>({
-    open: false, teacherId: null, teacherName: null, campusId: null, modalityTypeId: null,
+// Drawer del reporte (a la derecha). Sirve para el reporte por docente y el general.
+const reportDrawer = ref<{ open: boolean; code: string; title: string; filename: string; params: Record<string, unknown> }>({
+    open: false, code: '', title: '', filename: 'reporte', params: {},
 })
 function openReport(r: EvdTeacherResultRow) {
     reportDrawer.value = {
         open: true,
-        teacherId: r.teacher.id,
-        teacherName: r.teacher.name,
-        campusId: r.campus_id ?? campusId.value,
-        modalityTypeId: r.modality_type_id ?? modalityTypeId.value,
+        code: ReportCode.TEACHER_EVALUATION,
+        title: r.teacher.name,
+        filename: `evaluacion-docente-${r.teacher.id}`,
+        params: {
+            cap:              selectedCap.value,
+            teacher_id:       r.teacher.id,
+            campus_id:        r.campus_id ?? campusId.value ?? undefined,
+            modality_type_id: r.modality_type_id ?? modalityTypeId.value ?? undefined,
+        },
+    }
+}
+function openGeneralReport() {
+    reportDrawer.value = {
+        open: true,
+        code: ReportCode.TEACHER_EVALUATION_GENERAL,
+        title: 'Reporte general por modalidad y ubicación',
+        filename: 'evaluacion-general',
+        params: {
+            cap:              selectedCap.value,
+            modality_type_id: modalityTypeId.value ?? undefined,
+            campus_id:        campusId.value ?? undefined,
+        },
     }
 }
 
@@ -191,12 +210,22 @@ onMounted(async () => {
 
 <template>
     <div class="space-y-4">
-        <div>
-            <h1 class="text-xl font-semibold text-slate-800 uppercase">Resultados de Evaluación</h1>
-            <p class="text-xs text-slate-500 mt-0.5">
-                Promedio general en escala Likert (1–5). Selecciona un periodo y, si lo deseas,
-                segmenta por campus, modalidad o carrera.
-            </p>
+        <div class="flex items-start justify-between gap-3 flex-wrap">
+            <div>
+                <h1 class="text-xl font-semibold text-slate-800 uppercase">Resultados de Evaluación</h1>
+                <p class="text-xs text-slate-500 mt-0.5">
+                    Promedio general en escala Likert (1–5). Selecciona un periodo y, si lo deseas,
+                    segmenta por campus, modalidad o carrera.
+                </p>
+            </div>
+            <button
+                :disabled="!hasPeriod"
+                class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50 shrink-0"
+                title="Concentrado de todos los docentes por modalidad y ubicación"
+                @click="openGeneralReport"
+            >
+                Reporte general
+            </button>
         </div>
 
         <div v-if="error" class="bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded px-3 py-2">{{ error }}</div>
@@ -298,11 +327,10 @@ onMounted(async () => {
 
         <EvdReportDrawer
             :open="reportDrawer.open"
-            :cap="selectedCap"
-            :teacher-id="reportDrawer.teacherId"
-            :teacher-name="reportDrawer.teacherName"
-            :campus-id="reportDrawer.campusId"
-            :modality-type-id="reportDrawer.modalityTypeId"
+            :report-code="reportDrawer.code"
+            :params="reportDrawer.params"
+            :title="reportDrawer.title"
+            :filename="reportDrawer.filename"
             @close="reportDrawer.open = false"
         />
     </div>
