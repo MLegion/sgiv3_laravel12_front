@@ -137,6 +137,10 @@ export type EvdLevel = 'EXCELENTE' | 'NOTABLE' | 'BUENO' | 'SUFICIENTE' | 'INSUF
 
 export interface EvdTeacherResultRow {
     teacher: { id: number; name: string; custom_id: string | null }
+    campus_id: number | null
+    campus_name: string | null
+    modality_type_id: number | null
+    modality_type_name: string | null
     areas_count: number
     total_responses: number
     overall_avg: number | null

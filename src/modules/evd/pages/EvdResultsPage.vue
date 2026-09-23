@@ -151,8 +151,9 @@ function goToTeacher(r: EvdTeacherResultRow) {
         params: { teacherId: r.teacher.id },
         query: {
             cap:           selectedCap.value ?? undefined,
-            campus_id:     campusId.value ?? undefined,
-            modality_type: modalityTypeId.value ?? undefined,
+            // Se prioriza el campus/modalidad de la fila (más preciso que el filtro global).
+            campus_id:     (r.campus_id ?? campusId.value) ?? undefined,
+            modality_type: (r.modality_type_id ?? modalityTypeId.value) ?? undefined,
             career_id:     careerId.value ?? undefined,
         },
     })
@@ -232,6 +233,8 @@ onMounted(async () => {
                 <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                     <tr>
                         <th scope="col" class="text-left px-4 py-2">DOCENTE</th>
+                        <th scope="col" class="text-left px-4 py-2">CAMPUS</th>
+                        <th scope="col" class="text-left px-4 py-2">TIPO DE MODALIDAD</th>
                         <th scope="col" class="text-right px-4 py-2 w-24">ÁREAS</th>
                         <th scope="col" class="text-right px-4 py-2 w-28">RESPUESTAS</th>
                         <th scope="col" class="text-right px-4 py-2 w-28">PROMEDIO</th>
@@ -240,17 +243,19 @@ onMounted(async () => {
                     </tr>
                 </thead>
                 <tbody class="divide-y">
-                    <tr v-if="loading"><td colspan="6" class="px-4 py-6 text-center text-sm text-slate-400">Cargando…</td></tr>
+                    <tr v-if="loading"><td colspan="8" class="px-4 py-6 text-center text-sm text-slate-400">Cargando…</td></tr>
                     <tr v-else-if="!rows.length">
-                        <td colspan="6" class="px-4 py-6 text-center text-sm text-slate-400 italic">
+                        <td colspan="8" class="px-4 py-6 text-center text-sm text-slate-400 italic">
                             No hay resultados para los filtros seleccionados.
                         </td>
                     </tr>
-                    <tr v-for="r in rows" :key="r.teacher.id" class="hover:bg-slate-50">
+                    <tr v-for="r in rows" :key="`${r.teacher.id}-${r.campus_id ?? 0}-${r.modality_type_id ?? 0}`" class="hover:bg-slate-50">
                         <td class="px-4 py-2">
                             <div class="font-bold text-slate-700 uppercase">{{ r.teacher.name }}</div>
                             <div class="text-[10px] font-mono text-slate-400">{{ r.teacher.custom_id ?? '—' }}</div>
                         </td>
+                        <td class="px-4 py-2 text-xs text-slate-600">{{ r.campus_name ?? '—' }}</td>
+                        <td class="px-4 py-2 text-xs text-slate-600">{{ r.modality_type_name ?? '—' }}</td>
                         <td class="px-4 py-2 text-right text-xs text-slate-600 tabular-nums">{{ r.areas_count }}</td>
                         <td class="px-4 py-2 text-right text-xs text-slate-600 tabular-nums">{{ r.total_responses }}</td>
                         <td class="px-4 py-2 text-right tabular-nums" :class="avgClass(r.overall_avg)">
