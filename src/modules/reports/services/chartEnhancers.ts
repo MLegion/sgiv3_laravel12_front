@@ -44,6 +44,19 @@ function renderChartDataUrl(spec: ChartSpec, rows: any[]): string {
     canvas.style.cssText = 'position:fixed;left:-10000px;top:0;width:1120px;height:600px'
     document.body.appendChild(canvas)
 
+    // Fondo blanco (evita PNG transparente al pasar a PDF).
+    const whiteBg = {
+        id: 'whiteBg',
+        beforeDraw(c: any) {
+            const cx = c.ctx
+            cx.save()
+            cx.globalCompositeOperation = 'destination-over'
+            cx.fillStyle = '#ffffff'
+            cx.fillRect(0, 0, c.width, c.height)
+            cx.restore()
+        },
+    }
+
     let url = ''
     try {
         const chart = new Chart(canvas, {
@@ -59,6 +72,7 @@ function renderChartDataUrl(spec: ChartSpec, rows: any[]): string {
                     ...(spec.type === 'line' ? { fill: false, tension: 0.2 } : {}),
                 }],
             },
+            plugins: [whiteBg],
             options: {
                 responsive: false,
                 animation: false,
@@ -81,10 +95,14 @@ function renderChartDataUrl(spec: ChartSpec, rows: any[]): string {
             },
         })
         url = chart.toBase64Image('image/png', 1)
+        // Fallback si toBase64Image saliera vacío en algún navegador.
+        if (!url || url.length < 200) url = canvas.toDataURL('image/png')
         chart.destroy()
     } finally {
         canvas.remove()
     }
+    // eslint-disable-next-line no-console
+    console.info(`[chartEnhancers] "${spec.var}": ${values.length} valores, imagen ${url.length} bytes`)
     return url
 }
 
