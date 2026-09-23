@@ -91,6 +91,20 @@ export function useReportGenerator() {
         return context
     }
 
+    /**
+     * Ejecuta el script de cliente del reporte (si tiene) en un sandbox y mezcla
+     * sus resultados (images/fields) al contexto. Carga perezosa: el runner
+     * (con Chart.js embebido) solo se baja cuando el reporte define un script.
+     */
+    async function applyClientScript(report: Report, ctx: Record<string, any>): Promise<void> {
+        const script = (report as any).clientScript
+        if (!script || typeof script !== 'string' || !script.trim()) return
+        const { runReportScript } = await import('@/modules/reports/services/sandboxRunner')
+        const res = await runReportScript(script, ctx)
+        if (res.fields) Object.assign(ctx, res.fields)
+        if (res.images) for (const [k, v] of Object.entries(res.images)) ctx[k] = v
+    }
+
     async function fetchTemplate(reportId: number | string): Promise<Blob> {
         const res = await api.get(API.REPORTS_API.reports.template(reportId), { responseType: 'blob' })
         return res.data as Blob
@@ -108,6 +122,7 @@ export function useReportGenerator() {
             const reportId = report.id
             const context  = await runDaos(report, reportId, options.params ?? {})
             await applyChartEnhancers(report, context)
+            await applyClientScript(report, context)
             await resolveImages(context)
             const tpl      = await fetchTemplate(reportId)
             const blob     = await fillDocxTemplate(tpl, context)
@@ -147,6 +162,7 @@ export function useReportGenerator() {
             }
             const ctx  = flattenContext(options.context)
             await applyChartEnhancers(report, ctx)
+            await applyClientScript(report, ctx)
             await resolveImages(ctx)
             const tpl  = await fetchTemplate(report.id)
             const blob = await fillDocxTemplate(tpl, ctx)

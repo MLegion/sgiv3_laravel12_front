@@ -161,6 +161,14 @@
                     :available-daos="availableDaos"
                     @update="onDaosUpdate"
                 />
+
+                <ReportChartsManager
+                    :charts="form.charts"
+                    :client-script="form.clientScript"
+                    :sources="sourceVars"
+                    @update:charts="form.charts = $event"
+                    @update:client-script="form.clientScript = $event"
+                />
             </div>
 
             <!-- Columna derecha: plantilla -->
@@ -186,10 +194,11 @@ import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
 import ReportTemplatePanel from '@/modules/reports/components/ReportTemplatePanel.vue'
 import ReportDaoManager, { type LinkedDao } from '@/modules/reports/components/ReportDaoManager.vue'
+import ReportChartsManager from '@/modules/reports/components/ReportChartsManager.vue'
 import { fillDocxTemplate } from '@/modules/reports/services/docxGenerator'
 import type { DataAccessObject } from '@/modules/reports/types/dao.type'
 import type { DaoParameter, ParameterDataType } from '@/modules/reports/types/queryBuilder.type'
-import type { Report } from '@/modules/reports/types/report.type'
+import type { Report, ChartSpec } from '@/modules/reports/types/report.type'
 
 const route  = useRoute()
 const router = useRouter()
@@ -208,7 +217,12 @@ const form = reactive({
     is_template: false,
     status:      true,
     daos:        [] as LinkedDao[],
+    charts:        [] as ChartSpec[],
+    clientScript:  '' as string,
 })
+
+// Variables (var_name) de los DAOs enlazados: fuentes posibles para las gráficas.
+const sourceVars = computed(() => form.daos.map(d => d.var_name).filter(Boolean) as string[])
 
 const templateState = reactive({
     hasTemplate:          false,
@@ -250,6 +264,8 @@ async function loadData() {
         form.description = report.description ?? ''
         form.is_template = report.isTemplate
         form.status      = report.status
+        form.charts       = (report.charts ?? []).map(c => ({ ...c }))
+        form.clientScript = report.clientScript ?? ''
         form.daos        = (report.daos ?? []).map(d => ({
             id:          d.id,
             dao_id:      d.id,
@@ -275,6 +291,8 @@ async function submit(forceActivate = false) {
             is_template: form.is_template,
             status:      form.status,
             force_activate: forceActivate,
+            charts:        form.charts,
+            client_script: form.clientScript || null,
             daos: form.daos
                 .filter(d => d.dao_id && d.var_name)
                 .map(d => ({ dao_id: d.dao_id, var_name: d.var_name, pre_script: d.pre_script, post_script: d.post_script })),

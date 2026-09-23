@@ -23,6 +23,7 @@ export interface Report {
     status:                boolean
     daos?:                 ReportDao[]
     charts?:               ChartSpec[] | null
+    clientScript?:         string | null
     createdAt:             string
     updatedAt:             string
 }
