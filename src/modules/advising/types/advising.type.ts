@@ -1,4 +1,4 @@
-export type AdvisingStatus = 'draft' | 'submitted' | 'approved' | 'rejected' | 'cancelled'
+export type AdvisingStatus = 'draft' | 'submitted' | 'endorsed' | 'approved' | 'rejected' | 'cancelled'
 export type AdvisorItemStatus = 'proposed' | 'accepted' | 'rejected' | 'replaced'
 export type SubjectAttempt = 'normal' | 'repite' | 'especial' | 'aprobada'
 export type AdvisingPhase = 'phase_advising' | 'phase_enrollment' | 'phase_add_drop'
@@ -338,6 +338,8 @@ export interface AddDropRequest {
     studyPlanId: number | null
     status: AdvisingStatus
     submittedAt: string | null
+    endorsedAt: string | null
+    endorsedBy: number | null
     reviewedAt: string | null
     reviewedBy: number | null
     autoApproved: boolean
@@ -345,6 +347,7 @@ export interface AddDropRequest {
     createdByUserId: number | null
     student: { id: number; numControl?: string | null; fullName: string } | null
     reviewer: { id: number; name?: string | null; email?: string | null } | null
+    endorser?: { id: number; name?: string | null; email?: string | null } | null
     period?: { id: number; name: string | null; shortName: string | null } | null
     items: AddDropRequestItem[]
     createdAt?: string | null

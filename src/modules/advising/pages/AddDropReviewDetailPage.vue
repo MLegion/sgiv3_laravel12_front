@@ -66,19 +66,32 @@
                 </table></div>
             </div>
 
-            <!-- Acciones del jefe -->
-            <div v-if="request.status === 'submitted'" class="flex justify-end gap-2">
+            <!-- Info de aval (para la etapa final de Servicios Escolares) -->
+            <p v-if="isSes && request.status === 'endorsed' && request.endorser" class="text-xs text-amber-700">
+                Avalada por {{ request.endorser?.name ?? '—' }}{{ request.endorsedAt ? ' · ' + formatDate(request.endorsedAt) : '' }}.
+            </p>
+
+            <!-- Acciones -->
+            <div v-if="request.status === actionableStatus" class="flex justify-end gap-2">
                 <button type="button" :disabled="busy"
                     class="px-4 py-2 text-sm rounded-md border text-red-600 border-red-200 hover:bg-red-50 disabled:opacity-40"
                     @click="rejectOpen = true">
                     Rechazar
                 </button>
-                <button type="button" :disabled="busy"
+                <button v-if="isSes" type="button" :disabled="busy"
                     class="px-5 py-2 text-sm rounded-md bg-emerald-600 text-white font-bold hover:bg-emerald-700 disabled:opacity-40"
                     @click="approve">
                     {{ busy ? 'Aplicando…' : 'Aprobar y aplicar' }}
                 </button>
+                <button v-else type="button" :disabled="busy"
+                    class="px-5 py-2 text-sm rounded-md bg-blue-600 text-white font-bold hover:bg-blue-700 disabled:opacity-40"
+                    @click="endorse">
+                    {{ busy ? 'Avalando…' : 'Avalar' }}
+                </button>
             </div>
+            <p v-else-if="request.status === 'endorsed' && !isSes" class="text-sm text-amber-700 text-right">
+                Avalada. Pendiente de aprobación final de Servicios Escolares.
+            </p>
             <p v-else-if="request.status === 'rejected' && request.rejectionReason" class="text-sm text-red-600">
                 Rechazada: {{ request.rejectionReason }}
             </p>
@@ -115,6 +128,10 @@ import type { AddDropRequest, AdvisingStatus, PolicyViolation } from '@/modules/
 const route  = useRoute()
 const router = useRouter()
 const id = Number(route.params.id)
+
+// Alcance: 'ses' (aprobación final) o 'career' (aval del jefe, por defecto).
+const isSes = computed(() => route.meta?.scope === 'ses')
+const actionableStatus = computed<AdvisingStatus>(() => (isSes.value ? 'endorsed' : 'submitted'))
 
 const request = ref<AddDropRequest | null>(null)
 const loading = ref(true)
@@ -162,6 +179,21 @@ async function approve() {
     }
 }
 
+async function endorse() {
+    if (busy.value) return
+    busy.value = true
+    errorMsg.value = ''; okMsg.value = ''; violations.value = []
+    try {
+        const { data } = await api.post(API.ADVISING_API.addDrop.endorse(id))
+        request.value = data ?? request.value
+        okMsg.value = 'Solicitud avalada. Pendiente de aprobación final de Servicios Escolares.'
+    } catch (e: any) {
+        handleError(e)
+    } finally {
+        busy.value = false
+    }
+}
+
 async function reject() {
     if (busy.value || rejectReason.value.trim().length < 5) return
     busy.value = true
@@ -179,16 +211,21 @@ async function reject() {
 }
 
 function statusLabel(s: AdvisingStatus): string {
-    return ({ draft: 'BORRADOR', submitted: 'ENVIADA', approved: 'APROBADA', rejected: 'RECHAZADA', cancelled: 'CANCELADA' } as Record<AdvisingStatus, string>)[s]
+    return ({ draft: 'BORRADOR', submitted: 'ENVIADA', endorsed: 'AVALADA', approved: 'APROBADA', rejected: 'RECHAZADA', cancelled: 'CANCELADA' } as Record<AdvisingStatus, string>)[s]
 }
 function statusClass(s: AdvisingStatus): string {
     return ({
         draft: 'bg-slate-100 text-slate-600',
         submitted: 'bg-blue-100 text-blue-700',
+        endorsed: 'bg-amber-100 text-amber-700',
         approved: 'bg-emerald-100 text-emerald-700',
         rejected: 'bg-red-100 text-red-700',
         cancelled: 'bg-slate-200 text-slate-500',
     } as Record<AdvisingStatus, string>)[s] ?? 'bg-slate-100 text-slate-600'
+}
+function formatDate(s: string | null): string {
+    if (!s) return '—'
+    return new Date(s).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
 onMounted(load)

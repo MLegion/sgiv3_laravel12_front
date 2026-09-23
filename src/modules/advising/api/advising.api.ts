@@ -59,6 +59,7 @@ const advisingApi: ApiModule = {
             removeItem:     (id: string | number) => apiUrl(`/advising/add-drop/requests/${id}/items`),
             submit:         (id: string | number) => apiUrl(`/advising/add-drop/requests/${id}/submit`),
             cancel:         (id: string | number) => apiUrl(`/advising/add-drop/requests/${id}/cancel`),
+            endorse:        (id: string | number) => apiUrl(`/advising/add-drop/requests/${id}/endorse`),
             approve:        (id: string | number) => apiUrl(`/advising/add-drop/requests/${id}/approve`),
             reject:         (id: string | number) => apiUrl(`/advising/add-drop/requests/${id}/reject`),
         },

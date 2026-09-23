@@ -9,7 +9,11 @@
                     v-model="statusFilter"
                     class="border rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
                     @change="onStatusChange">
-                    <option value="submitted">POR REVISAR</option>
+                    <option v-if="isSes" value="endorsed">POR APROBAR</option>
+                    <template v-else>
+                        <option value="submitted">POR AVALAR</option>
+                        <option value="endorsed">AVALADAS</option>
+                    </template>
                     <option value="approved">APROBADAS</option>
                     <option value="rejected">RECHAZADAS</option>
                     <option value="all">TODAS</option>
@@ -49,8 +53,8 @@
                 <button aria-label="Revisar" type="button"
                     class="border w-8 h-8 inline-flex items-center justify-center rounded-md hover:bg-blue-50 text-blue-600 hover:border-blue-300 transition"
                     title="Revisar"
-                    @click="router.push({ name: 'advising.add-drop.review.detail', params: { id: row.id } })">
-                    <component :is="row.status === 'submitted' ? PencilSquareIcon : EyeIcon" class="w-4 h-4" />
+                    @click="router.push({ name: detailRouteName, params: { id: row.id } })">
+                    <component :is="row.status === actionableStatus ? PencilSquareIcon : EyeIcon" class="w-4 h-4" />
                 </button>
             </template>
         </DataTable>
@@ -59,7 +63,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
@@ -69,14 +73,20 @@ import type { AddDropRequest, AdvisingStatus } from '@/modules/advising/types/ad
 import { useQueryFilter } from '@/shared/composables/useQueryFilter'
 
 const router = useRouter()
+const route = useRoute()
 
-type ReviewStatus = 'submitted' | 'approved' | 'rejected' | 'all'
+// Alcance de la bandeja: 'ses' (aprobación final de Servicios Escolares) o
+// 'career' (aval del jefe de carrera, por defecto).
+const isSes = computed(() => route.meta?.scope === 'ses')
+const defaultStatus: ReviewStatus = route.meta?.scope === 'ses' ? 'endorsed' : 'submitted'
+
+type ReviewStatus = 'submitted' | 'endorsed' | 'approved' | 'rejected' | 'all'
 const statusFilter = useQueryFilter<ReviewStatus>(
     'status',
-    'submitted',
+    defaultStatus,
     {
-        read:  (raw) => (raw === 'approved' || raw === 'rejected' || raw === 'all' ? raw : 'submitted'),
-        write: (v)   => (v === 'submitted' ? null : v),
+        read:  (raw) => (['submitted', 'endorsed', 'approved', 'rejected', 'all'].includes(raw as string) ? (raw as ReviewStatus) : defaultStatus),
+        write: (v)   => (v === defaultStatus ? null : v),
     },
 )
 const extraSearch = computed(() => ({ status: statusFilter.value }))
@@ -102,24 +112,37 @@ function onStatusChange() {
     fetchData()
 }
 
+const actionableStatus = computed<AdvisingStatus>(() => (isSes.value ? 'endorsed' : 'submitted'))
+const detailRouteName = computed(() => (isSes.value ? 'advising.add-drop.ses.detail' : 'advising.add-drop.review.detail'))
+
 const pageTitle = computed(() => {
+    if (isSes.value) {
+        switch (statusFilter.value) {
+            case 'approved': return 'Altas y Bajas Aprobadas'
+            case 'rejected': return 'Altas y Bajas Rechazadas'
+            case 'all':      return 'Altas y Bajas del Plantel'
+            default:         return 'Altas y Bajas por Aprobar'
+        }
+    }
     switch (statusFilter.value) {
+        case 'endorsed': return 'Altas y Bajas Avaladas'
         case 'approved': return 'Altas y Bajas Aprobadas'
         case 'rejected': return 'Altas y Bajas Rechazadas'
         case 'all':      return 'Altas y Bajas de Mi Carrera'
-        default:         return 'Altas y Bajas por Revisar'
+        default:         return 'Altas y Bajas por Avalar'
     }
 })
 
 function statusLabel(status: AdvisingStatus): string {
     return ({
-        draft: 'BORRADOR', submitted: 'ENVIADA', approved: 'APROBADA', rejected: 'RECHAZADA', cancelled: 'CANCELADA',
+        draft: 'BORRADOR', submitted: 'ENVIADA', endorsed: 'AVALADA', approved: 'APROBADA', rejected: 'RECHAZADA', cancelled: 'CANCELADA',
     } as Record<AdvisingStatus, string>)[status] ?? status.toUpperCase()
 }
 function statusClass(status: AdvisingStatus): string {
     return ({
         draft: 'bg-slate-100 text-slate-600',
         submitted: 'bg-blue-100 text-blue-700',
+        endorsed: 'bg-amber-100 text-amber-700',
         approved: 'bg-emerald-100 text-emerald-700',
         rejected: 'bg-red-100 text-red-700',
         cancelled: 'bg-slate-200 text-slate-500',

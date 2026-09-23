@@ -53,6 +53,20 @@ export default [
         meta: { title: 'Revisión de Altas y Bajas' },
     },
 
+    // ── Servicios Escolares: aprobación final de Altas y Bajas ────────
+    {
+        path: 'advising/add-drop/ses',
+        name: 'advising.add-drop.ses.list',
+        component: () => import('@/modules/advising/pages/AddDropReviewListPage.vue'),
+        meta: { title: 'Altas y Bajas por Aprobar', scope: 'ses' },
+    },
+    {
+        path: 'advising/add-drop/ses/:id',
+        name: 'advising.add-drop.ses.detail',
+        component: () => import('@/modules/advising/pages/AddDropReviewDetailPage.vue'),
+        meta: { title: 'Aprobación de Altas y Bajas', scope: 'ses' },
+    },
+
     // ── Admin ────────────────────────────────────────────────────────
     {
         path: 'advising/phases',
