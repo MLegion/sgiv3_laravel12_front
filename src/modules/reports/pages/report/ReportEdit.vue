@@ -196,6 +196,8 @@ import ReportTemplatePanel from '@/modules/reports/components/ReportTemplatePane
 import ReportDaoManager, { type LinkedDao } from '@/modules/reports/components/ReportDaoManager.vue'
 import ReportChartsManager from '@/modules/reports/components/ReportChartsManager.vue'
 import { fillDocxTemplate } from '@/modules/reports/services/docxGenerator'
+import { applyChartEnhancers } from '@/modules/reports/services/chartEnhancers'
+import { resolveImages } from '@/modules/reports/services/imageResolver'
 import type { DataAccessObject } from '@/modules/reports/types/dao.type'
 import type { DaoParameter, ParameterDataType } from '@/modules/reports/types/queryBuilder.type'
 import type { Report, ChartSpec } from '@/modules/reports/types/report.type'
@@ -481,8 +483,16 @@ async function executeContext() {
             Object.assign(context, rows[0])
         }
     }
-    // eslint-disable-next-line no-console
-    console.log('[report-context]', JSON.parse(JSON.stringify(context)))
+    // Gráficas (declarativas) + script de cliente + imágenes, usando los valores
+    // EN EDICIÓN (así el preview refleja los cambios sin necesidad de guardar).
+    await applyChartEnhancers({ code: form.code, charts: form.charts } as any, context)
+    if (form.clientScript && form.clientScript.trim()) {
+        const { runReportScript } = await import('@/modules/reports/services/sandboxRunner')
+        const res = await runReportScript(form.clientScript, context)
+        Object.assign(context, res.fields)
+        for (const [k, v] of Object.entries(res.images)) context[k] = v
+    }
+    await resolveImages(context)
     return context
 }
 
