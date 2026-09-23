@@ -15,6 +15,12 @@ Chart.register(BarController, BarElement, CategoryScale, LinearScale, Title, Too
  * ANTES de resolver imágenes/rellenar la plantilla, para inyectar campos
  * calculados en el cliente (p. ej. una gráfica renderizada con Chart.js como
  * PNG data-URL, que el módulo de imágenes embebe en `{%campo}`).
+ *
+ * ⚠️ AQUÍ es donde se genera el valor de tags de imagen como `{%grafica}` que NO
+ * provienen de ningún DAO. Si ves `{%grafica}` en una plantilla y no está en los
+ * DAOs, su origen es este archivo.
+ *   Pipeline: useReportGenerator.generate() → applyChartEnhancers() → resolveImages() → fillDocxTemplate()
+ *   Doc: docs/evd/reporte-evaluacion-docente.md
  */
 type Enhancer = (ctx: Record<string, any>) => void | Promise<void>
 
