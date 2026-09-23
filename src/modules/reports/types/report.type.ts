@@ -22,6 +22,21 @@ export interface Report {
     templateId:            number | null
     status:                boolean
     daos?:                 ReportDao[]
+    charts?:               ChartSpec[] | null
     createdAt:             string
     updatedAt:             string
+}
+
+/** Definición de una gráfica del reporte (columna reports.charts). */
+export interface ChartSpec {
+    var:     string
+    type?:   'bar' | 'line'
+    source:  string
+    x:       string
+    y:       string
+    yMax?:   number | null
+    xTitle?: string | null
+    yTitle?: string | null
+    color?:  string | null
+    title?:  string | null
 }

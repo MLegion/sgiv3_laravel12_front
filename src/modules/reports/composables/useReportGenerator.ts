@@ -107,7 +107,7 @@ export function useReportGenerator() {
             }
             const reportId = report.id
             const context  = await runDaos(report, reportId, options.params ?? {})
-            await applyChartEnhancers(report.code, context)
+            await applyChartEnhancers(report, context)
             await resolveImages(context)
             const tpl      = await fetchTemplate(reportId)
             const blob     = await fillDocxTemplate(tpl, context)
@@ -146,7 +146,7 @@ export function useReportGenerator() {
                 throw new Error('El reporte no tiene plantilla Word asociada.')
             }
             const ctx  = flattenContext(options.context)
-            await applyChartEnhancers(report.code, ctx)
+            await applyChartEnhancers(report, ctx)
             await resolveImages(ctx)
             const tpl  = await fetchTemplate(report.id)
             const blob = await fillDocxTemplate(tpl, ctx)

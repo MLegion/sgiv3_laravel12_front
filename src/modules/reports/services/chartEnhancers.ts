@@ -2,58 +2,61 @@ import {
     Chart,
     BarController,
     BarElement,
+    LineController,
+    PointElement,
+    LineElement,
     CategoryScale,
     LinearScale,
     Title,
     Tooltip,
 } from 'chart.js'
 
-Chart.register(BarController, BarElement, CategoryScale, LinearScale, Title, Tooltip)
+import type { ChartSpec } from '@/modules/reports/types/report.type'
+
+Chart.register(BarController, BarElement, LineController, PointElement, LineElement, CategoryScale, LinearScale, Title, Tooltip)
 
 /**
- * "Enhancers" por código de reporte: pre-procesan el contexto del reporteador
- * ANTES de resolver imágenes/rellenar la plantilla, para inyectar campos
- * calculados en el cliente (p. ej. una gráfica renderizada con Chart.js como
- * PNG data-URL, que el módulo de imágenes embebe en `{%campo}`).
+ * Gráficas del reporteador, DEFINIDAS EN EL REPORTE (columna reports.charts),
+ * editables desde la herramienta — NO hardcodeadas aquí.
  *
- * ⚠️ AQUÍ es donde se genera el valor de tags de imagen como `{%grafica}` que NO
- * provienen de ningún DAO. Si ves `{%grafica}` en una plantilla y no está en los
- * DAOs, su origen es este archivo.
- *   Pipeline: useReportGenerator.generate() → applyChartEnhancers() → resolveImages() → fillDocxTemplate()
- *   Doc: docs/evd/reporte-evaluacion-docente.md
+ * Cada spec mapea un tag de imagen `{%var}` a una gráfica que se dibuja en el
+ * CLIENTE con Chart.js a partir de un DAO del contexto:
+ *   { var, type, source, x, y, yMax?, xTitle?, yTitle?, color?, title? }
+ *   - var:    nombre del tag imagen en la plantilla (p. ej. "grafica" → {%grafica})
+ *   - type:   'bar' | 'line'
+ *   - source: nombre del DAO/variable del contexto con las filas
+ *   - x/y:    campos de cada fila para eje X (etiqueta) y eje Y (valor)
+ *
+ * Pipeline: useReportGenerator.generate() → applyChartEnhancers(report, ctx)
+ *           → resolveImages(ctx) → fillDocxTemplate()
+ * Doc: docs/evd/reporte-evaluacion-docente.md
  */
-type Enhancer = (ctx: Record<string, any>) => void | Promise<void>
 
-/** Dibuja una gráfica de barras fuera de pantalla y devuelve un PNG data-URL. */
-function barChartDataUrl(
-    labels: string[],
-    values: number[],
-    opts: { yMax?: number; xTitle?: string; yTitle?: string; title?: string } = {},
-): string {
-    // El canvas debe existir en el DOM y tener tamaño para que Chart.js dibuje
-    // de forma síncrona (con animation:false); si no, toBase64Image sale vacío.
+/** Dibuja la gráfica fuera de pantalla y devuelve un PNG data-URL. */
+function renderChartDataUrl(spec: ChartSpec, rows: any[]): string {
+    const labels = rows.map(r => String(r?.[spec.x] ?? ''))
+    const values = rows.map(r => Number(r?.[spec.y] ?? 0))
+    const color = spec.color || '#93c5fd'
+
     const canvas = document.createElement('canvas')
     canvas.width = 1120
     canvas.height = 600
-    canvas.style.width = '1120px'
-    canvas.style.height = '600px'
-    canvas.style.position = 'fixed'
-    canvas.style.left = '-10000px'
-    canvas.style.top = '0'
+    canvas.style.cssText = 'position:fixed;left:-10000px;top:0;width:1120px;height:600px'
     document.body.appendChild(canvas)
 
     let url = ''
     try {
         const chart = new Chart(canvas, {
-            type: 'bar',
+            type: spec.type === 'line' ? 'line' : 'bar',
             data: {
                 labels,
                 datasets: [{
                     data: values,
-                    backgroundColor: '#93c5fd',
+                    backgroundColor: color,
                     borderColor: '#3b82f6',
                     borderWidth: 1,
                     maxBarThickness: 70,
+                    ...(spec.type === 'line' ? { fill: false, tension: 0.2 } : {}),
                 }],
             },
             options: {
@@ -63,22 +66,20 @@ function barChartDataUrl(
                 plugins: {
                     legend: { display: false },
                     tooltip: { enabled: false },
-                    title: opts.title ? { display: true, text: opts.title, font: { size: 18 } } : { display: false },
+                    title: spec.title ? { display: true, text: spec.title, font: { size: 18 } } : { display: false },
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: opts.yMax,
-                        title: opts.yTitle ? { display: true, text: opts.yTitle } : { display: false },
-                        ticks: { stepSize: 0.5 },
+                        max: spec.yMax ?? undefined,
+                        title: spec.yTitle ? { display: true, text: spec.yTitle } : { display: false },
                     },
                     x: {
-                        title: opts.xTitle ? { display: true, text: opts.xTitle } : { display: false },
+                        title: spec.xTitle ? { display: true, text: spec.xTitle } : { display: false },
                     },
                 },
             },
         })
-        // Método oficial de Chart.js (más fiable que canvas.toDataURL en canvas suelto).
         url = chart.toBase64Image('image/png', 1)
         chart.destroy()
     } finally {
@@ -87,29 +88,22 @@ function barChartDataUrl(
     return url
 }
 
-const enhancers: Record<string, Enhancer> = {
-    // Evaluación docente: barras con el puntaje por aspecto (A–J).
-    'RPT.EVALUACION_DOCENTE': (ctx) => {
-        const aspectos: any[] = Array.isArray(ctx.aspectos) ? ctx.aspectos : []
-        if (!aspectos.length) { ctx.grafica = ''; return }
-        const labels = aspectos.map(a => String(a.letra ?? a.area_code ?? ''))
-        const values = aspectos.map(a => Number(a.puntaje ?? a.avg_score ?? 0))
-        try {
-            ctx.grafica = barChartDataUrl(labels, values, {
-                yMax: 5,
-                yTitle: 'PUNTAJE',
-                xTitle: 'ASPECTOS EVALUADOS',
-            })
-        } catch (e) {
-            console.error('[chartEnhancers] RPT.EVALUACION_DOCENTE: no se pudo generar la gráfica', e)
-            ctx.grafica = ''
-        }
-    },
-}
+interface ReportLike { code?: string | null; charts?: ChartSpec[] | null }
 
-/** Aplica el enhancer registrado para el código de reporte (si existe). */
-export async function applyChartEnhancers(code: string | null | undefined, ctx: Record<string, any>): Promise<void> {
-    if (!code) return
-    const fn = enhancers[code]
-    if (fn) await fn(ctx)
+/**
+ * Aplica las gráficas definidas en `report.charts` sobre el contexto: por cada
+ * spec, dibuja el PNG desde `ctx[spec.source]` y lo pone en `ctx[spec.var]`.
+ */
+export async function applyChartEnhancers(report: ReportLike | null | undefined, ctx: Record<string, any>): Promise<void> {
+    const charts = Array.isArray(report?.charts) ? report!.charts! : []
+    for (const spec of charts) {
+        if (!spec?.var || !spec?.source) continue
+        try {
+            const rows: any[] = Array.isArray(ctx[spec.source]) ? ctx[spec.source] : []
+            ctx[spec.var] = rows.length ? renderChartDataUrl(spec, rows) : ''
+        } catch (e) {
+            console.error(`[chartEnhancers] no se pudo generar la gráfica "${spec.var}"`, e)
+            ctx[spec.var] = ''
+        }
+    }
 }
