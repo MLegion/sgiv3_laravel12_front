@@ -35,6 +35,7 @@ function buildImageModule(): any {
             const name = (tagName || '').toLowerCase()
             if (name.includes('qr')) return [90, 90]
             if (name.includes('rubric') || name.includes('firma')) return [170, 60]
+            if (name.includes('grafica') || name.includes('chart') || name.includes('grafico')) return [560, 300]
             return [110, 110]
         },
     })

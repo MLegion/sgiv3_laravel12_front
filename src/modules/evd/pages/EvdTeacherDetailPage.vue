@@ -37,7 +37,12 @@ async function downloadPdf() {
     try {
         const { blob } = await generatePdf({
             reportCode: ReportCode.TEACHER_EVALUATION,
-            params:     { cap_id: capId.value, teacher_id: teacherId.value },
+            params: {
+                cap:              capId.value,
+                teacher_id:       teacherId.value,
+                modality_type_id: modalityTypeId.value ?? undefined,
+                campus_id:        campusId.value ?? undefined,
+            },
         })
         const url = URL.createObjectURL(blob)
         window.open(url, '_blank')
