@@ -37,6 +37,8 @@ function renderChartDataUrl(spec: ChartSpec, rows: any[]): string {
     const labels = rows.map(r => String(r?.[spec.x] ?? ''))
     const values = rows.map(r => Number(r?.[spec.y] ?? 0))
     const color = spec.color || '#93c5fd'
+    const tickFont = spec.tickFontSize ? { size: Number(spec.tickFontSize) } : undefined
+    const titleFont = spec.titleFontSize ? { size: Number(spec.titleFontSize) } : undefined
 
     const canvas = document.createElement('canvas')
     canvas.width = 1120
@@ -86,10 +88,12 @@ function renderChartDataUrl(spec: ChartSpec, rows: any[]): string {
                     y: {
                         beginAtZero: true,
                         max: spec.yMax ?? undefined,
-                        title: spec.yTitle ? { display: true, text: spec.yTitle } : { display: false },
+                        title: spec.yTitle ? { display: true, text: spec.yTitle, font: titleFont } : { display: false },
+                        ticks: { font: tickFont },
                     },
                     x: {
-                        title: spec.xTitle ? { display: true, text: spec.xTitle } : { display: false },
+                        title: spec.xTitle ? { display: true, text: spec.xTitle, font: titleFont } : { display: false },
+                        ticks: { font: tickFont },
                     },
                 },
             },

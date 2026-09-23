@@ -40,4 +40,6 @@ export interface ChartSpec {
     yTitle?: string | null
     color?:  string | null
     title?:  string | null
+    tickFontSize?:  number | null   // tamaño de fuente de las etiquetas de los ejes (X/Y)
+    titleFontSize?: number | null   // tamaño de fuente de los títulos de los ejes
 }

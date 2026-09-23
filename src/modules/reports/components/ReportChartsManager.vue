@@ -52,6 +52,12 @@
                 <label class="text-[10px] font-bold text-slate-400 uppercase">Máximo eje Y (opcional)
                     <input v-model.number="c.yMax" @input="emitCharts" type="number" step="any" class="mt-0.5 w-full border rounded px-2 py-1 text-sm" />
                 </label>
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Fuente etiquetas ejes (px)
+                    <input v-model.number="c.tickFontSize" @input="emitCharts" type="number" min="6" placeholder="12" class="mt-0.5 w-full border rounded px-2 py-1 text-sm" />
+                </label>
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Fuente títulos ejes (px)
+                    <input v-model.number="c.titleFontSize" @input="emitCharts" type="number" min="6" placeholder="12" class="mt-0.5 w-full border rounded px-2 py-1 text-sm" />
+                </label>
             </div>
         </div>
 

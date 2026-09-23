@@ -48,7 +48,7 @@ function buildSrcdoc(): string {
         + `function barChart(labels,values,opts){opts=opts||{};var c=canvas(opts.width,opts.height);`
         + `var ch=new Chart(c,{type:opts.type||'bar',data:{labels:labels,datasets:[{data:values,backgroundColor:opts.color||'#93c5fd',borderColor:'#3b82f6',borderWidth:1,maxBarThickness:70}]},`
         + `options:{responsive:false,animation:false,devicePixelRatio:2,plugins:{legend:{display:false},tooltip:{enabled:false}},`
-        + `scales:{y:{beginAtZero:true,max:opts.yMax,title:opts.yTitle?{display:true,text:opts.yTitle}:{display:false}},x:{title:opts.xTitle?{display:true,text:opts.xTitle}:{display:false}}}}});`
+        + `scales:{y:{beginAtZero:true,max:opts.yMax,title:opts.yTitle?{display:true,text:opts.yTitle,font:opts.titleFontSize?{size:opts.titleFontSize}:undefined}:{display:false},ticks:{font:opts.tickFontSize?{size:opts.tickFontSize}:undefined}},x:{title:opts.xTitle?{display:true,text:opts.xTitle,font:opts.titleFontSize?{size:opts.titleFontSize}:undefined}:{display:false},ticks:{font:opts.tickFontSize?{size:opts.tickFontSize}:undefined}}}}});`
         + `var u=ch.toBase64Image('image/png',1);ch.destroy();return u;}`
         + `var fn=new Function('context','Chart','helpers',d.script);`
         + `var result=fn(context,Chart,{canvas:canvas,barChart:barChart});`
