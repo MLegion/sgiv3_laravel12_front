@@ -27,6 +27,12 @@ export default [
         meta: { title: 'Resultados de Evaluación' },
     },
     {
+        path: 'evd/admin/general',
+        name: 'evd.admin.general',
+        component: () => import('@/modules/evd/pages/EvdGeneralPage.vue'),
+        meta: { title: 'Concentrado General' },
+    },
+    {
         path: 'evd/admin/periods/teacher/:teacherId',
         name: 'evd.admin.teacher-detail',
         component: () => import('@/modules/evd/pages/EvdTeacherDetailPage.vue'),

@@ -14,6 +14,7 @@ const evdApi: ApiModule = {
             // través de todos sus TEPs y se segmentan por campus/modalidad/carrera.
             results:        (capId: string | number) => apiUrl(`/evd/admin/college-academic-periods/${capId}/results`),
             resultsFilters: (capId: string | number) => apiUrl(`/evd/admin/college-academic-periods/${capId}/results-filters`),
+            general:        (capId: string | number) => apiUrl(`/evd/admin/college-academic-periods/${capId}/general`),
             teacherDetail:  (capId: string | number, teacherId: string | number) =>
                 apiUrl(`/evd/admin/college-academic-periods/${capId}/teachers/${teacherId}/results`),
 
