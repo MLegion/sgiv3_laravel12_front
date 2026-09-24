@@ -1,7 +1,7 @@
 import { api } from '@/shared/services/api'
 import { apiUrl } from '@/shared/api/config'
 
-export type BrandingAssetKind = 'logo' | 'hero' | 'navbar_logo_left' | 'navbar_logo_right'
+export type BrandingAssetKind = 'logo' | 'hero' | 'navbar_logo_left' | 'navbar_logo_right' | 'favicon'
 
 export type LoginTemplate = 'centered' | 'split' | 'hero' | 'minimal' | 'custom'
 
@@ -70,6 +70,7 @@ export interface CollegeBranding {
     hero_url: string | null
     navbar_logo_left_url: string | null
     navbar_logo_right_url: string | null
+    favicon_url: string | null
     login_template: LoginTemplate
     login_config: LoginConfig
     app_theme: AppTheme
@@ -173,15 +174,36 @@ export function applyBrandingCssVars(branding: CollegeBranding | null) {
         for (const key of Object.keys(themePresetVars('light', '#4f46e5'))) {
             root.style.removeProperty(key)
         }
+        applyFavicon(null)
         return
     }
     const primary = branding.primary_color || '#4f46e5'
+    applyFavicon(branding.favicon_url)
     root.style.setProperty('--brand-primary', primary)
     root.style.setProperty('--brand-primary-hover', shadeHex(primary, -10))
 
     const vars = resolveAppThemeVars(branding.app_theme ?? null, primary)
     for (const [key, value] of Object.entries(vars)) {
         root.style.setProperty(key, value)
+    }
+}
+
+/** Aplica el favicon del colegio (o restaura el default) en el <head>. */
+export function applyFavicon(url: string | null) {
+    if (typeof document === 'undefined') return
+    let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']")
+    if (!link) {
+        link = document.createElement('link')
+        link.rel = 'icon'
+        document.head.appendChild(link)
+    }
+    if (url) {
+        // El endpoint sirve el tipo real; quitamos type para no forzar svg.
+        link.removeAttribute('type')
+        link.href = url
+    } else {
+        link.type = 'image/svg+xml'
+        link.href = '/vite.svg'
     }
 }
 

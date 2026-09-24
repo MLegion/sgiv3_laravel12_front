@@ -172,15 +172,18 @@ function fillTheme(src: AppTheme | null | undefined): AppTheme {
 
 const cfg = reactive<AppTheme>(fillTheme(theme.value))
 
-let syncing = false
+// Anti-eco: guardamos el último JSON emitido para NO rehidratar cfg cuando el
+// cambio en el modelo proviene de nosotros mismos (evita que el color-picker se
+// "atore" al reemplazar objetos anidados en cada evento de arrastre).
+let lastEmitted = JSON.stringify(theme.value ?? {})
 watch(cfg, () => {
-    if (syncing) return
-    theme.value = JSON.parse(JSON.stringify(cfg))
+    const clone = JSON.parse(JSON.stringify(cfg))
+    lastEmitted = JSON.stringify(clone)
+    theme.value = clone
 }, { deep: true })
 watch(() => theme.value, (v) => {
-    syncing = true
+    if (JSON.stringify(v ?? {}) === lastEmitted) return  // eco propio → ignorar
     Object.assign(cfg, fillTheme(v))
-    syncing = false
 })
 
 function val(e: Event): string { return (e.target as HTMLInputElement).value }

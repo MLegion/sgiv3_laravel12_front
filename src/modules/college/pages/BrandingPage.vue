@@ -127,6 +127,17 @@
                         @delete="() => onDelete('hero')"
                     />
 
+                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 pt-2">Identidad del sitio</p>
+                    <BrandingAssetUploader
+                        label="Favicon (pestaña del navegador)"
+                        :current-url="branding?.favicon_url ?? null"
+                        :uploading="uploading.favicon"
+                        accept="image/png,image/webp,image/x-icon,.ico"
+                        @upload="(f: File) => onUpload('favicon', f)"
+                        @delete="() => onDelete('favicon')"
+                    />
+                    <p class="text-xs text-gray-500 -mt-2">PNG/ICO/WebP cuadrado, idealmente 32×32 o 64×64.</p>
+
                     <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 pt-2">Navbar (app autenticada)</p>
                     <BrandingAssetUploader
                         label="Logo izquierdo (reemplaza TecNM)"
@@ -263,6 +274,7 @@ const uploading = reactive<Record<BrandingAssetKind, boolean>>({
     hero: false,
     navbar_logo_left: false,
     navbar_logo_right: false,
+    favicon: false,
 })
 const branding = ref<CollegeBranding | null>(null)
 const collegeName = ref<string | null>(null)

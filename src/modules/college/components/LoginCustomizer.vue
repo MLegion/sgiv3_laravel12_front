@@ -253,18 +253,20 @@ function fillDefaults(src: LoginConfig | null | undefined): Required<Pick<LoginC
 
 const cfg = reactive<LoginConfig>(fillDefaults(config.value))
 
-// Propaga cambios locales al v-model del padre.
-let syncing = false
+// Propaga cambios locales al v-model del padre. Anti-eco por JSON: no rehidrata
+// cfg cuando el cambio del modelo lo emitimos nosotros (evita que el color-picker
+// se "atore" al reemplazar objetos anidados en cada evento de arrastre).
+let lastEmitted = JSON.stringify(config.value ?? {})
 watch(cfg, () => {
-    if (syncing) return
-    config.value = JSON.parse(JSON.stringify(cfg))
+    const clone = JSON.parse(JSON.stringify(cfg))
+    lastEmitted = JSON.stringify(clone)
+    config.value = clone
 }, { deep: true })
 
-// Si el padre reemplaza el config (recarga), rehidrata.
+// Si el padre reemplaza el config (recarga externa), rehidrata.
 watch(() => config.value, (v) => {
-    syncing = true
+    if (JSON.stringify(v ?? {}) === lastEmitted) return
     Object.assign(cfg, fillDefaults(v))
-    syncing = false
 })
 
 const COLOR_KEYS = [
