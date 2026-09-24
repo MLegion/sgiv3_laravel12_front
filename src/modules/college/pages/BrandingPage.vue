@@ -1,5 +1,5 @@
 <template>
-    <div class="max-w-5xl mx-auto p-6 space-y-6">
+    <div class="max-w-7xl mx-auto p-6 space-y-6">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-semibold text-gray-900">Imagen del Colegio</h1>
@@ -20,7 +20,8 @@
 
         <div v-if="loading" class="bg-white rounded-lg shadow p-6 text-gray-500">Cargando…</div>
 
-        <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div v-else class="space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Columna izquierda: formulario -->
             <div class="bg-white rounded-lg shadow p-6 space-y-5">
                 <div>
@@ -275,6 +276,31 @@
                     Reflejo aproximado de la app autenticada: navbar, sidebar (item activo y hover) y footer.
                 </p>
             </div>
+          </div>
+
+          <!-- Personalización avanzada del login -->
+          <div class="bg-white rounded-lg shadow p-6 space-y-4">
+              <div class="flex items-start justify-between gap-4">
+                  <div>
+                      <h2 class="text-lg font-semibold text-gray-900">Personalización del login</h2>
+                      <p class="text-sm text-gray-600">Elige una plantilla y ajústala: fondo, formulario, colores, tipografía o HTML libre.</p>
+                  </div>
+                  <button
+                      type="button"
+                      class="px-4 py-2 text-sm rounded bg-slate-800 hover:bg-slate-900 text-white font-medium shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                      @click="save"
+                      :disabled="saving"
+                  >
+                      {{ saving ? 'Guardando…' : 'Guardar login' }}
+                  </button>
+              </div>
+              <LoginCustomizer
+                  v-model:template="form.login_template"
+                  v-model:config="form.login_config"
+                  :branding="branding"
+                  :college-name="collegeName"
+              />
+          </div>
         </div>
     </div>
 </template>
@@ -288,9 +314,12 @@ import {
     deleteAdminBrandingAsset,
     type BrandingAssetKind,
     type CollegeBranding,
+    type LoginTemplate,
+    type LoginConfig,
 } from '@/modules/auth/services/branding.service'
 import { useBrandingStore } from '@/modules/auth/stores/branding.store'
 import BrandingAssetUploader from '@/modules/college/components/BrandingAssetUploader.vue'
+import LoginCustomizer from '@/modules/college/components/LoginCustomizer.vue'
 
 const brandingStore = useBrandingStore()
 const loading = ref(true)
@@ -311,6 +340,8 @@ const form = ref({
     welcome_subtitle: '' as string | null,
     navbar_title: '' as string | null,
     footer_text: '' as string | null,
+    login_template: 'centered' as LoginTemplate,
+    login_config: {} as LoginConfig,
 })
 
 const shortNameLower = computed(() => (collegeShortName.value ?? 'shortname').toLowerCase())
@@ -337,6 +368,8 @@ async function reload() {
         form.value.welcome_subtitle = res.branding.welcome_subtitle ?? ''
         form.value.navbar_title = res.branding.navbar_title ?? ''
         form.value.footer_text = res.branding.footer_text ?? ''
+        form.value.login_template = res.branding.login_template ?? 'centered'
+        form.value.login_config = res.branding.login_config ?? {}
         // Sincroniza store global para que navbar/footer reflejen el estado actual.
         brandingStore.setResolved({
             college: { id: 0, name: collegeName.value ?? '', short_name: collegeShortName.value ?? '' },
@@ -356,6 +389,8 @@ async function save() {
             welcome_subtitle: form.value.welcome_subtitle || null,
             navbar_title: form.value.navbar_title || null,
             footer_text: form.value.footer_text || null,
+            login_template: form.value.login_template,
+            login_config: form.value.login_config,
         })
         branding.value = res.branding
         brandingStore.setBranding(res.branding)

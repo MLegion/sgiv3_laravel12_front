@@ -3,6 +3,36 @@ import { apiUrl } from '@/shared/api/config'
 
 export type BrandingAssetKind = 'logo' | 'hero' | 'navbar_logo_left' | 'navbar_logo_right'
 
+export type LoginTemplate = 'centered' | 'split' | 'hero' | 'minimal' | 'custom'
+
+/** Configuración avanzada del login (JSON en AppConfig). Todo opcional. */
+export interface LoginConfig {
+    background?: {
+        type?: 'color' | 'gradient' | 'image'
+        color?: string
+        gradientFrom?: string
+        gradientTo?: string
+        gradientAngle?: number
+        imageUrl?: string            // si vacío, se usa el hero del branding
+        overlay?: number             // 0..1
+        overlayColor?: string
+    }
+    form?: {
+        position?: 'left' | 'center' | 'right'
+        align?: 'top' | 'center' | 'bottom'
+        cardWidth?: number           // px
+        cardRadius?: number          // px
+        cardOpacity?: number         // 0..1
+        cardBg?: string
+    }
+    split?: { imageSide?: 'left' | 'right'; formRatio?: number /* % del ancho para el form */ }
+    show?: { hero?: boolean; logos?: boolean; subtitle?: boolean; tecnmLogo?: boolean; aspirantesLink?: boolean }
+    colors?: { button?: string; buttonText?: string; link?: string; text?: string }
+    typography?: { fontFamily?: string; titleSize?: number; baseSize?: number }
+    /** Modo avanzado: HTML personalizado (sanitizado). Debe incluir el marcador del formulario. */
+    customHtml?: string
+}
+
 export interface CollegeBranding {
     primary_color: string
     welcome_title: string | null
@@ -13,6 +43,8 @@ export interface CollegeBranding {
     hero_url: string | null
     navbar_logo_left_url: string | null
     navbar_logo_right_url: string | null
+    login_template: LoginTemplate
+    login_config: LoginConfig
 }
 
 export interface CollegeBrandingResolved {
@@ -76,6 +108,8 @@ export async function updateAdminBranding(payload: {
     welcome_subtitle?: string | null
     navbar_title?: string | null
     footer_text?: string | null
+    login_template?: LoginTemplate | null
+    login_config?: LoginConfig | null
 }): Promise<{ branding: CollegeBranding }> {
     const { data } = await api.put<{ branding: CollegeBranding }>(apiUrl('/college/branding'), payload)
     return data
