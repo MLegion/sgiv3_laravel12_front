@@ -98,7 +98,11 @@
             <!-- Vista previa en vivo -->
             <div>
                 <p class="text-sm font-medium text-gray-700 mb-2">Vista previa en vivo</p>
-                <div class="border rounded-lg overflow-hidden" :style="previewVars">
+                <div v-if="previewError" class="border rounded-lg h-64 flex flex-col items-center justify-center gap-2 text-sm text-gray-500 p-4 text-center">
+                    <span>No se pudo generar la vista previa.</span>
+                    <button type="button" class="text-xs px-3 py-1.5 rounded border border-gray-300 bg-white hover:bg-gray-50" @click="previewError = false">Reintentar</button>
+                </div>
+                <div v-else class="app-preview-box border rounded-lg overflow-hidden" :style="previewVars">
                     <!-- navbar -->
                     <div class="h-11 flex items-center justify-between px-3 border-b" :style="{ backgroundColor: 'var(--app-navbar-bg)', borderColor: 'var(--app-navbar-border)' }">
                         <div class="flex items-center gap-2">
@@ -150,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, watch } from 'vue'
+import { reactive, computed, onErrorCaptured, ref, watch } from 'vue'
 import { resolveAppThemeVars, type AppTheme, type AppThemePreset, type CollegeBranding } from '@/modules/auth/services/branding.service'
 
 const props = defineProps<{ branding: CollegeBranding | null; collegeName?: string | null }>()
@@ -212,4 +216,20 @@ const PRESETS: { id: AppThemePreset; label: string; swatch: { content: string; n
 ]
 
 const previewVars = computed(() => resolveAppThemeVars(cfg, props.branding?.primary_color || '#4f46e5'))
+
+// Barrera de errores: la vista previa nunca debe tumbar la página del admin.
+const previewError = ref(false)
+onErrorCaptured((err) => {
+    console.error('[theme-preview]', err)
+    previewError.value = true
+    return false
+})
 </script>
+
+<style scoped>
+/* Aísla el render de la vista previa del resto de la página. */
+.app-preview-box {
+    contain: layout paint;
+    isolation: isolate;
+}
+</style>

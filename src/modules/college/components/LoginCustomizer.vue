@@ -213,9 +213,13 @@
                     <p class="text-sm font-medium text-gray-700">Vista previa en vivo</p>
                     <span class="text-[10px] text-gray-400">escala 45% · no interactiva</span>
                 </div>
-                <div class="border rounded-lg overflow-hidden bg-slate-200" style="height: 560px">
-                    <div class="preview-scale">
+                <div class="preview-box border rounded-lg overflow-hidden bg-slate-200">
+                    <div v-if="!previewError" class="preview-scale">
                         <component :is="previewComponent" :c="previewC" :branding="previewBranding" :config="cfg" />
+                    </div>
+                    <div v-else class="h-full flex flex-col items-center justify-center gap-2 text-sm text-gray-500 p-4 text-center">
+                        <span>No se pudo generar la vista previa con esta configuración.</span>
+                        <button type="button" class="text-xs px-3 py-1.5 rounded border border-gray-300 bg-white hover:bg-gray-50" @click="previewError = false">Reintentar</button>
                     </div>
                 </div>
             </div>
@@ -224,7 +228,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onErrorCaptured, reactive, ref, watch } from 'vue'
 import LoginCentered from '@/modules/auth/components/login/templates/LoginCentered.vue'
 import LoginSplit from '@/modules/auth/components/login/templates/LoginSplit.vue'
 import LoginHero from '@/modules/auth/components/login/templates/LoginHero.vue'
@@ -295,6 +299,17 @@ const TEMPLATES: { id: LoginTemplate; label: string; hint: string; thumb: string
 const previewMap = { centered: LoginCentered, split: LoginSplit, hero: LoginHero, minimal: LoginMinimal, custom: LoginCustom }
 const previewComponent = computed(() => previewMap[template.value] ?? LoginCentered)
 
+// Barrera de errores: si la vista previa falla, NO debe tumbar la página del
+// admin. Capturamos el error, mostramos un aviso y dejamos el resto operativo.
+const previewError = ref(false)
+onErrorCaptured((err) => {
+    console.error('[login-preview]', err)
+    previewError.value = true
+    return false
+})
+// Al cambiar de plantilla reintentamos la vista previa.
+watch(template, () => { previewError.value = false })
+
 // Branding para la vista previa (usa el subido + primary del branding real).
 const previewBranding = computed<CollegeBranding>(() => ({
     ...(props.branding ?? {} as any),
@@ -346,6 +361,15 @@ function loadStarterHtml() {
 </script>
 
 <style scoped>
+/* La caja de preview AÍSLA por completo el render: `contain` la vuelve bloque
+ * contenedor y recorte de cualquier hijo con position:fixed / min-h-screen, para
+ * que las plantillas de pantalla completa NUNCA escapen a la interfaz real. */
+.preview-box {
+    position: relative;
+    height: 560px;
+    contain: layout paint;
+    isolation: isolate;
+}
 /* La vista previa renderiza las plantillas reales (min-h-screen) a escala. */
 .preview-scale {
     width: 222%;
@@ -353,5 +377,9 @@ function loadStarterHtml() {
     transform: scale(0.45);
     transform-origin: top left;
     pointer-events: none;
+}
+/* Neutraliza cualquier fixed remanente dentro del preview (defensa extra). */
+.preview-scale :deep(.fixed) {
+    position: absolute !important;
 }
 </style>
