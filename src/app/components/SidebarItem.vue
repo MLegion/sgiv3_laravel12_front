@@ -16,11 +16,11 @@
                 v-if="Icon"
                 :is="Icon"
                 class="w-3.5 h-3.5 shrink-0 transition-colors duration-200 brand-hover-color"
-                :class="open ? 'is-branded' : 'text-slate-300'"
+                :class="open ? 'is-branded' : 'sidebar-muted-text'"
             />
             <span
                 class="flex-1 text-[10px] font-black uppercase tracking-widest truncate transition-colors duration-200 brand-hover-color"
-                :class="open ? 'is-branded' : 'text-slate-400'"
+                :class="open ? 'is-branded' : 'sidebar-muted-text'"
             >
                 {{ item.label }}
             </span>
@@ -31,7 +31,7 @@
             <svg
                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                 class="w-3 h-3 transition-transform duration-300 shrink-0 brand-hover-color"
-                :class="[open ? 'rotate-180 is-branded' : 'text-slate-300']"
+                :class="[open ? 'rotate-180 is-branded' : 'sidebar-muted-text']"
             >
                 <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
             </svg>
@@ -45,8 +45,8 @@
             class="flex items-center gap-2 rounded-xl cursor-pointer transition-all duration-300 group select-none relative overflow-hidden active:scale-[0.96] sidebar-item focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
             :class="[
                 isActive
-                    ? 'is-active text-white shadow-md'
-                    : 'text-slate-600 hover:bg-slate-100',
+                    ? 'is-active shadow-md'
+                    : 'sidebar-item-idle',
                 collapsed ? 'justify-center px-0 w-10 h-10 mx-auto py-0' : '',
                 depth > 0 ? 'px-3 py-1.5' : 'px-4 py-2.5'
             ]"
@@ -71,7 +71,7 @@
                     :is="Icon"
                     class="transition-colors duration-200 group-hover-brand"
                     :class="[
-                        isActive ? 'text-white' : 'text-slate-400',
+                        isActive ? 'text-white' : 'sidebar-icon-idle',
                         depth > 0 ? 'w-4 h-4' : 'w-5 h-5'
                     ]"
                 />
@@ -104,7 +104,7 @@
             <div
                 v-if="!collapsed && item.children && depth === 0"
                 class="transition-transform duration-300 ease-in-out"
-                :class="[isActive ? 'text-white' : 'text-slate-300', open ? 'rotate-180' : '']"
+                :class="[isActive ? 'text-white' : 'sidebar-muted-text', open ? 'rotate-180' : '']"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
                     <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
@@ -242,16 +242,29 @@ watch(
  * a indigo-600 cuando el colegio no tiene tema configurado.
  * ───────────────────────────────────────────────────────────── */
 .sidebar-item.is-active {
-    background-color: var(--brand-primary, #4f46e5);
+    background-color: var(--app-sidebar-active-bg, var(--brand-primary, #4f46e5));
+    color: var(--app-sidebar-active-text, #ffffff);
 }
-.sidebar-item:not(.is-active):hover {
-    color: var(--brand-primary, #4f46e5);
+/* Item inactivo: color base y hover según el tema del sidebar. */
+.sidebar-item-idle {
+    color: var(--app-sidebar-text, #475569);
 }
-.sidebar-item:not(.is-active):hover .group-hover-brand {
-    color: var(--brand-primary, #4f46e5);
+.sidebar-item-idle:hover {
+    background-color: var(--app-sidebar-hover-bg, #f1f5f9);
+    color: var(--app-sidebar-hover-text, var(--brand-primary, #4f46e5));
+}
+.sidebar-item-idle:hover .group-hover-brand {
+    color: var(--app-sidebar-hover-text, var(--brand-primary, #4f46e5));
+}
+/* Iconos y etiquetas atenuadas (secciones, chevrons). */
+.sidebar-icon-idle {
+    color: var(--app-sidebar-muted, #94a3b8);
+}
+.sidebar-muted-text {
+    color: var(--app-sidebar-muted, #94a3b8);
 }
 .is-branded {
-    color: var(--brand-primary, #4f46e5);
+    color: var(--app-sidebar-hover-text, var(--brand-primary, #4f46e5));
 }
 .brand-hover-color {
     transition: color 0.2s ease;

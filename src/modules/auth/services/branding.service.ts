@@ -33,6 +33,33 @@ export interface LoginConfig {
     customHtml?: string
 }
 
+export type AppThemePreset = 'light' | 'dark-sidebar' | 'brand-sidebar' | 'slate' | 'custom'
+export type NavbarVariant = 'light' | 'brand' | 'dark'
+
+/** Tema de la app autenticada (navbar + sidebar + contenido). Todo opcional. */
+export interface AppTheme {
+    preset?: AppThemePreset
+    contentBg?: string
+    navbar?: {
+        variant?: NavbarVariant
+        bg?: string
+        text?: string
+        muted?: string
+        border?: string
+    }
+    sidebar?: {
+        bg?: string
+        text?: string
+        muted?: string
+        border?: string
+        hoverBg?: string
+        hoverText?: string
+        activeBg?: string
+        activeText?: string
+        width?: number   // px (sidebar expandido)
+    }
+}
+
 export interface CollegeBranding {
     primary_color: string
     welcome_title: string | null
@@ -45,6 +72,7 @@ export interface CollegeBranding {
     navbar_logo_right_url: string | null
     login_template: LoginTemplate
     login_config: LoginConfig
+    app_theme: AppTheme
 }
 
 export interface CollegeBrandingResolved {
@@ -110,6 +138,7 @@ export async function updateAdminBranding(payload: {
     footer_text?: string | null
     login_template?: LoginTemplate | null
     login_config?: LoginConfig | null
+    app_theme?: AppTheme | null
 }): Promise<{ branding: CollegeBranding }> {
     const { data } = await api.put<{ branding: CollegeBranding }>(apiUrl('/college/branding'), payload)
     return data
@@ -133,18 +162,107 @@ export async function deleteAdminBrandingAsset(kind: BrandingAssetKind): Promise
 
 /**
  * Aplica el branding como variables CSS sobre :root. Cualquier estilo de la app
- * o del login puede leerlo con `var(--brand-primary)` y compatibles.
+ * o del login puede leerlo con `var(--brand-primary)` y compatibles. Además
+ * proyecta el tema de la app (navbar/sidebar/contenido) como variables --app-*.
  */
 export function applyBrandingCssVars(branding: CollegeBranding | null) {
     const root = document.documentElement
     if (!branding) {
         root.style.removeProperty('--brand-primary')
         root.style.removeProperty('--brand-primary-hover')
+        for (const key of Object.keys(themePresetVars('light', '#4f46e5'))) {
+            root.style.removeProperty(key)
+        }
         return
     }
     const primary = branding.primary_color || '#4f46e5'
     root.style.setProperty('--brand-primary', primary)
     root.style.setProperty('--brand-primary-hover', shadeHex(primary, -10))
+
+    const vars = resolveAppThemeVars(branding.app_theme ?? null, primary)
+    for (const [key, value] of Object.entries(vars)) {
+        root.style.setProperty(key, value)
+    }
+}
+
+/** Variables base de cada preset de tema (con el color primario inyectado). */
+function themePresetVars(preset: AppThemePreset, primary: string): Record<string, string> {
+    const light: Record<string, string> = {
+        '--app-content-bg':        '#f8fafc',
+        '--app-navbar-bg':         '#ffffff',
+        '--app-navbar-text':       '#1e293b',
+        '--app-navbar-muted':      '#94a3b8',
+        '--app-navbar-border':     '#e2e8f0',
+        '--app-sidebar-bg':        '#ffffff',
+        '--app-sidebar-text':      '#475569',
+        '--app-sidebar-muted':     '#94a3b8',
+        '--app-sidebar-border':    '#e2e8f0',
+        '--app-sidebar-hover-bg':  '#f1f5f9',
+        '--app-sidebar-hover-text': primary,
+        '--app-sidebar-active-bg':  primary,
+        '--app-sidebar-active-text': '#ffffff',
+        '--app-sidebar-width':     '18rem',
+    }
+    if (preset === 'dark-sidebar') {
+        return { ...light,
+            '--app-sidebar-bg': '#0f172a', '--app-sidebar-text': '#cbd5e1', '--app-sidebar-muted': '#64748b',
+            '--app-sidebar-border': '#1e293b', '--app-sidebar-hover-bg': '#1e293b', '--app-sidebar-hover-text': '#ffffff',
+        }
+    }
+    if (preset === 'slate') {
+        return { ...light,
+            '--app-content-bg': '#f1f5f9',
+            '--app-sidebar-bg': '#1e293b', '--app-sidebar-text': '#cbd5e1', '--app-sidebar-muted': '#64748b',
+            '--app-sidebar-border': '#334155', '--app-sidebar-hover-bg': '#334155', '--app-sidebar-hover-text': '#ffffff',
+        }
+    }
+    if (preset === 'brand-sidebar') {
+        return { ...light,
+            '--app-sidebar-bg': primary, '--app-sidebar-text': 'rgba(255,255,255,0.85)', '--app-sidebar-muted': 'rgba(255,255,255,0.55)',
+            '--app-sidebar-border': 'rgba(255,255,255,0.15)', '--app-sidebar-hover-bg': 'rgba(255,255,255,0.12)', '--app-sidebar-hover-text': '#ffffff',
+            '--app-sidebar-active-bg': shadeHex(primary, -20), '--app-sidebar-active-text': '#ffffff',
+        }
+    }
+    return light
+}
+
+/** Combina preset + variante de navbar + overrides explícitos → variables CSS. */
+export function resolveAppThemeVars(theme: AppTheme | null, primary: string): Record<string, string> {
+    const preset = (theme?.preset ?? 'light')
+    const vars = themePresetVars(preset === 'custom' ? 'light' : preset, primary)
+
+    // Variante de navbar (independiente del preset del sidebar).
+    const nv = theme?.navbar?.variant
+    if (nv === 'brand') {
+        vars['--app-navbar-bg'] = primary
+        vars['--app-navbar-text'] = '#ffffff'
+        vars['--app-navbar-muted'] = 'rgba(255,255,255,0.7)'
+        vars['--app-navbar-border'] = shadeHex(primary, -12)
+    } else if (nv === 'dark') {
+        vars['--app-navbar-bg'] = '#0f172a'
+        vars['--app-navbar-text'] = '#e2e8f0'
+        vars['--app-navbar-muted'] = '#64748b'
+        vars['--app-navbar-border'] = '#1e293b'
+    }
+
+    // Overrides explícitos (modo avanzado): solo pisan si están definidos.
+    const set = (key: string, value?: string | null) => { if (value) vars[key] = value }
+    set('--app-content-bg', theme?.contentBg)
+    set('--app-navbar-bg', theme?.navbar?.bg)
+    set('--app-navbar-text', theme?.navbar?.text)
+    set('--app-navbar-muted', theme?.navbar?.muted)
+    set('--app-navbar-border', theme?.navbar?.border)
+    set('--app-sidebar-bg', theme?.sidebar?.bg)
+    set('--app-sidebar-text', theme?.sidebar?.text)
+    set('--app-sidebar-muted', theme?.sidebar?.muted)
+    set('--app-sidebar-border', theme?.sidebar?.border)
+    set('--app-sidebar-hover-bg', theme?.sidebar?.hoverBg)
+    set('--app-sidebar-hover-text', theme?.sidebar?.hoverText)
+    set('--app-sidebar-active-bg', theme?.sidebar?.activeBg)
+    set('--app-sidebar-active-text', theme?.sidebar?.activeText)
+    if (theme?.sidebar?.width) vars['--app-sidebar-width'] = `${theme.sidebar.width}px`
+
+    return vars
 }
 
 export function cacheBranding(payload: CollegeBrandingResolved | null) {

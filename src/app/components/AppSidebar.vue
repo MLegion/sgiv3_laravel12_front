@@ -1,16 +1,19 @@
 <template>
     <aside
-        class="bg-white border-r border-slate-200 transition-all duration-300 ease-in-out flex flex-col z-50 shadow-sm overflow-hidden h-full"
-        :class="[
-            isExpanded ? 'w-72' : 'w-20'
-        ]"
+        class="border-r transition-all duration-300 ease-in-out flex flex-col z-50 shadow-sm overflow-hidden h-full app-sidebar"
+        :class="[ isExpanded ? '' : 'w-20' ]"
+        :style="{
+            backgroundColor: 'var(--app-sidebar-bg, #ffffff)',
+            borderColor: 'var(--app-sidebar-border, #e2e8f0)',
+            width: isExpanded ? 'var(--app-sidebar-width, 18rem)' : undefined,
+        }"
         @mouseenter="layout.setHovered(true)"
         @mouseleave="layout.setHovered(false)"
     >
         <!-- Header Minimalista -->
-        <div class="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b border-slate-50">
+        <div class="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b" :style="{ borderColor: 'var(--app-sidebar-border, #f1f5f9)' }">
             <transition name="fade">
-                <span v-if="isExpanded" class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-2">
+                <span v-if="isExpanded" class="text-[10px] font-black uppercase tracking-[0.2em] pl-2" :style="{ color: 'var(--app-sidebar-muted, #94a3b8)' }">
                     Navegación
                 </span>
             </transition>
@@ -39,7 +42,7 @@
         </div>
 
         <!-- Navegación Central -->
-        <nav class="flex-1 overflow-y-auto py-4 custom-scrollbar bg-gradient-to-b from-white via-white to-slate-50/30">
+        <nav class="flex-1 overflow-y-auto py-4 custom-scrollbar">
             <div :class="['space-y-1', isExpanded ? 'px-3' : 'px-2']">
                 <template v-for="item in menuList" :key="item.code">
                     <SidebarItem
@@ -51,10 +54,10 @@
         </nav>
 
         <!-- Footer: Acción de Salida -->
-        <div class="flex flex-col border-t border-slate-50 p-2">
+        <div class="flex flex-col border-t p-2" :style="{ borderColor: 'var(--app-sidebar-border, #f1f5f9)' }">
             <button aria-label="Cerrar Sesión"
                 @click="handleLogout"
-                class="w-full flex items-center gap-3 py-3 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group"
+                class="w-full flex items-center gap-3 py-3 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group sidebar-logout"
                 :class="isExpanded ? 'px-4' : 'justify-center'"
                 title="Cerrar Sesión"
             >
@@ -141,4 +144,7 @@ const handleLogout = () => {
 aside {
     -webkit-tap-highlight-color: transparent;
 }
+
+/* Color base del botón salir (respeta el tema; hover en rojo se mantiene por clases). */
+.sidebar-logout { color: var(--app-sidebar-muted, #94a3b8); }
 </style>

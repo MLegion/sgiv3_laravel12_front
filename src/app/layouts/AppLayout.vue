@@ -1,5 +1,5 @@
 <template>
-    <div class="h-screen flex flex-col bg-slate-50 overflow-hidden text-slate-900">
+    <div class="h-screen flex flex-col overflow-hidden text-slate-900" :style="{ backgroundColor: 'var(--app-content-bg, #f8fafc)' }">
 
         <!-- Host global de notificaciones efímeras (toasts) -->
         <ToastHost />
@@ -66,7 +66,8 @@
                 <!-- Footer brandeable: fijo en la base del main, fuera del área de scroll -->
                 <footer
                     v-if="branding.branding?.footer_text"
-                    class="shrink-0 py-3 px-6 text-center text-xs text-slate-500 border-t border-slate-200 bg-white"
+                    class="shrink-0 py-3 px-6 text-center text-xs text-slate-500 border-t"
+                    :style="{ backgroundColor: 'var(--app-navbar-bg, #ffffff)', borderColor: 'var(--app-navbar-border, #e2e8f0)' }"
                 >
                     {{ branding.branding.footer_text }}
                 </footer>

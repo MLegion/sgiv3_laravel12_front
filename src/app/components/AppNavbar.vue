@@ -1,12 +1,16 @@
 <template>
-    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shadow-sm z-[80] relative">
+    <header
+        class="h-16 border-b flex items-center justify-between px-4 md:px-6 shadow-sm z-[80] relative"
+        :style="{ backgroundColor: 'var(--app-navbar-bg, #ffffff)', borderColor: 'var(--app-navbar-border, #e2e8f0)' }"
+    >
 
         <!-- Lado Izquierdo: Toggle y Logo -->
         <div class="flex items-center gap-4">
             <!-- Botón Hamburguesa (Solo Móvil/Tablet) -->
             <button
                 @click="$emit('toggle-sidebar')"
-                class="p-2 rounded-xl text-slate-500 hover:bg-slate-100 lg:hidden transition-colors"
+                class="p-2 rounded-xl hover:bg-black/5 lg:hidden transition-colors"
+                :style="{ color: 'var(--app-navbar-muted, #64748b)' }"
             >
                 <Bars3BottomLeftIcon class="w-6 h-6" />
             </button>
@@ -30,11 +34,12 @@
                 <!-- Texto del colegio (o fallback SGI v3) -->
                 <span
                     v-if="branding.navbarTitle"
-                    class="font-black text-slate-800 tracking-tight text-base hidden sm:inline-block truncate max-w-[280px]"
+                    class="font-black tracking-tight text-base hidden sm:inline-block truncate max-w-[280px]"
+                    :style="{ color: 'var(--app-navbar-text, #1e293b)' }"
                 >
                     {{ branding.navbarTitle }}
                 </span>
-                <span v-else class="font-black text-slate-800 tracking-tighter text-lg hidden sm:inline-block">
+                <span v-else class="font-black tracking-tighter text-lg hidden sm:inline-block" :style="{ color: 'var(--app-navbar-text, #1e293b)' }">
                     SGI <span :style="{ color: 'var(--brand-primary, #4f46e5)' }">v3</span>
                 </span>
 
@@ -57,8 +62,8 @@
 
             <!-- Información Usuario (Oculta en móviles muy pequeños) -->
             <div class="hidden md:block text-right">
-                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-0.5">Usuario</p>
-                <p class="text-sm font-bold text-slate-700 truncate max-w-[150px]">
+                <p class="text-xs font-black uppercase tracking-widest mb-0.5" :style="{ color: 'var(--app-navbar-muted, #94a3b8)' }">Usuario</p>
+                <p class="text-sm font-bold truncate max-w-[150px]" :style="{ color: 'var(--app-navbar-text, #334155)' }">
                     {{ auth.userName }}
                 </p>
             </div>

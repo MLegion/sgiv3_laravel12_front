@@ -184,97 +184,6 @@
                     </div>
                 </div>
                 <p class="text-xs text-gray-500">La portada se muestra como fondo del panel del login.</p>
-
-                <!-- Vista previa del layout autenticado -->
-                <p class="text-sm font-medium text-gray-700 pt-4 border-t mt-4">Vista previa del layout autenticado</p>
-                <div class="border rounded-lg overflow-hidden bg-slate-50">
-                    <!-- Navbar mock -->
-                    <div class="h-12 bg-white border-b border-slate-200 flex items-center justify-between px-3">
-                        <div class="flex items-center gap-2 min-w-0">
-                            <img
-                                v-if="branding?.navbar_logo_left_url"
-                                :src="branding.navbar_logo_left_url"
-                                alt="Logo"
-                                class="h-7 w-auto object-contain"
-                            />
-                            <div
-                                v-else
-                                class="w-6 h-6 rounded flex items-center justify-center text-white font-black text-[10px]"
-                                :style="{ backgroundColor: form.primary_color || '#4f46e5' }"
-                            >S3</div>
-                            <span class="text-xs font-bold text-slate-700 truncate">
-                                {{ form.navbar_title || collegeName || 'SGI v3' }}
-                            </span>
-                            <img
-                                v-if="branding?.navbar_logo_right_url"
-                                :src="branding.navbar_logo_right_url"
-                                alt="Logo"
-                                class="h-7 w-auto object-contain"
-                            />
-                        </div>
-                        <div
-                            class="w-7 h-7 rounded-xl bg-slate-100 font-black flex items-center justify-center text-xs"
-                            :style="{ color: form.primary_color || '#4f46e5' }"
-                        >U</div>
-                    </div>
-
-                    <!-- Body: sidebar + contenido -->
-                    <div class="flex h-40">
-                        <!-- Sidebar mock -->
-                        <div class="w-32 bg-white border-r border-slate-200 p-2 space-y-1 text-[10px]">
-                            <div
-                                class="px-2 py-1.5 rounded-lg text-white font-semibold flex items-center gap-1"
-                                :style="{ backgroundColor: form.primary_color || '#4f46e5' }"
-                            >
-                                <span class="w-2 h-2 rounded-full bg-white/80"></span>
-                                Activo
-                            </div>
-                            <div class="px-2 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 flex items-center gap-1">
-                                <span class="w-2 h-2 rounded-full bg-slate-300"></span>
-                                Inactivo
-                            </div>
-                            <div class="px-2 py-1.5 rounded-lg text-slate-600 flex items-center gap-1">
-                                <span class="w-2 h-2 rounded-full bg-slate-300"></span>
-                                Otro
-                            </div>
-                            <div
-                                class="px-2 pt-2 pb-0.5 text-[8px] font-black uppercase tracking-widest"
-                                :style="{ color: form.primary_color || '#4f46e5' }"
-                            >Grupo</div>
-                            <div class="pl-2 border-l-2" :style="{ borderColor: hexWithAlpha(form.primary_color || '#4f46e5', 0.2) }">
-                                <div class="px-2 py-1 text-slate-500">Sub-item</div>
-                            </div>
-                        </div>
-
-                        <!-- Contenido placeholder -->
-                        <div class="flex-1 p-3 space-y-2">
-                            <div class="h-3 w-1/2 bg-slate-200 rounded"></div>
-                            <div class="h-2 w-3/4 bg-slate-100 rounded"></div>
-                            <div class="h-2 w-2/3 bg-slate-100 rounded"></div>
-                            <div class="pt-2">
-                                <button
-                                    type="button"
-                                    class="px-3 py-1 text-[10px] text-white rounded font-medium"
-                                    :style="{ backgroundColor: form.primary_color || '#4f46e5' }"
-                                    disabled
-                                >
-                                    Acción primaria
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Footer mock -->
-                    <div
-                        v-if="form.footer_text"
-                        class="py-2 px-3 text-center text-[10px] text-slate-500 border-t border-slate-200 bg-white truncate"
-                    >
-                        {{ form.footer_text }}
-                    </div>
-                </div>
-                <p class="text-xs text-gray-500">
-                    Reflejo aproximado de la app autenticada: navbar, sidebar (item activo y hover) y footer.
-                </p>
             </div>
           </div>
 
@@ -301,6 +210,29 @@
                   :college-name="collegeName"
               />
           </div>
+
+          <!-- Tema de la app autenticada -->
+          <div class="bg-white rounded-lg shadow p-6 space-y-4">
+              <div class="flex items-start justify-between gap-4">
+                  <div>
+                      <h2 class="text-lg font-semibold text-gray-900">Tema de la aplicación</h2>
+                      <p class="text-sm text-gray-600">Personaliza la barra superior, el menú lateral y el fondo del contenido.</p>
+                  </div>
+                  <button
+                      type="button"
+                      class="px-4 py-2 text-sm rounded bg-slate-800 hover:bg-slate-900 text-white font-medium shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                      @click="save"
+                      :disabled="saving"
+                  >
+                      {{ saving ? 'Guardando…' : 'Guardar tema' }}
+                  </button>
+              </div>
+              <AppThemeCustomizer
+                  v-model:theme="form.app_theme"
+                  :branding="branding"
+                  :college-name="collegeName"
+              />
+          </div>
         </div>
     </div>
 </template>
@@ -316,10 +248,12 @@ import {
     type CollegeBranding,
     type LoginTemplate,
     type LoginConfig,
+    type AppTheme,
 } from '@/modules/auth/services/branding.service'
 import { useBrandingStore } from '@/modules/auth/stores/branding.store'
 import BrandingAssetUploader from '@/modules/college/components/BrandingAssetUploader.vue'
 import LoginCustomizer from '@/modules/college/components/LoginCustomizer.vue'
+import AppThemeCustomizer from '@/modules/college/components/AppThemeCustomizer.vue'
 
 const brandingStore = useBrandingStore()
 const loading = ref(true)
@@ -342,6 +276,7 @@ const form = ref({
     footer_text: '' as string | null,
     login_template: 'centered' as LoginTemplate,
     login_config: {} as LoginConfig,
+    app_theme: {} as AppTheme,
 })
 
 const shortNameLower = computed(() => (collegeShortName.value ?? 'shortname').toLowerCase())
@@ -370,6 +305,7 @@ async function reload() {
         form.value.footer_text = res.branding.footer_text ?? ''
         form.value.login_template = res.branding.login_template ?? 'centered'
         form.value.login_config = res.branding.login_config ?? {}
+        form.value.app_theme = res.branding.app_theme ?? {}
         // Sincroniza store global para que navbar/footer reflejen el estado actual.
         brandingStore.setResolved({
             college: { id: 0, name: collegeName.value ?? '', short_name: collegeShortName.value ?? '' },
@@ -391,6 +327,7 @@ async function save() {
             footer_text: form.value.footer_text || null,
             login_template: form.value.login_template,
             login_config: form.value.login_config,
+            app_theme: form.value.app_theme,
         })
         branding.value = res.branding
         brandingStore.setBranding(res.branding)
@@ -419,14 +356,5 @@ async function onDelete(kind: BrandingAssetKind) {
 function copyLoginUrl() {
     if (!loginUrl.value) return
     navigator.clipboard?.writeText(loginUrl.value).catch(() => { /* sin clipboard = OK */ })
-}
-
-/** Devuelve el hex con alpha aplicado (#RRGGBB + AA), para bordes suaves. */
-function hexWithAlpha(hex: string, alpha: number): string {
-    const c = (hex || '').replace('#', '')
-    if (c.length !== 6 && c.length !== 3) return hex
-    const full = c.length === 3 ? c.split('').map(x => x + x).join('') : c
-    const a = Math.max(0, Math.min(255, Math.round(alpha * 255))).toString(16).padStart(2, '0')
-    return `#${full}${a}`
 }
 </script>
