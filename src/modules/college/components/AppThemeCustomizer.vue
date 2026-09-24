@@ -98,55 +98,8 @@
             <!-- Vista previa en vivo -->
             <div>
                 <p class="text-sm font-medium text-gray-700 mb-2">Vista previa en vivo</p>
-                <div v-if="previewError" class="border rounded-lg h-64 flex flex-col items-center justify-center gap-2 text-sm text-gray-500 p-4 text-center">
-                    <span>No se pudo generar la vista previa.</span>
-                    <button type="button" class="text-xs px-3 py-1.5 rounded border border-gray-300 bg-white hover:bg-gray-50" @click="previewError = false">Reintentar</button>
-                </div>
-                <div v-else class="app-preview-box border rounded-lg overflow-hidden" :style="previewVars">
-                    <!-- navbar -->
-                    <div class="h-11 flex items-center justify-between px-3 border-b" :style="{ backgroundColor: 'var(--app-navbar-bg)', borderColor: 'var(--app-navbar-border)' }">
-                        <div class="flex items-center gap-2">
-                            <div class="w-6 h-6 rounded flex items-center justify-center text-white font-black text-[9px]" :style="{ backgroundColor: 'var(--brand-primary, #4f46e5)' }">S3</div>
-                            <span class="text-xs font-black" :style="{ color: 'var(--app-navbar-text)' }">{{ collegeName || 'Colegio' }}</span>
-                        </div>
-                        <div class="text-right leading-tight">
-                            <p class="text-[8px] font-black uppercase tracking-widest" :style="{ color: 'var(--app-navbar-muted)' }">Usuario</p>
-                            <p class="text-[10px] font-bold" :style="{ color: 'var(--app-navbar-text)' }">Admin</p>
-                        </div>
-                    </div>
-                    <!-- body -->
-                    <div class="flex" style="height: 300px" :style="{ backgroundColor: 'var(--app-content-bg)' }">
-                        <!-- sidebar -->
-                        <div class="w-40 border-r p-2 flex flex-col" :style="{ backgroundColor: 'var(--app-sidebar-bg)', borderColor: 'var(--app-sidebar-border)' }">
-                            <p class="text-[8px] font-black uppercase tracking-[0.2em] px-2 pb-2" :style="{ color: 'var(--app-sidebar-muted)' }">Navegación</p>
-                            <div class="space-y-1 text-[10px]">
-                                <div class="px-2 py-1.5 rounded-lg font-semibold flex items-center gap-1.5" :style="{ backgroundColor: 'var(--app-sidebar-active-bg)', color: 'var(--app-sidebar-active-text)' }">
-                                    <span class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: 'var(--app-sidebar-active-text)' }"></span> Inicio
-                                </div>
-                                <div class="px-2 py-1.5 rounded-lg flex items-center gap-1.5" :style="{ color: 'var(--app-sidebar-text)' }">
-                                    <span class="w-1.5 h-1.5 rounded-full opacity-50" :style="{ backgroundColor: 'var(--app-sidebar-muted)' }"></span> Estudiantes
-                                </div>
-                                <div class="px-2 py-1.5 rounded-lg flex items-center gap-1.5" :style="{ backgroundColor: 'var(--app-sidebar-hover-bg)', color: 'var(--app-sidebar-hover-text)' }">
-                                    <span class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: 'var(--app-sidebar-hover-text)' }"></span> Reportes <span class="text-[7px] opacity-70">(hover)</span>
-                                </div>
-                                <p class="px-2 pt-2 text-[8px] font-black uppercase tracking-widest" :style="{ color: 'var(--app-sidebar-muted)' }">Grupo</p>
-                                <div class="px-2 py-1 flex items-center gap-1.5" :style="{ color: 'var(--app-sidebar-text)' }">
-                                    <span class="w-1.5 h-1.5 rounded-full opacity-50" :style="{ backgroundColor: 'var(--app-sidebar-muted)' }"></span> Sub-item
-                                </div>
-                            </div>
-                        </div>
-                        <!-- contenido -->
-                        <div class="flex-1 p-3 space-y-2">
-                            <div class="h-3 w-1/2 bg-black/10 rounded"></div>
-                            <div class="h-2 w-3/4 bg-black/5 rounded"></div>
-                            <div class="h-2 w-2/3 bg-black/5 rounded"></div>
-                            <button type="button" disabled class="mt-2 px-3 py-1 text-[10px] text-white rounded font-medium" :style="{ backgroundColor: 'var(--brand-primary, #4f46e5)' }">Acción primaria</button>
-                        </div>
-                    </div>
-                    <!-- footer -->
-                    <div class="py-1.5 px-3 text-center text-[9px] border-t" :style="{ backgroundColor: 'var(--app-navbar-bg)', borderColor: 'var(--app-navbar-border)', color: 'var(--app-navbar-muted)' }">
-                        © {{ collegeName || 'Colegio' }}
-                    </div>
+                <div class="border rounded-lg overflow-hidden">
+                    <AppThemePreview :theme="cfg" :branding="branding" :college-name="collegeName" />
                 </div>
             </div>
         </div>
@@ -154,8 +107,9 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, onErrorCaptured, ref, watch } from 'vue'
-import { resolveAppThemeVars, type AppTheme, type AppThemePreset, type CollegeBranding } from '@/modules/auth/services/branding.service'
+import { reactive, watch } from 'vue'
+import AppThemePreview from '@/modules/college/components/preview/AppThemePreview.vue'
+import { type AppTheme, type AppThemePreset, type CollegeBranding } from '@/modules/auth/services/branding.service'
 
 const props = defineProps<{ branding: CollegeBranding | null; collegeName?: string | null }>()
 const theme = defineModel<AppTheme>('theme', { default: () => ({}) })
@@ -215,21 +169,4 @@ const PRESETS: { id: AppThemePreset; label: string; swatch: { content: string; n
     { id: 'custom', label: 'Personalizado', swatch: { content: '#eef2ff', navbar: '#ffffff', sidebar: '#312e81' } },
 ]
 
-const previewVars = computed(() => resolveAppThemeVars(cfg, props.branding?.primary_color || '#4f46e5'))
-
-// Barrera de errores: la vista previa nunca debe tumbar la página del admin.
-const previewError = ref(false)
-onErrorCaptured((err) => {
-    console.error('[theme-preview]', err)
-    previewError.value = true
-    return false
-})
 </script>
-
-<style scoped>
-/* Aísla el render de la vista previa del resto de la página. */
-.app-preview-box {
-    contain: layout paint;
-    isolation: isolate;
-}
-</style>
