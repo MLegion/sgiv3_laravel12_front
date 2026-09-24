@@ -211,16 +211,10 @@
             <div>
                 <div class="flex items-center justify-between mb-2">
                     <p class="text-sm font-medium text-gray-700">Vista previa en vivo</p>
-                    <span class="text-[10px] text-gray-400">escala 45% · no interactiva</span>
+                    <span class="text-[10px] text-gray-400">representación · no interactiva</span>
                 </div>
                 <div class="preview-box border rounded-lg overflow-hidden bg-slate-200">
-                    <div v-if="!previewError" class="preview-scale">
-                        <component :is="previewComponent" :c="previewC" :branding="previewBranding" :config="cfg" />
-                    </div>
-                    <div v-else class="h-full flex flex-col items-center justify-center gap-2 text-sm text-gray-500 p-4 text-center">
-                        <span>No se pudo generar la vista previa con esta configuración.</span>
-                        <button type="button" class="text-xs px-3 py-1.5 rounded border border-gray-300 bg-white hover:bg-gray-50" @click="previewError = false">Reintentar</button>
-                    </div>
+                    <LoginPreview :template="template" :branding="previewBranding" :config="cfg" :college-name="collegeName" />
                 </div>
             </div>
         </div>
@@ -228,13 +222,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onErrorCaptured, reactive, ref, watch } from 'vue'
-import LoginCentered from '@/modules/auth/components/login/templates/LoginCentered.vue'
-import LoginSplit from '@/modules/auth/components/login/templates/LoginSplit.vue'
-import LoginHero from '@/modules/auth/components/login/templates/LoginHero.vue'
-import LoginMinimal from '@/modules/auth/components/login/templates/LoginMinimal.vue'
-import LoginCustom from '@/modules/auth/components/login/templates/LoginCustom.vue'
-import type { LoginController } from '@/modules/auth/composables/useLoginController'
+import { computed, reactive, watch } from 'vue'
+import LoginPreview from '@/modules/college/components/preview/LoginPreview.vue'
 import type { CollegeBranding, LoginConfig, LoginTemplate } from '@/modules/auth/services/branding.service'
 
 const props = defineProps<{ branding: CollegeBranding | null; collegeName?: string | null }>()
@@ -296,55 +285,11 @@ const TEMPLATES: { id: LoginTemplate; label: string; hint: string; thumb: string
 ]
 
 /* -------- preview -------- */
-const previewMap = { centered: LoginCentered, split: LoginSplit, hero: LoginHero, minimal: LoginMinimal, custom: LoginCustom }
-const previewComponent = computed(() => previewMap[template.value] ?? LoginCentered)
-
-// Barrera de errores: si la vista previa falla, NO debe tumbar la página del
-// admin. Capturamos el error, mostramos un aviso y dejamos el resto operativo.
-const previewError = ref(false)
-onErrorCaptured((err) => {
-    console.error('[login-preview]', err)
-    previewError.value = true
-    return false
-})
-// Al cambiar de plantilla reintentamos la vista previa.
-watch(template, () => { previewError.value = false })
-
 // Branding para la vista previa (usa el subido + primary del branding real).
 const previewBranding = computed<CollegeBranding>(() => ({
     ...(props.branding ?? {} as any),
     welcome_title: props.branding?.welcome_title || props.collegeName || 'Colegio',
 } as CollegeBranding))
-
-// Controlador simulado: solo para renderizar el formulario (no envía nada).
-const previewC = computed(() => {
-    const primary = props.branding?.primary_color || '#4f46e5'
-    return {
-        authStore: { mfaChallenge: false },
-        collegeStore: { colleges: [] as any[], selectedCollege: null },
-        branding: ref(previewBranding.value),
-        brandedCollegeLocked: ref(true),
-        brandedLogo: ref(props.branding?.logo_url ?? null),
-        brandedTitle: ref(previewBranding.value.welcome_title),
-        brandedSubtitle: ref(props.branding?.welcome_subtitle ?? null),
-        brandedHero: ref(props.branding?.hero_url ?? null),
-        primaryColor: ref(primary),
-        disabledBanner: ref(false),
-        collegeId: ref<number | null>(null),
-        email: ref(''),
-        password: ref(''),
-        showPassword: ref(false),
-        googleLoading: ref(false),
-        submitting: ref(false),
-        rememberMe: ref(false),
-        errors: ref({}),
-        googleDomain: ref(null),
-        googleReady: ref(false),
-        onGoogleLogin: () => {},
-        onCollegeChange: () => {},
-        submit: () => {},
-    } as unknown as LoginController
-})
 
 const STARTER = `<div class="min-h-screen flex items-center justify-center" style="background:linear-gradient(135deg,{{primary}},#0f172a)">
   <div style="width:360px;background:#ffffff;border-radius:18px;padding:32px;box-shadow:0 20px 50px rgba(0,0,0,.35)">
@@ -361,25 +306,12 @@ function loadStarterHtml() {
 </script>
 
 <style scoped>
-/* La caja de preview AÍSLA por completo el render: `contain` la vuelve bloque
- * contenedor y recorte de cualquier hijo con position:fixed / min-h-screen, para
- * que las plantillas de pantalla completa NUNCA escapen a la interfaz real. */
+/* Caja de preview: alto fijo + contención (defensa en profundidad). El preview
+ * es presentacional (LoginPreview) y no usa min-h-screen ni position:fixed. */
 .preview-box {
     position: relative;
     height: 560px;
     contain: layout paint;
     isolation: isolate;
-}
-/* La vista previa renderiza las plantillas reales (min-h-screen) a escala. */
-.preview-scale {
-    width: 222%;
-    height: 222%;
-    transform: scale(0.45);
-    transform-origin: top left;
-    pointer-events: none;
-}
-/* Neutraliza cualquier fixed remanente dentro del preview (defensa extra). */
-.preview-scale :deep(.fixed) {
-    position: absolute !important;
 }
 </style>
