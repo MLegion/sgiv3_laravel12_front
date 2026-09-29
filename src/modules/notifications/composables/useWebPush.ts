@@ -27,7 +27,24 @@ function urlBase64ToUint8Array(base64: string): Uint8Array {
     return out
 }
 
-async function getRegistration(): Promise<ServiceWorkerRegistration | null> {
+/**
+ * Solo consulta si YA existe un registro del SW; NO lo registra. Se usa al
+ * consultar estado (al montar la campana) para no forzar la descarga de
+ * /sw-push.js: si el certificado TLS no es de confianza (p. ej. el default de
+ * Traefik en dev), registrar aquí lanzaría un error de SSL en consola en cada
+ * carga. El registro real se hace solo cuando el usuario activa push (enable()).
+ */
+async function getExistingRegistration(): Promise<ServiceWorkerRegistration | null> {
+    if (!supported.value) return null
+    try {
+        return (await navigator.serviceWorker.getRegistration(SW_PATH)) ?? null
+    } catch {
+        return null
+    }
+}
+
+/** Obtiene el registro existente o lo crea. Solo se llama tras opt-in del usuario. */
+async function getOrRegister(): Promise<ServiceWorkerRegistration | null> {
     if (!supported.value) return null
     try {
         const existing = await navigator.serviceWorker.getRegistration(SW_PATH)
@@ -49,7 +66,9 @@ async function refreshStatus(): Promise<void> {
         status.value = 'denied'
         return
     }
-    const reg = await getRegistration()
+    // Solo consulta un registro existente; no registra el SW al vuelo (evita el
+    // error de SSL en consola cuando el cert no es de confianza).
+    const reg = await getExistingRegistration()
     if (!reg) {
         status.value = 'idle'
         return
@@ -95,12 +114,12 @@ async function enable(): Promise<boolean> {
         // 2) Obtener VAPID public key del backend
         const { data: cfg } = await api.get(notificationsApi.api.webPush.config)
         if (!cfg?.configured || !cfg?.vapidPublicKey) {
-            error.value = 'El canal Web Push no está configurado para tu college. Avisa al administrador.'
+            error.value = 'El canal Web Push aún no está configurado. Avisa al administrador.'
             return false
         }
 
         // 3) Registrar SW + suscribir en pushManager
-        const reg = await getRegistration()
+        const reg = await getOrRegister()
         if (!reg) return false
 
         // Si había una suscripción previa con otra public key, hay que desuscribir primero.
@@ -140,7 +159,7 @@ async function disable(): Promise<boolean> {
     error.value = null
     loading.value = true
     try {
-        const reg = await getRegistration()
+        const reg = await getExistingRegistration()
         if (!reg) return false
         const sub = await reg.pushManager.getSubscription()
         if (sub) {
