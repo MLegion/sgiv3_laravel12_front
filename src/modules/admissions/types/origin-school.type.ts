@@ -20,6 +20,9 @@ export interface OriginSchoolType {
     status: number
     createdAt: string | null
     updatedAt: string | null
+    municipalityName?: string | null
+    stateName?: string | null
+    isGlobal?: boolean
 }
 
 export const SCHOOL_LEVEL_OPTIONS = [

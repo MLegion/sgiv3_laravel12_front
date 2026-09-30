@@ -90,6 +90,13 @@ export default {
             listNotInSubjects: (id: string | number) => apiUrl(`/superadmin/optional-groups/${id}/not-in/subjects`),
         },
         admCatalogs: {
+            originSchools: {
+                paginate: apiUrl('/superadmin/adm-catalogs/origin-schools'),
+                byId:     (id: string | number) => apiUrl(`/superadmin/adm-catalogs/origin-schools/${id}`),
+                create:   apiUrl('/superadmin/adm-catalogs/origin-schools'),
+                update:   (id: string | number) => apiUrl(`/superadmin/adm-catalogs/origin-schools/${id}`),
+                delete:   (id: string | number) => apiUrl(`/superadmin/adm-catalogs/origin-schools/${id}`),
+            },
             scholarships: {
                 paginate: apiUrl('/superadmin/adm-catalogs/scholarships'),
                 byId:     (id: string | number) => apiUrl(`/superadmin/adm-catalogs/scholarships/${id}`),

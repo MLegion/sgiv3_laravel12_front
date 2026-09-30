@@ -11,6 +11,47 @@
             </button>
         </div>
 
+        <!-- Filtros para encontrar la escuela más fácil -->
+        <div class="bg-white border rounded-xl p-3 flex flex-wrap gap-3 items-end">
+            <div class="flex flex-col">
+                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Estado</label>
+                <select v-model="filterState" class="border rounded-lg px-3 py-1.5 text-sm min-w-[180px] focus:outline-none focus:ring-2 focus:ring-blue-400" @change="onStateChange">
+                    <option value="">Todos</option>
+                    <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
+                </select>
+            </div>
+            <div class="flex flex-col">
+                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Municipio</label>
+                <select v-model="filterMunicipality" :disabled="!filterState || loadingMunis" class="border rounded-lg px-3 py-1.5 text-sm min-w-[180px] disabled:bg-slate-50 disabled:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400" @change="applyFilters">
+                    <option value="">{{ loadingMunis ? 'Cargando…' : 'Todos' }}</option>
+                    <option v-for="m in municipalities" :key="m.id" :value="m.id">{{ m.name }}</option>
+                </select>
+            </div>
+            <div class="flex flex-col">
+                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Nivel</label>
+                <input v-model="filterLevel" type="text" placeholder="p. ej. tecnológico" class="border rounded-lg px-3 py-1.5 text-sm min-w-[160px] focus:outline-none focus:ring-2 focus:ring-blue-400" @keyup.enter="applyFilters" @change="applyFilters" />
+            </div>
+            <div class="flex flex-col">
+                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Origen</label>
+                <select v-model="filterOrigin" class="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" @change="applyFilters">
+                    <option value="">Todas</option>
+                    <option value="nacional">Nacional</option>
+                    <option value="plantel">Del plantel</option>
+                </select>
+            </div>
+            <div class="flex flex-col">
+                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Estatus</label>
+                <select v-model="filterStatus" class="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" @change="applyFilters">
+                    <option value="">Todos</option>
+                    <option value="1">Activa</option>
+                    <option value="0">Inactiva</option>
+                </select>
+            </div>
+            <button type="button" class="ml-auto px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 border rounded-lg hover:bg-slate-50" @click="clearFilters">
+                Limpiar filtros
+            </button>
+        </div>
+
         <DataTable
             :columns="columns"
             :rows="rows"
@@ -29,12 +70,18 @@
 
             <template #cell-location="{ row }">
                 <span class="text-sm text-slate-600">
-                    {{ [row.geoSettlement?.municipality?.name, row.geoSettlement?.state?.name].filter(Boolean).join(', ') || '—' }}
+                    {{ [row.municipalityName ?? row.geoSettlement?.municipality?.name, row.stateName ?? row.geoSettlement?.state?.name].filter(Boolean).join(', ') || '—' }}
                 </span>
             </template>
 
+            <template #cell-origen="{ row }">
+                <span v-if="row.isGlobal" class="px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700">NACIONAL</span>
+                <span v-else class="px-2 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-600">PLANTEL</span>
+            </template>
+
             <template #cell-opciones="{ row }">
-                <div class="flex items-center justify-center gap-2">
+                <div v-if="row.isGlobal" class="text-center text-xs text-slate-400 italic">Catálogo nacional</div>
+                <div v-else class="flex items-center justify-center gap-2">
                     <button aria-label="Ver"
                         type="button"
                         class="border p-1.5 rounded-md text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition"
@@ -73,11 +120,13 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { OriginSchoolType } from '@/modules/admissions/types/origin-school.type'
 
@@ -89,14 +138,72 @@ const columns: DataTableColumn<OriginSchoolType>[] = [
     { key: 'shortName', label: 'SIGLAS',     field: 'short_name', sortable: false },
     { key: 'cct',       label: 'CCT',        field: 'cct',        sortable: false },
     { key: 'location',  label: 'UBICACIÓN' },
+    { key: 'origen',    label: 'ORIGEN' },
     { key: 'status',    label: 'ESTADO' },
     { key: 'opciones',  label: 'OPCIONES' },
 ]
 
+// ── Filtros ────────────────────────────────────────────────────────────
+const filterState = ref<string | number>('')
+const filterMunicipality = ref<string | number>('')
+const filterLevel = ref('')
+const filterOrigin = ref('')
+const filterStatus = ref('')
+const states = ref<{ id: number; name: string }[]>([])
+const municipalities = ref<{ id: number; name: string }[]>([])
+const loadingMunis = ref(false)
+
+const extraSearch = computed<Record<string, any>>(() => {
+    const f: Record<string, any> = {}
+    if (filterState.value) f.f_state = filterState.value
+    if (filterMunicipality.value) f.f_municipality = filterMunicipality.value
+    if (filterLevel.value.trim()) f.f_level = filterLevel.value.trim()
+    if (filterOrigin.value) f.f_origin = filterOrigin.value
+    if (filterStatus.value !== '') f.f_status = filterStatus.value
+    return f
+})
+
 const { rows, loading, pagination, handleChange, fetchData } =
     useDataTableFetch<OriginSchoolType>({
         endpoint: API.ADMISSIONS_API.originSchools.list,
+        extraSearch,
     })
 
-fetchData()
+function applyFilters() {
+    pagination.value.page = 1
+    fetchData()
+}
+
+async function onStateChange() {
+    filterMunicipality.value = ''
+    municipalities.value = []
+    if (filterState.value) {
+        loadingMunis.value = true
+        try {
+            const { data } = await api.get(API.GEO_API.municipalities(Number(filterState.value)))
+            municipalities.value = Array.isArray(data) ? data : []
+        } finally {
+            loadingMunis.value = false
+        }
+    }
+    applyFilters()
+}
+
+function clearFilters() {
+    filterState.value = ''
+    filterMunicipality.value = ''
+    filterLevel.value = ''
+    filterOrigin.value = ''
+    filterStatus.value = ''
+    municipalities.value = []
+    applyFilters()
+}
+
+onMounted(async () => {
+    try {
+        const { data } = await api.get(API.GEO_API.states)
+        states.value = Array.isArray(data) ? data : []
+    } catch { /* ignore */ }
+    fetchData()
+})
 </script>
