@@ -2,7 +2,7 @@
     <div class="space-y-4">
         <div class="flex items-center gap-3">
             <router-link
-                :to="{ name: 'appconfig.list' }"
+                :to="{ name: listRouteName }"
                 class="text-xs text-slate-500 hover:text-slate-700 font-semibold uppercase"
             >
                 ← Volver
@@ -119,6 +119,12 @@ import type { AppConfigResponse } from '@/modules/appconfig/types/appconfig.type
 const route = useRoute()
 const appId = String(route.params.appId)
 
+// scope se define en meta.scope de la ruta; por defecto 'college'.
+const scope = (route.meta.scope as 'college' | 'global') || 'college'
+const isGlobal = scope === 'global'
+const listRouteName = isGlobal ? 'superadmin.appconfig-global.list' : 'appconfig.list'
+const scopeApi = isGlobal ? API.APPCONFIG_API.global : API.APPCONFIG_API.college
+
 const loading = ref(true)
 const saving  = ref(false)
 const savedFlash = ref(false)
@@ -138,7 +144,7 @@ function flash(ok: boolean, message: string) {
 async function load() {
     loading.value = true
     try {
-        const { data: resp } = await api.get(API.APPCONFIG_API.college.show(appId))
+        const { data: resp } = await api.get(scopeApi.show(appId))
         data.value = resp as AppConfigResponse
     } catch (e: any) {
         flash(false, e?.response?.data?.message ?? 'Error al cargar configuración.')
@@ -159,7 +165,7 @@ async function save() {
     saving.value = true
     try {
         const { data: resp } = await api.put(
-            API.APPCONFIG_API.college.update(appId),
+            scopeApi.update(appId),
             { values: payload.value },
         )
         data.value = resp as AppConfigResponse

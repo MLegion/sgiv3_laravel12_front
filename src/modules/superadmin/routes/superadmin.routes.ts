@@ -410,6 +410,12 @@ export default [
     //# ADM CATALOGS (GLOBAL)                                                           #
     //###################################################################################
     {
+        path: 'superadmin/adm-catalogs/origin-schools',
+        name: 'superadmin.adm-catalogs.origin-schools',
+        component: () => import('@/modules/superadmin/pages/adm-catalogs/GlobalOriginSchoolsPage.vue'),
+        meta: { title: 'Escuelas de Procedencia (Nacional)' },
+    },
+    {
         path: 'superadmin/adm-catalogs/scholarships',
         name: 'superadmin.adm-catalogs.scholarships',
         component: () => import('@/modules/superadmin/pages/adm-catalogs/GlobalScholarshipsPage.vue'),
@@ -448,6 +454,23 @@ export default [
         name: 'superadmin.sca-catalogs.complementary-hour-types',
         component: () => import('@/modules/superadmin/pages/sca-catalogs/GlobalComplementaryHourTypesPage.vue'),
         meta: { title: 'Tipos de Horas Complementarias (Global)' },
+    },
+
+    //###################################################################################
+    //# GLOBAL APP CONFIG (SUPERADMIN)                                                   #
+    //# Reusa las páginas de AppConfig parametrizadas por scope (meta.scope).            #
+    //###################################################################################
+    {
+        path: 'superadmin/global-config',
+        name: 'superadmin.appconfig-global.list',
+        component: () => import('@/modules/appconfig/pages/AppConfigsPage.vue'),
+        meta: { title: 'Configuración Global del Sistema', scope: 'global' },
+    },
+    {
+        path: 'superadmin/global-config/:appId',
+        name: 'superadmin.appconfig-global.edit',
+        component: () => import('@/modules/appconfig/pages/AppConfigEditPage.vue'),
+        meta: { title: 'Editar Configuración Global', scope: 'global' },
     },
 
     //###################################################################################

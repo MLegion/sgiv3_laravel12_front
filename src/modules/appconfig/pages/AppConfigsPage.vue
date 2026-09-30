@@ -1,11 +1,8 @@
 <template>
     <div class="space-y-6">
         <div>
-            <h1 class="text-xl font-semibold text-slate-800 uppercase">Configuración del College</h1>
-            <p class="text-sm text-slate-500 mt-1">
-                Configura los módulos que admiten personalización por college. Si un módulo no aparece, no tiene
-                configuración dinámica o no está habilitado.
-            </p>
+            <h1 class="text-xl font-semibold text-slate-800 uppercase">{{ pageTitle }}</h1>
+            <p class="text-sm text-slate-500 mt-1">{{ pageDescription }}</p>
         </div>
 
         <div v-if="loading" class="bg-white border rounded-xl p-8 text-center text-sm text-slate-400 italic">
@@ -46,10 +43,22 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import type { RouteLocationRaw } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { ConfigSchemaSummary } from '@/modules/appconfig/types/appconfig.type'
+
+const route = useRoute()
+// scope se define en meta.scope de la ruta; por defecto 'college'.
+const scope = (route.meta.scope as 'college' | 'global') || 'college'
+const isGlobal = scope === 'global'
+const editRouteName = isGlobal ? 'superadmin.appconfig-global.edit' : 'appconfig.edit'
+
+const pageTitle = isGlobal ? 'Configuración Global del Sistema' : 'Configuración del College'
+const pageDescription = isGlobal
+    ? 'Configura los módulos con ajustes únicos para toda la plataforma (una sola configuración compartida por todos los colegios). Si un módulo no aparece, no expone configuración global.'
+    : 'Configura los módulos que admiten personalización por college. Si un módulo no aparece, no tiene configuración dinámica o no está habilitado.'
 
 const loading = ref(true)
 const schemas = ref<ConfigSchemaSummary[]>([])
@@ -91,14 +100,16 @@ const groupedSchemas = computed(() => {
 // Si el schema declara una ruta dedicada (p. ej. Imagen del Colegio), se enlaza
 // a ella; si no, al editor genérico de AppConfig.
 function linkFor(s: ConfigSchemaSummary): RouteLocationRaw {
-    if (s.custom_route) return { name: s.custom_route }
-    return { name: 'appconfig.edit', params: { appId: s.app_id } }
+    // Las rutas dedicadas (p. ej. Imagen del Colegio) son por-college; en scope
+    // global siempre se usa el editor genérico.
+    if (s.custom_route && !isGlobal) return { name: s.custom_route }
+    return { name: editRouteName, params: { appId: s.app_id } }
 }
 
 async function load() {
     loading.value = true
     try {
-        const { data } = await api.get(API.APPCONFIG_API.schemas, { params: { scope: 'college' } })
+        const { data } = await api.get(API.APPCONFIG_API.schemas, { params: { scope } })
         schemas.value = Array.isArray(data) ? data : []
     } finally {
         loading.value = false
