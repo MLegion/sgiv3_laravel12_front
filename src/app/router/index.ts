@@ -30,6 +30,14 @@ const router = createRouter({
                     component: () => import('@/modules/admissions/pages/InscripcionesPage.vue'),
                     meta: { title: 'Portal de Aspirantes' },
                 },
+                {
+                    // Portal branded por institución: /inscripciones/<short_name>
+                    // (p. ej. /inscripciones/itstb). Fija el colegio y aplica su
+                    // marca, sin selector.
+                    path: ':shortname',
+                    component: () => import('@/modules/admissions/pages/InscripcionesPage.vue'),
+                    meta: { title: 'Portal de Aspirantes' },
+                },
             ],
         },
 

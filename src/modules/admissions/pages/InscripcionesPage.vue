@@ -5,20 +5,40 @@
     >
         <div class="w-full max-w-4xl bg-white rounded-xl shadow-xl p-10">
 
+            <!-- INSTITUCIÓN NO ENCONTRADA (slug inválido) -->
+            <div v-if="notFound" class="py-10 flex flex-col items-center gap-4 text-center">
+                <img src="/img/TecNM.png" alt="TecNM" class="h-16 object-contain" />
+                <div>
+                    <p class="text-base font-bold text-slate-700 uppercase tracking-wide">Institución no encontrada</p>
+                    <p class="text-sm text-slate-500 mt-2 max-w-sm mx-auto">
+                        El enlace de inscripción no corresponde a ninguna institución. Verifica la dirección con tu institución.
+                    </p>
+                    <RouterLink to="/inscripciones" class="inline-block mt-4 text-sm text-indigo-600 hover:underline">
+                        Ir al portal general
+                    </RouterLink>
+                </div>
+            </div>
+
+            <template v-else>
             <!-- HEADER -->
             <div class="flex items-center justify-between mb-8">
                 <img src="/img/TecNM.png" alt="TecNM" class="h-20 object-contain" />
-                <h1 class="text-center text-lg md:text-xl font-semibold text-blue-700 leading-snug">
-                    INSTITUTO TECNOLÓGICO<br />
-                    SUPERIOR DE TIERRA BLANCA
+                <!-- Branded: nombre del colegio (título de marca o nombre) -->
+                <h1 v-if="isBranded" class="text-center text-lg md:text-xl font-semibold leading-snug" :style="{ color: branding?.primary_color || '#1d4ed8' }">
+                    {{ branding?.navbar_title || brandedCollege?.name }}
                 </h1>
-                <img src="/img/ITSTB.jpg" alt="ITSTB" class="h-20 object-contain" />
+                <!-- Sin slug: título genérico del portal -->
+                <h1 v-else class="text-center text-lg md:text-xl font-semibold text-blue-700 leading-snug">
+                    PORTAL DE ASPIRANTES
+                </h1>
+                <img v-if="isBranded && branding?.logo_url" :src="branding.logo_url" :alt="brandedCollege?.short_name" class="h-20 object-contain" />
+                <img v-else src="/img/TecNM.png" alt="" class="h-20 object-contain opacity-0" />
             </div>
 
             <div class="max-w-md mx-auto w-full space-y-5">
 
-                    <!-- Institución -->
-                    <div>
+                    <!-- Institución: selector solo cuando NO viene por slug -->
+                    <div v-if="!isBranded">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Institución</label>
                         <select
                             v-model="collegeId"
@@ -31,6 +51,12 @@
                             </option>
                         </select>
                         <span v-if="errors.college" class="text-sm text-red-600">{{ errors.college }}</span>
+                    </div>
+
+                    <!-- Branded: institución fija (sin selector) -->
+                    <div v-else class="flex items-center gap-2 rounded-lg bg-slate-50 border border-slate-200 px-4 py-2.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" /></svg>
+                        <span class="text-sm font-semibold text-slate-700">{{ brandedCollege?.name }}</span>
                     </div>
 
                     <!-- SKELETON: inicializando o verificando periodo -->
@@ -106,7 +132,7 @@
                                 </label>
                                 <RouterLink to="/auth/forgot-password" class="text-blue-600 hover:underline">Recuperar contraseña</RouterLink>
                             </div>
-                            <button type="submit" :disabled="loginLoading" class="w-full h-12 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-lg transition shadow-md">
+                            <button type="submit" :disabled="loginLoading" :style="primaryStyle" class="w-full h-12 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-lg transition shadow-md">
                                 {{ loginLoading ? 'INGRESANDO...' : 'INGRESAR' }}
                             </button>
                         </form>
@@ -157,7 +183,7 @@
                                 <div v-if="regErrors.general" class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-3">
                                     {{ regErrors.general }}
                                 </div>
-                                <button type="submit" :disabled="registerLoading" class="w-full h-12 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-lg transition shadow-md">
+                                <button type="submit" :disabled="registerLoading" :style="primaryStyle" class="w-full h-12 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-lg transition shadow-md">
                                     {{ registerLoading ? 'REGISTRANDO...' : 'CREAR CUENTA' }}
                                 </button>
                             </form>
@@ -166,25 +192,39 @@
                     </template>
 
             </div>
+            </template>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { useCollegeStore } from '@/modules/auth/stores/college.store'
 import { api } from '@/shared/services/api'
 import ADMISSIONS_API from '@/modules/admissions/api/admissions.api'
 import PasswordStrengthField from '@/app/components/ui/form/PasswordStrengthField.vue'
+import {
+    resolveBrandingByShortname,
+    applyBrandingCssVars,
+    cacheBranding,
+    type CollegeBranding,
+} from '@/modules/auth/services/branding.service'
 
+const route        = useRoute()
 const authStore    = useAuthStore()
 const collegeStore = useCollegeStore()
 
 // compartido
 const collegeId = ref<number | null>(null)
 const tab       = ref<'login' | 'register'>('login')
+
+// Portal branded por institución (slug en la URL: /inscripciones/<short_name>)
+const brandedCollege = ref<{ id: number; name: string; short_name: string } | null>(null)
+const branding       = ref<CollegeBranding | null>(null)
+const notFound       = ref(false)
+const isBranded      = computed(() => brandedCollege.value !== null)
 
 // login
 const loginEmail    = ref('')
@@ -218,6 +258,27 @@ const windowChecked = ref(false)
 const initializing  = ref(true)
 
 onMounted(async () => {
+    const shortname = (route.params.shortname as string | undefined)?.trim()
+
+    // Portal branded: resuelve el colegio por su short_name y aplica la marca.
+    if (shortname) {
+        const resolved = await resolveBrandingByShortname(shortname)
+        if (!resolved) {
+            notFound.value = true
+            initializing.value = false
+            return
+        }
+        brandedCollege.value = resolved.college
+        branding.value = resolved.branding
+        applyBrandingCssVars(resolved.branding)
+        cacheBranding(resolved)
+        collegeId.value = resolved.college.id
+        await fetchActiveWindow()
+        initializing.value = false
+        return
+    }
+
+    // Sin slug: comportamiento con selector.
     collegeStore.hydrate()
     await collegeStore.loadColleges()
     if (collegeStore.selectedCollege) {
@@ -307,7 +368,17 @@ async function submitRegister() {
     }
 }
 
-const backgroundStyle = { backgroundImage: "url('/img/background.png')" }
+// Fondo: usa el hero del colegio branded si existe; si no, el fondo por defecto.
+const backgroundStyle = computed(() => ({
+    backgroundImage: `url('${(isBranded.value && branding.value?.hero_url) ? branding.value.hero_url : '/img/background.png'}')`,
+}))
+
+// Color primario de la marca para los botones/acentos del portal branded.
+const primaryStyle = computed(() =>
+    isBranded.value && branding.value?.primary_color
+        ? { backgroundColor: branding.value.primary_color }
+        : {},
+)
 </script>
 
 <style scoped>

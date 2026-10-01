@@ -72,7 +72,7 @@
 
             <p v-if="showAspirantes" class="text-center text-sm text-slate-500 pt-1">
                 ¿Eres aspirante?
-                <RouterLink to="/inscripciones" class="hover:underline" :style="linkStyle">Portal de inscripciones</RouterLink>
+                <RouterLink :to="inscripcionesTo" class="hover:underline" :style="linkStyle">Portal de inscripciones</RouterLink>
             </p>
         </form>
     </div>
@@ -95,6 +95,13 @@ const buttonStyle = computed(() => ({
 }))
 const linkStyle = computed(() => ({ color: props.config?.colors?.link || primary.value }))
 const showAspirantes = computed(() => props.config?.show?.aspirantesLink !== false)
+
+// Preserva la institución en el enlace al portal de inscripciones: si el login
+// está asociado a un colegio (por slug o default), enlaza a /inscripciones/<slug>.
+const inscripcionesTo = computed(() => {
+    const sn = (props.c.collegeStore.selectedCollege as any)?.short_name
+    return sn ? `/inscripciones/${String(sn).toLowerCase()}` : '/inscripciones'
+})
 </script>
 
 <style scoped>
