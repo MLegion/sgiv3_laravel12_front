@@ -24,8 +24,8 @@
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
                             <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Etapa</th>
-                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Aspirantes</th>
-                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">% acumulado</th>
+                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Aspirantes en esta etapa</th>
+                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">% del total</th>
                             <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Conversión vs etapa anterior</th>
                         </tr>
                     </thead>
@@ -57,7 +57,7 @@ import { API } from '@/shared/api'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
-interface Stage { key: string; label: string; count: number; percentage: number }
+interface Stage { key: string; label: string; count: number; reached: number; percentage: number }
 interface FunnelResponse { stages: Stage[]; total: number }
 
 const props = defineProps<{ periodId: number | null }>()
@@ -106,7 +106,7 @@ const chartOptions = computed(() => ({
                 label: (ctx: any) => {
                     const stage = data.value?.stages[ctx.dataIndex]
                     if (!stage) return ''
-                    return `${stage.count} (${stage.percentage.toFixed(2)}% del total)`
+                    return `${stage.count} en esta etapa (${stage.percentage.toFixed(2)}% del total)`
                 },
             },
         },
@@ -116,10 +116,12 @@ const chartOptions = computed(() => ({
     },
 }))
 
+// Conversión = retención entre etapas, calculada sobre el ACUMULADO (reached):
+// qué proporción de quienes llegaron a la etapa anterior alcanzó también ésta.
 function conversionFromPrev(idx: number): string {
     if (!data.value) return '—'
-    const prev = data.value.stages[idx - 1]?.count ?? 0
-    const cur  = data.value.stages[idx]?.count ?? 0
+    const prev = data.value.stages[idx - 1]?.reached ?? 0
+    const cur  = data.value.stages[idx]?.reached ?? 0
     if (prev === 0) return '—'
     return ((cur / prev) * 100).toFixed(2) + '%'
 }
