@@ -12,6 +12,7 @@ import { api } from '@/shared/services/api'
 import { useMenuStore } from '@/app/stores/menu.store'
 import { resolveBrandingByCollegeId } from '@/modules/auth/services/branding.service'
 import { useBrandingStore } from '@/modules/auth/stores/branding.store'
+import { fetchSetupStatus } from '@/modules/college/services/college-setup.service'
 
 export type ProfileType = 'employee' | 'student' | 'applicant'
 
@@ -30,6 +31,10 @@ export const useAuthStore = defineStore('auth', {
         hydrated: false,
         emailVerified: null as boolean | null, // null = no consultado aún
         profileType: null as ProfileType | null,
+
+        // Onboarding del colegio (asistente bloqueante de configuración inicial).
+        // null = no consultado aún; { applies, completed } tras consultarlo.
+        collegeSetup: null as { applies: boolean; completed: boolean } | null,
 
         // Segundo factor pendiente: si el login primario devuelve un challenge,
         // se guarda aquí y la UI pide el código TOTP antes de emitir el token.
@@ -364,6 +369,25 @@ export const useAuthStore = defineStore('auth', {
         },
 
         /**
+         * Consulta (una sola vez, salvo force) el estado del onboarding del
+         * colegio. Ante cualquier fallo no bloquea la navegación.
+         */
+        async loadCollegeSetup(force = false): Promise<{ applies: boolean; completed: boolean }> {
+            if (this.collegeSetup && !force) return this.collegeSetup
+            try {
+                this.collegeSetup = await fetchSetupStatus()
+            } catch {
+                this.collegeSetup = { applies: false, completed: true }
+            }
+            return this.collegeSetup
+        },
+
+        /** Marca el onboarding como terminado (tras finalizar el asistente). */
+        markCollegeSetupCompleted() {
+            this.collegeSetup = { applies: true, completed: true }
+        },
+
+        /**
          * Limpia TODO el estado de sesión
          */
         clearSession() {
@@ -380,6 +404,7 @@ export const useAuthStore = defineStore('auth', {
             this.mfaChallenge = null
             this.mfaExpiresIn = 0
             this.mfaCollegeId = null
+            this.collegeSetup = null
 
             localStorage.removeItem('token')
             localStorage.removeItem('user')
@@ -397,6 +422,13 @@ export const useAuthStore = defineStore('auth', {
          * Logout formal
          */
         logout() {
+            // Recuerda el plantel actual (si hay branding de college) para volver a
+            // SU login tras el splash de cierre. Superadmin no tiene branding de
+            // college → queda null → login genérico.
+            const sn = useBrandingStore().college?.short_name ?? null
+            if (sn) sessionStorage.setItem('post_logout_login', sn)
+            else sessionStorage.removeItem('post_logout_login')
+
             this.clearSession()
             router.replace('/auth/logout')
         },
@@ -409,9 +441,10 @@ export const useAuthStore = defineStore('auth', {
          * banner explicativo.
          */
         forceLogout(reason: 'disabled' | string, message?: string | null) {
+            const sn = useBrandingStore().college?.short_name ?? null
             this.clearSession()
             router.replace({
-                path:  '/auth/login',
+                path:  sn ? `/auth/login/${encodeURIComponent(sn)}` : '/auth/login',
                 query: {
                     reason,
                     ...(message ? { msg: message } : {}),

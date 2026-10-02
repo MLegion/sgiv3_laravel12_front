@@ -6,6 +6,7 @@ import { API } from '@/shared/api'
 
 const PORTAL_PREFIX        = '/admissions/portal'
 const VERIFY_EMAIL_ROUTE   = '/admissions/portal/verify-email'
+const ONBOARDING_ROUTE     = '/college/onboarding'
 
 export async function authGuard(
     to: RouteLocationNormalized,
@@ -68,6 +69,25 @@ export async function authGuard(
         auth.emailVerified === true
     ) {
         return next('/admissions/portal/personal')
+    }
+
+    // 6. Onboarding del colegio (bloqueante): un COLLEGE_ADMIN cuyo colegio no
+    // tiene su información institucional es forzado al asistente y no puede salir
+    // hasta completarlo. Se ignora en rutas de auth y del portal de aspirantes.
+    if (
+        auth.isAuthenticated &&
+        !isAuthRoute &&
+        !to.path.startsWith(PORTAL_PREFIX)
+    ) {
+        const setup = await auth.loadCollegeSetup()
+
+        if (setup.applies && !setup.completed && to.path !== ONBOARDING_ROUTE) {
+            return next(ONBOARDING_ROUTE)
+        }
+        // Si ya no aplica o ya está completo, nadie se queda atrapado en el asistente.
+        if ((!setup.applies || setup.completed) && to.path === ONBOARDING_ROUTE) {
+            return next('/')
+        }
     }
 
     next()

@@ -1,5 +1,11 @@
 export default [
     {
+        path: 'college/onboarding',
+        name: 'college.onboarding',
+        component: () => import('@/modules/college/pages/CollegeOnboardingPage.vue'),
+        meta: { title: 'Configuración inicial del colegio' },
+    },
+    {
         path: 'college/users',
         name: 'college.users',
         component: () => import('@/modules/college/pages/CollegeUsersPage.vue'),
