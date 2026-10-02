@@ -18,6 +18,9 @@
             :rows="rows"
             :loading="loading"
             :pagination="pagination"
+            :initial-search="initialSearch"
+            :sort-by="initialSortBy"
+            :sort-direction="initialSortDirection"
             @change="handleChange"
         >
             <template #cell-is_template="{ row }">
@@ -104,8 +107,13 @@ const columns: DataTableColumn<Report>[] = [
     { key: 'opciones',    label: 'OPCIONES' },
 ]
 
-const { rows, loading, pagination, handleChange, fetchData } = useDataTableFetch<Report>({
+const {
+    rows, loading, pagination, handleChange, fetchData,
+    initialSearch, initialSortBy, initialSortDirection,
+} = useDataTableFetch<Report>({
     endpoint: API.REPORTS_API.reports.list,
+    // Conserva búsqueda / orden / página / por-página en localStorage.
+    persistKey: 'reports.reports.table',
 })
 
 fetchData()
