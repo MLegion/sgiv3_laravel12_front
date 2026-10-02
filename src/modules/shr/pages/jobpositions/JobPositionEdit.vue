@@ -72,7 +72,20 @@
                         :min="1"
                         hint="Deja vacío para no establecer límite"
                     />
+
+                    <FormSelect
+                        label="Rol asociado"
+                        v-model="form.roleName"
+                        :options="roleOptions"
+                        hint="Al guardar, el rol se asigna/quita automáticamente a quienes ocupan el puesto"
+                    />
                 </div>
+
+                <!-- Contexto por defecto (si el rol lo requiere) -->
+                <JobPositionDefaultContext
+                    :required-contexts="selectedRoleContexts"
+                    v-model="form.defaultContext"
+                />
 
                 <div class="mt-4">
                     <FormInput
@@ -82,6 +95,14 @@
                     />
                 </div>
             </section>
+
+            <!-- Avisos de propagación del rol -->
+            <div v-if="propagationWarnings.length" class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                <p class="font-medium mb-1">El puesto se guardó, pero revisa:</p>
+                <ul class="list-disc list-inside space-y-1">
+                    <li v-for="(w, i) in propagationWarnings" :key="i">{{ w }}</li>
+                </ul>
+            </div>
         </div>
     </div>
 </template>
@@ -97,6 +118,13 @@ import {
 
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
+import JobPositionDefaultContext from '@/modules/shr/components/JobPositionDefaultContext.vue'
+
+interface RoleItem {
+    code: string
+    name: string
+    required_contexts: { alias: string; is_required: boolean; is_multiple: boolean }[]
+}
 
 /* -------------------------------------------------------------------------- */
 /* ROUTER */
@@ -118,7 +146,30 @@ const form = reactive({
     description: '',
     status: true,
     maxHolders: null as number | null,
+    roleName: '' as string,
+    defaultContext: null as Record<string, number | number[]> | null,
 })
+
+const propagationWarnings = ref<string[]>([])
+
+/* -------------------------------------------------------------------------- */
+/* ROLES ASIGNABLES */
+/* -------------------------------------------------------------------------- */
+const roles = ref<RoleItem[]>([])
+const roleOptions = computed(() => [
+    { label: 'Sin rol', value: '' },
+    ...roles.value.map(r => ({ label: `${r.name} (${r.code})`, value: r.code })),
+])
+const selectedRoleContexts = computed(() =>
+    roles.value.find(r => r.code === form.roleName)?.required_contexts ?? [],
+)
+
+async function fetchRoles() {
+    try {
+        const { data } = await api.get(API.SHR_API.jobPosition.assignableRoles)
+        roles.value = (data.items ?? []) as RoleItem[]
+    } catch { /* deja solo "Sin rol" */ }
+}
 
 /* -------------------------------------------------------------------------- */
 /* STATUS OPTIONS */
@@ -151,11 +202,15 @@ async function fetchJobPosition() {
             API.SHR_API.jobPosition.byId(route.params.id)
         )
 
+        // El endpoint `show` serializa la entidad en camelCase; se leen ambas
+        // formas (camel/snake) por robustez.
         Object.assign(form, {
             name: data.name,
             description: data.description,
             status: data.status,
-            maxHolders: data.max_holders ?? null,
+            maxHolders: data.maxHolders ?? data.max_holders ?? null,
+            roleName: data.roleName ?? data.role_name ?? '',
+            defaultContext: data.defaultContext ?? data.default_context ?? null,
         })
     } finally {
         loading.value = false
@@ -169,24 +224,32 @@ async function submit() {
     if (hasErrors.value) return
 
     submitting.value = true
+    propagationWarnings.value = []
     try {
-        await api.put(
+        const { data } = await api.put(
             API.SHR_API.jobPosition.update(route.params.id),
             mapJobPositionUpdatePayload(form)
         )
 
-        router.push({
-            name: 'shr.humanresources.jobpositions.show',
-            params: { id: route.params.id },
-        })
+        const warns = data?.role_propagation?.warnings ?? []
+        if (warns.length) {
+            // Se guardó, pero hay avisos: los mostramos y no salimos de la página.
+            propagationWarnings.value = warns
+            return
+        }
+
+        router.push({ name: 'shr.humanresources.jobpositions' })
     } finally {
         submitting.value = false
     }
 }
 
 function goBack() {
-    router.back()
+    router.push({ name: 'shr.humanresources.jobpositions' })
 }
 
-onMounted(fetchJobPosition)
+onMounted(() => {
+    fetchRoles()
+    fetchJobPosition()
+})
 </script>

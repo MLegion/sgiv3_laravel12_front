@@ -246,17 +246,14 @@ async function submit() {
     try {
         await api.put(API.SHR_API.employee.update(route.params.id), mapEmployeeUpdatePayload(form))
 
-        router.push({
-            name: 'shr.humanresources.employees.show',
-            params: { id: route.params.id },
-        })
+        router.push({ name: 'shr.humanresources.employees' })
     } finally {
         submitting.value = false
     }
 }
 
 function goBack() {
-    router.back()
+    router.push({ name: 'shr.humanresources.employees' })
 }
 
 onMounted(fetchEmployee)

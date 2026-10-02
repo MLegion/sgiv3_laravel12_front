@@ -13,6 +13,7 @@ export default {
 
             assingJob: (id: string | number) => apiUrl(`/shr/employees/${id}/assign-job`),
             history: (id: string | number) => apiUrl(`/shr/employees/${id}/jobs`),
+            import: apiUrl('/shr/employees/import'),
         },
         jobPosition: {
             all: apiUrl('/shr/job-positions'),
@@ -21,6 +22,10 @@ export default {
             create: apiUrl('/shr/job-positions'),
             update: (id: string | number) => apiUrl(`/shr/job-positions/${id}`),
             delete: (id: string | number) => apiUrl(`/shr/job-positions/${id}`),
+            import: apiUrl('/shr/job-positions/import'),
+            assignableRoles: apiUrl('/shr/job-positions/assignable-roles'),
+            contextOptions: (alias: string) => apiUrl(`/shr/job-positions/context-options/${alias}`),
+            offerOptions: apiUrl('/shr/job-positions/offer-options'),
         },
         workArea: {
             all: apiUrl('/shr/work-areas'),
@@ -29,9 +34,11 @@ export default {
             create: apiUrl('/shr/work-areas'),
             update: (id: string | number) => apiUrl(`/shr/work-areas/${id}`),
             delete: (id: string | number) => apiUrl(`/shr/work-areas/${id}`),
+            import: apiUrl('/shr/work-areas/import'),
         },
         organizationChart: {
             workAreas: apiUrl('/shr/organization-chart/work-areas'),
+            import: apiUrl('/shr/organization-chart/import'),
         },
     },
 } satisfies ApiModule

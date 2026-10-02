@@ -158,9 +158,7 @@ async function confirmDelete() {
             API.SHR_API.employee.delete(route.params.id)
         )
 
-        router.push({
-            name: 'shr.humanresources.employees.index',
-        })
+        router.push({ name: 'shr.humanresources.employees' })
     } finally {
         deleting.value = false
     }

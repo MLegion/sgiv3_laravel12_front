@@ -72,7 +72,19 @@
                         :min="1"
                         hint="Deja vacío para no establecer límite"
                     />
+
+                    <FormSelect
+                        label="Rol asociado"
+                        v-model="form.roleName"
+                        :options="roleOptions"
+                        hint="Se asignará a quienes ocupen el puesto"
+                    />
                 </div>
+
+                <JobPositionDefaultContext
+                    :required-contexts="selectedRoleContexts"
+                    v-model="form.defaultContext"
+                />
             </section>
 
             <!-- Descripción -->
@@ -92,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed } from 'vue'
+import { reactive, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -100,6 +112,13 @@ import { mapJobPositionCreatePayload } from '@/shared/api/mappers/job-position.m
 
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
+import JobPositionDefaultContext from '@/modules/shr/components/JobPositionDefaultContext.vue'
+
+interface RoleItem {
+    code: string
+    name: string
+    required_contexts: { alias: string; is_required: boolean; is_multiple: boolean }[]
+}
 
 /* -------------------------------------------------------------------------- */
 /* ROUTER */
@@ -120,7 +139,30 @@ const form = reactive({
     description: '',
     status: true,
     maxHolders: null as number | null,
+    roleName: '' as string,
+    defaultContext: null as Record<string, number | number[]> | null,
 })
+
+/* -------------------------------------------------------------------------- */
+/* ROLES ASIGNABLES */
+/* -------------------------------------------------------------------------- */
+const roles = ref<RoleItem[]>([])
+const roleOptions = computed(() => [
+    { label: 'Sin rol', value: '' },
+    ...roles.value.map(r => ({ label: `${r.name} (${r.code})`, value: r.code })),
+])
+const selectedRoleContexts = computed(() =>
+    roles.value.find(r => r.code === form.roleName)?.required_contexts ?? [],
+)
+
+async function fetchRoles() {
+    try {
+        const { data } = await api.get(API.SHR_API.jobPosition.assignableRoles)
+        roles.value = (data.items ?? []) as RoleItem[]
+    } catch { /* deja solo "Sin rol" */ }
+}
+
+onMounted(fetchRoles)
 
 /* -------------------------------------------------------------------------- */
 /* STATUS OPTIONS */

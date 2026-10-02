@@ -165,17 +165,14 @@ async function submit() {
             mapWorkAreaUpdatePayload(form)
         )
 
-        router.push({
-            name: 'shr.humanresources.workareas.show',
-            params: { id: route.params.id },
-        })
+        router.push({ name: 'shr.humanresources.workareas' })
     } finally {
         submitting.value = false
     }
 }
 
 function goBack() {
-    router.back()
+    router.push({ name: 'shr.humanresources.workareas' })
 }
 
 onMounted(fetchWorkArea)
