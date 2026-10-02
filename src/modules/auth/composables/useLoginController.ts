@@ -8,6 +8,7 @@ import {
     resolveLoginDefault,
     applyBrandingCssVars,
     cacheBranding,
+    readCachedBranding,
     type CollegeBranding,
     type CollegeBrandingResolved,
 } from '@/modules/auth/services/branding.service'
@@ -25,6 +26,28 @@ export function useLoginController() {
 
     const branding = ref<CollegeBranding | null>(null)
     const brandedCollegeLocked = ref(false)
+    // Gate anti-parpadeo (FOUC): no se pinta ninguna plantilla de login hasta que
+    // el branding esté resuelto. Así se evita mostrar el login por defecto y luego
+    // "saltar" a la plantilla real cuando llega el fetch.
+    const ready = ref(false)
+
+    // Hidratación síncrona desde caché: si ya visitamos este login (mismo
+    // shortname), pintamos la plantilla correcta de inmediato y refrescamos en
+    // segundo plano. Sin caché válido, el gate muestra un splash neutro.
+    {
+        const shortname = (route.params as any).shortname as string | undefined
+        const cached = readCachedBranding()
+        const matches = cached && (
+            (shortname && cached.college.short_name?.toLowerCase() === shortname.toLowerCase())
+            || (!shortname && !!cached.college)
+        )
+        if (cached && matches) {
+            branding.value = cached.branding
+            brandedCollegeLocked.value = true
+            applyBrandingCssVars(cached.branding)
+            ready.value = true
+        }
+    }
 
     const brandedLogo = computed(() => branding.value?.logo_url ?? null)
     const brandedTitle = computed(() => branding.value?.welcome_title ?? null)
@@ -124,11 +147,13 @@ export function useLoginController() {
             cacheBranding(resolved)
             applyBrandingCssVars(resolved.branding)
         }
+        // Branding resuelto (o sin default → selector original): ya se puede pintar.
+        ready.value = true
     })
 
     return {
         authStore, collegeStore,
-        branding, brandedCollegeLocked, brandedLogo, brandedTitle, brandedSubtitle, brandedHero, primaryColor,
+        branding, brandedCollegeLocked, ready, brandedLogo, brandedTitle, brandedSubtitle, brandedHero, primaryColor,
         disabledBanner, collegeId, email, password, showPassword, googleLoading, submitting, rememberMe, errors,
         googleDomain, googleReady, onGoogleLogin, onCollegeChange, submit,
     }
