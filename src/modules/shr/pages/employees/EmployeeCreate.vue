@@ -216,7 +216,10 @@ watch(selectedJobPosition, value => {
 async function fetchJobPositions() {
     loading.value = true
     try {
-        const { data } = await api.get(API.SHR_API.jobPosition.all)
+        // El selector filtra client-side: hay que traer TODOS los puestos del
+        // plantel, no solo la primera página (por defecto 15), o los puestos
+        // con id alto (p.ej. DOCENTE recién creado) no aparecerían.
+        const { data } = await api.get(API.SHR_API.jobPosition.all, { params: { per_page: 1000 } })
         jobPositions.value = data.items
     } finally {
         loading.value = false

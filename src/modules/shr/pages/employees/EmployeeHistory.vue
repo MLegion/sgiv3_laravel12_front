@@ -224,7 +224,10 @@ async function fetchData() {
         const [employeeRes, historyRes, jobsRes] = await Promise.all([
             api.get(API.SHR_API.employee.byId(route.params.id)),
             api.get(API.SHR_API.employee.history(route.params.id)),
-            api.get(API.SHR_API.jobPosition.list),
+            // El selector "Asignar nuevo puesto" filtra client-side: traer TODOS
+            // los puestos del plantel, no solo la primera página (por defecto 15),
+            // o los puestos con id alto (p.ej. DOCENTE) no aparecerían.
+            api.get(API.SHR_API.jobPosition.list, { params: { per_page: 1000 } }),
         ])
 
         employee.value = employeeRes.data
