@@ -40,21 +40,22 @@
             </button>
         </div>
 
-        <!-- Contenido del tab activo -->
+        <!-- Contenido del tab activo. El :key se incrementa al llegar un evento
+             WS (aspirante cambió) para remontar el tab y recargar sus datos. -->
         <div>
-            <FunnelTab     v-if="tab === 'funnel'"     :period-id="periodId" />
-            <ScoresTab     v-else-if="tab === 'scores'"     :period-id="periodId" />
-            <DemandTab     v-else-if="tab === 'demand'"     :period-id="periodId" />
-            <AttendanceTab v-else-if="tab === 'attendance'" :period-id="periodId" />
-            <AgeModeTab    v-else-if="tab === 'ageMode'"    :period-id="periodId" />
-            <OriginTab     v-else-if="tab === 'origin'"     :period-id="periodId" />
-            <InclusionTab  v-else-if="tab === 'inclusion'"  :period-id="periodId" />
+            <FunnelTab     v-if="tab === 'funnel'"     :key="refreshKey" :period-id="periodId" />
+            <ScoresTab     v-else-if="tab === 'scores'"     :key="refreshKey" :period-id="periodId" />
+            <DemandTab     v-else-if="tab === 'demand'"     :key="refreshKey" :period-id="periodId" />
+            <AttendanceTab v-else-if="tab === 'attendance'" :key="refreshKey" :period-id="periodId" />
+            <AgeModeTab    v-else-if="tab === 'ageMode'"    :key="refreshKey" :period-id="periodId" />
+            <OriginTab     v-else-if="tab === 'origin'"     :key="refreshKey" :period-id="periodId" />
+            <InclusionTab  v-else-if="tab === 'inclusion'"  :key="refreshKey" :period-id="periodId" />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -71,6 +72,7 @@ type Tab = 'funnel' | 'scores' | 'demand' | 'attendance' | 'ageMode' | 'origin' 
 interface StatsContext {
     examMode: 'online' | 'presencial' | 'mixto'
     hasInPersonExam: boolean
+    collegeId: number | null
 }
 
 const allTabs: { key: Tab; label: string; requires?: 'inPersonExam' }[] = [
@@ -83,14 +85,43 @@ const allTabs: { key: Tab; label: string; requires?: 'inPersonExam' }[] = [
     { key: 'inclusion',  label: 'Inclusión' },
 ]
 
-const ctx      = ref<StatsContext | null>(null)
-const tab      = ref<Tab>('funnel')
-const periodId = ref<number | null>(null)
+const ctx        = ref<StatsContext | null>(null)
+const tab        = ref<Tab>('funnel')
+const periodId   = ref<number | null>(null)
+// Al cambiar: remonta el tab activo → recarga sus datos (ver :key en el template).
+const refreshKey = ref(0)
 
 const tabs = computed(() => allTabs.filter(t => {
     if (t.requires === 'inPersonExam') return ctx.value?.hasInPersonExam ?? false
     return true
 }))
+
+// ── Realtime: refresca al cambiar un aspirante del colegio (mismo canal que
+// usan los widgets del dashboard). Debounce para coalescer ráfagas (bulk). ──
+let echoChannel: string | null = null
+let refreshTimer: ReturnType<typeof setTimeout> | null = null
+
+function scheduleRefresh(): void {
+    if (refreshTimer) clearTimeout(refreshTimer)
+    refreshTimer = setTimeout(() => { refreshKey.value++ }, 800)
+}
+
+function subscribeWs(collegeId: number): void {
+    if (typeof window === 'undefined' || !(window as any).Echo) return
+    echoChannel = `admissions.college.${collegeId}`
+    try {
+        ;(window as any).Echo.private(echoChannel).listen('.admissions.applicant.changed', scheduleRefresh)
+    } catch (e) {
+        console.warn('[statistics] WS subscribe falló:', e)
+        echoChannel = null
+    }
+}
+
+function unsubscribeWs(): void {
+    if (typeof window === 'undefined' || !(window as any).Echo || !echoChannel) return
+    try { (window as any).Echo.leave('private-' + echoChannel) } catch { /* noop */ }
+    echoChannel = null
+}
 
 onMounted(async () => {
     const [ctxRes, periodsRes] = await Promise.all([
@@ -108,6 +139,14 @@ onMounted(async () => {
     if (first?.academicPeriodId) {
         periodId.value = first.academicPeriodId
     }
+    if (ctx.value?.collegeId) {
+        subscribeWs(ctx.value.collegeId)
+    }
+})
+
+onBeforeUnmount(() => {
+    if (refreshTimer) clearTimeout(refreshTimer)
+    unsubscribeWs()
 })
 </script>
 

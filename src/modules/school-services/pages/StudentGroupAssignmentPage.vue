@@ -312,6 +312,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -339,6 +340,8 @@ interface CohortGroup {
 const periods = ref<any[]>([])
 const studyPlans = ref<any[]>([])
 const modalities = ref<any[]>([])
+
+const route = useRoute()
 
 const filters = reactive({
     collegeAcademicPeriodId: null as number | null,
@@ -433,6 +436,15 @@ onMounted(async () => {
     periods.value    = rawPeriods.filter((p: any) => p.status !== 'archived')
     studyPlans.value = rawStudyPlans.filter((sp: any) => (sp.isActive ?? sp.is_active) !== false)
     modalities.value = rawModalities.filter((m: any) => !!m.status && !!m.campus?.status)
+
+    // Preselección al venir desde "Inscribir → Asignar a grupos": mapea el
+    // academic_period_id del cohorte al periodo del plantel.
+    const qPeriod = Number(route.query.academic_period_id)
+    if (qPeriod) {
+        const match = periods.value.find((p: any) =>
+            (p.academicPeriod?.id ?? p.academic_period?.id ?? p.academic_period_id) === qPeriod)
+        if (match) filters.collegeAcademicPeriodId = match.id
+    }
 })
 
 async function loadCohort() {

@@ -511,7 +511,9 @@ function selectIndiv(hit: SearchHit) {
 
 async function saveIndivScore() {
     if (!indivSelected.value) return
-    const score = indivScore.value.trim()
+    // El input es type="number": v-model puede entregar number o '' → normaliza
+    // a string antes de validar (igual que la carga manual) para no romper .trim().
+    const score = String(indivScore.value ?? '').trim()
     if (score === '' || isNaN(Number(score)) || Number(score) < 0 || Number(score) > 999.99) {
         toast.error('Ingresa una calificación válida (0 a 999.99).')
         return

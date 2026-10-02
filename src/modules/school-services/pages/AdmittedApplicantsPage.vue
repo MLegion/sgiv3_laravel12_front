@@ -264,7 +264,7 @@
 
                             <CollapseSection title="Opciones de Carrera">
                                 <div class="space-y-2 text-xs">
-                                    <div v-for="n in [1,2,3]" :key="n">
+                                    <div v-for="n in drawerOptionSlots" :key="n">
                                         <p class="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Opción {{ n }}</p>
                                         <template v-if="drawerItem[`offerOption${n}`]">
                                             <p class="font-semibold text-slate-700">{{ drawerItem[`offerOption${n}`].career?.name ?? '—' }}</p>
@@ -325,6 +325,17 @@
                                 <div class="flex items-center gap-2 text-sm">
                                     <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold">{{ previewOk.length }} a inscribir</span>
                                     <span v-if="previewFail.length" class="px-2 py-0.5 rounded-full bg-red-100 text-red-600 font-semibold">{{ previewFail.length }} con problema</span>
+                                </div>
+
+                                <!-- Avisos de carga académica / horarios (no bloqueantes) -->
+                                <div v-if="previewWarnings.length" class="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 space-y-1">
+                                    <div class="flex items-center gap-1.5 text-[11px] font-bold text-amber-700 uppercase tracking-wide">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                                        Se puede inscribir, pero aún no se podrá asignar a grupo
+                                    </div>
+                                    <p v-for="(w, i) in previewWarnings" :key="i" class="text-[11px] text-amber-800">
+                                        • {{ w.message }} <span class="text-amber-600">({{ w.count }} aspirante{{ w.count === 1 ? '' : 's' }})</span>
+                                    </p>
                                 </div>
 
                                 <!-- Lista -->
@@ -543,11 +554,28 @@ const visiblePages   = computed(() => {
 // Selección y mapa de offerStudyPlanId por aspirante
 const selected          = ref<Set<number>>(new Set())
 const offerSelections   = ref<Map<number, OfferSel>>(new Map())   // applicantId → { offerStudyPlanId, studyPlanId, modalityId }
+// Defaults de inscripción de TODO el cohorte (al "seleccionar todo"): cubre a
+// los aspirantes que no están en la página cargada. applicantId → plan/modalidad.
+const cohortDefaults    = ref<Map<number, { studyPlanId: number | null; modalityId: number | null; fullName: string }>>(new Map())
+// Número de opciones de oferta configurado para el periodo (default 1). Limita
+// cuántas "Opción N" se muestran en el detalle del aspirante.
+const maxOfferOptions   = ref(1)
 const allSelected       = computed(() => items.value.length > 0 && items.value.every(i => selected.value.has(i.id)))
 const someSelected      = computed(() => items.value.some(i => selected.value.has(i.id)))
 
 // Drawer
 const drawerItem = ref<AdmittedApplicant | null>(null)
+
+// Cuántas "Opción N" mostrar en el detalle: las configuradas (max_offer_options),
+// pero sin ocultar datos si el aspirante tuviera más opciones llenas.
+const drawerOptionSlots = computed<number[]>(() => {
+    const d = drawerItem.value as any
+    let n = maxOfferOptions.value
+    if (d?.offerOption3) n = 3
+    else if (d?.offerOption2) n = Math.max(n, 2)
+    n = Math.min(3, Math.max(1, n))
+    return Array.from({ length: n }, (_, i) => i + 1)
+})
 
 // Enroll modal
 interface PreviewItem {
@@ -562,6 +590,7 @@ const previewing     = ref(false)
 const enrolling      = ref(false)
 const enrollError    = ref<string | null>(null)
 const previewItems   = ref<PreviewItem[]>([])
+const previewWarnings = ref<Array<{ modalityId: number | null; modalityName: string | null; count: number; message: string }>>([])
 const enrollSummary  = ref<number | null>(null)   // # inscritos tras confirmar
 
 const previewOk   = computed(() => previewItems.value.filter(p => p.ok))
@@ -595,6 +624,7 @@ async function loadPage(page: number) {
         const { data } = await api.get(`${API.SCHOOL_SERVICES_API.admittedApplicants.list}?${params}`)
         items.value      = data.data ?? []
         totalItems.value = data.meta?.total ?? 0
+        maxOfferOptions.value = data.meta?.max_offer_options ?? 1
         currentPage.value = page
     } finally {
         loading.value = false
@@ -652,20 +682,24 @@ function buildEnrollItems(): {
     valid: Array<{ applicant_id: number; study_plan_id: number; modality_id: number; current_period_number: number }>
     invalid: PreviewItem[]
 } {
-    const sel = items.value.filter(i => selected.value.has(i.id))
     const valid: Array<{ applicant_id: number; study_plan_id: number; modality_id: number; current_period_number: number }> = []
     const invalid: PreviewItem[] = []
-    for (const i of sel) {
-        const o = offerSelections.value.get(i.id)
+    // Recorre TODA la selección (no solo la página cargada): usa el override por
+    // fila si existe, si no el default del cohorte.
+    for (const id of selected.value) {
+        const loaded = items.value.find(i => i.id === id)
+        const def    = cohortDefaults.value.get(id)
+        const o      = offerSelections.value.get(id) ?? (def ? { offerStudyPlanId: 0, studyPlanId: def.studyPlanId, modalityId: def.modalityId } : null)
+        const name   = loaded ? fullName(loaded) : (def?.fullName ?? `Aspirante #${id}`)
         if (!o || !o.studyPlanId) {
-            invalid.push({ applicantId: i.id, ok: false, reason: 'Sin plan de estudio seleccionado', preview: { fullName: fullName(i) } })
+            invalid.push({ applicantId: id, ok: false, reason: 'Sin plan de estudio seleccionado', preview: { fullName: name } })
             continue
         }
         if (!o.modalityId) {
-            invalid.push({ applicantId: i.id, ok: false, reason: 'La oferta no tiene modalidad', preview: { fullName: fullName(i) } })
+            invalid.push({ applicantId: id, ok: false, reason: 'La oferta no tiene modalidad', preview: { fullName: name } })
             continue
         }
-        valid.push({ applicant_id: i.id, study_plan_id: o.studyPlanId, modality_id: o.modalityId, current_period_number: 1 })
+        valid.push({ applicant_id: id, study_plan_id: o.studyPlanId, modality_id: o.modalityId, current_period_number: 1 })
     }
     return { valid, invalid }
 }
@@ -685,17 +719,19 @@ async function runPreview() {
     enrollError.value   = null
     enrollSummary.value = null
     const { valid, invalid } = buildEnrollItems()
-    if (!valid.length) { previewItems.value = invalid; return }
+    if (!valid.length) { previewItems.value = invalid; previewWarnings.value = []; return }
     previewing.value = true
     try {
         const { data } = await api.post(API.SCHOOL_SERVICES_API.students.enrollPreview, {
             entry_period_id: enrollPeriodId.value,
             items:           valid,
         })
-        previewItems.value = [...(data as PreviewItem[]), ...invalid]
+        previewItems.value    = [...((data.items ?? []) as PreviewItem[]), ...invalid]
+        previewWarnings.value = data.warnings ?? []
     } catch (e: any) {
         enrollError.value  = e?.response?.data?.message ?? 'No se pudo validar la inscripción.'
         previewItems.value = invalid
+        previewWarnings.value = []
     } finally {
         previewing.value = false
     }
@@ -708,7 +744,10 @@ async function doEnroll() {
     enrollError.value = null
     try {
         const payloadItems = previewOk.value.map(p => {
-            const sel = offerSelections.value.get(p.applicantId)!
+            // Override por fila (página cargada) o, si no, el default del cohorte.
+            const def = cohortDefaults.value.get(p.applicantId)
+            const sel = offerSelections.value.get(p.applicantId)
+                ?? (def ? { studyPlanId: def.studyPlanId, modalityId: def.modalityId } : null)
             return {
                 applicant_id:          p.applicantId,
                 study_plan_id:         sel!.studyPlanId,
@@ -720,7 +759,10 @@ async function doEnroll() {
             entry_period_id: enrollPeriodId.value,
             items:           payloadItems,
         })
-        enrollSummary.value = data.enrolled ?? payloadItems.length
+        // El backend devuelve `enrolled` como ARREGLO de inscritos; usamos su cantidad.
+        enrollSummary.value = Array.isArray(data.enrolled)
+            ? data.enrolled.length
+            : (typeof data.enrolled === 'number' ? data.enrolled : payloadItems.length)
         toast.success(`Se inscribieron ${enrollSummary.value} aspirante(s).`)
 
         const enrolledIds = new Set(previewOk.value.map(p => p.applicantId))
@@ -739,7 +781,13 @@ async function doEnroll() {
 }
 
 function goToGroups() {
-    router.push({ name: 'school-services.group-assignment' })
+    // Encadena al flujo de asignación a grupos pre-seleccionando el periodo de
+    // ingreso del cohorte recién inscrito (la página lo mapea a su periodo del plantel).
+    const periodId = enrollPeriodId.value ?? filterPeriodId.value
+    router.push({
+        name: 'school-services.group-assignment',
+        query: periodId ? { academic_period_id: String(periodId) } : {},
+    })
 }
 
 // Re-valida cuando cambia el periodo de ingreso con el modal abierto.
@@ -751,16 +799,21 @@ async function selectWholeCohort() {
     loading.value = true
     try {
         const params = new URLSearchParams({
-            page:               '1',
-            per_page:           String(Math.max(totalItems.value, perPage)),
             academic_period_id: String(filterPeriodId.value),
         })
         if (search.value) params.set('search', search.value)
-        const { data } = await api.get(`${API.SCHOOL_SERVICES_API.admittedApplicants.list}?${params}`)
-        items.value       = data.data ?? []
-        totalItems.value  = data.meta?.total ?? items.value.length
-        currentPage.value = 1
-        selected.value    = new Set(items.value.map((i: AdmittedApplicant) => i.id))
+        // Endpoint que devuelve TODOS los IDs del cohorte sin paginar (no topa
+        // con el límite per_page=100). No altera la tabla ni la página actual.
+        const { data } = await api.get(`${API.SCHOOL_SERVICES_API.admittedApplicants.ids}?${params}`)
+        const list: Array<{ applicantId: number; fullName: string; studyPlanId: number | null; modalityId: number | null }> = data.items ?? []
+        const map = new Map<number, { studyPlanId: number | null; modalityId: number | null; fullName: string }>()
+        const sel = new Set<number>()
+        for (const it of list) {
+            map.set(it.applicantId, { studyPlanId: it.studyPlanId, modalityId: it.modalityId, fullName: it.fullName })
+            sel.add(it.applicantId)
+        }
+        cohortDefaults.value = map
+        selected.value       = sel
     } finally {
         loading.value = false
     }

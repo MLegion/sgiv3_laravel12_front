@@ -58,6 +58,7 @@ export default {
 
         admittedApplicants: {
             list:   apiUrl('/school-services/admitted-applicants'),
+            ids:    apiUrl('/school-services/admitted-applicants/ids'),
         },
         students: {
             list:   apiUrl('/school-services/students'),
