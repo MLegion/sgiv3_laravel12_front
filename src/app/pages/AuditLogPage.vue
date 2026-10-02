@@ -2,11 +2,21 @@
     <div class="p-4 sm:p-6 space-y-4">
         <div>
             <h1 class="text-xl font-bold text-slate-800">Bitácora de Auditoría</h1>
-            <p class="text-sm text-slate-500">Registro central de acciones sensibles (accesos, MFA, simulación de usuario, cambios administrativos).</p>
+            <p class="text-sm text-slate-500">
+                <template v-if="collegeScoped">Registro de acciones sensibles por colegio. Elige un colegio para ver su bitácora.</template>
+                <template v-else>Registro central de acciones sensibles (accesos, MFA, simulación de usuario, cambios administrativos).</template>
+            </p>
         </div>
 
         <!-- Filtros -->
         <div class="flex flex-wrap items-end gap-3 bg-white rounded-xl border border-slate-200 p-4">
+            <div v-if="collegeScoped">
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Colegio</label>
+                <select v-model="selectedCollegeId" class="rounded-lg border border-slate-300 px-3 py-2 text-sm min-w-56" @change="onCollegeChange">
+                    <option value="">— Selecciona un colegio —</option>
+                    <option v-for="c in colleges" :key="c.id" :value="c.id">{{ c.name }}</option>
+                </select>
+            </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Acción</label>
                 <select v-model="filters.action" class="rounded-lg border border-slate-300 px-3 py-2 text-sm min-w-48" @change="reload">
@@ -42,6 +52,7 @@
                     <thead class="bg-slate-50 text-slate-500 text-left text-xs uppercase tracking-wide">
                         <tr>
                             <th class="px-4 py-3">Fecha</th>
+                            <th v-if="collegeScoped" class="px-4 py-3">Colegio</th>
                             <th class="px-4 py-3">Acción</th>
                             <th class="px-4 py-3">Actor</th>
                             <th class="px-4 py-3">Estado</th>
@@ -50,14 +61,18 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        <tr v-if="loading">
-                            <td colspan="6" class="px-4 py-8 text-center text-slate-400">Cargando…</td>
+                        <tr v-if="collegeScoped && !selectedCollegeId">
+                            <td :colspan="colspan" class="px-4 py-8 text-center text-slate-400">Selecciona un colegio para ver su bitácora.</td>
+                        </tr>
+                        <tr v-else-if="loading">
+                            <td :colspan="colspan" class="px-4 py-8 text-center text-slate-400">Cargando…</td>
                         </tr>
                         <tr v-else-if="items.length === 0">
-                            <td colspan="6" class="px-4 py-8 text-center text-slate-400">Sin registros.</td>
+                            <td :colspan="colspan" class="px-4 py-8 text-center text-slate-400">Sin registros.</td>
                         </tr>
                         <tr v-for="row in items" :key="row.id" class="hover:bg-slate-50 align-top">
                             <td class="px-4 py-3 whitespace-nowrap text-slate-500">{{ formatDate(row.createdAt) }}</td>
+                            <td v-if="collegeScoped" class="px-4 py-3 text-slate-600">{{ collegeName(row.collegeId) }}</td>
                             <td class="px-4 py-3 font-mono text-xs text-slate-700">{{ row.action }}</td>
                             <td class="px-4 py-3">
                                 <div class="text-slate-700">{{ row.actorName || '—' }}</div>
@@ -92,8 +107,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { api } from '@/shared/services/api'
+import { useCollegeStore } from '@/modules/auth/stores/college.store'
 
 interface AuditRow {
     id: number
@@ -101,14 +118,24 @@ interface AuditRow {
     status: string
     actorName: string | null
     actorEmail: string | null
+    collegeId: number | null
     ip: string | null
     context: Record<string, unknown> | null
     error: string | null
     createdAt: string | null
 }
 
+interface CollegeOption { id: number; name: string }
+
+const route = useRoute()
+const collegeStore = useCollegeStore()
+// Modo SUPERADMIN: exige elegir un colegio; sin selección no se muestran registros.
+const collegeScoped = computed(() => !!route.meta.collegeScoped)
+
 const items = ref<AuditRow[]>([])
 const actions = ref<string[]>([])
+const colleges = ref<CollegeOption[]>([])
+const selectedCollegeId = ref<number | ''>('')
 const loading = ref(false)
 const page = ref(1)
 const perPage = ref(25)
@@ -117,21 +144,40 @@ const lastPage = ref(1)
 
 const filters = reactive({ action: '', status: '', date_from: '', date_to: '' })
 
+const colspan = computed(() => (collegeScoped.value ? 7 : 6))
+
 function formatDate(iso: string | null): string {
     if (!iso) return '—'
     return new Date(iso).toLocaleString('es-MX')
 }
 
+function collegeName(id: number | null): string {
+    if (id == null) return '—'
+    return colleges.value.find(c => c.id === id)?.name ?? `#${id}`
+}
+
+/** Params comunes; incluye college_id en modo scoped. */
+function buildParams(): Record<string, unknown> {
+    const params: Record<string, unknown> = { page: page.value, per_page: perPage.value }
+    if (filters.action) params.action = filters.action
+    if (filters.status) params.status = filters.status
+    if (filters.date_from) params.date_from = filters.date_from
+    if (filters.date_to) params.date_to = filters.date_to
+    if (collegeScoped.value && selectedCollegeId.value) params.college_id = selectedCollegeId.value
+    return params
+}
+
 async function load() {
+    // En modo scoped sin colegio elegido no se consulta nada.
+    if (collegeScoped.value && !selectedCollegeId.value) {
+        items.value = []
+        total.value = 0
+        lastPage.value = 1
+        return
+    }
     loading.value = true
     try {
-        const params: Record<string, unknown> = { page: page.value, per_page: perPage.value }
-        if (filters.action) params.action = filters.action
-        if (filters.status) params.status = filters.status
-        if (filters.date_from) params.date_from = filters.date_from
-        if (filters.date_to) params.date_to = filters.date_to
-
-        const { data } = await api.get('/api/v1/audit-logs', { params })
+        const { data } = await api.get('/api/v1/audit-logs', { params: buildParams() })
         items.value = data.items
         total.value = data.total
         lastPage.value = data.lastPage
@@ -160,14 +206,34 @@ function clearFilters() {
     reload()
 }
 
+function onCollegeChange() {
+    // Al cambiar de colegio, recarga acciones (dependen del plantel) y registros.
+    loadActions()
+    reload()
+}
+
 async function loadActions() {
+    if (collegeScoped.value && !selectedCollegeId.value) {
+        actions.value = []
+        return
+    }
     try {
-        const { data } = await api.get('/api/v1/audit-logs/actions')
+        const params: Record<string, unknown> = {}
+        if (collegeScoped.value && selectedCollegeId.value) params.college_id = selectedCollegeId.value
+        const { data } = await api.get('/api/v1/audit-logs/actions', { params })
         actions.value = data
     } catch { /* no-op */ }
 }
 
-onMounted(() => {
+async function loadColleges() {
+    try {
+        await collegeStore.loadColleges()
+        colleges.value = collegeStore.colleges.map((c: any) => ({ id: c.id, name: c.name }))
+    } catch { /* no-op */ }
+}
+
+onMounted(async () => {
+    if (collegeScoped.value) await loadColleges()
     loadActions()
     load()
 })

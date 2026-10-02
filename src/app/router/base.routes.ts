@@ -17,6 +17,13 @@ export const baseProtectedRoutes = [
         component: () => import('@/app/pages/AuditLogPage.vue'),
         meta: { title: 'Bitácora de Auditoría' }
     },
+    {
+        // Variante SUPERADMIN: misma página, con selector de colegio obligatorio.
+        path: 'superadmin/audit-logs',
+        name: 'superadmin.audit-logs',
+        component: () => import('@/app/pages/AuditLogPage.vue'),
+        meta: { title: 'Bitácora de Auditoría', collegeScoped: true }
+    },
 ]
 
 export const basePublicRoutes = [
