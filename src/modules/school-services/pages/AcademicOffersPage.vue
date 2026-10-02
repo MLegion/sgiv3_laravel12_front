@@ -333,7 +333,7 @@ async function submitForm() {
             await api.post(API.SCHOOL_SERVICES_API.academicOffers.create, {
                 modality_id: form.modalityId,
                 career_id:   form.careerId,
-                status:      0,
+                status:      1,
             })
             toast.success('Oferta creada.')
         }

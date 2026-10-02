@@ -63,7 +63,7 @@
                         <option value="college">Este plantel (override)</option>
                     </select>
                 </div>
-                <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 h-10" @click="loadRequirementEditor">Cargar vigente</button>
+                <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 h-10" @click="loadRequirementEditor(false)">Recargar</button>
             </div>
 
             <div class="rounded-xl border border-slate-200 p-4 space-y-3">
@@ -237,7 +237,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
@@ -299,14 +299,14 @@ const canPublish = computed(() => req.value.items.length > 0 && req.value.items.
 function addReqRow() {
     req.value.items.push({ document_type_id: null, normativa_id: null, is_required: true })
 }
-async function loadRequirementEditor() {
+async function loadRequirementEditor(silent = false) {
     // Busca el set vigente del ámbito/proceso y precarga sus items como base de la nueva versión.
     const { data } = await api.get(CFG.requirementSets, { params: { } })
     const sets = (data.data ?? []).filter((s: any) => s.process_type === req.value.process && s.scope === req.value.scope && s.is_active)
     if (!sets.length) {
         req.value.baseVersion = null
         req.value.items = []
-        toast.info('Sin versión vigente; crea la primera.')
+        if (!silent) toast.info('Sin versión vigente; crea la primera.')
         return
     }
     const current = sets[0]
@@ -316,6 +316,12 @@ async function loadRequirementEditor() {
         document_type_id: i.document_type_id, normativa_id: i.normativa_id, is_required: i.is_required,
     }))
 }
+
+// Carga automática al cambiar proceso o ámbito (sin presionar "Cargar vigente").
+watch(
+    () => [req.value.process, req.value.scope],
+    () => loadRequirementEditor(true),
+)
 async function publishRequirements() {
     publishing.value = true
     try {
@@ -379,5 +385,8 @@ onMounted(async () => {
         api.get(CFG.roles).then(({ data }) => (roles.value = data.data ?? [])),
         loadSigners(),
     ])
+    // Precarga los requisitos vigentes del ámbito/proceso por defecto (loadNormativas
+    // ya ajustó el scope según el permiso). Evita tener que presionar "Cargar vigente".
+    await loadRequirementEditor(true)
 })
 </script>
