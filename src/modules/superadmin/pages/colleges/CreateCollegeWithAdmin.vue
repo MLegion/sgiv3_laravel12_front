@@ -28,6 +28,14 @@
             </div>
         </div>
 
+        <!-- Error general del backend (reglas de negocio, conflictos, servidor) -->
+        <div
+            v-if="generalError"
+            class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3"
+        >
+            {{ generalError }}
+        </div>
+
         <!-- Card -->
         <div class="bg-white border rounded-xl shadow-sm p-6 space-y-8 relative">
             <!-- Overlay -->
@@ -53,6 +61,7 @@
                         v-model="form.collegeName"
                         required
                         uppercase
+                        :error="errors.collegeName"
                         @validation-error="setError('collegeName', $event)"
                     />
 
@@ -61,6 +70,7 @@
                         v-model="form.collegeShortName"
                         required
                         uppercase
+                        :error="errors.collegeShortName"
                         @validation-error="setError('collegeShortName', $event)"
                     />
                 </div>
@@ -78,6 +88,7 @@
                         v-model="form.employeeName"
                         required
                         uppercase
+                        :error="errors.employeeName"
                         @validation-error="setError('employeeName', $event)"
                     />
 
@@ -86,6 +97,7 @@
                         v-model="form.employeeFirstSurname"
                         required
                         uppercase
+                        :error="errors.employeeFirstSurname"
                         @validation-error="setError('employeeFirstSurname', $event)"
                     />
 
@@ -93,6 +105,8 @@
                         label="SEGUNDO APELLIDO"
                         v-model="form.employeeSecondSurname"
                         uppercase
+                        :error="errors.employeeSecondSurname"
+                        @validation-error="setError('employeeSecondSurname', $event)"
                     />
                 </div>
 
@@ -101,6 +115,7 @@
                         label="CORREO ELECTRÓNICO"
                         v-model="form.employeeEmail"
                         required
+                        :error="errors.employeeEmail"
                         @validation-error="setError('employeeEmail', $event)"
                     />
 
@@ -109,6 +124,7 @@
                         type="password"
                         v-model="form.password"
                         placeholder="Mínimo 8 caracteres"
+                        :error="errors.password"
                         @validation-error="setError('password', $event)"
                     />
                 </div>
@@ -140,6 +156,8 @@ const router = useRouter()
 /* STATE */
 /* -------------------------------------------------------------------------- */
 const submitting = ref(false)
+// Error general (reglas de negocio del backend que no corresponden a un campo).
+const generalError = ref<string | null>(null)
 
 /* -------------------------------------------------------------------------- */
 /* FORM (camelCase SIEMPRE) */
@@ -166,8 +184,13 @@ function setError(field: string, error: string | null) {
 }
 
 const hasErrors = computed(() =>
-    Object.values(errors).some(e => e !== null)
+    Object.values(errors).some(e => e !== null && e !== undefined)
 )
+
+/** snake_case (payload/back) → camelCase (campos del form). */
+function toCamel(s: string): string {
+    return s.replace(/_([a-z])/g, (_m, c: string) => c.toUpperCase())
+}
 
 /* -------------------------------------------------------------------------- */
 /* SUBMIT */
@@ -175,6 +198,7 @@ const hasErrors = computed(() =>
 async function submit() {
     if (hasErrors.value) return
 
+    generalError.value = null
     submitting.value = true
     try {
         await api.post(
@@ -186,16 +210,44 @@ async function submit() {
             name: 'superadmin.colleges',
         })
     } catch (e: any) {
-        if (e.response?.status === 422 && e.response.data?.errors) {
-            Object.entries(e.response.data.errors).forEach(
-                ([key, messages]: any) => {
-                    errors[key] = messages[0]
-                }
-            )
-        }
+        handleSubmitError(e)
     } finally {
         submitting.value = false
     }
+}
+
+/** Muestra CUALQUIER error del backend: validación por campo o mensaje de negocio. */
+function handleSubmitError(e: any) {
+    const res = e?.response
+    const data = res?.data
+
+    // 1) Errores de validación (422): mapear a cada campo (snake_case → camelCase).
+    if (res?.status === 422 && data?.errors) {
+        const generales: string[] = []
+        Object.entries(data.errors).forEach(([key, messages]: any) => {
+            const field = toCamel(key)
+            const msg = Array.isArray(messages) ? messages[0] : String(messages)
+            if (field in form) {
+                errors[field] = msg
+            } else {
+                generales.push(msg)
+            }
+        })
+        generalError.value = generales.length
+            ? generales.join(' ')
+            : (data.message && !/given data was invalid/i.test(data.message) ? data.message : null)
+        if (!generalError.value && !Object.values(errors).some(x => x)) {
+            generalError.value = 'No se pudo registrar la institución. Revisa los datos.'
+        }
+        return
+    }
+
+    // 2) Regla de negocio / conflicto / error del servidor con mensaje.
+    generalError.value = data?.message
+        || data?.error
+        || (res
+            ? `No se pudo registrar la institución (error ${res.status}).`
+            : 'No se pudo conectar con el servidor. Intenta de nuevo.')
 }
 
 function goBack() {
