@@ -338,7 +338,8 @@ function fetchData() {
 
 async function loadRoles() {
     try {
-        const { data } = await api.get(API.COLLEGE_API.assignableRoles)
+        // Filtro: usa los roles FILTRABLES (incluye COLLEGE_ADMIN), no los asignables.
+        const { data } = await api.get(API.COLLEGE_API.filterableRoles)
         availableRoles.value = (data?.items ?? data ?? [])
             .map((r: any) => ({ code: r.code, name: r.name }))
     } catch (e) {

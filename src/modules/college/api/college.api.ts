@@ -14,6 +14,7 @@ export default {
             resetPassword: (id: string | number) => apiUrl(`/college/users/${id}/reset-password`),
         },
         assignableRoles: apiUrl('/college/assignable-roles'),
+        filterableRoles: apiUrl('/college/filterable-roles'),
         contextOptions:  (alias: string) => apiUrl(`/college/context-options/${alias}`),
         roleMenus:       apiUrl('/college/role-menus'),
     },

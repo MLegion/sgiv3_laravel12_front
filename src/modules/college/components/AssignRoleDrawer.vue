@@ -136,17 +136,19 @@
                                                 class="grid gap-2 items-end p-2 rounded-lg bg-slate-50 border border-slate-200"
                                                 :style="{ gridTemplateColumns: `repeat(${selectedRole.required_contexts.length}, minmax(0, 1fr)) auto` }"
                                             >
-                                                <div v-for="ctx in selectedRole.required_contexts" :key="ctx.alias">
+                                                <div v-for="ctx in orderedContexts" :key="ctx.alias">
                                                     <label class="block text-[10px] font-semibold text-slate-500 mb-1 uppercase tracking-wide">
                                                         {{ aliasLabel(ctx.alias) }}
                                                     </label>
                                                     <select
                                                         v-model="row[ctx.alias]"
-                                                        class="w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white"
+                                                        :disabled="isCareerDisabled(ctx.alias, row)"
+                                                        class="w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white disabled:bg-slate-100 disabled:text-slate-400"
+                                                        @change="onContextChange(ctx.alias, row)"
                                                     >
-                                                        <option :value="null">-- Selecciona --</option>
+                                                        <option :value="null">{{ isCareerDisabled(ctx.alias, row) ? 'Selecciona modalidad primero' : '-- Selecciona --' }}</option>
                                                         <option
-                                                            v-for="opt in contextOptions[ctx.alias] || []"
+                                                            v-for="opt in optionsFor(ctx.alias, row)"
                                                             :key="opt.id"
                                                             :value="opt.id"
                                                         >{{ opt.label }}</option>
@@ -167,8 +169,8 @@
                                         <p v-if="contextRows.length === 0" class="text-[11px] text-amber-600 mt-1">
                                             Agregá al menos una combinación.
                                         </p>
-                                        <template v-for="ctx in selectedRole.required_contexts" :key="`empty-${ctx.alias}`">
-                                            <p v-if="!(contextOptions[ctx.alias] || []).length && !loadingContexts[ctx.alias]"
+                                        <template v-for="ctx in orderedContexts" :key="`empty-${ctx.alias}`">
+                                            <p v-if="!isDependentCareer(ctx.alias) && !(contextOptions[ctx.alias] || []).length && !loadingContexts[ctx.alias]"
                                                class="text-[11px] text-amber-600 mt-1">
                                                 No hay opciones de {{ aliasLabel(ctx.alias) }} en este college.
                                             </p>
@@ -280,6 +282,55 @@ const formError = ref('')
 
 const selectedRole = computed(() => roles.value.find(r => r.code === selectedRoleCode.value) || null)
 
+// Carrera dependiente de modalidad: cuando el rol requiere AMBOS contextos,
+// primero se elige la modalidad y la carrera se filtra por su oferta.
+const hasModalityContext = computed(() =>
+    !!selectedRole.value?.required_contexts.some(c => c.alias === 'modality'))
+
+// Orden de render: modalidad antes que carrera (el resto conserva su orden).
+const orderedContexts = computed(() => {
+    const ctxs = [...(selectedRole.value?.required_contexts ?? [])]
+    const rank = (a: string) => (a === 'modality' ? 0 : a === 'career' ? 1 : 2)
+    return ctxs.sort((x, y) => rank(x.alias) - rank(y.alias) || x.sort_order - y.sort_order)
+})
+
+// Opciones de carrera por modalidad (cache): modalityId → carreras ofertadas.
+const careerOptionsByModality = reactive<Record<number, ContextOption[]>>({})
+
+function isDependentCareer(alias: string): boolean {
+    return alias === 'career' && hasModalityContext.value
+}
+
+function isCareerDisabled(alias: string, row: ContextRow): boolean {
+    return isDependentCareer(alias) && !row.modality
+}
+
+function optionsFor(alias: string, row: ContextRow): ContextOption[] {
+    if (isDependentCareer(alias)) {
+        const m = row.modality
+        return m ? (careerOptionsByModality[m] || []) : []
+    }
+    return contextOptions[alias] || []
+}
+
+async function loadCareersForModality(modalityId: number) {
+    if (careerOptionsByModality[modalityId]) return
+    try {
+        const { data } = await api.get(API.COLLEGE_API.contextOptions('career'), { params: { modality_id: modalityId } })
+        careerOptionsByModality[modalityId] = data.items || []
+    } catch {
+        careerOptionsByModality[modalityId] = []
+    }
+}
+
+function onContextChange(alias: string, row: ContextRow) {
+    // Al cambiar la modalidad: reinicia la carrera y carga las de esa modalidad.
+    if (alias === 'modality' && hasModalityContext.value) {
+        row.career = null
+        if (row.modality) loadCareersForModality(Number(row.modality))
+    }
+}
+
 onMounted(async () => {
     await Promise.all([loadRoles(), loadDetail()])
 })
@@ -316,11 +367,15 @@ async function onRoleChange() {
     const role = selectedRole.value
     if (!role) return
 
-    // Cargar las opciones de cada alias requerido (en paralelo)
+    // Cargar las opciones de cada alias requerido (en paralelo). La carrera
+    // dependiente NO se carga aquí: se carga por modalidad al elegirla.
     await Promise.all(
-        role.required_contexts.map(ctx =>
-            contextOptions[ctx.alias] ? Promise.resolve() : loadContextOptions(ctx.alias)
-        )
+        role.required_contexts.map(ctx => {
+            if (ctx.alias === 'career' && role.required_contexts.some(c => c.alias === 'modality')) {
+                return Promise.resolve()
+            }
+            return contextOptions[ctx.alias] ? Promise.resolve() : loadContextOptions(ctx.alias)
+        })
     )
 
     // Inicializar con UNA fila vacía si el rol requiere contextos
