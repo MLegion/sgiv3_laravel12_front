@@ -246,6 +246,18 @@
                                     </template>
                                     <span v-else-if="row.saved" class="text-xs text-slate-600">{{ row.savedCapacity }}</span>
                                     <span v-else class="text-xs text-slate-300">---</span>
+
+                                    <!-- Aviso: las materias de este grupo tienen cupos distintos.
+                                         Inscripción usa el MAYOR como cupo del grupo. -->
+                                    <div v-if="row.saved && row.savedGroupName && groupDiverges(row.savedGroupName)"
+                                        class="mt-1 flex items-center justify-center gap-1 text-[10px] font-semibold text-amber-600"
+                                        :title="`Las materias de ${row.savedGroupName} tienen cupos distintos (${groupCaps(row.savedGroupName).join(', ')}). `
+                                            + `Inscripción usa el mayor como cupo del grupo: ${groupMaxCap(row.savedGroupName)}.`">
+                                        <svg aria-hidden="true" class="w-3 h-3 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd" />
+                                        </svg>
+                                        cupos distintos · usa {{ groupMaxCap(row.savedGroupName) }}
+                                    </div>
                                 </td>
 
                                 <!-- Sesiones (solo para modalidades que trabajan con fechas) -->
@@ -1121,6 +1133,40 @@ const filteredPackages = computed(() => {
     if (!selectedSemester.value) return packageItems.value
     return packageItems.value.filter((p: any) => p.targetSemester === selectedSemester.value)
 })
+
+/* ── Divergencia de cupo por grupo ─────────────────────────────────────
+ * El cupo se edita por asignación (materia-grupo), pero el grupo tiene UN solo
+ * cupo de inscripción = el MAYOR de sus asignaciones (ver backfill/sync en SCA).
+ * Si las materias de un grupo tienen cupos distintos avisamos para que no quede
+ * ambiguo cuál manda. Se calcula sobre TODOS los paquetes (el grupo cruza
+ * materias de varios semestres/paquetes). Clave = nombre de grupo (único por
+ * config). */
+const groupCapacityInfo = computed(() => {
+    const byGroup = new Map<string, Set<number>>()
+    for (const pkg of packageItems.value) {
+        for (const a of (pkg.assignments ?? [])) {
+            if (!a.groupName) continue
+            const set = byGroup.get(a.groupName) ?? new Set<number>()
+            set.add(Number(a.capacity ?? 40))
+            byGroup.set(a.groupName, set)
+        }
+    }
+    const out = new Map<string, { caps: number[]; max: number; diverges: boolean }>()
+    for (const [name, set] of byGroup) {
+        const caps = Array.from(set).sort((x, y) => x - y)
+        out.set(name, { caps, max: Math.max(...caps), diverges: caps.length > 1 })
+    }
+    return out
+})
+function groupDiverges(groupName: string): boolean {
+    return groupCapacityInfo.value.get(groupName)?.diverges ?? false
+}
+function groupCaps(groupName: string): number[] {
+    return groupCapacityInfo.value.get(groupName)?.caps ?? []
+}
+function groupMaxCap(groupName: string): number {
+    return groupCapacityInfo.value.get(groupName)?.max ?? 0
+}
 const careerColorStyle = computed(() => {
     const c = careerColor.value
     if (!c) return { borderColor: '#94a3b8', backgroundColor: '#f1f5f9', color: '#1e293b' }

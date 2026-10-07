@@ -636,14 +636,16 @@ async function resolveConfig() {
     }
 }
 
-async function fetchSummary() {
+// silent=true refresca los datos SIN activar el spinner (evita que la vista
+// se colapse al re-sincronizar el resumen tras validar con un plan expandido).
+async function fetchSummary(silent = false) {
     if (!resolvedConfigId.value) return
-    loadingSummary.value = true
+    if (!silent) loadingSummary.value = true
     try {
         const { data } = await api.get(API.SCA_API.subjectPackages.summary(resolvedConfigId.value))
         summaryData.value = Array.isArray(data) ? data : []
-    } catch { summaryData.value = [] }
-    finally { loadingSummary.value = false }
+    } catch { if (!silent) summaryData.value = [] }
+    finally { if (!silent) loadingSummary.value = false }
 }
 
 async function fetchDetailItems(studyPlanId: number) {
@@ -675,7 +677,7 @@ async function approveItem(id: number, approved: boolean, notes?: string) {
     approvingId.value = id
     try {
         await api.patch(API.SCA_API.subjectPackages.approve(id), { approved, notes: notes ?? null })
-        await fetchDetailItems(expandedPlanId.value!)
+        await Promise.all([fetchDetailItems(expandedPlanId.value!), fetchSummary(true)])
     } catch (e: any) {
         console.error('Error al aprobar:', e?.response?.data?.message ?? e)
     } finally {
@@ -689,7 +691,7 @@ async function approveAll() {
     for (const item of pending) {
         await api.patch(API.SCA_API.subjectPackages.approve(item.id), { approved: true, notes: null })
     }
-    await fetchDetailItems(expandedPlanId.value!)
+    await Promise.all([fetchDetailItems(expandedPlanId.value!), fetchSummary(true)])
     bulkApproving.value = false
 }
 
@@ -699,7 +701,7 @@ async function revokeAll() {
     for (const item of approved) {
         await api.patch(API.SCA_API.subjectPackages.approve(item.id), { approved: false, notes: null })
     }
-    await fetchDetailItems(expandedPlanId.value!)
+    await Promise.all([fetchDetailItems(expandedPlanId.value!), fetchSummary(true)])
     bulkApproving.value = false
 }
 

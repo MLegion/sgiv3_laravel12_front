@@ -93,6 +93,64 @@
                         </div>
                     </div>
 
+                    <!-- Ajuste de reglas SOLO para esta corrida ("reajustar").
+                         No cambia la config del plantel; sirve para aflojar una
+                         regla dura que dejó el horario infactible y reintentar. -->
+                    <div ref="ruleOverridesRef" class="border rounded-lg"
+                        :class="rulesTouched ? 'border-amber-300 bg-amber-50/40' : ''">
+                        <button type="button"
+                            class="w-full flex items-center justify-between px-3 py-2 text-left"
+                            @click="showRuleOverrides = !showRuleOverrides">
+                            <span class="text-xs font-semibold text-slate-600">
+                                Ajuste de reglas (solo esta corrida)
+                                <span v-if="rulesTouched" class="ml-1 font-bold text-amber-600">· modificado</span>
+                                <span v-else class="ml-1 font-normal text-slate-400">· usando reglas del plantel</span>
+                            </span>
+                            <svg class="w-4 h-4 text-slate-400 transition-transform" :class="showRuleOverrides ? 'rotate-180' : ''"
+                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div v-show="showRuleOverrides" class="px-3 pb-3 border-t pt-2 space-y-3">
+                            <p class="text-[10px] text-slate-500">
+                                Vacío = se respeta la regla del plantel. Estos ajustes aplican solo a la corrida que
+                                dispares ahora y no se guardan.
+                            </p>
+                            <label class="block">
+                                <span class="text-xs font-semibold text-slate-600">Huecos en el día (mismo grupo / docente)</span>
+                                <select v-model="form.ruleOverrides.allowGapsSameDay"
+                                    class="mt-1 w-full h-9 border rounded-md px-3 text-sm bg-white">
+                                    <option :value="null">Usar config del plantel</option>
+                                    <option :value="true">Permitir huecos (más flexible)</option>
+                                    <option :value="false">Sin huecos (día compacto)</option>
+                                </select>
+                                <span class="text-[10px] text-slate-500 block mt-0.5">
+                                    "Sin huecos" es la regla más dura: suele dejar sin solución a carreras con muchos
+                                    grupos y pocos docentes. Si el horario sale infactible, prueba "Permitir huecos".
+                                </span>
+                            </label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="block">
+                                    <span class="text-xs font-semibold text-slate-600">Máx. bloques consecutivos</span>
+                                    <input type="number" min="1" max="12" v-model.number="form.ruleOverrides.maxConsecutiveBlocks"
+                                        placeholder="plantel"
+                                        class="mt-1 w-full h-9 border rounded-md px-3 text-sm" />
+                                </label>
+                                <label class="block">
+                                    <span class="text-xs font-semibold text-slate-600">Máx. bloques/día por docente</span>
+                                    <input type="number" min="1" max="16" v-model.number="form.ruleOverrides.maxBlocksPerDayTeacher"
+                                        placeholder="plantel"
+                                        class="mt-1 w-full h-9 border rounded-md px-3 text-sm" />
+                                </label>
+                            </div>
+                            <button v-if="rulesTouched" type="button"
+                                class="text-[10px] font-semibold text-slate-500 hover:text-slate-700 underline"
+                                @click="resetRuleOverrides">
+                                Restablecer a reglas del plantel
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="flex justify-end gap-2 pt-2 border-t">
                         <button type="button" :disabled="saving"
                             class="px-5 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 uppercase"
@@ -217,6 +275,13 @@
                                     :class="r.status === 'infeasible' ? 'text-red-600' : 'text-amber-600'">
                                     💡 {{ r.solutionSummary.diagnostics.details.hint }}
                                 </p>
+                                <button v-if="canReajustar(r)" type="button"
+                                    class="mt-2 inline-flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold rounded-md
+                                           bg-white border hover:bg-slate-50"
+                                    :class="r.status === 'infeasible' ? 'border-red-300 text-red-700' : 'border-amber-300 text-amber-700'"
+                                    @click="reajustar(r)">
+                                    ⚙️ Reajustar reglas y reintentar
+                                </button>
                             </div>
 
                             <!-- Conflictos si promoción falló -->
@@ -345,7 +410,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useConfirm } from '@/app/composables/useConfirm'
 import { useFocusTrap } from '@/app/composables/useFocusTrap'
 import { api } from '@/shared/services/api'
@@ -392,6 +457,13 @@ const form = reactive({
     countDrafts: 1,
     decomposeBySemester: false,
     weights: Object.fromEntries(WEIGHT_KEYS.map(k => [k, 0])) as Record<WeightKey, number>,
+    // "Reajustar": overrides de reglas de modalidad SOLO para esta corrida.
+    // null / '' = usar la regla del plantel (no se envía).
+    ruleOverrides: {
+        allowGapsSameDay: null as null | boolean,
+        maxConsecutiveBlocks: null as null | number | '',
+        maxBlocksPerDayTeacher: null as null | number | '',
+    },
 })
 // Default: 2 pesos activos moderados (se sobrescriben con los defaults reales
 // del college en cuanto carga provider-status).
@@ -404,6 +476,67 @@ form.weights.minimizeTeacherGaps = 7
 const weightsLoaded = ref(false)
 const genMode = ref<'weekly' | 'dated' | null>(null)
 const showWeights = ref(false)   // colapsado por defecto; se usa el perfil recomendado
+const showRuleOverrides = ref(false)             // sección "reajustar"
+const ruleOverridesRef = ref<HTMLElement | null>(null)
+
+// ¿El usuario tocó alguna regla para esta corrida?
+const rulesTouched = computed(() =>
+    form.ruleOverrides.allowGapsSameDay !== null
+    || (form.ruleOverrides.maxConsecutiveBlocks !== null && form.ruleOverrides.maxConsecutiveBlocks !== '')
+    || (form.ruleOverrides.maxBlocksPerDayTeacher !== null && form.ruleOverrides.maxBlocksPerDayTeacher !== ''),
+)
+
+function resetRuleOverrides() {
+    form.ruleOverrides.allowGapsSameDay = null
+    form.ruleOverrides.maxConsecutiveBlocks = null
+    form.ruleOverrides.maxBlocksPerDayTeacher = null
+}
+
+// Convierte los overrides del form a snake_case; solo las claves fijadas.
+function buildRuleOverridesPayload(): Record<string, unknown> | undefined {
+    const ro: Record<string, unknown> = {}
+    if (form.ruleOverrides.allowGapsSameDay !== null) {
+        ro.allow_gaps_same_day = form.ruleOverrides.allowGapsSameDay
+    }
+    const mc = form.ruleOverrides.maxConsecutiveBlocks
+    if (mc !== null && mc !== '' && Number.isFinite(mc)) {
+        ro.max_consecutive_blocks = mc
+    }
+    const mb = form.ruleOverrides.maxBlocksPerDayTeacher
+    if (mb !== null && mb !== '' && Number.isFinite(mb)) {
+        ro.max_blocks_per_day_teacher = mb
+    }
+    return Object.keys(ro).length ? ro : undefined
+}
+
+// El botón "Reajustar" solo tiene sentido en corridas que fallaron por reglas.
+function canReajustar(r: RunListItem): boolean {
+    return (r.status === 'infeasible' || r.status === 'timeout')
+        && !!r.solutionSummary?.diagnostics?.reason
+}
+
+// Aplica la recomendación del diagnóstico al form de reglas, abre la sección y
+// sube al formulario para que el usuario revise y presione "Generar".
+function reajustar(r: RunListItem) {
+    const details = r.solutionSummary?.diagnostics?.details as Record<string, any> | undefined
+    const param = String(details?.parametroRecomendado ?? '').toLowerCase()
+    const applied: string[] = []
+
+    if (param.includes('allow_gaps_same_day')) {
+        form.ruleOverrides.allowGapsSameDay = true
+        applied.push('permitir huecos en el día')
+    }
+    // Para reglas numéricas no conocemos el valor del plantel; abrimos la
+    // sección para que el usuario suba el tope manualmente.
+    showRuleOverrides.value = true
+    nextTick(() => ruleOverridesRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
+
+    if (applied.length) {
+        flash(true, `Apliqué la recomendación (${applied.join(', ')}). Revisa el ajuste y presiona «Generar borrador» para reintentar.`)
+    } else {
+        flash(true, 'Ajusta la regla señalada en el diagnóstico y presiona «Generar borrador» para reintentar.')
+    }
+}
 async function loadDefaultWeights() {
     if (weightsLoaded.value) return
     try {
@@ -814,6 +947,8 @@ async function generate() {
             timeout_seconds:         form.timeoutSeconds,
             decompose_by_semester:   form.decomposeBySemester,
         }
+        const ruleOverrides = buildRuleOverridesPayload()
+        if (ruleOverrides) payload.rule_overrides = ruleOverrides as GenerateRunRequest['rule_overrides']
         const { data } = await api.post<GenerateRunResponse>(API.SCHEDULES_API.generation.createRun, payload)
 
         const summary = data.runs.map(r => `#${r.id}:${r.status}`).join(', ')

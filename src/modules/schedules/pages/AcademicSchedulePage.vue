@@ -312,8 +312,10 @@
                                 Sin asignaciones
                             </div>
 
-                            <!-- ── DESCARGAS (solo filtro por DOCENTE + modalidad con additional_hours) ── -->
-                            <template v-if="filterType === 'teacher' && filterValue && complementaryHourTypes.length && currentModalityAllowsComplementary">
+                            <!-- ── DESCARGAS (solo filtro por DOCENTE + modalidad con additional_hours) ──
+                                 Con Mi Docencia habilitado la descarga la ajusta el docente en ese
+                                 módulo, así que aquí NO se muestra (midocenciaEnabled). -->
+                            <template v-if="!midocenciaEnabled && filterType === 'teacher' && filterValue && complementaryHourTypes.length && currentModalityAllowsComplementary">
                                 <div class="mt-4 pt-3 border-t-2 border-dashed border-teal-300">
                                     <div class="text-[10px] font-black text-teal-700 uppercase tracking-widest text-center mb-2">
                                         DESCARGAS
@@ -545,7 +547,7 @@
                             </template>
 
                             <!-- ── Bloques de descarga (solo filtro docente) ── -->
-                            <template v-if="!eraserMode">
+                            <template v-if="!eraserMode && !midocenciaEnabled">
                                 <div
                                     v-for="c in visibleComplementary"
                                     :key="'cx-' + c.id"
@@ -2147,7 +2149,9 @@ async function fetchScopedTeachers() {
 }
 
 async function loadComplementarySchedulesForTeacher() {
-    if (filterType.value !== 'teacher' || !filterValue.value || !selectedPeriodId.value) {
+    // Con Mi Docencia habilitado la descarga no se gestiona aquí: no se cargan
+    // bloques de descarga en generación de horarios.
+    if (midocenciaEnabled.value || filterType.value !== 'teacher' || !filterValue.value || !selectedPeriodId.value) {
         complementarySchedules.value = []
         return
     }
@@ -3605,10 +3609,19 @@ const currentModalityDaySlots = computed<string[]>(() => {
 })
 const generatorStatus = ref<{ kind: string; canSolve: boolean; reason: string | null } | null>(null)
 
+// Con Mi Docencia habilitado para el plantel, las horas de descarga las ajusta
+// el docente en ese módulo; aquí (generación de horarios) NO se colocan. El flag
+// viene del detalle del academic_load_config (backend).
+const midocenciaEnabled = computed(() => !!selectedConfig.value?.midocenciaEnabled)
+
 const canGenerate = computed(() => {
-    // Botón visible: config activo + rol válido. La deshabilitación por
-    // "no hay proveedor configurado" se maneja en el botón (generatorDisabledReason).
-    return resolvedConfigId.value !== null && (myCareerIds.value.length > 0 || isAdminCtx.value)
+    // El botón se MUESTRA solo si: hay config activa, el rol es válido, y el
+    // college tiene configurado un generador automático capaz de resolver
+    // (canSolve). Si no está configurado para el college, se OCULTA
+    // (antes solo se deshabilitaba).
+    return resolvedConfigId.value !== null
+        && (myCareerIds.value.length > 0 || isAdminCtx.value)
+        && generatorStatus.value?.canSolve === true
 })
 
 const generatorDisabledReason = computed<string | null>(() => {

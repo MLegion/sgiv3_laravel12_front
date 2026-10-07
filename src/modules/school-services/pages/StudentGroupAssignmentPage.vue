@@ -48,14 +48,68 @@
             {{ banner.message }}
         </div>
 
-        <!-- Detalle de fallidos en la asignación masiva -->
-        <div v-if="lastFailures.length" class="text-sm px-4 py-3 rounded-lg border border-red-200 bg-red-50">
-            <p class="font-semibold text-red-700 mb-1">No se pudieron asignar {{ lastFailures.length }}:</p>
-            <ul class="space-y-0.5 text-xs text-red-700">
-                <li v-for="(f, i) in lastFailures" :key="i">
-                    • <span class="font-medium">{{ f.name }}</span> — {{ f.reason }}
-                </li>
-            </ul>
+        <!-- Resultado de la última asignación masiva.
+             Compacto y COLAPSADO por defecto. El sobrecupo (grupo lleno) es un
+             resultado esperado → tono ámbar, no error rojo. El detalle agrupado
+             por motivo vive detrás de "Ver detalle". -->
+        <div v-if="lastFailures.length" class="text-sm rounded-lg border"
+            :class="failuresAreCapacityOnly ? 'border-amber-200 bg-amber-50' : 'border-red-200 bg-red-50'">
+            <div class="flex items-center gap-3 px-4 py-3">
+                <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0"
+                    :class="failuresAreCapacityOnly ? 'text-amber-500' : 'text-red-500'">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.253a.25.25 0 0 1 .244.304l-.459 2.066A1.75 1.75 0 0 0 10.747 15H11a.75.75 0 0 0 0-1.5h-.253a.25.25 0 0 1-.244-.304l.459-2.066A1.75 1.75 0 0 0 9.253 9H9Z" clip-rule="evenodd" />
+                </svg>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold" :class="failuresAreCapacityOnly ? 'text-amber-800' : 'text-red-700'">
+                        {{ lastFailures.length }} estudiante{{ lastFailures.length === 1 ? '' : 's' }}
+                        {{ failuresAreCapacityOnly ? 'no cupieron en el grupo' : 'no se pudieron asignar' }}
+                        <span v-if="lastAssigned > 0" class="font-normal"
+                            :class="failuresAreCapacityOnly ? 'text-amber-600' : 'text-red-500'">
+                            · {{ lastAssigned }} sí se asignaron
+                        </span>
+                    </p>
+                    <p class="text-xs mt-0.5" :class="failuresAreCapacityOnly ? 'text-amber-600' : 'text-red-500'">
+                        <template v-if="failuresAreCapacityOnly">
+                            El grupo llegó a su cupo. Selecciónalos y asígnalos a otro grupo, o abre más grupos.
+                        </template>
+                        <template v-else>{{ topFailureReason }}</template>
+                    </p>
+                </div>
+                <button v-if="failuresAreCapacityOnly" type="button"
+                    class="text-xs font-bold px-3 py-1.5 rounded-md bg-amber-100 text-amber-700 hover:bg-amber-200 whitespace-nowrap"
+                    @click="selectFailedStudents">Seleccionar los {{ lastFailures.length }}</button>
+                <button type="button" class="text-xs font-semibold underline whitespace-nowrap"
+                    :class="failuresAreCapacityOnly ? 'text-amber-700 hover:text-amber-900' : 'text-red-600 hover:text-red-800'"
+                    @click="showFailureDetail = !showFailureDetail">
+                    {{ showFailureDetail ? 'Ocultar detalle' : 'Ver detalle' }}
+                </button>
+                <button type="button" aria-label="Cerrar" class="text-lg leading-none px-1"
+                    :class="failuresAreCapacityOnly ? 'text-amber-400 hover:text-amber-700' : 'text-red-400 hover:text-red-700'"
+                    @click="lastFailures = []">×</button>
+            </div>
+            <div v-show="showFailureDetail" class="px-4 pb-3 space-y-2 max-h-52 overflow-y-auto border-t"
+                :class="failuresAreCapacityOnly ? 'border-amber-200 pt-2' : 'border-red-200 pt-2'">
+                <div v-for="(grp, gi) in failureGroups" :key="gi"
+                    class="rounded-md bg-white/60 border px-3 py-2"
+                    :class="failuresAreCapacityOnly ? 'border-amber-100' : 'border-red-100'">
+                    <div class="flex items-start gap-2">
+                        <span class="inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1.5 text-[11px] font-black rounded-full"
+                            :class="failuresAreCapacityOnly ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'">
+                            {{ grp.count }}
+                        </span>
+                        <p class="text-xs font-semibold flex-1" :class="failuresAreCapacityOnly ? 'text-amber-800' : 'text-red-700'">{{ grp.reason }}</p>
+                    </div>
+                    <p class="text-[11px] mt-1 pl-8 leading-relaxed" :class="failuresAreCapacityOnly ? 'text-amber-600' : 'text-red-600'">
+                        {{ failureNames(grp) }}<span v-if="!isFailureExpanded(grp) && grp.count > FAILURE_PREVIEW_COUNT">…</span>
+                        <button v-if="grp.count > FAILURE_PREVIEW_COUNT" type="button"
+                            class="font-semibold underline ml-1 whitespace-nowrap"
+                            :class="failuresAreCapacityOnly ? 'hover:text-amber-900' : 'hover:text-red-800'"
+                            @click="toggleFailureGroup(grp.reason)">
+                            {{ isFailureExpanded(grp) ? 'ver menos' : `+${grp.count - FAILURE_PREVIEW_COUNT} más` }}
+                        </button>
+                    </p>
+                </div>
+            </div>
         </div>
 
         <!-- Buscador global: filtra pendientes + estudiantes dentro de cada grupo -->
@@ -81,6 +135,31 @@
             >Colapsar todos</button>
         </div>
 
+        <!-- Déficit de cupo: faltan lugares para los de nuevo ingreso → abrir más grupos -->
+        <button
+            v-if="hasSeatShortage"
+            type="button"
+            @click="goToPackage"
+            class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition group"
+        >
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0 text-red-500">
+                <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd" />
+            </svg>
+            <div class="min-w-0 flex-1">
+                <p class="text-sm font-bold">
+                    Faltan {{ seatShortage }} lugar{{ seatShortage === 1 ? '' : 'es' }}: se requiere abrir más grupos
+                </p>
+                <p class="text-xs text-red-600 mt-0.5">
+                    Hay {{ unassignedToPlace }} estudiante{{ unassignedToPlace === 1 ? '' : 's' }} de nuevo ingreso sin grupo y solo
+                    {{ openSeats }} lugar{{ openSeats === 1 ? '' : 'es' }} disponible{{ openSeats === 1 ? '' : 's' }} en los grupos abiertos.
+                    Haz clic para ir a Paquete de materias y aumentar el número de grupos.
+                </p>
+            </div>
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0 text-red-400 group-hover:translate-x-0.5 transition-transform">
+                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd" />
+            </svg>
+        </button>
+
         <!-- Contenido principal cuando hay cohorte cargada -->
         <div v-if="cohortLoaded" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <!-- Estudiantes pendientes -->
@@ -99,7 +178,9 @@
                         Solo sin asignar
                     </label>
                 </div>
-                <div class="max-h-[560px] overflow-y-auto">
+                <div ref="listRef" tabindex="0" role="listbox" aria-label="Estudiantes pendientes"
+                    @keydown="onListKeydown"
+                    class="max-h-[560px] overflow-y-auto outline-none focus:ring-2 focus:ring-indigo-300 rounded">
                     <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                         <thead class="bg-slate-50 text-slate-500 sticky top-0">
                             <tr>
@@ -112,11 +193,18 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="s in filteredPending" :key="s.id"
-                                class="border-t border-slate-100 hover:bg-slate-50/60"
-                                :class="{ 'bg-indigo-50/40': selectedIds.includes(s.id) }">
+                            <tr v-for="(s, i) in filteredPending" :key="s.id"
+                                :data-idx="i"
+                                role="option"
+                                :aria-selected="selectedIds.includes(s.id)"
+                                @click="onRowClick(i, s.id)"
+                                class="border-t border-slate-100 hover:bg-slate-50/60 cursor-pointer select-none"
+                                :class="{
+                                    'bg-indigo-50/40': selectedIds.includes(s.id),
+                                    'ring-2 ring-inset ring-indigo-400': activeIndex === i,
+                                }">
                                 <td class="px-3 py-2">
-                                    <input type="checkbox" :value="s.id" v-model="selectedIds" class="rounded border-slate-300" />
+                                    <input type="checkbox" :value="s.id" v-model="selectedIds" @click.stop class="rounded border-slate-300" />
                                 </td>
                                 <td class="px-3 py-2 font-mono text-xs">{{ s.num_control || '—' }}</td>
                                 <td class="px-3 py-2">{{ s.full_name }}</td>
@@ -311,8 +399,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
@@ -342,6 +430,7 @@ const studyPlans = ref<any[]>([])
 const modalities = ref<any[]>([])
 
 const route = useRoute()
+const router = useRouter()
 
 const filters = reactive({
     collegeAcademicPeriodId: null as number | null,
@@ -358,7 +447,62 @@ const cohortLoaded = ref(false)
 const loading = ref(false)
 const assigning = ref<number | null>(null)
 const banner = reactive({ ok: false, message: '' })
-const lastFailures = ref<Array<{ name: string; reason: string }>>([])
+const lastFailures = ref<Array<{ id: number; name: string; reason: string }>>([])
+
+/* ── Fallidos agrupados por motivo ──────────────────────────────────────
+ * Cuando se excede mucho el cupo, decenas de estudiantes fallan con el MISMO
+ * motivo. En vez de volcar una línea por estudiante (bloque rojo gigante) se
+ * agrupan por motivo: un contador + nombres en vista previa, expandibles. */
+type FailureGroup = { reason: string; names: string[]; count: number }
+const FAILURE_PREVIEW_COUNT = 6
+const expandedFailureReasons = ref<string[]>([])
+const showFailureDetail = ref(false)          // detalle colapsado por defecto
+const lastAssigned = ref(0)                    // cuántos SÍ se asignaron
+const lastGroupName = ref('')
+
+/* ¿Todos los fallos son por cupo (grupo lleno)? Entonces es sobrecupo
+ * esperado → tono ámbar/informativo, no error rojo. */
+const failuresAreCapacityOnly = computed(() =>
+    lastFailures.value.length > 0
+    && lastFailures.value.every(f => /lleno|capacidad|cupo/i.test(f.reason)),
+)
+const topFailureReason = computed(() => failureGroups.value[0]?.reason ?? '')
+
+const failureGroups = computed<FailureGroup[]>(() => {
+    const map = new Map<string, string[]>()
+    for (const f of lastFailures.value) {
+        const arr = map.get(f.reason) ?? []
+        arr.push(f.name)
+        map.set(f.reason, arr)
+    }
+    return Array.from(map, ([reason, names]) => ({ reason, names, count: names.length }))
+        .sort((a, b) => b.count - a.count)
+})
+
+function isFailureExpanded(grp: FailureGroup): boolean {
+    return expandedFailureReasons.value.includes(grp.reason)
+}
+function failureNames(grp: FailureGroup): string {
+    const shown = isFailureExpanded(grp) ? grp.names : grp.names.slice(0, FAILURE_PREVIEW_COUNT)
+    return shown.join(', ')
+}
+function toggleFailureGroup(reason: string) {
+    const i = expandedFailureReasons.value.indexOf(reason)
+    if (i >= 0) expandedFailureReasons.value.splice(i, 1)
+    else expandedFailureReasons.value.push(reason)
+}
+/* Reselecciona en la lista de pendientes a los que no cupieron, para
+ * reasignarlos a otro grupo sin buscarlos a mano. */
+function selectFailedStudents() {
+    const pendingIds = new Set(students.value.map(s => s.id))
+    const ids = lastFailures.value.map(f => f.id).filter(id => pendingIds.has(id))
+    selectedIds.value = ids
+    searchTerm.value = ''
+    if (ids.length) {
+        banner.ok = true
+        banner.message = `${ids.length} estudiante(s) seleccionados. Elige otro grupo para asignarlos.`
+    }
+}
 
 const expandedGroupIds = ref<Set<number>>(new Set())
 const groupStudents = reactive<Record<number, Array<{ id: number, num_control: string | null, full_name: string, source: string }>>>({})
@@ -399,6 +543,99 @@ const allSelected = computed(() =>
     filteredPending.value.length > 0
     && filteredPending.value.every(s => selectedIds.value.includes(s.id))
 )
+
+/* ── Déficit de cupo: ¿caben todos los de nuevo ingreso en los grupos abiertos? ──
+ * Lugares libres totales = suma del cupo disponible de cada grupo abierto.
+ * Estudiantes por ubicar = pendientes que aún NO tienen grupo (ignora los ya
+ * asignados cuando "Solo sin asignar" está apagado). Si faltan lugares, se avisa
+ * que hay que abrir más grupos y se ofrece ir a Paquete de materias. */
+const openSeats = computed(() =>
+    groups.value.reduce((sum, g) => sum + Math.max(0, g.available ?? 0), 0)
+)
+const unassignedToPlace = computed(() =>
+    students.value.filter(s => !s.assigned_groups_count).length
+)
+const seatShortage = computed(() =>
+    Math.max(0, unassignedToPlace.value - openSeats.value)
+)
+const hasSeatShortage = computed(() =>
+    cohortLoaded.value && unassignedToPlace.value > 0 && seatShortage.value > 0
+)
+
+/** Va a "Paquete de materias" con el mismo contexto (periodo/plan/campus/modalidad)
+ *  para abrir más grupos. El paquete lee estos filtros del query string. */
+function goToPackage(): void {
+    const m: any = modalities.value.find((x: any) => x.id === filters.modalityId)
+    const campusId = m?.campus?.id ?? m?.campus_id ?? null
+    const mtypeId  = m?.modalityType?.id ?? m?.modality_type_id ?? null
+    router.push({
+        name: 'sca.subject-package',
+        query: {
+            ...(filters.collegeAcademicPeriodId ? { period: filters.collegeAcademicPeriodId } : {}),
+            ...(filters.studyPlanId ? { plan: filters.studyPlanId } : {}),
+            ...(campusId ? { campus: campusId } : {}),
+            ...(mtypeId ? { mtype: mtypeId } : {}),
+        },
+    })
+}
+
+/* ── Navegación por teclado de la tabla de pendientes ──────────────
+ * La lista es un listbox: ↑/↓ mueven la fila ACTIVA (foco), Enter/Espacio
+ * (de)seleccionan la fila activa, y un clic en la fila también la selecciona. */
+const listRef = ref<HTMLElement | null>(null)
+const activeIndex = ref(-1)
+
+// Si la lista cambia (búsqueda/recarga), mantener el índice activo en rango.
+watch(() => filteredPending.value.length, (len) => {
+    if (len === 0) activeIndex.value = -1
+    else if (activeIndex.value > len - 1) activeIndex.value = len - 1
+})
+
+function toggleOne(id: number) {
+    const i = selectedIds.value.indexOf(id)
+    if (i === -1) selectedIds.value = [...selectedIds.value, id]
+    else selectedIds.value = selectedIds.value.filter(x => x !== id)
+}
+
+function onRowClick(i: number, id: number) {
+    activeIndex.value = i
+    toggleOne(id)
+}
+
+function scrollActiveIntoView() {
+    const el = listRef.value?.querySelector(`[data-idx="${activeIndex.value}"]`) as HTMLElement | null
+    el?.scrollIntoView({ block: 'nearest' })
+}
+
+function onListKeydown(e: KeyboardEvent) {
+    const len = filteredPending.value.length
+    if (!len) return
+    switch (e.key) {
+        case 'ArrowDown':
+            e.preventDefault()
+            activeIndex.value = activeIndex.value < 0 ? 0 : Math.min(activeIndex.value + 1, len - 1)
+            scrollActiveIntoView()
+            break
+        case 'ArrowUp':
+            e.preventDefault()
+            activeIndex.value = activeIndex.value < 0 ? 0 : Math.max(activeIndex.value - 1, 0)
+            scrollActiveIntoView()
+            break
+        case 'Home':
+            e.preventDefault(); activeIndex.value = 0; scrollActiveIntoView(); break
+        case 'End':
+            e.preventDefault(); activeIndex.value = len - 1; scrollActiveIntoView(); break
+        case 'Enter':
+        case ' ':
+        case 'Spacebar':
+            e.preventDefault()
+            if (activeIndex.value >= 0) {
+                const s = filteredPending.value[activeIndex.value]
+                if (s) toggleOne(s.id)
+            }
+            break
+    }
+}
 
 /**
  * Grupo recomendado para la selección actual: balanceo de carga.
@@ -516,6 +753,8 @@ async function assignSelection(g: CohortGroup) {
     assigning.value = g.id
     banner.message = ''
     lastFailures.value = []
+    expandedFailureReasons.value = []
+    showFailureDetail.value = false
     // Lookup id→nombre ANTES de recargar el cohorte (para nombrar los fallidos).
     const nameById = new Map(students.value.map(s => [s.id, s.full_name]))
 
@@ -525,10 +764,17 @@ async function assignSelection(g: CohortGroup) {
             group_id:    g.id,
             source:      'INSCRIPCION',
         })
-        banner.ok = data.failed === 0
-        banner.message = `${data.assigned} asignado(s) al grupo ${g.name}`
-            + (data.failed > 0 ? ` · ${data.failed} con problema` : '')
+        // El banner celebra lo que SÍ se asignó; el sobrecupo (grupo lleno) no es
+        // un error rojo sino un resultado esperado y se muestra aparte, en tono
+        // ámbar y colapsado, con la acción de seguir en otro grupo.
+        lastAssigned.value  = data.assigned ?? 0
+        lastGroupName.value = g.name
+        banner.ok = (data.assigned ?? 0) > 0
+        banner.message = data.assigned > 0
+            ? `${data.assigned} estudiante(s) asignado(s) al grupo ${g.name}.`
+            : `No se asignó ningún estudiante al grupo ${g.name}.`
         lastFailures.value = (data.failed_items ?? []).map((f: any) => ({
+            id:     f.student_id,
             name:   nameById.get(f.student_id) ?? `Estudiante #${f.student_id}`,
             reason: f.reason ?? 'No se pudo asignar.',
         }))

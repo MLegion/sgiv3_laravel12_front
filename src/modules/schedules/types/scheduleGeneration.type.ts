@@ -83,6 +83,19 @@ export interface GenerateRunRequest {
     seed?: number | null
     /** F7.c — resuelve la carrera semestre a semestre (instancias más chicas) */
     decompose_by_semester?: boolean
+    /**
+     * "Reajustar": overrides de reglas de modalidad SOLO para esta corrida
+     * (no tocan la config del plantel). Se envía cualquier subconjunto.
+     */
+    rule_overrides?: RuleOverrides
+}
+
+/** Overrides de reglas de modalidad por corrida (todas opcionales). */
+export interface RuleOverrides {
+    allow_gaps_same_day?: boolean
+    max_consecutive_blocks?: number | null
+    max_blocks_per_day_teacher?: number | null
+    min_gap_between_blocks_minutes?: number
 }
 
 export interface GenerateRunResponse {

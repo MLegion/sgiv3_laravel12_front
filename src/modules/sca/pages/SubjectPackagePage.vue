@@ -79,6 +79,17 @@
             </p>
         </div>
 
+        <!-- Modo solo lectura: fase cerrada y sin apertura tardía -->
+        <div v-if="resolvedConfigId && readOnly" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 flex items-center justify-center gap-2 text-center">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400 flex-shrink-0">
+                <path d="M10 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
+                <path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" clip-rule="evenodd" />
+            </svg>
+            <p class="text-[11px] text-slate-500 font-semibold">
+                La fase de Paquete de Materias no está habilitada y no cuenta con una apertura tardía aprobada (solo se mostrará de solo lectura)
+            </p>
+        </div>
+
         <!-- Vista de selección de materias -->
         <template v-if="resolvedConfigId && selectedStudyPlanId && !configError">
 
@@ -147,11 +158,11 @@
                                     'border-l-purple-400 bg-purple-50/40': !selectedSubjectIds.has(cs.subjectId) && !cs.alreadyInPackage && cs.optionalGroupId,
                                     'border-l-transparent hover:bg-slate-50': !cs.alreadyInPackage && !selectedSubjectIds.has(cs.subjectId) && !cs.specialtyId && !cs.optionalGroupId,
                                 }"
-                                @click="!cs.alreadyInPackage && toggleSubject(cs)"
+                                @click="!cs.alreadyInPackage && !readOnly && toggleSubject(cs)"
                             >
                                 <input type="checkbox"
                                     :checked="selectedSubjectIds.has(cs.subjectId) || cs.alreadyInPackage"
-                                    :disabled="cs.alreadyInPackage"
+                                    :disabled="cs.alreadyInPackage || readOnly"
                                     class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                                     @click.stop
                                     @change="!cs.alreadyInPackage && toggleSubject(cs)"
@@ -191,9 +202,14 @@
                                 width: 'max-content'
                             }"
                         >
-                            <!-- Cabeceras -->
+                            <!-- Cabeceras: clic en el semestre selecciona/deselecciona todas sus materias -->
                             <div v-for="s in maxSemester" :key="'gh-'+s"
-                                class="text-center font-black text-slate-400 pb-3 border-b-2 border-slate-200 uppercase tracking-tighter text-[11px] flex items-end justify-center h-10">
+                                @click="!readOnly && selectSemester(s)"
+                                :title="`Seleccionar o quitar todas las materias de ${s}° semestre`"
+                                class="text-center font-black pb-3 border-b-2 uppercase tracking-tighter text-[11px] flex items-end justify-center h-10 cursor-pointer select-none transition-colors"
+                                :class="isSemesterFullySelected(s)
+                                    ? 'text-blue-600 border-blue-400'
+                                    : 'text-slate-400 border-slate-200 hover:text-blue-500 hover:border-blue-300'">
                                 {{ s }}° Semestre
                             </div>
 
@@ -204,13 +220,13 @@
                                         <div v-if="getGridItem(col, row)"
                                             class="w-full h-full border-2 rounded-xl flex flex-col overflow-hidden transition-all cursor-pointer group"
                                             :class="gridCardClass(getGridItem(col, row))"
-                                            @click="!getGridItem(col, row).alreadyInPackage && toggleSubject(getGridItem(col, row))"
+                                            @click="!getGridItem(col, row).alreadyInPackage && !readOnly && toggleSubject(getGridItem(col, row))"
                                         >
                                             <!-- Checkbox + badges -->
                                             <div class="flex items-center justify-between px-2 pt-2">
                                                 <input type="checkbox"
                                                     :checked="selectedSubjectIds.has(getGridItem(col, row).subjectId) || getGridItem(col, row).alreadyInPackage"
-                                                    :disabled="getGridItem(col, row).alreadyInPackage"
+                                                    :disabled="getGridItem(col, row).alreadyInPackage || readOnly"
                                                     class="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                                                     @click.stop
                                                     @change="!getGridItem(col, row).alreadyInPackage && toggleSubject(getGridItem(col, row))"
@@ -282,6 +298,7 @@
                         </button>
                     </div>
                     <button
+                        v-if="!readOnly"
                         class="px-6 py-2.5 text-sm font-bold rounded-xl uppercase transition disabled:opacity-40"
                         :class="selectedSubjectIds.size > 0 ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-400'"
                         :disabled="selectedSubjectIds.size === 0 || addingToPackage"
@@ -349,7 +366,8 @@
                                         <label class="text-[10px] text-slate-400 lg:hidden font-bold">SEMESTRE</label>
                                         <input type="number" :value="item.targetSemester"
                                             min="1" max="15"
-                                            class="w-full border rounded-lg px-2 py-1 text-sm text-center"
+                                            :disabled="readOnly"
+                                            class="w-full border rounded-lg px-2 py-1 text-sm text-center disabled:bg-slate-50 disabled:text-slate-400"
                                             @change="updateItem(item.id, { target_semester: Number(($event.target as HTMLInputElement).value), num_groups: item.numGroups })"
                                         />
                                     </div>
@@ -358,19 +376,20 @@
                                         <label class="text-[10px] text-slate-400 lg:hidden font-bold">GRUPOS</label>
                                         <input type="number" :value="item.numGroups"
                                             min="1" max="20"
-                                            class="w-full border rounded-lg px-2 py-1 text-sm text-center"
+                                            :disabled="readOnly"
+                                            class="w-full border rounded-lg px-2 py-1 text-sm text-center disabled:bg-slate-50 disabled:text-slate-400"
                                             @change="updateItem(item.id, { target_semester: item.targetSemester, num_groups: Number(($event.target as HTMLInputElement).value) })"
                                         />
                                     </div>
                                     <!-- Duplicar a otro semestre -->
                                     <div class="flex justify-center">
-                                        <button aria-label="Agregar en otro semestre" class="text-blue-400 hover:text-blue-600 transition" @click="openDuplicateModal(item)" title="Agregar en otro semestre">
+                                        <button v-if="!readOnly" aria-label="Agregar en otro semestre" class="text-blue-400 hover:text-blue-600 transition" @click="openDuplicateModal(item)" title="Agregar en otro semestre">
                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                                         </button>
                                     </div>
                                     <!-- Quitar -->
                                     <div class="flex justify-center">
-                                        <button aria-label="Quitar" class="text-red-400 hover:text-red-600 transition" @click="removeFromPackage(item.id)" title="Quitar">
+                                        <button v-if="!readOnly" aria-label="Quitar" class="text-red-400 hover:text-red-600 transition" @click="removeFromPackage(item.id)" title="Quitar">
                                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                         </button>
                                     </div>
@@ -639,6 +658,9 @@ const resolvedConfigId   = ref<number | null>(null)
 const resolvedConfig     = ref<any>(null)
 const configError        = ref<string | null>(null)
 const unlockedByLateOpening = ref(false)
+// Fase de Paquete cerrada y SIN apertura tardía aprobada: en vez de bloquear la
+// pantalla, se muestra en SOLO LECTURA (ver la información sin poder editarla).
+const readOnly = ref(false)
 
 /* ── State: Curriculum & Package ─────────────────────────────────── */
 const view                = ref<'curriculum' | 'package' | 'validation'>('curriculum')
@@ -877,6 +899,7 @@ async function resolveConfig() {
     resolvedConfigId.value = null
     resolvedConfig.value = null
     configError.value = null
+    readOnly.value = false
 
     if (!selectedPeriodId.value || !resolvedModalityId.value) return
 
@@ -898,17 +921,20 @@ async function resolveConfig() {
         const config = items[0]
         const phasePackageOpen = !!(config.phasePackage ?? config.phase_package)
         if (!phasePackageOpen) {
-            // Si la fase está cerrada, el usuario aún puede entrar si tiene
-            // una solicitud de apertura tardía APROBADA y ACTIVA para este
-            // config. El backend ya valida igual, pero acá levantamos el
-            // bloqueo para que la pantalla cargue.
+            // Si la fase está cerrada, el usuario aún puede EDITAR si tiene una
+            // solicitud de apertura tardía APROBADA y ACTIVA para este config.
+            // Si no, NO se bloquea la pantalla: se carga en SOLO LECTURA para
+            // poder consultar la información (el backend igual rechaza escrituras).
             const hasLateOpening = await hasActiveLateOpeningForConfig(config.id)
             if (!hasLateOpening) {
-                configError.value = 'La fase de Paquete de Materias no está habilitada y no cuenta con una apertura tardía aprobada.'
-                return
+                readOnly.value = true
+                unlockedByLateOpening.value = false
+            } else {
+                readOnly.value = false
+                unlockedByLateOpening.value = true
             }
-            unlockedByLateOpening.value = true
         } else {
+            readOnly.value = false
             unlockedByLateOpening.value = false
         }
         resolvedConfigId.value = config.id
@@ -985,6 +1011,7 @@ async function fetchPackageItems() {
 
 /* ── Actions ─────────────────────────────────────────────────────── */
 function toggleSubject(cs: any) {
+    if (readOnly.value) return
     const newSet = new Set(selectedSubjectIds.value)
     if (newSet.has(cs.subjectId)) {
         newSet.delete(cs.subjectId)
@@ -994,7 +1021,40 @@ function toggleSubject(cs: any) {
     selectedSubjectIds.value = newSet
 }
 
+/** Materias seleccionables (no incluidas ya en el paquete) de un semestre. */
+function selectableSubjectsInSemester(sem: number): any[] {
+    return curriculumSubjects.value.filter(
+        (cs: any) => (cs.curriculumPeriod ?? 0) === sem && !cs.alreadyInPackage
+    )
+}
+
+/** ¿Todas las materias seleccionables de ese semestre están ya seleccionadas? */
+function isSemesterFullySelected(sem: number): boolean {
+    const selectable = selectableSubjectsInSemester(sem)
+    return selectable.length > 0
+        && selectable.every((cs: any) => selectedSubjectIds.value.has(cs.subjectId))
+}
+
+/**
+ * Clic en la cabecera de un semestre (modo retícula): si ya están todas
+ * seleccionadas, las quita; si no, selecciona todas las materias de ese
+ * semestre (ignora las que ya están en el paquete).
+ */
+function selectSemester(sem: number) {
+    if (readOnly.value) return
+    const selectable = selectableSubjectsInSemester(sem)
+    if (selectable.length === 0) return
+    const newSet = new Set(selectedSubjectIds.value)
+    const allSelected = selectable.every((cs: any) => newSet.has(cs.subjectId))
+    for (const cs of selectable) {
+        if (allSelected) newSet.delete(cs.subjectId)
+        else newSet.add(cs.subjectId)
+    }
+    selectedSubjectIds.value = newSet
+}
+
 async function addSelectedToPackage() {
+    if (readOnly.value) return
     if (!resolvedConfigId.value || !selectedStudyPlanId.value) return
     addingToPackage.value = true
     try {
@@ -1027,6 +1087,7 @@ async function addSelectedToPackage() {
 }
 
 async function updateItem(id: number, payload: { target_semester: number; num_groups: number }) {
+    if (readOnly.value) return
     try {
         await api.put(API.SCA_API.subjectPackages.update(id), payload)
         await fetchPackageItems()
@@ -1036,6 +1097,7 @@ async function updateItem(id: number, payload: { target_semester: number; num_gr
 }
 
 async function removeFromPackage(id: number) {
+    if (readOnly.value) return
     try {
         await api.delete(API.SCA_API.subjectPackages.delete(id))
         await Promise.all([fetchCurriculumSubjects(), fetchPackageItems()])
@@ -1097,6 +1159,7 @@ const duplicateModal = reactive({
 })
 
 function openDuplicateModal(item: any) {
+    if (readOnly.value) return
     duplicateModal.item = item
     duplicateModal.targetSemester = (item.targetSemester ?? 1) + 1
     duplicateModal.error = null
