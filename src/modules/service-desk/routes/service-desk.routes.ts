@@ -12,10 +12,16 @@ export default [
         meta: { title: 'Emisiones de ventanilla' },
     },
     {
-        path: 'service-desk/my-requests',
-        name: 'service-desk.my-requests',
-        component: () => import('@/modules/service-desk/pages/MyRequestsPage.vue'),
-        meta: { title: 'Mis trámites' },
+        path: 'service-desk/request',
+        name: 'service-desk.request',
+        component: () => import('@/modules/service-desk/pages/RequestDocumentPage.vue'),
+        meta: { title: 'Solicitar documento' },
+    },
+    {
+        path: 'service-desk/my-documents',
+        name: 'service-desk.my-documents',
+        component: () => import('@/modules/service-desk/pages/MyDocumentsPage.vue'),
+        meta: { title: 'Bandeja de documentos' },
     },
     {
         path: 'service-desk/requests',
