@@ -12,17 +12,11 @@
         </div>
 
         <!-- Fase cerrada -->
-        <div v-else-if="!activePeriod?.open" class="bg-white border border-slate-200 rounded-xl shadow-sm p-10 text-center">
-            <div class="mx-auto w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-            <h2 class="text-lg font-bold text-slate-700 uppercase">Fase no disponible</h2>
-            <p class="text-sm text-slate-500 mt-2 max-w-md mx-auto">
-                {{ activePeriod?.message ?? 'La fase de Altas y Bajas no está abierta en este momento.' }}
-            </p>
-        </div>
+        <PhaseUnavailable
+            v-else-if="!activePeriod?.open"
+            :message="loadError || activePeriod?.message || 'La fase de Altas y Bajas no está abierta en este momento.'"
+            :hint="loadError ? '(No se pudo consultar la disponibilidad — revisa que estés dentro con tu usuario de alumno.)' : ''"
+        />
 
         <template v-else>
             <!-- Banderas -->
@@ -51,14 +45,62 @@
                 </p>
             </div>
 
-            <!-- Mi carga actual -->
-            <div class="bg-white border rounded-xl shadow-sm">
-                <div class="border-b px-4 py-3">
-                    <h3 class="text-sm font-bold text-slate-700 uppercase">Mi carga actual</h3>
+            <!-- Historial de movimientos (altas y bajas realizadas) -->
+            <div v-if="showHistory" class="bg-white border rounded-xl shadow-sm">
+                <div class="border-b px-4 py-3 flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase">Historial de movimientos</h3>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wide">Solicitud #{{ historySource?.id }}</span>
                 </div>
                 <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
+                            <th scope="col" class="px-4 py-2 text-left w-28">MOVIMIENTO</th>
+                            <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
+                            <th scope="col" class="px-4 py-2 text-left">GRUPO</th>
+                            <th scope="col" class="px-4 py-2 text-left">DOCENTE</th>
+                            <th scope="col" class="px-4 py-2 text-right w-28">ESTADO</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr v-for="it in movements" :key="`mv-${it.id}`"
+                            :class="it.type === 'drop' ? 'bg-red-50/40' : 'bg-emerald-50/40'">
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full"
+                                    :class="it.type === 'drop' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'">
+                                    {{ it.type === 'drop' ? 'BAJA' : 'ALTA' }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <span class="font-bold text-slate-700" :class="{ 'line-through text-red-600': it.type === 'drop' }">{{ it.subject?.name ?? '—' }}</span>
+                                <span v-if="it.subject?.officialCode" class="ml-2 text-[10px] font-mono text-slate-400">{{ it.subject?.officialCode }}</span>
+                            </td>
+                            <td class="px-4 py-2 text-xs font-mono text-slate-600">{{ it.teacherAssignment?.groupName ?? '—' }}</td>
+                            <td class="px-4 py-2 text-xs text-slate-600">{{ it.teacherAssignment?.teacherName ?? '—' }}</td>
+                            <td class="px-4 py-2 text-right">
+                                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full"
+                                    :class="it.applied ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'">
+                                    {{ it.applied ? 'APLICADA' : 'PENDIENTE' }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table></div>
+            </div>
+
+            <!-- Mi carga actual -->
+            <div class="bg-white border rounded-xl shadow-sm">
+                <div class="border-b px-4 py-3 flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase">Mi carga actual</h3>
+                    <div class="flex items-center gap-3 text-[10px] uppercase tracking-wide">
+                        <span class="inline-flex items-center gap-1 text-slate-500"><span class="w-2.5 h-2.5 rounded-sm bg-slate-200"></span>Inscrita</span>
+                        <span class="inline-flex items-center gap-1 text-red-600"><span class="w-2.5 h-2.5 rounded-sm bg-red-200"></span>Baja</span>
+                        <span class="inline-flex items-center gap-1 text-emerald-600"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-200"></span>Alta</span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                    <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
+                        <tr>
+                            <th scope="col" class="px-4 py-2 text-left w-28">ESTADO</th>
                             <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
                             <th scope="col" class="px-4 py-2 text-left">GRUPO</th>
                             <th scope="col" class="px-4 py-2 text-left">DOCENTE</th>
@@ -66,9 +108,15 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y">
-                        <tr v-for="e in currentLoad" :key="e.id" :class="isDropped(e.id) ? 'bg-red-50' : ''">
+                        <tr v-for="e in currentLoad" :key="e.id" :class="isDropped(e.id) ? 'bg-red-50/60' : ''">
                             <td class="px-4 py-2">
-                                <div class="font-bold text-slate-700" :class="isDropped(e.id) ? 'line-through text-red-400' : ''">
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full"
+                                    :class="isDropped(e.id) ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-500'">
+                                    {{ isDropped(e.id) ? 'BAJA' : 'INSCRITA' }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <div class="font-bold text-slate-700" :class="isDropped(e.id) ? 'line-through text-red-600' : ''">
                                     {{ e.subject?.name ?? '—' }}
                                 </div>
                                 <div class="text-[10px] font-mono text-slate-400">{{ e.subject?.official_code }}</div>
@@ -91,20 +139,21 @@
                             </td>
                         </tr>
                         <tr v-if="!currentLoad.length">
-                            <td colspan="4" class="px-4 py-6 text-center text-sm text-slate-400">No tienes materias inscritas.</td>
+                            <td colspan="5" class="px-4 py-6 text-center text-sm text-slate-400">No tienes materias inscritas.</td>
                         </tr>
                     </tbody>
                 </table></div>
             </div>
 
             <!-- Altas propuestas -->
-            <div v-if="addedItems.length" class="bg-white border rounded-xl shadow-sm">
+            <div v-if="pendingAddedItems.length" class="bg-white border rounded-xl shadow-sm">
                 <div class="border-b px-4 py-3">
                     <h3 class="text-sm font-bold text-emerald-700 uppercase">Altas solicitadas</h3>
                 </div>
                 <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
+                            <th scope="col" class="px-4 py-2 text-left w-28">ESTADO</th>
                             <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
                             <th scope="col" class="px-4 py-2 text-left">GRUPO</th>
                             <th scope="col" class="px-4 py-2 text-left">DOCENTE</th>
@@ -112,7 +161,10 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y">
-                        <tr v-for="it in addedItems" :key="it.id" class="bg-emerald-50/40">
+                        <tr v-for="it in pendingAddedItems" :key="it.id" class="bg-emerald-50/60">
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700">ALTA</span>
+                            </td>
                             <td class="px-4 py-2 font-bold text-slate-700">{{ it.subject?.name ?? '—' }}</td>
                             <td class="px-4 py-2 text-xs font-mono">{{ it.teacherAssignment?.groupName ?? '—' }}</td>
                             <td class="px-4 py-2 text-xs text-slate-600">{{ it.teacherAssignment?.teacherName ?? '—' }}</td>
@@ -188,6 +240,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import PhaseUnavailable from '@/app/components/ui/PhaseUnavailable.vue'
 import type {
     AddDropActivePeriod, AddDropRequest, AddDropItemType,
     CurriculumStatus, CurriculumStatusEntry, EnrolledCourse, PolicyViolation, AdvisingStatus,
@@ -200,8 +253,10 @@ const okMsg      = ref('')
 const violations = ref<PolicyViolation[]>([])
 
 const activePeriod = ref<AddDropActivePeriod | null>(null)
+const loadError    = ref('')
 const studentId    = ref<number | null>(null)
 const request      = ref<AddDropRequest | null>(null)
+const historyReq   = ref<AddDropRequest | null>(null)
 const currentLoad  = ref<EnrolledCourse[]>([])
 const curriculum   = ref<CurriculumStatus | null>(null)
 
@@ -220,7 +275,19 @@ const droppedEnrollmentIds = computed<number[]>(() =>
         .map(i => i.sourceEnrollmentId as number),
 )
 const addedItems = computed(() => (request.value?.items ?? []).filter(i => i.type === 'add'))
+// Altas aún pendientes de aplicar: una vez aplicadas pasan a "Mi carga actual".
+const pendingAddedItems = computed(() => addedItems.value.filter(i => !i.applied))
 const hasItems   = computed(() => (request.value?.items?.length ?? 0) > 0)
+
+// Historial: todos los movimientos de la última solicitud (altas y bajas),
+// visible una vez enviada/aplicada para que el alumno conserve el registro aun
+// cuando las bajas ya no aparezcan en la carga y las altas ya sean "inscritas".
+// Usa `history` (cualquier estado, incluida la aprobada); si no, la viva.
+const historySource = computed(() => historyReq.value ?? request.value)
+const movements = computed(() => historySource.value?.items ?? [])
+const showHistory = computed(() =>
+    movements.value.length > 0 && !!historySource.value && historySource.value.status !== 'draft',
+)
 
 const currentSubjectIds = computed(() => new Set(currentLoad.value.map(e => e.subject?.id).filter(Boolean) as number[]))
 const addedSubjectIds   = computed(() => new Set(addedItems.value.map(i => i.subjectId)))
@@ -265,13 +332,17 @@ function clearFlags() {
 
 async function loadAll() {
     loading.value = true
+    loadError.value = ''
     try {
         const { data: ap } = await api.get(API.ADVISING_API.addDrop.myActivePeriod)
         activePeriod.value = ap
         if (!ap?.open || !ap.collegeAcademicPeriodId) return
         await refresh()
     } catch (e: any) {
-        errorMsg.value = extractMsg(e)
+        // Deja visible el motivo real en el bloque "Fase no disponible"
+        // (p.ej. 404 "No estás vinculado a un alumno", 403, 500).
+        loadError.value = extractMsg(e)
+        errorMsg.value = loadError.value
     } finally {
         loading.value = false
     }
@@ -285,6 +356,7 @@ async function refresh() {
     })
     studentId.value   = data.studentId ?? null
     request.value     = data.request ?? null
+    historyReq.value  = data.history ?? null
     currentLoad.value = Array.isArray(data.currentLoad) ? data.currentLoad : []
 
     if (studentId.value && curriculum.value === null) {

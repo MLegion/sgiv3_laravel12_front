@@ -12,10 +12,10 @@
         <div v-if="loadingPeriod || loadingInit" class="bg-white border rounded-xl shadow-sm p-6 text-center text-sm text-slate-400">
             {{ loadingInit ? 'Iniciando asesoría…' : 'Buscando periodo abierto…' }}
         </div>
-        <div v-else-if="!activePeriod?.open" class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700">
-            <strong class="block mb-1">No hay periodo abierto para asesoría reticular.</strong>
-            {{ activePeriod?.message ?? 'Vuelve cuando tu coordinación habilite la fase.' }}
-        </div>
+        <PhaseUnavailable
+            v-else-if="!activePeriod?.open"
+            :message="activePeriod?.message || 'No hay periodo abierto para asesoría reticular. Vuelve cuando tu coordinación habilite la fase.'"
+        />
         <div v-else-if="session" class="bg-white border rounded-xl shadow-sm px-6 py-3 flex items-center justify-between flex-wrap gap-2">
             <div>
                 <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Periodo objetivo</div>
@@ -93,11 +93,11 @@
                     </p>
                 </div>
                 <button
-                    :disabled="generatingFormat"
+                    :disabled="openingFormat"
                     class="px-5 py-2.5 text-sm rounded-md bg-emerald-600 text-white font-bold hover:bg-emerald-700 disabled:opacity-50 self-center"
-                    @click="downloadFormat"
+                    @click="openApprovedFormat"
                 >
-                    {{ generatingFormat ? 'Generando…' : 'ABRIR FORMATO' }}
+                    {{ openingFormat ? 'Abriendo…' : 'ABRIR FORMATO' }}
                 </button>
             </div>
 
@@ -692,12 +692,8 @@
                             class="px-4 py-2 text-xs rounded-md border hover:bg-slate-50"
                             @click="askReopen">REABRIR PARA EDITAR</button>
                     <span class="flex-1"></span>
-                    <button
-                        :disabled="!session?.id || generatingFormat"
-                        class="px-4 py-2 text-xs rounded-md border hover:bg-slate-50 disabled:opacity-50"
-                        @click="downloadFormat">
-                        {{ generatingFormat ? 'Generando…' : 'FORMATO ASESORÍA' }}
-                    </button>
+                    <!-- El formato lo genera el asesor al aprobar; el alumno lo abre
+                         desde la vista "aprobada". Aquí ya no se genera (evita 403). -->
                 </div>
             </div>
 
@@ -746,12 +742,6 @@
             @confirm="reopen"
         />
 
-        <FormatUnavailableModal
-            v-model="formatUnavailableOpen"
-            :code="formatUnavailableInfo.code"
-            :reason="formatUnavailableInfo.reason"
-        />
-
         <CompromiseLetterModal
             v-if="projectionData?.projection"
             v-model="letterModalOpen"
@@ -761,6 +751,19 @@
             :for-self="true"
             @uploaded="loadProjection"
         />
+
+        <!-- Drawer con el formato de asesoría (PDF embebido; sin pestañas).
+             Arranca bajo el navbar (h-16) para no encimarse con él. -->
+        <div v-if="formatDrawerOpen" class="fixed inset-x-0 bottom-0 top-16 z-50 flex justify-end">
+            <div class="absolute inset-0 bg-black/40" @click="closeFormatDrawer" />
+            <div class="relative bg-white w-full max-w-3xl h-full shadow-xl flex flex-col">
+                <div class="border-b px-4 py-3 flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-slate-700 uppercase">Formato de asesoría</h2>
+                    <button class="text-slate-400 hover:text-slate-700 text-xl leading-none" aria-label="Cerrar" @click="closeFormatDrawer">×</button>
+                </div>
+                <iframe v-if="formatPreviewUrl" :src="formatPreviewUrl" class="flex-1 w-full" title="Formato de asesoría"></iframe>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -770,11 +773,9 @@ import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
+import PhaseUnavailable from '@/app/components/ui/PhaseUnavailable.vue'
 import CompromiseLetterModal from '@/modules/advising/components/CompromiseLetterModal.vue'
 import PhotoUpload from '@/app/components/ui/form/PhotoUpload.vue'
-import FormatUnavailableModal from '@/modules/reports/components/FormatUnavailableModal.vue'
-import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
-import { ReportCode } from '@/modules/reports/types/reportCodes'
 import type {
     AdvisingSession, AdvisingStatus, CurriculumStatus, CurriculumStatusEntry,
     SubjectAttempt, PolicyViolation, ContactInfo, GeoSettlement, GeoPostalCodeResponse,
@@ -802,18 +803,14 @@ const loadingPeriod = ref(true)
 const loadingInit   = ref(false)
 const loadingCurriculum = ref(false)
 const submitting    = ref(false)
-const generatingFormat = ref(false)
+const openingFormat = ref(false)
+const formatDrawerOpen = ref(false)
+const formatPreviewUrl = ref('')
 const violations    = ref<PolicyViolation[]>([])
 
 // Modales (reemplazo de confirm/alert nativos)
 const submitModalOpen = ref(false)
 const reopenModalOpen = ref(false)
-
-// Modal "Formato no disponible"
-const formatUnavailableOpen = ref(false)
-const formatUnavailableInfo = ref<{ code: string; reason: 'missing' | 'inactive' }>({ code: '', reason: 'missing' })
-
-const { generatePdf } = useReportGenerator()
 
 // Pestaña "Mis Datos"
 const contact = reactive<ContactInfo>({
@@ -1437,28 +1434,35 @@ async function reopen() {
     }
 }
 
-async function downloadFormat() {
-    if (!session.value?.id || generatingFormat.value) return
-    generatingFormat.value = true
+/**
+ * El alumno ya NO genera el formato (eso requería permisos de reports). Lo
+ * genera el asesor al aprobar y queda guardado; aquí solo se DESCARGA el PDF
+ * propio de la sesión aprobada.
+ */
+async function openApprovedFormat() {
+    if (!session.value?.id || openingFormat.value) return
+    openingFormat.value = true
     errorMsg.value = ''
     try {
-        const { blob } = await generatePdf({
-            reportCode: ReportCode.ADVISING_RETICULAR_FORMAT,
-            params:     { session_id: session.value.id },
+        const { data } = await api.get(API.ADVISING_API.sessions.myFormat(session.value.id), {
+            responseType: 'blob',
         })
-        const url = URL.createObjectURL(blob)
-        window.open(url, '_blank')
-        // El revoke se deja al GC del navegador para que la pestaña abierta no pierda el blob.
+        if (formatPreviewUrl.value) URL.revokeObjectURL(formatPreviewUrl.value)
+        formatPreviewUrl.value = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
+        formatDrawerOpen.value = true
     } catch (e: any) {
-        if (e instanceof ReportFormatUnavailableError) {
-            formatUnavailableInfo.value = { code: e.code, reason: e.reason }
-            formatUnavailableOpen.value = true
-        } else {
-            errorMsg.value = e?.message ?? 'No se pudo generar el formato.'
-        }
+        errorMsg.value = e?.response?.status === 404
+            ? 'Tu formato aún no está disponible. El asesor debe generarlo al aprobar.'
+            : (e?.message ?? 'No se pudo abrir el formato.')
     } finally {
-        generatingFormat.value = false
+        openingFormat.value = false
     }
+}
+
+function closeFormatDrawer() {
+    formatDrawerOpen.value = false
+    if (formatPreviewUrl.value) URL.revokeObjectURL(formatPreviewUrl.value)
+    formatPreviewUrl.value = ''
 }
 
 /* ── Helpers visuales ──────────────────────────────────────────────── */

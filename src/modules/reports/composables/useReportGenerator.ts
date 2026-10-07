@@ -14,6 +14,13 @@ export interface GenerateOptions {
     reportCode?: string
     params?:     Record<string, unknown>
     filename?:   string
+    /**
+     * Fuente de contexto alterna: si se provee, se usa EN LUGAR de ejecutar los
+     * DAOs vía /daos/execute (que exige rep.dao.execute). Permite que un flujo
+     * acotado por otro permiso (p.ej. asesoría) obtenga el contexto desde un
+     * endpoint propio. El resto del pipeline (plantilla, scripts) es igual.
+     */
+    fetchContext?: () => Promise<Record<string, any>>
 }
 
 export type ReportUnavailableReason = 'missing' | 'inactive'
@@ -120,7 +127,9 @@ export function useReportGenerator() {
                 throw new Error('El reporte no tiene plantilla Word asociada.')
             }
             const reportId = report.id
-            const context  = await runDaos(report, reportId, options.params ?? {})
+            const context  = options.fetchContext
+                ? await options.fetchContext()
+                : await runDaos(report, reportId, options.params ?? {})
             await applyChartEnhancers(report, context)
             await applyClientScript(report, context)
             await resolveImages(context)

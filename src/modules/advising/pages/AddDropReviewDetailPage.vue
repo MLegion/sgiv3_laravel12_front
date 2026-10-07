@@ -32,36 +32,81 @@
                 </ul>
             </div>
 
-            <!-- Bajas -->
+            <!-- Carga resultante: inscritas + BAJA (tachada) + ALTA (verde) -->
             <div class="bg-white border rounded-xl shadow-sm">
-                <div class="border-b px-4 py-3"><h3 class="text-sm font-bold text-red-700 uppercase">Bajas solicitadas</h3></div>
+                <div class="border-b px-4 py-3 flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase">Carga del alumno</h3>
+                    <div class="flex items-center gap-3 text-[10px] uppercase tracking-wide">
+                        <span class="inline-flex items-center gap-1 text-slate-500"><span class="w-2.5 h-2.5 rounded-sm bg-slate-200"></span>Inscrita</span>
+                        <span class="inline-flex items-center gap-1 text-red-600"><span class="w-2.5 h-2.5 rounded-sm bg-red-200"></span>Baja</span>
+                        <span class="inline-flex items-center gap-1 text-emerald-600"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-200"></span>Alta</span>
+                    </div>
+                </div>
                 <div class="overflow-x-auto w-full"><table class="w-full text-sm">
-                    <tbody class="divide-y">
-                        <tr v-for="it in dropItems" :key="it.id">
-                            <td class="px-4 py-2">
-                                <span class="font-bold text-slate-700 line-through">{{ it.subject?.name ?? '—' }}</span>
-                                <span class="ml-2 text-[10px] font-mono text-slate-400">{{ it.subject?.officialCode }}</span>
-                            </td>
+                    <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
+                        <tr>
+                            <th scope="col" class="px-4 py-2 text-left w-28">ESTADO</th>
+                            <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
+                            <th scope="col" class="px-4 py-2 text-left">GRUPO</th>
+                            <th scope="col" class="px-4 py-2 text-left">DOCENTE</th>
                         </tr>
-                        <tr v-if="!dropItems.length"><td class="px-4 py-4 text-center text-xs text-slate-400">Sin bajas.</td></tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr v-for="row in loadRows" :key="row.key"
+                            :class="row.kind === 'drop' ? 'bg-red-50/60' : row.kind === 'add' ? 'bg-emerald-50/60' : ''">
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full"
+                                    :class="row.kind === 'drop' ? 'bg-red-100 text-red-700' : row.kind === 'add' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'">
+                                    {{ row.kind === 'drop' ? 'BAJA' : row.kind === 'add' ? 'ALTA' : 'INSCRITA' }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <span class="font-bold text-slate-700" :class="{ 'line-through text-red-600': row.kind === 'drop' }">{{ row.subject ?? '—' }}</span>
+                                <span v-if="row.code" class="ml-2 text-[10px] font-mono text-slate-400">{{ row.code }}</span>
+                            </td>
+                            <td class="px-4 py-2 text-xs font-mono text-slate-600">{{ row.group ?? '—' }}</td>
+                            <td class="px-4 py-2 text-xs text-slate-600">{{ row.teacher ?? '—' }}</td>
+                        </tr>
+                        <tr v-if="!loadRows.length"><td colspan="4" class="px-4 py-4 text-center text-xs text-slate-400">Sin materias.</td></tr>
                     </tbody>
                 </table></div>
             </div>
 
-            <!-- Altas -->
-            <div class="bg-white border rounded-xl shadow-sm">
-                <div class="border-b px-4 py-3"><h3 class="text-sm font-bold text-emerald-700 uppercase">Altas solicitadas</h3></div>
+            <!-- Historial de movimientos (altas y bajas de la solicitud) -->
+            <div v-if="movements.length" class="bg-white border rounded-xl shadow-sm">
+                <div class="border-b px-4 py-3"><h3 class="text-sm font-bold text-slate-700 uppercase">Historial de movimientos</h3></div>
                 <div class="overflow-x-auto w-full"><table class="w-full text-sm">
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
-                        <tr><th scope="col" class="px-4 py-2 text-left">MATERIA</th><th scope="col" class="px-4 py-2 text-left">GRUPO</th><th scope="col" class="px-4 py-2 text-left">DOCENTE</th></tr>
+                        <tr>
+                            <th scope="col" class="px-4 py-2 text-left w-28">MOVIMIENTO</th>
+                            <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
+                            <th scope="col" class="px-4 py-2 text-left">GRUPO</th>
+                            <th scope="col" class="px-4 py-2 text-left">DOCENTE</th>
+                            <th scope="col" class="px-4 py-2 text-right w-28">ESTADO</th>
+                        </tr>
                     </thead>
                     <tbody class="divide-y">
-                        <tr v-for="it in addItems" :key="it.id">
-                            <td class="px-4 py-2 font-bold text-slate-700">{{ it.subject?.name ?? '—' }}</td>
-                            <td class="px-4 py-2 text-xs font-mono">{{ it.teacherAssignment?.groupName ?? '—' }}</td>
+                        <tr v-for="it in movements" :key="`mv-${it.id}`"
+                            :class="it.type === 'drop' ? 'bg-red-50/40' : 'bg-emerald-50/40'">
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full"
+                                    :class="it.type === 'drop' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'">
+                                    {{ it.type === 'drop' ? 'BAJA' : 'ALTA' }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <span class="font-bold text-slate-700" :class="{ 'line-through text-red-600': it.type === 'drop' }">{{ it.subject?.name ?? '—' }}</span>
+                                <span v-if="it.subject?.officialCode" class="ml-2 text-[10px] font-mono text-slate-400">{{ it.subject?.officialCode }}</span>
+                            </td>
+                            <td class="px-4 py-2 text-xs font-mono text-slate-600">{{ it.teacherAssignment?.groupName ?? '—' }}</td>
                             <td class="px-4 py-2 text-xs text-slate-600">{{ it.teacherAssignment?.teacherName ?? '—' }}</td>
+                            <td class="px-4 py-2 text-right">
+                                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full"
+                                    :class="it.applied ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'">
+                                    {{ it.applied ? 'APLICADA' : 'PENDIENTE' }}
+                                </span>
+                            </td>
                         </tr>
-                        <tr v-if="!addItems.length"><td colspan="3" class="px-4 py-4 text-center text-xs text-slate-400">Sin altas.</td></tr>
                     </tbody>
                 </table></div>
             </div>
@@ -144,6 +189,43 @@ const rejectReason = ref('')
 
 const addItems  = computed(() => (request.value?.items ?? []).filter(i => i.type === 'add'))
 const dropItems = computed(() => (request.value?.items ?? []).filter(i => i.type === 'drop'))
+const movements = computed(() => request.value?.items ?? [])
+
+interface LoadRow { key: string; kind: 'keep' | 'drop' | 'add'; subject: string | null; code: string | null; group: string | null; teacher: string | null }
+
+// Carga resultante unificada: cada materia inscrita (marcada BAJA si se solicita
+// dar de baja) seguida de las altas solicitadas marcadas en verde.
+const loadRows = computed<LoadRow[]>(() => {
+    const req = request.value
+    if (!req) return []
+    const droppedEnrollmentIds = new Set(dropItems.value.map(i => i.sourceEnrollmentId).filter((v): v is number => v != null))
+    const droppedSubjectIds    = new Set(dropItems.value.map(i => i.subjectId))
+
+    const current = (req.currentLoad ?? []).map<LoadRow>(e => {
+        const isDrop = droppedEnrollmentIds.has(e.id) || droppedSubjectIds.has(e.subject?.id ?? -1)
+        return {
+            key: `enr-${e.id}`,
+            kind: isDrop ? 'drop' : 'keep',
+            subject: e.subject?.name ?? null,
+            code: e.subject?.official_code ?? null,
+            group: e.group?.name ?? null,
+            teacher: e.teacher?.name ?? null,
+        }
+    })
+
+    // Las altas ya APLICADAS pasan a formar parte de currentLoad (aparecen como
+    // INSCRITA); sólo mostramos como "ALTA" las pendientes, para no duplicar.
+    const adds = addItems.value.filter(it => !it.applied).map<LoadRow>(it => ({
+        key: `add-${it.id}`,
+        kind: 'add',
+        subject: it.subject?.name ?? null,
+        code: it.subject?.officialCode ?? null,
+        group: it.teacherAssignment?.groupName ?? null,
+        teacher: it.teacherAssignment?.teacherName ?? null,
+    }))
+
+    return [...current, ...adds]
+})
 
 function extractMsg(e: any): string { return e?.response?.data?.message ?? 'Error al procesar la solicitud.' }
 function handleError(e: any) {
@@ -169,8 +251,8 @@ async function approve() {
     busy.value = true
     errorMsg.value = ''; okMsg.value = ''; violations.value = []
     try {
-        const { data } = await api.post(API.ADVISING_API.addDrop.approve(id))
-        request.value = data ?? request.value
+        await api.post(API.ADVISING_API.addDrop.approve(id))
+        await load() // re-trae currentLoad (los endpoints de acción no lo incluyen)
         okMsg.value = 'Solicitud aprobada y aplicada a la carga del alumno.'
     } catch (e: any) {
         handleError(e)
@@ -184,8 +266,8 @@ async function endorse() {
     busy.value = true
     errorMsg.value = ''; okMsg.value = ''; violations.value = []
     try {
-        const { data } = await api.post(API.ADVISING_API.addDrop.endorse(id))
-        request.value = data ?? request.value
+        await api.post(API.ADVISING_API.addDrop.endorse(id))
+        await load() // re-trae currentLoad (los endpoints de acción no lo incluyen)
         okMsg.value = 'Solicitud avalada. Pendiente de aprobación final de Servicios Escolares.'
     } catch (e: any) {
         handleError(e)
@@ -199,9 +281,9 @@ async function reject() {
     busy.value = true
     errorMsg.value = ''; okMsg.value = ''; violations.value = []
     try {
-        const { data } = await api.post(API.ADVISING_API.addDrop.reject(id), { reason: rejectReason.value.trim() })
-        request.value = data ?? request.value
+        await api.post(API.ADVISING_API.addDrop.reject(id), { reason: rejectReason.value.trim() })
         rejectOpen.value = false
+        await load() // re-trae currentLoad (los endpoints de acción no lo incluyen)
         okMsg.value = 'Solicitud rechazada.'
     } catch (e: any) {
         handleError(e)

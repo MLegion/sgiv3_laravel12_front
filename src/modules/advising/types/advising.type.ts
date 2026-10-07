@@ -350,6 +350,8 @@ export interface AddDropRequest {
     endorser?: { id: number; name?: string | null; email?: string | null } | null
     period?: { id: number; name: string | null; shortName: string | null } | null
     items: AddDropRequestItem[]
+    /** Carga activa actual del alumno (para la vista de revisión unificada). */
+    currentLoad?: EnrolledCourse[]
     createdAt?: string | null
     updatedAt?: string | null
 }
@@ -357,6 +359,8 @@ export interface AddDropRequest {
 export interface MyAddDropResponse {
     studentId: number
     request: AddDropRequest | null
+    /** Última solicitud del alumno (cualquier estado) para el historial. */
+    history?: AddDropRequest | null
     currentLoad: EnrolledCourse[]
 }
 

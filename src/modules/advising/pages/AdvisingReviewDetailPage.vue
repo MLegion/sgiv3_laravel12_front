@@ -14,7 +14,7 @@
         <!-- Tarjeta del estudiante -->
         <div v-if="session" class="bg-white border rounded-xl shadow-sm p-4 flex items-start gap-4">
             <div class="relative w-20 h-20 rounded-full overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300 flex-shrink-0">
-                <img v-if="!avatarFailed && studentId" :src="avatarUrl" alt="Foto del alumno" class="w-full h-full object-cover" @error="avatarFailed = true" />
+                <img v-if="!avatarFailed && avatarSrc" :src="avatarSrc" alt="Foto del alumno" class="w-full h-full object-cover" @error="avatarFailed = true" />
                 <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
@@ -107,8 +107,16 @@
                     @click="run('release')">SOLTAR</button>
 
             <button v-if="canDecide"
-                    class="px-3 py-1.5 text-xs rounded-md bg-emerald-600 text-white hover:bg-emerald-700 ml-auto"
-                    @click="askApprove">APROBAR</button>
+                    :disabled="approving"
+                    class="px-3 py-1.5 text-xs rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 ml-auto"
+                    @click="askApprove">{{ approving ? 'APROBANDO…' : 'APROBAR' }}</button>
+
+            <!-- Regenerar formato de una sesión ya aprobada (p.ej. aprobadas antes
+                 de que el formato fuera obligatorio). -->
+            <button v-if="canReopenApproved"
+                    :disabled="regenerating"
+                    class="px-3 py-1.5 text-xs rounded-md border border-emerald-300 text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+                    @click="viewFormat">{{ regenerating ? 'GENERANDO…' : 'VER FORMATO' }}</button>
 
             <button v-if="canDecide"
                     class="px-3 py-1.5 text-xs rounded-md bg-red-600 text-white hover:bg-red-700"
@@ -138,8 +146,20 @@
             <p class="text-sm text-amber-800 whitespace-pre-wrap">{{ session.reopenReason }}</p>
         </div>
 
+        <!-- Pestañas de revisión (para no alargar la vista) -->
+        <div v-if="session" class="flex flex-wrap gap-1 border-b border-slate-200">
+            <button type="button" :class="reviewTabClass('avance')" @click="reviewTab = 'avance'">Avance</button>
+            <button type="button" :class="reviewTabClass('propuestas')" @click="reviewTab = 'propuestas'">
+                Materias propuestas
+                <span v-if="session.items.length" class="ml-1 text-[10px] opacity-70">({{ session.items.length }})</span>
+            </button>
+            <button v-if="canDecide && curriculum" type="button" :class="reviewTabClass('aperturadas')" @click="reviewTab = 'aperturadas'">
+                Materias aperturadas
+            </button>
+        </div>
+
         <!-- Avance del estudiante (visión general antes de decidir) -->
-        <div v-if="session && curriculum" class="bg-white border rounded-xl shadow-sm">
+        <div v-if="session && curriculum" v-show="reviewTab === 'avance'" class="bg-white border rounded-xl shadow-sm">
             <div class="border-b px-4 py-3 flex items-center justify-between">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Avance del estudiante</h2>
                 <span v-if="curriculum.studyPlan" class="text-xs text-slate-500 truncate max-w-[60%] text-right">
@@ -220,12 +240,18 @@
         </div>
 
         <!-- Items con decisión -->
-        <div v-if="session" class="bg-white border rounded-xl shadow-sm">
+        <div v-if="session" v-show="reviewTab === 'propuestas'" class="bg-white border rounded-xl shadow-sm">
             <div class="border-b px-4 py-3 flex items-center justify-between flex-wrap gap-2">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Materias Propuestas</h2>
 
                 <!-- Contador de materias y créditos -->
                 <div class="flex items-center gap-3 text-xs">
+                    <button v-if="canDecide && session.items.length"
+                            :disabled="savingAll || !hasPendingToAccept"
+                            class="px-3 py-1.5 text-[11px] font-bold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 uppercase"
+                            @click="acceptAllProposed">
+                        {{ savingAll ? 'Aceptando…' : 'Aceptar todas' }}
+                    </button>
                     <div class="flex items-baseline gap-1">
                         <span class="text-2xl font-bold text-slate-800 tabular-nums">{{ session.items.length }}</span>
                         <span class="text-[10px] uppercase text-slate-500">materias</span>
@@ -291,14 +317,20 @@
                             <span v-else class="text-slate-300 italic">sin grupo</span>
                         </td>
                         <td class="px-4 py-2">
-                            <select v-if="decisions[item.id]"
-                                    :disabled="!canDecide || savingItem === item.id"
+                            <!-- Editable mientras se revisa; de solo lectura (badge) una vez
+                                 resuelta la asesoría (aprobada/rechazada/etc.). -->
+                            <select v-if="canDecide && decisions[item.id]"
+                                    :disabled="savingItem === item.id"
                                     v-model="decisions[item.id]!.advisor_status"
                                     class="text-[11px] border rounded-md px-2 py-1">
                                 <option value="proposed">Pendiente</option>
                                 <option value="accepted">Aceptar</option>
                                 <option value="rejected">Rechazar</option>
                             </select>
+                            <span v-else class="inline-flex px-2 py-0.5 text-[10px] font-bold uppercase rounded-full"
+                                  :class="decisionBadgeClass(item.advisorStatus)">
+                                {{ decisionLabel(item.advisorStatus) }}
+                            </span>
                         </td>
                         <td class="px-4 py-2 text-right space-x-1 whitespace-nowrap">
                             <button v-if="canDecide"
@@ -326,7 +358,7 @@
         </div>
 
         <!-- Materias Aperturadas (agregar como asesor) -->
-        <div v-if="canDecide && curriculum" class="bg-white border rounded-xl shadow-sm">
+        <div v-if="canDecide && curriculum" v-show="reviewTab === 'aperturadas'" class="bg-white border rounded-xl shadow-sm">
             <div class="border-b px-4 py-3 flex items-center justify-between">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Materias Aperturadas</h2>
                 <span class="text-xs text-slate-400">{{ availableForAdd.length }} disponibles</span>
@@ -446,7 +478,7 @@
             message="¿Confirmas la aprobación? Si después detectas algún ajuste podrás reabrirla como excepción."
             confirm-text="Aprobar"
             variant="success"
-            @confirm="approve"
+            @confirm="() => approve()"
         />
 
         <!-- Confirm quitar materia -->
@@ -554,6 +586,51 @@
             @uploaded="load"
         />
 
+        <!-- Modal de verificación para firmar (abre ventana de gracia). -->
+        <div v-if="verifyModalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
+            <div class="absolute inset-0 bg-black/40" @click="verifyModalOpen = false" />
+            <div class="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-5 space-y-3">
+                <h3 class="text-base font-bold text-slate-800 uppercase">Verificar para firmar</h3>
+                <p class="text-xs text-slate-500">
+                    Para firmar la aprobación, verifica tu identidad una vez. No se volverá a
+                    pedir durante un rato mientras apruebas más asesorías.
+                </p>
+                <div v-if="verifyMethod === 'totp'">
+                    <label class="text-xs font-semibold text-slate-600">Código de tu app (MFA)</label>
+                    <input v-model="verifyTotp" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+                        class="mt-1 w-full h-9 border rounded-md px-3 text-sm tracking-widest text-center"
+                        placeholder="000000" @keyup.enter="submitVerification" />
+                </div>
+                <div v-else>
+                    <label class="text-xs font-semibold text-slate-600">Tu contraseña</label>
+                    <input v-model="verifyPassword" type="password" autocomplete="current-password"
+                        class="mt-1 w-full h-9 border rounded-md px-3 text-sm"
+                        placeholder="Contraseña" @keyup.enter="submitVerification" />
+                </div>
+                <p v-if="verifyError" class="text-xs text-red-600">{{ verifyError }}</p>
+                <div class="flex justify-end gap-2 pt-1">
+                    <button type="button" class="px-3 py-1.5 text-xs rounded-md border hover:bg-slate-50"
+                        @click="verifyModalOpen = false">Cancelar</button>
+                    <button type="button" :disabled="approving"
+                        class="px-4 py-1.5 text-xs font-bold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+                        @click="submitVerification">{{ approving ? 'Firmando…' : 'Firmar y aprobar' }}</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Drawer con el formato de asesoría (PDF embebido; sin pestañas).
+             Arranca bajo el navbar (h-16) para no encimarse con él. -->
+        <div v-if="formatDrawerOpen" class="fixed inset-x-0 bottom-0 top-16 z-50 flex justify-end">
+            <div class="absolute inset-0 bg-black/40" @click="closeFormatDrawer" />
+            <div class="relative bg-white w-full max-w-3xl h-full shadow-xl flex flex-col">
+                <div class="border-b px-4 py-3 flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-slate-700 uppercase">Formato de asesoría</h2>
+                    <button class="text-slate-400 hover:text-slate-700 text-xl leading-none" aria-label="Cerrar" @click="closeFormatDrawer">×</button>
+                </div>
+                <iframe v-if="formatPreviewUrl" :src="formatPreviewUrl" class="flex-1 w-full" title="Formato de asesoría"></iframe>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -566,6 +643,8 @@ import { API } from '@/shared/api'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 import CompromiseLetterModal from '@/modules/advising/components/CompromiseLetterModal.vue'
+import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
+import { ReportCode } from '@/modules/reports/types/reportCodes'
 import type {
     AdvisingSession, AdvisingSessionItem, AdvisingStatus,
     CurriculumStatus, CurriculumStatusEntry,
@@ -574,6 +653,7 @@ import type {
 const route  = useRoute()
 const router = useRouter()
 const sessionId = Number(route.params.id)
+const { renderPdf } = useReportGenerator()
 
 const session    = ref<AdvisingSession | null>(null)
 const curriculum = ref<CurriculumStatus | null>(null)
@@ -583,6 +663,25 @@ const savingItem = ref<number | null>(null)
 const addingSubject   = ref<number | null>(null)
 const removingSubject = ref<number | null>(null)
 const selectedAssignment = reactive<Record<number, number | null>>({})
+
+// Pestañas de la vista de revisión (para no alargarla).
+const reviewTab = ref<'avance' | 'propuestas' | 'aperturadas'>('propuestas')
+const savingAll = ref(false)
+const approving = ref(false)       // aprobando (incluye generación obligatoria del formato)
+const regenerating = ref(false)    // generando formato de una sesión ya aprobada
+const formatDrawerOpen = ref(false)
+const formatPreviewUrl = ref('')   // object URL del PDF para el iframe del drawer
+// Modal de verificación para abrir la ventana de gracia de firma.
+const verifyModalOpen = ref(false)
+const verifyMethod = ref<'totp' | 'password'>('password')
+const verifyTotp = ref('')
+const verifyPassword = ref('')
+const verifyError = ref('')
+function reviewTabClass(tab: string): string {
+    return reviewTab.value === tab
+        ? 'px-4 py-2 text-xs font-bold uppercase tracking-wide border-b-2 border-blue-600 text-blue-700'
+        : 'px-4 py-2 text-xs font-semibold uppercase tracking-wide border-b-2 border-transparent text-slate-500 hover:text-slate-700'
+}
 
 interface ItemDecision {
     advisor_status: 'proposed' | 'accepted' | 'rejected' | 'replaced'
@@ -659,7 +758,22 @@ const canReopenApproved = computed(() => session.value?.status === 'approved' &&
 // Tarjeta del estudiante: foto + plan
 const studentId    = computed<number | null>(() => session.value?.student?.id ?? session.value?.studentId ?? null)
 const avatarFailed = ref(false)
-const avatarUrl    = computed(() => studentId.value ? API.ADVISING_API.students.avatar(studentId.value) : '')
+// El avatar NO puede cargarse con <img :src="endpoint"> porque la API usa
+// Bearer (localStorage) y <img> solo manda cookies → 401 que el backend
+// convierte en 500 ("Route [login] not defined"). Se baja como blob con el
+// interceptor (que sí añade el Bearer) y se muestra el object URL.
+const avatarSrc = ref('')
+watch(studentId, async (id, _prev) => {
+    if (avatarSrc.value) { URL.revokeObjectURL(avatarSrc.value); avatarSrc.value = '' }
+    avatarFailed.value = false
+    if (!id) return
+    try {
+        const { data } = await api.get(API.ADVISING_API.students.avatar(id), { responseType: 'blob' })
+        avatarSrc.value = URL.createObjectURL(data as Blob)
+    } catch {
+        avatarFailed.value = true
+    }
+}, { immediate: true })
 const planLabel    = computed(() => {
     const p = curriculum.value?.studyPlan
     if (!p) return '—'
@@ -864,6 +978,33 @@ async function saveDecision(itemId: number) {
     }
 }
 
+// ¿Hay propuestas que aún no estén en "aceptar"? (habilita el botón).
+const hasPendingToAccept = computed(() =>
+    (session.value?.items ?? []).some(i => decisions[i.id] && decisions[i.id]!.advisor_status !== 'accepted'),
+)
+
+/** Pone TODAS las propuestas en "aceptar" y las guarda de una vez. */
+async function acceptAllProposed() {
+    if (!canDecide.value || !session.value || savingAll.value) return
+    const items = session.value.items.filter(i => decisions[i.id] && decisions[i.id]!.advisor_status !== 'accepted')
+    if (!items.length) return
+    savingAll.value = true
+    errorMsg.value = ''
+    try {
+        for (const it of items) decisions[it.id]!.advisor_status = 'accepted'
+        await Promise.all(items.map(it =>
+            api.patch(API.ADVISING_API.sessions.updateItem(sessionId, it.id), decisions[it.id]),
+        ))
+        okMsg.value = `${items.length} materia(s) aceptada(s).`
+        setTimeout(() => okMsg.value = '', 2000)
+        await load()
+    } catch (e: any) {
+        errorMsg.value = e?.response?.data?.message ?? 'Error al aceptar todas.'
+    } finally {
+        savingAll.value = false
+    }
+}
+
 async function addItem(entry: CurriculumStatusEntry, assignmentId: number, override = false) {
     if (!canDecide.value) return
     addingSubject.value = entry.subjectId
@@ -933,19 +1074,95 @@ function askApprove() {
     approveModalOpen.value = true
 }
 
-async function approve() {
-    if (!canDecide.value) return
+async function approve(credential?: { totp_code?: string; password?: string }) {
+    if (!canDecide.value || approving.value) return
     errorMsg.value = ''
+    approving.value = true
     try {
-        await api.post(API.ADVISING_API.sessions.approve(sessionId), {})
-        okMsg.value = 'Asesoría aprobada.'
+        // 1) Aprobar PRIMERO: crea la firma del formato. Puede pedir verificación
+        //    (428) para abrir la ventana de gracia de firma.
+        await api.post(API.ADVISING_API.sessions.approve(sessionId), credential ?? {})
+        verifyModalOpen.value = false
+        verifyTotp.value = ''
+        verifyPassword.value = ''
+        // 2) Generar el formato: ya existe la firma → QR + firma del asesor quedan
+        //    en el documento.
+        await generateAndStoreFormat()
+        okMsg.value = 'Asesoría aprobada y firmada. El formato ya está disponible para el alumno.'
         await load()
     } catch (e: any) {
-        const violations = e?.response?.data?.context?.violations
-        errorMsg.value = Array.isArray(violations) && violations[0]?.message
-            ? violations[0].message
-            : (e?.response?.data?.message ?? 'Error al aprobar.')
+        if (e?.response?.status === 428) {
+            // Necesita verificar identidad una vez (abre ventana de gracia).
+            verifyMethod.value = e.response.data?.method === 'totp' ? 'totp' : 'password'
+            verifyError.value = ''
+            verifyModalOpen.value = true
+        } else if (e?.response?.status === 422 && verifyModalOpen.value) {
+            verifyError.value = e?.response?.data?.message ?? 'Credencial inválida.'
+        } else {
+            const violations = e?.response?.data?.context?.violations
+            errorMsg.value = Array.isArray(violations) && violations[0]?.message
+                ? violations[0].message
+                : (e?.response?.data?.message ?? e?.message ?? 'Error al aprobar.')
+        }
+    } finally {
+        approving.value = false
     }
+}
+
+function submitVerification() {
+    approve({
+        totp_code: verifyMethod.value === 'totp' ? (verifyTotp.value || undefined) : undefined,
+        password:  verifyMethod.value === 'password' ? (verifyPassword.value || undefined) : undefined,
+    })
+}
+
+/** Genera el formato en PDF (DOCX del reporteador → LibreOffice server-side) y
+ * lo guarda en la sesión. LANZA si algo falla. Usa `renderPdf`, que convierte
+ * fiel el DOCX con LibreOffice (no html2pdf, que salía en blanco). */
+async function generateAndStoreFormat(): Promise<Blob> {
+    let blob: Blob
+    try {
+        ({ blob } = await renderPdf({
+            reportCode: ReportCode.ADVISING_RETICULAR_FORMAT,
+            // Contexto acotado por permiso de asesoría (no rep.dao.execute), para
+            // que un asesor TEACHER también pueda generar el formato.
+            fetchContext: async () =>
+                (await api.post(API.ADVISING_API.sessions.formatContext(sessionId))).data,
+        }))
+    } catch {
+        throw new Error('No se pudo generar el formato de asesoría (¿tu usuario tiene permiso para generar reportes?).')
+    }
+    const fd = new FormData()
+    fd.append('file', new File([blob], 'formato-asesoria.pdf', { type: 'application/pdf' }))
+    await api.post(API.ADVISING_API.sessions.storeFormat(sessionId), fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return blob
+}
+
+/** Genera (y guarda) el formato y lo MUESTRA en un drawer (PDF embebido). */
+async function viewFormat() {
+    if (regenerating.value) return
+    regenerating.value = true
+    errorMsg.value = ''
+    try {
+        const blob = await generateAndStoreFormat()
+        if (formatPreviewUrl.value) URL.revokeObjectURL(formatPreviewUrl.value)
+        formatPreviewUrl.value = URL.createObjectURL(blob)
+        formatDrawerOpen.value = true
+        okMsg.value = 'Formato generado. El alumno ya puede verlo/descargarlo.'
+        setTimeout(() => okMsg.value = '', 2500)
+    } catch (e: any) {
+        errorMsg.value = e?.response?.data?.message ?? e?.message ?? 'No se pudo generar el formato.'
+    } finally {
+        regenerating.value = false
+    }
+}
+
+function closeFormatDrawer() {
+    formatDrawerOpen.value = false
+    if (formatPreviewUrl.value) URL.revokeObjectURL(formatPreviewUrl.value)
+    formatPreviewUrl.value = ''
 }
 
 function openRejectModal() {
@@ -1068,6 +1285,18 @@ function attemptClass(item: AdvisingSessionItem): string {
     if (item.isSpecial) return 'bg-red-100 text-red-700'
     if (item.isRepeat)  return 'bg-orange-100 text-orange-700'
     return 'bg-slate-100 text-slate-600'
+}
+// Decisión del asesor como etiqueta de SOLO LECTURA (asesoría ya resuelta).
+function decisionLabel(s?: string | null): string {
+    return ({ accepted: 'Aceptada', rejected: 'Rechazada', replaced: 'Reemplazada', proposed: 'Pendiente' } as Record<string, string>)[s ?? 'proposed'] ?? 'Pendiente'
+}
+function decisionBadgeClass(s?: string | null): string {
+    return ({
+        accepted: 'bg-emerald-100 text-emerald-700',
+        rejected: 'bg-red-100 text-red-600',
+        replaced: 'bg-amber-100 text-amber-700',
+        proposed: 'bg-slate-100 text-slate-500',
+    } as Record<string, string>)[s ?? 'proposed'] ?? 'bg-slate-100 text-slate-500'
 }
 function attemptLabelByEntry(e: CurriculumStatusEntry): string {
     if (e.attempt === 'especial') return 'ESPECIAL'

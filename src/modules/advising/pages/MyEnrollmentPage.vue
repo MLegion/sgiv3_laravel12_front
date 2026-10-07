@@ -14,10 +14,10 @@
         <div v-if="loading" class="bg-white border rounded-xl shadow-sm p-6 text-center text-sm text-slate-400">
             Cargando…
         </div>
-        <div v-else-if="!activePeriod?.open" class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700">
-            <strong class="block mb-1">No hay periodo abierto para asesoría.</strong>
-            {{ activePeriod?.message ?? 'Vuelve cuando tu coordinación habilite la fase.' }}
-        </div>
+        <PhaseUnavailable
+            v-else-if="!activePeriod?.open"
+            :message="activePeriod?.message || 'No hay periodo abierto para reinscripción. Vuelve cuando tu coordinación habilite la fase.'"
+        />
         <div v-else-if="!session" class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700">
             Aún no tienes asesoría para este periodo.
             <RouterLink :to="{ name: 'advising.my-advising' }" class="underline font-semibold">Crearla en Mi Asesoría →</RouterLink>
@@ -251,6 +251,7 @@ import { RouterLink } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
+import PhaseUnavailable from '@/app/components/ui/PhaseUnavailable.vue'
 import FormatUnavailableModal from '@/modules/reports/components/FormatUnavailableModal.vue'
 import ExceptionControl from '@/modules/advising/components/ExceptionControl.vue'
 import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
