@@ -514,8 +514,8 @@
             </div>
             <div v-else-if="onlySpecials" class="bg-orange-50 border border-orange-200 rounded-xl p-4 text-sm text-orange-700">
                 <strong class="block mb-1">Sólo materias en 3ª oportunidad (especiales)</strong>
-                Tienes <strong>{{ repeatCount }}</strong> materias en repite. La política de tu carrera permite inscribir
-                únicamente las materias en especial (3ª oportunidad).
+                Tienes <strong>{{ specialCount }}</strong> cursos especiales (3ª oportunidad). Por normativa TecNM, al cursar
+                2 especiales no puedes inscribir otras materias este periodo: sólo esos dos.
             </div>
 
             <!-- Indicador de créditos -->
@@ -526,7 +526,7 @@
                          :class="overMax ? 'text-red-600' : underMin ? 'text-orange-500' : 'text-emerald-600'">
                         {{ totalCredits }} / {{ creditsBudget }}
                         <span v-if="creditsBudget !== maxCredits" class="text-[10px] font-normal text-slate-400 ml-1">
-                            (con 1 repite, máx 20)
+                            (con 1 especial, máx 20)
                         </span>
                     </div>
                 </div>
@@ -542,9 +542,14 @@
                 </span>
             </div>
 
-            <div v-if="hasScheduleConflict" class="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700">
+            <div v-if="hasBlockingConflict" class="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700">
                 <strong class="block mb-0.5">Detectamos choques de horario</strong>
-                Las materias marcadas en rojo se traslapan. Cambia el grupo elegido o quita la materia.
+                Las materias marcadas en rojo se traslapan. Cambia el grupo elegido o quita la materia para poder enviar.
+            </div>
+            <div v-else-if="hasExceptionConflict" class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700">
+                <strong class="block mb-0.5">Choque de horario con una materia en repite</strong>
+                Como no puedes evitar el empalme (la materia en repite sólo se oferta en ese horario),
+                se enviará como <strong>excepción</strong>. Tu asesor la validará en la revisión.
             </div>
 
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
@@ -857,7 +862,7 @@ const cpLookupLoading = ref(false)
 const cpLookupError = ref('')
 
 const isPersonalDataConfirmed = computed(() => !!session.value?.personalDataConfirmedAt)
-const canSubmit = computed(() => isPersonalDataConfirmed.value && proposed.size > 0 && !hasScheduleConflict.value)
+const canSubmit = computed(() => isPersonalDataConfirmed.value && proposed.size > 0 && !hasBlockingConflict.value)
 
 interface ProposedSelection { curriculumId: number; teacherAssignmentId: number }
 const proposed = reactive<Map<number, ProposedSelection>>(new Map())
@@ -953,7 +958,10 @@ const includeRetake = computed(() =>
 )
 
 const repeatCount      = computed(() => curriculum.value?.repeatCount ?? 0)
-const onlySpecials     = computed(() => repeatCount.value >= 2 && repeatCount.value <= 4)
+// Cursos especiales (3ª op.): las restricciones TecNM giran en torno a ESTE
+// conteo, no al de repites. 2 especiales → sólo esos; 1 especial → máx 20 cr.
+const specialCount     = computed(() => curriculum.value?.specialCount ?? 0)
+const onlySpecials     = computed(() => specialCount.value >= 2)
 const blockedByRepeats = computed(() => repeatCount.value >= 5)
 const showAllOffered   = computed(() => curriculum.value?.policy?.showOnlyEligible === false)
 const maxCredits       = computed(() => curriculum.value?.policy?.maxTotalCredits ?? 50)
@@ -990,7 +998,9 @@ const totalCredits = computed(() =>
     proposedEntries.value.reduce((acc, e) => acc + (e.subject?.credits ?? 0), 0),
 )
 const creditsBudget = computed(() => {
-    if (repeatCount.value === 1) return 20
+    // TecNM: con 1 curso especial, la carga máxima es 20 créditos (incluye el
+    // especial). Con 2 especiales el filtro ya limita a sólo esos.
+    if (specialCount.value === 1) return 20
     return maxCredits.value
 })
 const overMax  = computed(() => totalCredits.value > creditsBudget.value)
@@ -1026,6 +1036,11 @@ async function enrollAssignment(entry: CurriculumStatusEntry, assignmentId: numb
             const idx = session.value.items.findIndex(i => i.subjectId === entry.subjectId)
             if (idx >= 0) session.value.items.splice(idx, 1, data)
             else session.value.items.push(data)
+        }
+        // Se agregó como excepción por choque de horario (materia en repite):
+        // el asesor deberá validarla en la revisión.
+        if (data?.hasOverrides && (data.overrideCodes ?? []).includes('schedule_conflict')) {
+            okMsg.value = `«${entry.subject?.name ?? 'La materia'}» se agregó como EXCEPCIÓN por choque de horario (repite). Tu asesor la validará en la revisión.`
         }
     } catch (e: any) {
         const all = extractViolations(e)
@@ -1084,34 +1099,46 @@ function blocksOverlap(a: { dayOfWeek: number | null; date: string | null; start
 }
 
 /**
- * Set de subjectIds que tienen choque con alguna otra materia seleccionada.
- * Recalcula on-the-fly desde `proposed` + `curriculum`.
+ * Analiza los choques de horario entre las materias seleccionadas.
+ *  - `all`:      todas las materias con algún traslape (para marcarlas en rojo).
+ *  - `blocking`: sólo los choques que NO involucran un repite. Un choque que
+ *    involucra un curso en repite NO bloquea el envío: se permite como excepción
+ *    que el asesor validará (regla TecNM: el repite sólo se oferta en ese horario).
  */
-const conflictingSubjects = computed<Set<number>>(() => {
-    const conflicts = new Set<number>()
+interface SelSchedule { subjectId: number; isRepeat: boolean; schedule: { dayOfWeek: number | null; date: string | null; startTime: string; endTime: string }[] }
+const conflictAnalysis = computed<{ all: Set<number>; blocking: Set<number> }>(() => {
+    const all = new Set<number>()
+    const blocking = new Set<number>()
     const subs = curriculum.value?.subjects ?? []
     const selected = Array.from(proposed.entries())
-        .map(([subjectId, sel]) => {
+        .map(([subjectId, sel]): SelSchedule | null => {
             const entry = subs.find(s => s.subjectId === subjectId)
             const assign = entry?.offer?.assignments.find(a => a.id === sel.teacherAssignmentId)
-            return assign ? { subjectId, schedule: assign.schedule } : null
+            return assign ? { subjectId, isRepeat: entry?.attempt === 'repite', schedule: assign.schedule } : null
         })
-        .filter((x): x is { subjectId: number; schedule: typeof selected[number] extends infer T ? T extends { schedule: infer S } ? S : never : never } => x !== null) as Array<{ subjectId: number; schedule: { dayOfWeek: number | null; date: string | null; startTime: string; endTime: string }[] }>
+        .filter((x): x is SelSchedule => x !== null)
 
     for (let i = 0; i < selected.length; i++) {
         for (let j = i + 1; j < selected.length; j++) {
             const a = selected[i], b = selected[j]
             const clash = a.schedule.some(ba => b.schedule.some(bb => blocksOverlap(ba, bb)))
             if (clash) {
-                conflicts.add(a.subjectId)
-                conflicts.add(b.subjectId)
+                all.add(a.subjectId); all.add(b.subjectId)
+                if (!a.isRepeat && !b.isRepeat) {
+                    blocking.add(a.subjectId); blocking.add(b.subjectId)
+                }
             }
         }
     }
-    return conflicts
+    return { all, blocking }
 })
 
-const hasScheduleConflict = computed(() => conflictingSubjects.value.size > 0)
+const conflictingSubjects      = computed(() => conflictAnalysis.value.all)
+const blockingConflictSubjects = computed(() => conflictAnalysis.value.blocking)
+const hasScheduleConflict      = computed(() => conflictingSubjects.value.size > 0)
+const hasBlockingConflict      = computed(() => blockingConflictSubjects.value.size > 0)
+// Hay choques permitidos como excepción (involucran repite) pero no bloqueantes.
+const hasExceptionConflict     = computed(() => hasScheduleConflict.value && !hasBlockingConflict.value)
 
 /* ── Mi Avance (tab 2) ─────────────────────────────────────────────── */
 const progressStats = computed(() => {
@@ -1485,7 +1512,12 @@ function extractViolations(e: any): PolicyViolation[] {
         }
         return unique.map((c: any) => ({
             code: 'schedule_conflict',
-            message: `Choque de horario entre ${nameOf(c.subject_a_id)} y ${nameOf(c.subject_b_id)}`,
+            // El backend ya envía el detalle con día y franja horaria del choque.
+            // Respaldo: arma el texto con when_label o los nombres locales.
+            message: c.message
+                ?? (c.when_label
+                    ? `«${nameOf(c.subject_a_id)}» se encima con «${nameOf(c.subject_b_id)}» ${c.when_label}.`
+                    : `Choque de horario entre ${nameOf(c.subject_a_id)} y ${nameOf(c.subject_b_id)}`),
             severity: 'error',
         }))
     }

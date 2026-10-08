@@ -287,7 +287,12 @@
                                       :title="addedByTooltip(item)">
                                     {{ addedByLabel(item.addedByRole) }}
                                 </span>
-                                <span v-if="item.hasOverrides"
+                                <span v-if="isStudentConflictException(item)"
+                                      class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-red-100 text-red-700 cursor-help"
+                                      :title="overrideTooltip(item)">
+                                    CHOQUE · VALIDAR
+                                </span>
+                                <span v-else-if="item.hasOverrides"
                                       class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-amber-100 text-amber-800 cursor-help"
                                       :title="overrideTooltip(item)">
                                     EXCEPCIÓN
@@ -368,7 +373,7 @@
                 <strong>{{ repeatCount }}+ repites</strong>: el alumno tiene bloqueo total. Agregar una materia requerirá aplicar excepción.
             </div>
             <div v-else-if="onlySpecials" class="bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-700">
-                <strong>2-4 repites</strong>: regla legacy permite sólo materias en especial. Agregar otras requerirá excepción.
+                <strong>2 especiales</strong>: por normativa TecNM sólo se inscriben esos cursos especiales. Agregar otras requerirá excepción.
             </div>
 
             <div class="overflow-x-auto w-full"><table class="w-full text-sm">
@@ -785,10 +790,10 @@ const planLabel    = computed(() => {
 const proposedCredits = computed(() => {
     return (session.value?.items ?? []).reduce((sum, it) => sum + (it.subject?.credits ?? 0), 0)
 })
-const repeatCountForBudget = computed(() => curriculum.value?.repeatCount ?? 0)
+const specialCountForBudget = computed(() => curriculum.value?.specialCount ?? 0)
 const creditBudget = computed(() => {
-    // Regla legacy SGIv2: 1 repite → 20 cr, default → policy.maxTotalCredits.
-    if (repeatCountForBudget.value === 1) return curriculum.value?.policy?.maxCreditsWithOneRepeat ?? 20
+    // TecNM: con 1 curso especial (3ª op.) → máx 20 cr; default → maxTotalCredits.
+    if (specialCountForBudget.value === 1) return curriculum.value?.policy?.maxCreditsWithOneRepeat ?? 20
     return curriculum.value?.policy?.maxTotalCredits ?? 50
 })
 const overCredits   = computed(() => proposedCredits.value > creditBudget.value)
@@ -812,6 +817,14 @@ function shiftLabel(shift: string | null | undefined): string {
     return shift
 }
 
+// Excepción por choque de horario SOLICITADA por el alumno (sólo se permite
+// cuando hay un curso en repite): requiere que el asesor la valide o la rechace.
+function isStudentConflictException(item: AdvisingSessionItem): boolean {
+    return item.hasOverrides
+        && (item.overrideCodes ?? []).includes('schedule_conflict')
+        && item.addedByRole === 'student'
+}
+
 function overrideTooltip(item: AdvisingSessionItem): string {
     if (!item.hasOverrides) return ''
     const codes = item.overrideCodes ?? []
@@ -822,6 +835,9 @@ function overrideTooltip(item: AdvisingSessionItem): string {
         repeats_only_specials: 'solo especiales',
     }
     const reasons = codes.map(c => codeLabels[c] ?? c).join(', ')
+    if (isStudentConflictException(item)) {
+        return `El alumno solicitó EXCEPCIÓN por ${reasons} (materia en repite). Valídala (aceptar) o recházala.`
+    }
     const who = item.overrideByName ?? `usuario #${item.overrideByUserId}`
     const when = item.overrideAt ? new Date(item.overrideAt.replace(' ', 'T')).toLocaleString('es-MX') : 'fecha desconocida'
     return `Excepción aplicada por ${who} (${when}) — ignoró: ${reasons}`
@@ -861,7 +877,8 @@ const counts = computed(() => {
 /* ── Materias aperturadas para agregar ────────────────────────────── */
 const proposedSubjectIds = computed(() => new Set((session.value?.items ?? []).map(i => i.subjectId)))
 const repeatCount        = computed(() => curriculum.value?.repeatCount ?? 0)
-const onlySpecials       = computed(() => repeatCount.value >= 2 && repeatCount.value <= 4)
+const specialCount       = computed(() => curriculum.value?.specialCount ?? 0)
+const onlySpecials       = computed(() => specialCount.value >= 2)
 const blockedByRepeats   = computed(() => repeatCount.value >= 5)
 
 /**
@@ -922,7 +939,11 @@ async function load() {
         session.value = data
         for (const item of session.value?.items ?? []) {
             decisions[item.id] = {
-                advisor_status:         item.advisorStatus,
+                // Excepción por choque pedida por el alumno: queda marcada para
+                // RECHAZAR por defecto; el asesor la valida (acepta) si procede.
+                advisor_status:         (item.advisorStatus === 'proposed' && isStudentConflictException(item))
+                    ? 'rejected'
+                    : item.advisorStatus,
                 replacement_subject_id: item.replacementSubjectId,
             }
         }
@@ -1241,12 +1262,13 @@ function extractOverridableMessages(e: any): string[] {
     const ctx = e?.response?.data?.context ?? {}
     const out: string[] = []
 
-    // Schedule conflicts
+    // Schedule conflicts — el backend ya envía el mensaje con día y franja.
     if (Array.isArray(ctx.conflicts) && ctx.conflicts.length) {
         for (const c of ctx.conflicts) {
-            const ms = (c?.itemA?.subject?.name && c?.itemB?.subject?.name)
-                ? `Choque de horario entre ${c.itemA.subject.name} y ${c.itemB.subject.name}`
-                : 'Choque de horario detectado.'
+            const ms = c?.message
+                ?? ((c?.subject_a_name && c?.subject_b_name && c?.when_label)
+                    ? `«${c.subject_a_name}» se encima con «${c.subject_b_name}» ${c.when_label}.`
+                    : 'Choque de horario detectado.')
             out.push(ms)
         }
     }

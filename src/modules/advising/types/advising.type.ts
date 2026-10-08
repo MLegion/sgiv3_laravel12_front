@@ -184,6 +184,8 @@ export interface CurriculumStatus {
         name: string | null
     } | null
     repeatCount?: number
+    /** Cursos especiales (3ª oportunidad) del alumno; rige las reglas TecNM. */
+    specialCount?: number
     hasMandatorySpecials?: boolean
     policy?: CurriculumPolicy
     creditsEarned?: number
