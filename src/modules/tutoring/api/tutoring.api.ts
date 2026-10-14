@@ -48,6 +48,20 @@ const tutoringApi: ApiModule = {
             close:  (id: string | number) => apiUrl(`/tutoring/referrals/${id}/close`),
         },
 
+        // ── Cierre semestral / constancias (coordinador / jefe) ──
+        closure: {
+            list:         apiUrl('/tutoring/closure'),
+            assignment:   (id: string | number) => apiUrl(`/tutoring/closure/assignments/${id}`),
+            confirmTutor: (id: string | number) => apiUrl(`/tutoring/assignments/${id}/completion/confirm`),
+            revertTutor:  (id: string | number) => apiUrl(`/tutoring/assignments/${id}/completion/revert`),
+            confirmTutee: (id: string | number) => apiUrl(`/tutoring/tutees/${id}/completion/confirm`),
+            revertTutee:  (id: string | number) => apiUrl(`/tutoring/tutees/${id}/completion/revert`),
+            tutorConstanciaStatus: (id: string | number) => apiUrl(`/tutoring/assignments/${id}/constancia/status`),
+            tutorConstanciaSign:   (id: string | number, slot: string) => apiUrl(`/tutoring/assignments/${id}/constancia/sign/${slot}`),
+            tuteeConstanciaStatus: (id: string | number) => apiUrl(`/tutoring/tutees/${id}/constancia/status`),
+            tuteeConstanciaSign:   (id: string | number, slot: string) => apiUrl(`/tutoring/tutees/${id}/constancia/sign/${slot}`),
+        },
+
         // ── Instrumento de cédula (coordinador) ──
         cedulaSets: {
             list:      apiUrl('/tutoring/cedula-sets'),

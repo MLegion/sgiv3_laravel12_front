@@ -25,6 +25,12 @@ export default [
         props: true,
     },
     {
+        path: 'tutoring/closure',
+        name: 'tutoring.closure',
+        component: () => import('@/modules/tutoring/pages/ClosurePage.vue'),
+        meta: { title: 'Cierre / Constancias' },
+    },
+    {
         path: 'tutoring/referrals',
         name: 'tutoring.referrals',
         component: () => import('@/modules/tutoring/pages/ReferralsInboxPage.vue'),
