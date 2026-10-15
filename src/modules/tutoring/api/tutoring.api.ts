@@ -76,6 +76,7 @@ const tutoringApi: ApiModule = {
             window:       apiUrl('/tutoring/determination/window'),
             groupSubject: apiUrl('/tutoring/determination/group-subject'),
             limits:       apiUrl('/tutoring/determination/limits'),
+            catalog:      apiUrl('/tutoring/determination/catalog'),
         },
 
         // ── Concentrado / indicadores (Cap. 15, T-B) ──

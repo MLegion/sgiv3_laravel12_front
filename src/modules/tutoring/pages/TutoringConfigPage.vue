@@ -57,9 +57,20 @@
                 · obligatoria hasta semestre <b>{{ group.current.max_semester }}</b>
             </div>
             <div class="grid sm:grid-cols-4 gap-3 items-end">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">ID de materia</label>
-                    <input v-model="group.form.subject_id" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm" placeholder="subject_id" />
+                <div class="sm:col-span-4 relative">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Materia de tutoría grupal</label>
+                    <div v-if="group.form.subject_id" class="flex items-center gap-2 mb-1 text-sm">
+                        <span class="px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold">{{ group.form.subject_label }}</span>
+                        <button @click="clearSubject" class="text-xs text-slate-400 hover:text-rose-500">cambiar</button>
+                    </div>
+                    <input v-else v-model="subjectSearch" @input="searchSubjects" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Buscar materia por nombre o clave…" />
+                    <ul v-if="!group.form.subject_id && subjectResults.length" class="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-56 overflow-y-auto shadow">
+                        <li v-for="s in subjectResults" :key="s.id" @click="pickSubject(s)" class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">
+                            <span class="font-semibold text-slate-700">{{ s.name }}</span>
+                            <span v-if="s.official_code" class="text-slate-400"> · {{ s.official_code }}</span>
+                        </li>
+                    </ul>
+                    <p v-if="!group.form.subject_id && subjectSearch.length >= 2 && !subjectResults.length" class="text-[11px] text-slate-400 mt-1">Sin coincidencias.</p>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Semestres (X)</label>
@@ -112,13 +123,33 @@ const busy = ref(false)
 
 const win = reactive({ period_id: '', opens_at: '', closes_at: '', is_open: false })
 const limits = reactive({ max_tutees_per_tutor: 0, risk_min_repeat: 1 })
-const group = reactive<{ current: any; history: any[]; form: { subject_id: string; max_semester: string; effective_from: string; note: string } }>({
-    current: null, history: [], form: { subject_id: '', max_semester: '1', effective_from: '', note: '' },
+const group = reactive<{ current: any; history: any[]; form: { subject_id: number | null; subject_label: string; max_semester: string; effective_from: string; note: string } }>({
+    current: null, history: [], form: { subject_id: null, subject_label: '', max_semester: '1', effective_from: '', note: '' },
 })
 
+const subjectSearch = ref('')
+const subjectResults = ref<any[]>([])
+let subjectTimer: any = null
+
 async function fetchOptions() {
-    const { data } = await api.get(T.assignments.filterOptions)
+    const { data } = await api.get(T.determination.catalog)
     periods.value = data.periods ?? []
+}
+function searchSubjects() {
+    clearTimeout(subjectTimer)
+    subjectTimer = setTimeout(async () => {
+        if (subjectSearch.value.trim().length < 2) { subjectResults.value = []; return }
+        const { data } = await api.get(T.determination.catalog, { params: { subject_search: subjectSearch.value } })
+        subjectResults.value = data.subjects ?? []
+    }, 300)
+}
+function pickSubject(s: any) {
+    group.form.subject_id = s.id
+    group.form.subject_label = s.official_code ? `${s.name} · ${s.official_code}` : s.name
+    subjectResults.value = []; subjectSearch.value = ''
+}
+function clearSubject() {
+    group.form.subject_id = null; group.form.subject_label = ''
 }
 async function loadWindow() {
     if (!win.period_id) return
@@ -171,6 +202,7 @@ async function saveGroup() {
         })
         toast.success('Materia de tutoría grupal fijada.')
         group.form.note = ''
+        clearSubject()
         await loadGroup()
     })
 }

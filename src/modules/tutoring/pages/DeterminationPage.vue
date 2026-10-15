@@ -172,7 +172,7 @@ const propose = reactive<{ open: boolean; row: any; reason: string }>({ open: fa
 const confirmM = reactive<{ open: boolean; row: any; tutor: string }>({ open: false, row: null, tutor: '' })
 
 async function fetchOptions() {
-    const { data } = await api.get(T.assignments.filterOptions)
+    const { data } = await api.get(T.determination.catalog)
     options.periods = data.periods ?? []; options.careers = data.careers ?? []
 }
 async function fetchWindow() {
