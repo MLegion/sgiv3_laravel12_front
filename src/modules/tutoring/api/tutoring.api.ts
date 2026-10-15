@@ -74,6 +74,14 @@ const tutoringApi: ApiModule = {
             groupSubject: apiUrl('/tutoring/determination/group-subject'),
         },
 
+        // ── Seguimientos / informes del PAT (Cap. 15, T-G) ──
+        followups: {
+            forAssignment: (id: string | number) => apiUrl(`/tutoring/assignments/${id}/followups`),
+            submit:        (id: string | number) => apiUrl(`/tutoring/assignments/${id}/followups`),
+            review:        (id: string | number) => apiUrl(`/tutoring/followups/${id}/review`),
+            pending:       apiUrl('/tutoring/followups/pending'),
+        },
+
         // ── Instrumento de cédula (coordinador) ──
         cedulaSets: {
             list:      apiUrl('/tutoring/cedula-sets'),

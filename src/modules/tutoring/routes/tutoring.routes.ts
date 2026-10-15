@@ -25,6 +25,19 @@ export default [
         props: true,
     },
     {
+        path: 'tutoring/assignments/:id/followups',
+        name: 'tutoring.assignment-followups',
+        component: () => import('@/modules/tutoring/pages/AssignmentFollowupsPage.vue'),
+        meta: { title: 'Seguimientos del PAT' },
+        props: true,
+    },
+    {
+        path: 'tutoring/followups',
+        name: 'tutoring.followups',
+        component: () => import('@/modules/tutoring/pages/FollowupsInboxPage.vue'),
+        meta: { title: 'Seguimientos por revisar' },
+    },
+    {
         path: 'tutoring/closure',
         name: 'tutoring.closure',
         component: () => import('@/modules/tutoring/pages/ClosurePage.vue'),
