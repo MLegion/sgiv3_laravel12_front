@@ -72,6 +72,8 @@
                             class="px-3 py-1.5 rounded-lg border text-xs font-semibold text-slate-600 disabled:opacity-50">Revertir</button>
                         <button v-if="drawer.row?.completion_status === 'confirmed'" @click="openConstancia('tutor', drawer.row.id, 'Constancia del tutor')"
                             class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold">Firmar constancia</button>
+                        <button @click="openConstancia('reporte_final', drawer.row.id, 'Reporte final de tutoría')"
+                            class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold">Firmar reporte final</button>
                     </div>
                 </section>
 
@@ -175,7 +177,7 @@ const detail = reactive<{ tutor_suggested: boolean; has_pat: boolean; session_co
     tutor_suggested: false, has_pat: false, session_count: 0, followups_done: 0, followups_required: 0, tutees: [],
 })
 
-const constancia = reactive<{ open: boolean; kind: 'tutor' | 'alumno'; id: number; label: string; reportId: number | null; fullySigned: boolean; signers: any[] }>({
+const constancia = reactive<{ open: boolean; kind: 'tutor' | 'alumno' | 'reporte_final'; id: number; label: string; reportId: number | null; fullySigned: boolean; signers: any[] }>({
     open: false, kind: 'tutor', id: 0, label: '', reportId: null, fullySigned: false, signers: [],
 })
 
@@ -230,12 +232,14 @@ async function revertTutee(t: any) {
     })
 }
 
-async function openConstancia(kind: 'tutor' | 'alumno', id: number, label: string) {
+async function openConstancia(kind: 'tutor' | 'alumno' | 'reporte_final', id: number, label: string) {
     Object.assign(constancia, { open: true, kind, id, label, reportId: null, fullySigned: false, signers: [] })
     await loadConstanciaStatus()
 }
 async function loadConstanciaStatus() {
-    const url = constancia.kind === 'tutor' ? T.closure.tutorConstanciaStatus(constancia.id) : T.closure.tuteeConstanciaStatus(constancia.id)
+    const url = constancia.kind === 'tutor' ? T.closure.tutorConstanciaStatus(constancia.id)
+        : constancia.kind === 'reporte_final' ? T.closure.finalReportStatus(constancia.id)
+        : T.closure.tuteeConstanciaStatus(constancia.id)
     const { data } = await api.get(url)
     const d = data.data ?? data
     Object.assign(constancia, { reportId: d.report_id ?? null, fullySigned: !!d.fully_signed, signers: d.signers ?? [] })
@@ -244,6 +248,8 @@ async function loadConstanciaStatus() {
 function startSign(s: any) {
     sign.endpoint = constancia.kind === 'tutor'
         ? T.closure.tutorConstanciaSign(constancia.id, s.slot)
+        : constancia.kind === 'reporte_final'
+        ? T.closure.finalReportSign(constancia.id, s.slot)
         : T.closure.tuteeConstanciaSign(constancia.id, s.slot)
     sign.label = (s.avala || s.slot)
     sign.signerRole = s.avala || s.slot

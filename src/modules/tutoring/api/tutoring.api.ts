@@ -61,6 +61,8 @@ const tutoringApi: ApiModule = {
             tutorConstanciaSign:   (id: string | number, slot: string) => apiUrl(`/tutoring/assignments/${id}/constancia/sign/${slot}`),
             tuteeConstanciaStatus: (id: string | number) => apiUrl(`/tutoring/tutees/${id}/constancia/status`),
             tuteeConstanciaSign:   (id: string | number, slot: string) => apiUrl(`/tutoring/tutees/${id}/constancia/sign/${slot}`),
+            finalReportStatus:     (id: string | number) => apiUrl(`/tutoring/assignments/${id}/reporte-final/status`),
+            finalReportSign:       (id: string | number, slot: string) => apiUrl(`/tutoring/assignments/${id}/reporte-final/sign/${slot}`),
         },
 
         // ── Determinación de tutorados (Cap. 15, T-F) ──
