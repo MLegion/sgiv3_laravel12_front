@@ -38,6 +38,12 @@ export default [
         meta: { title: 'Seguimientos por revisar' },
     },
     {
+        path: 'tutoring/dashboard',
+        name: 'tutoring.dashboard',
+        component: () => import('@/modules/tutoring/pages/TutoringDashboardPage.vue'),
+        meta: { title: 'Concentrado de Tutorías' },
+    },
+    {
         path: 'tutoring/closure',
         name: 'tutoring.closure',
         component: () => import('@/modules/tutoring/pages/ClosurePage.vue'),

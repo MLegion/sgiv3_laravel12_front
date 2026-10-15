@@ -74,6 +74,9 @@ const tutoringApi: ApiModule = {
             groupSubject: apiUrl('/tutoring/determination/group-subject'),
         },
 
+        // ── Concentrado / indicadores (Cap. 15, T-B) ──
+        dashboard: apiUrl('/tutoring/dashboard'),
+
         // ── Seguimientos / informes del PAT (Cap. 15, T-G) ──
         followups: {
             forAssignment: (id: string | number) => apiUrl(`/tutoring/assignments/${id}/followups`),
