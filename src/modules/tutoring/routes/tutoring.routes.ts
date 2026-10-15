@@ -31,6 +31,18 @@ export default [
         meta: { title: 'Cierre / Constancias' },
     },
     {
+        path: 'tutoring/determination',
+        name: 'tutoring.determination',
+        component: () => import('@/modules/tutoring/pages/DeterminationPage.vue'),
+        meta: { title: 'Determinación de tutorados' },
+    },
+    {
+        path: 'tutoring/config',
+        name: 'tutoring.config',
+        component: () => import('@/modules/tutoring/pages/TutoringConfigPage.vue'),
+        meta: { title: 'Configuración de Tutorías' },
+    },
+    {
         path: 'tutoring/referrals',
         name: 'tutoring.referrals',
         component: () => import('@/modules/tutoring/pages/ReferralsInboxPage.vue'),

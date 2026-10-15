@@ -62,6 +62,18 @@ const tutoringApi: ApiModule = {
             tuteeConstanciaSign:   (id: string | number, slot: string) => apiUrl(`/tutoring/tutees/${id}/constancia/sign/${slot}`),
         },
 
+        // ── Determinación de tutorados (Cap. 15, T-F) ──
+        determination: {
+            risk:         apiUrl('/tutoring/determination/risk'),
+            proposals:    apiUrl('/tutoring/determination/proposals'),
+            register:     apiUrl('/tutoring/determination/proposals'),
+            withdraw:     (id: string | number) => apiUrl(`/tutoring/determination/proposals/${id}/withdraw`),
+            reject:       (id: string | number) => apiUrl(`/tutoring/determination/proposals/${id}/reject`),
+            confirm:      (id: string | number) => apiUrl(`/tutoring/determination/proposals/${id}/confirm`),
+            window:       apiUrl('/tutoring/determination/window'),
+            groupSubject: apiUrl('/tutoring/determination/group-subject'),
+        },
+
         // ── Instrumento de cédula (coordinador) ──
         cedulaSets: {
             list:      apiUrl('/tutoring/cedula-sets'),
