@@ -31,6 +31,22 @@
             <button @click="saveWindow" :disabled="busy || !win.period_id" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar ventana</button>
         </section>
 
+        <!-- Límites / umbrales -->
+        <section class="rounded-xl border bg-white p-4 space-y-3">
+            <h2 class="text-sm font-bold uppercase text-slate-500">Límites y umbrales</h2>
+            <div class="grid sm:grid-cols-3 gap-3 items-end">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Cupo de tutorados por tutor (individual)</label>
+                    <input v-model="limits.max_tutees_per_tutor" type="number" min="0" class="w-full rounded-lg border-slate-300 text-sm" placeholder="0 = sin límite" />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Mín. recurses para sugerir riesgo</label>
+                    <input v-model="limits.risk_min_repeat" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm" />
+                </div>
+                <button @click="saveLimits" :disabled="busy" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar límites</button>
+            </div>
+        </section>
+
         <!-- Materia de tutoría grupal (por plantel, con historial) -->
         <section class="rounded-xl border bg-white p-4 space-y-3">
             <h2 class="text-sm font-bold uppercase text-slate-500">Materia de tutoría grupal</h2>
@@ -95,6 +111,7 @@ const periods = ref<any[]>([])
 const busy = ref(false)
 
 const win = reactive({ period_id: '', opens_at: '', closes_at: '', is_open: false })
+const limits = reactive({ max_tutees_per_tutor: 0, risk_min_repeat: 1 })
 const group = reactive<{ current: any; history: any[]; form: { subject_id: string; max_semester: string; effective_from: string; note: string } }>({
     current: null, history: [], form: { subject_id: '', max_semester: '1', effective_from: '', note: '' },
 })
@@ -120,6 +137,22 @@ async function saveWindow() {
             is_open: win.is_open,
         })
         toast.success('Ventana guardada.')
+    })
+}
+
+async function loadLimits() {
+    const { data } = await api.get(T.determination.limits)
+    limits.max_tutees_per_tutor = data.max_tutees_per_tutor ?? 0
+    limits.risk_min_repeat = data.risk_min_repeat ?? 1
+}
+async function saveLimits() {
+    await act(async () => {
+        await api.post(T.determination.limits, {
+            max_tutees_per_tutor: Number(limits.max_tutees_per_tutor),
+            risk_min_repeat: Number(limits.risk_min_repeat),
+        })
+        toast.success('Límites guardados.')
+        await loadLimits()
     })
 }
 
@@ -149,5 +182,5 @@ async function act(fn: () => Promise<void>) {
     finally { busy.value = false }
 }
 
-onMounted(async () => { await Promise.all([fetchOptions(), loadGroup()]) })
+onMounted(async () => { await Promise.all([fetchOptions(), loadGroup(), loadLimits()]) })
 </script>

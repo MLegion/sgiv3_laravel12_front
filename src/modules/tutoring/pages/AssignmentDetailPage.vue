@@ -11,6 +11,7 @@
                 <div class="flex gap-2">
                     <router-link :to="`/tutoring/assignments/${a.id}/followups`"
                         class="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 text-xs font-semibold">Seguimientos del PAT</router-link>
+                    <button v-if="a.status === 'active'" @click="showReassign = true" class="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">Reasignar tutor</button>
                     <button v-if="a.status === 'active'" @click="close" class="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 border border-red-200 text-xs font-semibold">Cerrar</button>
                 </div>
             </div>
@@ -120,6 +121,21 @@
         </div>
 
         <!-- Modal agregar tutorado -->
+        <div v-if="showReassign" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showReassign = false">
+            <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
+                <h3 class="text-sm font-bold text-slate-700 uppercase">Reasignar tutor</h3>
+                <p class="text-[11px] text-slate-400">Los tutorados y la bitácora se mueven con la asignación.</p>
+                <label class="block text-xs font-semibold text-slate-500">ID de usuario del nuevo tutor</label>
+                <input v-model="reassign.tutor" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm" placeholder="tutor_user_id" />
+                <label class="block text-xs font-semibold text-slate-500">Motivo (opcional)</label>
+                <textarea v-model="reassign.reason" rows="2" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+                <div class="flex justify-end gap-2">
+                    <button @click="showReassign = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
+                    <button @click="doReassign" :disabled="!reassign.tutor" class="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold disabled:opacity-50">Reasignar</button>
+                </div>
+            </div>
+        </div>
+
         <div v-if="showAddTutee" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showAddTutee = false">
             <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Agregar tutorado</h2>
@@ -150,7 +166,8 @@ const referrals = ref<TutoringReferral[]>([])
 const areas = ref<ReferralArea[]>([])
 const plan = ref('')
 
-const showSession = ref(false), showRefer = ref(false), showCedula = ref(false), showAddTutee = ref(false)
+const showSession = ref(false), showRefer = ref(false), showCedula = ref(false), showAddTutee = ref(false), showReassign = ref(false)
+const reassign = reactive<{ tutor: string; reason: string }>({ tutor: '', reason: '' })
 const sf = reactive<{ type: string; student_id: number | null; session_date: string; topic: string; notes: string; attendance: number[] }>({ type: 'grupal', student_id: null, session_date: '', topic: '', notes: '', attendance: [] })
 const rf = reactive<{ student_id: number | null; referral_area_id: number | null; reason: string }>({ student_id: null, referral_area_id: null, reason: '' })
 const referTutee = ref<TutoringTutee | null>(null)
@@ -173,6 +190,13 @@ async function load() {
 
 async function savePlan() { try { await api.put(T.assignments.plan(props.id), { plan: plan.value }); flash('Plan guardado.') } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
 async function close() { if (!confirm('¿Cerrar la asignación?')) return; try { await api.post(T.assignments.close(props.id), {}); await load(); flash('Asignación cerrada.') } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
+async function doReassign() {
+    try {
+        await api.post(T.assignments.reassign(props.id), { tutor_user_id: Number(reassign.tutor), reason: reassign.reason || null })
+        showReassign.value = false; reassign.tutor = ''; reassign.reason = ''
+        await load(); flash('Tutor reasignado.')
+    } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) }
+}
 
 function openSession() { Object.assign(sf, { type: a.value?.scope ?? 'grupal', student_id: null, session_date: '', topic: '', notes: '', attendance: [] }); modalMsg.value = ''; showSession.value = true }
 async function saveSession() {

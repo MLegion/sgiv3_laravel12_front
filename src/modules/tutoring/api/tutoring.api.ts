@@ -21,6 +21,7 @@ const tutoringApi: ApiModule = {
             byId:          (id: string | number) => apiUrl(`/tutoring/assignments/${id}`),
             plan:          (id: string | number) => apiUrl(`/tutoring/assignments/${id}/plan`),
             close:         (id: string | number) => apiUrl(`/tutoring/assignments/${id}/close`),
+            reassign:      (id: string | number) => apiUrl(`/tutoring/assignments/${id}/reassign`),
             addTutee:      (id: string | number) => apiUrl(`/tutoring/assignments/${id}/tutees`),
             removeTutee:   (id: string | number, tuteeId: string | number) => apiUrl(`/tutoring/assignments/${id}/tutees/${tuteeId}`),
             sessions:      (id: string | number) => apiUrl(`/tutoring/assignments/${id}/sessions`),
@@ -72,6 +73,7 @@ const tutoringApi: ApiModule = {
             confirm:      (id: string | number) => apiUrl(`/tutoring/determination/proposals/${id}/confirm`),
             window:       apiUrl('/tutoring/determination/window'),
             groupSubject: apiUrl('/tutoring/determination/group-subject'),
+            limits:       apiUrl('/tutoring/determination/limits'),
         },
 
         // ── Concentrado / indicadores (Cap. 15, T-B) ──
