@@ -22,7 +22,7 @@
         <div class="rounded-xl border bg-white overflow-hidden">
             <table class="w-full text-sm">
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Tutor</th><th>Periodo</th><th>PAT</th><th>Sesiones</th>
+                    <th class="px-4 py-2">Tutor</th><th>Periodo</th><th>PAT</th><th>Sesiones</th><th>Hitos</th>
                     <th>Sugerido</th><th>Cumplimiento</th><th>Tutorados</th><th></th>
                 </tr></thead>
                 <tbody>
@@ -31,6 +31,7 @@
                         <td class="text-slate-600">{{ r.period_name ?? '—' }}</td>
                         <td><span :class="r.has_pat ? 'text-emerald-600' : 'text-rose-500'">{{ r.has_pat ? 'Sí' : 'No' }}</span></td>
                         <td class="text-slate-600">{{ r.session_count }}</td>
+                        <td class="text-slate-600">{{ r.followups_done }}/{{ r.followups_required }}</td>
                         <td><Badge :ok="r.tutor_suggested" :on="'Cumple'" :off="'Insuf.'" /></td>
                         <td><StatusBadge :status="r.completion_status" /></td>
                         <td class="text-slate-600">{{ r.tutees_confirmed }}/{{ r.tutees_total }}</td>
@@ -38,7 +39,7 @@
                             <button @click="openDrawer(r)" class="px-3 py-1 rounded-lg border text-xs font-semibold text-slate-600 hover:bg-slate-100">Revisar</button>
                         </td>
                     </tr>
-                    <tr v-if="!rows.length"><td colspan="8" class="px-4 py-6 text-center text-slate-400">Sin asignaciones en el periodo.</td></tr>
+                    <tr v-if="!rows.length"><td colspan="9" class="px-4 py-6 text-center text-slate-400">Sin asignaciones en el periodo.</td></tr>
                 </tbody>
             </table>
         </div>
@@ -60,6 +61,7 @@
                     <div class="flex items-center gap-4 text-sm">
                         <span>PAT: <b :class="detail.has_pat ? 'text-emerald-600' : 'text-rose-500'">{{ detail.has_pat ? 'entregado' : 'faltante' }}</b></span>
                         <span>Sesiones: <b>{{ detail.session_count }}</b></span>
+                        <span>Hitos: <b :class="detail.followups_done >= detail.followups_required && detail.followups_required > 0 ? 'text-emerald-600' : 'text-slate-600'">{{ detail.followups_done }}/{{ detail.followups_required }}</b></span>
                         <Badge :ok="detail.tutor_suggested" :on="'Sugerido: cumple'" :off="'Sugerido: insuficiente'" />
                         <StatusBadge :status="drawer.row?.completion_status" />
                     </div>
@@ -169,8 +171,8 @@ const filters = reactive({ period_id: '', career_id: '' })
 const busy = ref(false)
 
 const drawer = reactive<{ open: boolean; row: any }>({ open: false, row: null })
-const detail = reactive<{ tutor_suggested: boolean; has_pat: boolean; session_count: number; tutees: any[] }>({
-    tutor_suggested: false, has_pat: false, session_count: 0, tutees: [],
+const detail = reactive<{ tutor_suggested: boolean; has_pat: boolean; session_count: number; followups_done: number; followups_required: number; tutees: any[] }>({
+    tutor_suggested: false, has_pat: false, session_count: 0, followups_done: 0, followups_required: 0, tutees: [],
 })
 
 const constancia = reactive<{ open: boolean; kind: 'tutor' | 'alumno'; id: number; label: string; reportId: number | null; fullySigned: boolean; signers: any[] }>({
@@ -194,7 +196,7 @@ async function openDrawer(row: any) {
 }
 async function loadDetail(assignmentId: number) {
     const { data } = await api.get(T.closure.assignment(assignmentId))
-    Object.assign(detail, { tutor_suggested: data.tutor_suggested, has_pat: data.has_pat, session_count: data.session_count, tutees: data.tutees ?? [] })
+    Object.assign(detail, { tutor_suggested: data.tutor_suggested, has_pat: data.has_pat, session_count: data.session_count, followups_done: data.followups_done ?? 0, followups_required: data.followups_required ?? 0, tutees: data.tutees ?? [] })
 }
 
 async function confirmTutor() {
