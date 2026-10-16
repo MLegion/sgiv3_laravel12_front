@@ -42,8 +42,18 @@
         <div v-if="showNew" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showNew = false">
             <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Asignar tutor</h2>
-                <label class="block"><span class="text-xs font-semibold text-slate-500">ID de usuario del tutor (docente)</span>
-                    <input v-model.number="form.tutor_user_id" type="number" class="mt-1 w-full rounded-lg border-slate-300 text-sm" /></label>
+                <div class="block relative"><span class="text-xs font-semibold text-slate-500">Tutor (docente)</span>
+                    <div v-if="tutorPick.label" class="mt-1 flex items-center gap-2">
+                        <span class="px-2 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold">{{ tutorPick.label }}</span>
+                        <button type="button" @click="clearTutor" class="text-xs text-slate-400 hover:text-rose-500">cambiar</button>
+                    </div>
+                    <template v-else>
+                        <input v-model="tutorPick.search" @input="searchTutors" placeholder="Buscar docente por nombre o correo…" class="mt-1 w-full rounded-lg border-slate-300 text-sm" autocomplete="off" />
+                        <ul v-if="tutorPick.results.length" class="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow">
+                            <li v-for="t in tutorPick.results" :key="t.value" @click="pickTutor(t)" class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">{{ t.label }}</li>
+                        </ul>
+                    </template>
+                </div>
                 <label class="block"><span class="text-xs font-semibold text-slate-500">Periodo</span>
                     <select v-model="form.college_academic_period_id" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
                         <option :value="null">— Selecciona —</option>
@@ -58,8 +68,18 @@
                     <select v-model="form.scope" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
                         <option value="grupal">Grupal (desde un grupo)</option><option value="individual">Individual</option>
                     </select></label>
-                <label v-if="form.scope === 'grupal'" class="block"><span class="text-xs font-semibold text-slate-500">ID del grupo</span>
-                    <input v-model.number="form.group_id" type="number" class="mt-1 w-full rounded-lg border-slate-300 text-sm" /></label>
+                <div v-if="form.scope === 'grupal'" class="block relative"><span class="text-xs font-semibold text-slate-500">Grupo</span>
+                    <div v-if="groupPick.label" class="mt-1 flex items-center gap-2">
+                        <span class="px-2 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold">{{ groupPick.label }}</span>
+                        <button type="button" @click="clearGroup" class="text-xs text-slate-400 hover:text-rose-500">cambiar</button>
+                    </div>
+                    <template v-else>
+                        <input v-model="groupPick.search" @input="searchGroups" :placeholder="form.college_academic_period_id ? 'Buscar grupo…' : 'Elige un periodo primero'" :disabled="!form.college_academic_period_id" class="mt-1 w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-50" autocomplete="off" />
+                        <ul v-if="groupPick.results.length" class="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow">
+                            <li v-for="g in groupPick.results" :key="g.id" @click="pickGroup(g)" class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">{{ g.label }}</li>
+                        </ul>
+                    </template>
+                </div>
                 <label class="block"><span class="text-xs font-semibold text-slate-500">Plan de acción tutorial (opcional)</span>
                     <textarea v-model="form.plan" rows="2" class="mt-1 w-full rounded-lg border-slate-300 text-sm"></textarea></label>
                 <p v-if="modalMsg" class="text-sm text-red-600">{{ modalMsg }}</p>
@@ -89,6 +109,36 @@ const periods = ref<any[]>([])
 const showNew = ref(false), saving = ref(false), modalMsg = ref('')
 const form = reactive({ tutor_user_id: null as number | null, college_academic_period_id: null as number | null, career_id: null as number | null, scope: 'grupal', group_id: null as number | null, plan: '' })
 
+// Buscadores del modal (docente + grupo)
+const tutorPick = reactive<{ search: string; label: string; results: any[] }>({ search: '', label: '', results: [] })
+const groupPick = reactive<{ search: string; label: string; results: any[] }>({ search: '', label: '', results: [] })
+let tutorTimer: ReturnType<typeof setTimeout>
+let groupTimer: ReturnType<typeof setTimeout>
+
+function searchTutors() {
+    clearTimeout(tutorTimer)
+    tutorTimer = setTimeout(async () => {
+        if (tutorPick.search.trim().length < 2) { tutorPick.results = []; return }
+        const { data } = await api.get(T.determination.catalog, { params: { teacher_search: tutorPick.search } })
+        tutorPick.results = data.teachers ?? []
+    }, 300)
+}
+function pickTutor(t: any) { form.tutor_user_id = t.value; tutorPick.label = t.label; tutorPick.results = []; tutorPick.search = '' }
+function clearTutor() { form.tutor_user_id = null; tutorPick.label = '' }
+
+function searchGroups() {
+    if (!form.college_academic_period_id) return
+    clearTimeout(groupTimer)
+    groupTimer = setTimeout(async () => {
+        const { data } = await api.get(T.determination.groups, { params: {
+            period_id: form.college_academic_period_id, career_id: form.career_id || undefined, q: groupPick.search || undefined,
+        } })
+        groupPick.results = data.data ?? []
+    }, 300)
+}
+function pickGroup(g: any) { form.group_id = g.id; groupPick.label = g.label; groupPick.results = []; groupPick.search = '' }
+function clearGroup() { form.group_id = null; groupPick.label = '' }
+
 function goDetail(id: number) { router.push({ name: 'tutoring.assignment-detail', params: { id } }) }
 
 async function fetchList() {
@@ -105,6 +155,8 @@ async function fetchOptions() {
 }
 async function openNew() {
     Object.assign(form, { tutor_user_id: null, college_academic_period_id: null, career_id: null, scope: 'grupal', group_id: null, plan: '' })
+    Object.assign(tutorPick, { search: '', label: '', results: [] })
+    Object.assign(groupPick, { search: '', label: '', results: [] })
     modalMsg.value = ''; showNew.value = true
     if (!periods.value.length) periods.value = (await api.get(SS.collegeAcademicPeriods.list)).data?.data ?? (await api.get(SS.collegeAcademicPeriods.list)).data ?? []
 }
