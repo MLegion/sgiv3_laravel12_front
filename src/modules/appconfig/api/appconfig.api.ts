@@ -5,6 +5,7 @@ export default {
     name: 'APPCONFIG_API',
     api: {
         schemas: apiUrl('/appconfig/schemas'),
+        options: (source: string) => apiUrl(`/appconfig/options/${source}`),
         college: {
             show:   (appId: string) => apiUrl(`/appconfig/college/${appId}`),
             update: (appId: string) => apiUrl(`/appconfig/college/${appId}`),

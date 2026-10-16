@@ -15,6 +15,30 @@
                 <span class="text-sm font-semibold text-slate-700">{{ keyDef.label }}</span>
             </label>
 
+            <!-- DYNAMIC OPTIONS (options_source) → combobox con búsqueda -->
+            <template v-else-if="keyDef.options_source">
+                <span class="text-xs font-semibold text-slate-600">{{ keyDef.label }}</span>
+                <div class="relative mt-1">
+                    <div v-if="comboLabel[keyName]" class="flex items-center gap-2">
+                        <span class="px-2 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold">{{ comboLabel[keyName] }}</span>
+                        <button type="button" @click="clearCombo(keyName)" class="text-xs text-slate-400 hover:text-rose-500">cambiar</button>
+                    </div>
+                    <template v-else>
+                        <input
+                            type="text"
+                            :value="comboSearch[keyName] ?? ''"
+                            @input="onComboSearch(keyName, keyDef.options_source!, ($event.target as HTMLInputElement).value)"
+                            :placeholder="keyDef.placeholder ?? 'Buscar…'"
+                            class="w-full h-9 border rounded-md px-3 text-sm"
+                            autocomplete="off"
+                        />
+                        <ul v-if="(comboResults[keyName] ?? []).length" class="absolute z-10 bg-white border rounded-md mt-1 w-full max-h-56 overflow-y-auto shadow">
+                            <li v-for="o in comboResults[keyName]" :key="o.value" @click="pickCombo(keyName, o)" class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">{{ o.label }}</li>
+                        </ul>
+                    </template>
+                </div>
+            </template>
+
             <!-- ENUM (values array) → select -->
             <template v-else-if="keyDef.values && keyDef.values.length > 0">
                 <span class="text-xs font-semibold text-slate-600">{{ keyDef.label }}</span>
@@ -94,6 +118,8 @@
 import { computed, reactive, watch } from 'vue'
 import type { ConfigSchemaDef, ConfigKeyDef, ConfigValueResponse } from '@/modules/appconfig/types/appconfig.type'
 import { isSecretPlaceholder } from '@/modules/appconfig/types/appconfig.type'
+import { api } from '@/shared/services/api'
+import { API } from '@/shared/api'
 
 const props = defineProps<{
     schema: ConfigSchemaDef
@@ -107,6 +133,41 @@ const emit = defineEmits<{
 const model = reactive<Record<string, unknown>>({})
 const secretInput = reactive<Record<string, string>>({})
 const jsonErrors = reactive<Record<string, boolean>>({})
+
+// Combobox dinámico (options_source)
+const comboSearch = reactive<Record<string, string>>({})
+const comboResults = reactive<Record<string, Array<{ value: string | number; label: string }>>>({})
+const comboLabel = reactive<Record<string, string>>({})
+const comboTimers: Record<string, ReturnType<typeof setTimeout>> = {}
+
+function onComboSearch(keyName: string, source: string, term: string) {
+    comboSearch[keyName] = term
+    clearTimeout(comboTimers[keyName])
+    comboTimers[keyName] = setTimeout(async () => {
+        if (term.trim().length < 2) { comboResults[keyName] = []; return }
+        try {
+            const { data } = await api.get(API.APPCONFIG_API.options(source), { params: { q: term } })
+            comboResults[keyName] = data.data ?? []
+        } catch { comboResults[keyName] = [] }
+    }, 300)
+}
+function pickCombo(keyName: string, o: { value: string | number; label: string }) {
+    comboLabel[keyName] = o.label
+    comboResults[keyName] = []
+    comboSearch[keyName] = ''
+    setValue(keyName, o.value)
+}
+function clearCombo(keyName: string) {
+    comboLabel[keyName] = ''
+    setValue(keyName, 0)
+}
+async function resolveComboLabel(keyName: string, source: string, value: unknown) {
+    if (value === null || value === undefined || value === 0 || value === '') { comboLabel[keyName] = ''; return }
+    try {
+        const { data } = await api.get(API.APPCONFIG_API.options(source), { params: { values: String(value) } })
+        comboLabel[keyName] = data.data?.[0]?.label ?? ''
+    } catch { comboLabel[keyName] = '' }
+}
 
 /** Indica si algún campo JSON tiene contenido inválido (para que el padre
  *  bloquee el guardado en vez de descartar el valor en silencio). */
@@ -209,6 +270,13 @@ watch(() => [props.schema, props.values], () => {
             model[keyName] = raw ?? keyDef.default ?? null
         } else {
             model[keyName] = raw ?? keyDef.default ?? ''
+        }
+
+        // Campos con selector dinámico: resolver la etiqueta del valor actual.
+        if (keyDef.options_source) {
+            comboSearch[keyName] = ''
+            comboResults[keyName] = []
+            resolveComboLabel(keyName, keyDef.options_source, model[keyName])
         }
     }
 }, { immediate: true, deep: true })

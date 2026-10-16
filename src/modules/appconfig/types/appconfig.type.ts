@@ -16,6 +16,7 @@ export interface ConfigKeyDef {
     max: number | null
     requires: Record<string, unknown> | null
     unique_across_scope: boolean
+    options_source?: string | null   // selector dinámico (combobox con búsqueda)
 }
 
 export interface ConfigSchemaDef {
