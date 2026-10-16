@@ -96,8 +96,12 @@ async function fetchList() {
     rows.value = data.data ?? []
 }
 async function fetchOptions() {
-    const { data } = await api.get(T.assignments.filterOptions)
-    options.periods = data.periods ?? []; options.careers = data.careers ?? []
+    // Catálogo del plantel: TODOS los periodos/carreras (no sólo los que ya tienen
+    // asignaciones), para que el filtro y el alta no salgan vacíos.
+    const { data } = await api.get(T.determination.catalog)
+    options.periods = data.periods ?? []
+    options.careers = data.careers ?? []
+    periods.value = data.periods ?? []
 }
 async function openNew() {
     Object.assign(form, { tutor_user_id: null, college_academic_period_id: null, career_id: null, scope: 'grupal', group_id: null, plan: '' })
