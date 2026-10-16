@@ -34,7 +34,11 @@
         <!-- Límites / umbrales -->
         <section class="rounded-xl border bg-white p-4 space-y-3">
             <h2 class="text-sm font-bold uppercase text-slate-500">Límites y umbrales</h2>
-            <div class="grid sm:grid-cols-3 gap-3 items-end">
+            <div class="grid sm:grid-cols-4 gap-3 items-end">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Semestres con tutoría grupal (X)</label>
+                    <input v-model="limits.group_tutoring_max_semester" type="number" min="1" max="20" class="w-full rounded-lg border-slate-300 text-sm" />
+                </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Cupo de tutorados por tutor (individual)</label>
                     <input v-model="limits.max_tutees_per_tutor" type="number" min="0" class="w-full rounded-lg border-slate-300 text-sm" placeholder="0 = sin límite" />
@@ -73,10 +77,6 @@
                     <p v-if="!group.form.subject_id && subjectSearch.length >= 2 && !subjectResults.length" class="text-[11px] text-slate-400 mt-1">Sin coincidencias.</p>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Semestres (X)</label>
-                    <input v-model="group.form.max_semester" type="number" min="1" max="20" class="w-full rounded-lg border-slate-300 text-sm" />
-                </div>
-                <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Vigente desde</label>
                     <input v-model="group.form.effective_from" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
@@ -85,7 +85,7 @@
                     <input v-model="group.form.note" class="w-full rounded-lg border-slate-300 text-sm" placeholder="opcional" />
                 </div>
             </div>
-            <button @click="saveGroup" :disabled="busy || !group.form.subject_id || !group.form.max_semester || !group.form.effective_from"
+            <button @click="saveGroup" :disabled="busy || !group.form.subject_id || !group.form.effective_from"
                 class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Fijar materia vigente</button>
 
             <div v-if="group.history.length" class="pt-2">
@@ -122,9 +122,9 @@ const periods = ref<any[]>([])
 const busy = ref(false)
 
 const win = reactive({ period_id: '', opens_at: '', closes_at: '', is_open: false })
-const limits = reactive({ max_tutees_per_tutor: 0, risk_min_repeat: 1 })
-const group = reactive<{ current: any; history: any[]; form: { subject_id: number | null; subject_label: string; max_semester: string; effective_from: string; note: string } }>({
-    current: null, history: [], form: { subject_id: null, subject_label: '', max_semester: '1', effective_from: '', note: '' },
+const limits = reactive({ max_tutees_per_tutor: 0, risk_min_repeat: 1, group_tutoring_max_semester: 1 })
+const group = reactive<{ current: any; history: any[]; form: { subject_id: number | null; subject_label: string; effective_from: string; note: string } }>({
+    current: null, history: [], form: { subject_id: null, subject_label: '', effective_from: '', note: '' },
 })
 
 const subjectSearch = ref('')
@@ -175,12 +175,14 @@ async function loadLimits() {
     const { data } = await api.get(T.determination.limits)
     limits.max_tutees_per_tutor = data.max_tutees_per_tutor ?? 0
     limits.risk_min_repeat = data.risk_min_repeat ?? 1
+    limits.group_tutoring_max_semester = data.group_tutoring_max_semester ?? 1
 }
 async function saveLimits() {
     await act(async () => {
         await api.post(T.determination.limits, {
             max_tutees_per_tutor: Number(limits.max_tutees_per_tutor),
             risk_min_repeat: Number(limits.risk_min_repeat),
+            group_tutoring_max_semester: Number(limits.group_tutoring_max_semester),
         })
         toast.success('Límites guardados.')
         await loadLimits()
@@ -196,7 +198,6 @@ async function saveGroup() {
     await act(async () => {
         await api.post(T.determination.groupSubject, {
             subject_id: Number(group.form.subject_id),
-            max_semester: Number(group.form.max_semester),
             effective_from: group.form.effective_from,
             note: group.form.note || null,
         })
