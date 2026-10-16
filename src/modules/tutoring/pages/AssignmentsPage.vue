@@ -50,13 +50,13 @@
         <div v-if="showNew" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showNew = false">
             <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Asignar tutor</h2>
-                <div class="block relative"><span class="text-xs font-semibold text-slate-500">Tutor (docente)</span>
+                <div class="block relative"><span class="text-xs font-semibold text-slate-500">Tutor (docente o empleado)</span>
                     <div v-if="tutorPick.label" class="mt-1 flex items-center gap-2">
                         <span class="px-2 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold">{{ tutorPick.label }}</span>
                         <button type="button" @click="clearTutor" class="text-xs text-slate-400 hover:text-rose-500">cambiar</button>
                     </div>
                     <template v-else>
-                        <input v-model="tutorPick.search" @input="searchTutors" placeholder="Buscar docente por nombre o correo…" class="mt-1 w-full rounded-lg border-slate-300 text-sm" autocomplete="off" />
+                        <input v-model="tutorPick.search" @input="searchTutors" placeholder="Buscar empleado por nombre o correo…" class="mt-1 w-full rounded-lg border-slate-300 text-sm" autocomplete="off" />
                         <ul v-if="tutorPick.results.length" class="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow">
                             <li v-for="t in tutorPick.results" :key="t.value" @click="pickTutor(t)" class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">{{ t.label }}</li>
                         </ul>
