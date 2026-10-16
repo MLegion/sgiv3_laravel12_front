@@ -5,7 +5,7 @@
             <button @click="openNew" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">+ Asignar tutor</button>
         </div>
 
-        <div class="rounded-xl border bg-white p-4 grid sm:grid-cols-4 gap-3">
+        <div class="rounded-xl border bg-white p-4 grid sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <select v-model="filters.period_id" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todos los periodos</option>
                 <option v-for="p in options.periods" :key="p.id" :value="p.id">{{ p.name }}</option>
@@ -13,6 +13,14 @@
             <select v-model="filters.career_id" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todas las carreras</option>
                 <option v-for="c in options.careers" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+            <select v-model="filters.campus_id" class="rounded-lg border-slate-300 text-sm">
+                <option value="">Todos los campus</option>
+                <option v-for="c in options.campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+            <select v-model="filters.modality_id" class="rounded-lg border-slate-300 text-sm">
+                <option value="">Todas las modalidades</option>
+                <option v-for="m in options.modalities" :key="m.id" :value="m.id">{{ m.name }}</option>
             </select>
             <select v-model="filters.status" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todos</option><option value="active">Activas</option><option value="closed">Cerradas</option>
@@ -68,6 +76,18 @@
                     <select v-model="form.scope" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
                         <option value="grupal">Grupal (desde un grupo)</option><option value="individual">Individual</option>
                     </select></label>
+                <div v-if="form.scope === 'grupal'" class="grid grid-cols-2 gap-2">
+                    <label class="block"><span class="text-xs font-semibold text-slate-500">Campus</span>
+                        <select v-model="groupFilter.campus_id" @change="onGroupFilterChange" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
+                            <option value="">Todos</option>
+                            <option v-for="c in options.campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
+                        </select></label>
+                    <label class="block"><span class="text-xs font-semibold text-slate-500">Modalidad</span>
+                        <select v-model="groupFilter.modality_id" @change="onGroupFilterChange" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
+                            <option value="">Todas</option>
+                            <option v-for="m in options.modalities" :key="m.id" :value="m.id">{{ m.name }}</option>
+                        </select></label>
+                </div>
                 <div v-if="form.scope === 'grupal'" class="block relative"><span class="text-xs font-semibold text-slate-500">Grupo</span>
                     <div v-if="groupPick.label" class="mt-1 flex items-center gap-2">
                         <span class="px-2 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold">{{ groupPick.label }}</span>
@@ -103,8 +123,8 @@ const T = API.TUTORING_API
 const SS = API.SCHOOL_SERVICES_API
 const router = useRouter()
 const rows = ref<TutoringAssignmentRow[]>([])
-const options = reactive<{ periods: any[]; careers: any[] }>({ periods: [], careers: [] })
-const filters = reactive({ period_id: '', career_id: '', status: '' })
+const options = reactive<{ periods: any[]; careers: any[]; campuses: any[]; modalities: any[] }>({ periods: [], careers: [], campuses: [], modalities: [] })
+const filters = reactive({ period_id: '', career_id: '', campus_id: '', modality_id: '', status: '' })
 const periods = ref<any[]>([])
 const showNew = ref(false), saving = ref(false), modalMsg = ref('')
 const form = reactive({ tutor_user_id: null as number | null, college_academic_period_id: null as number | null, career_id: null as number | null, scope: 'grupal', group_id: null as number | null, plan: '' })
@@ -112,6 +132,7 @@ const form = reactive({ tutor_user_id: null as number | null, college_academic_p
 // Buscadores del modal (docente + grupo)
 const tutorPick = reactive<{ search: string; label: string; results: any[] }>({ search: '', label: '', results: [] })
 const groupPick = reactive<{ search: string; label: string; results: any[] }>({ search: '', label: '', results: [] })
+const groupFilter = reactive({ modality_id: '', campus_id: '' })
 let tutorTimer: ReturnType<typeof setTimeout>
 let groupTimer: ReturnType<typeof setTimeout>
 
@@ -131,18 +152,21 @@ function searchGroups() {
     clearTimeout(groupTimer)
     groupTimer = setTimeout(async () => {
         const { data } = await api.get(T.determination.groups, { params: {
-            period_id: form.college_academic_period_id, career_id: form.career_id || undefined, q: groupPick.search || undefined,
+            period_id: form.college_academic_period_id, career_id: form.career_id || undefined,
+            modality_id: groupFilter.modality_id || undefined, campus_id: groupFilter.campus_id || undefined,
+            q: groupPick.search || undefined,
         } })
         groupPick.results = data.data ?? []
     }, 300)
 }
 function pickGroup(g: any) { form.group_id = g.id; groupPick.label = g.label; groupPick.results = []; groupPick.search = '' }
 function clearGroup() { form.group_id = null; groupPick.label = '' }
+function onGroupFilterChange() { clearGroup(); groupPick.results = []; searchGroups() }
 
 function goDetail(id: number) { router.push({ name: 'tutoring.assignment-detail', params: { id } }) }
 
 async function fetchList() {
-    const { data } = await api.get(T.assignments.list, { params: { period_id: filters.period_id || undefined, career_id: filters.career_id || undefined, status: filters.status || undefined, per_page: 50 } })
+    const { data } = await api.get(T.assignments.list, { params: { period_id: filters.period_id || undefined, career_id: filters.career_id || undefined, campus_id: filters.campus_id || undefined, modality_id: filters.modality_id || undefined, status: filters.status || undefined, per_page: 50 } })
     rows.value = data.data ?? []
 }
 async function fetchOptions() {
@@ -151,12 +175,15 @@ async function fetchOptions() {
     const { data } = await api.get(T.determination.catalog)
     options.periods = data.periods ?? []
     options.careers = data.careers ?? []
+    options.campuses = data.campuses ?? []
+    options.modalities = data.modalities ?? []
     periods.value = data.periods ?? []
 }
 async function openNew() {
     Object.assign(form, { tutor_user_id: null, college_academic_period_id: null, career_id: null, scope: 'grupal', group_id: null, plan: '' })
     Object.assign(tutorPick, { search: '', label: '', results: [] })
     Object.assign(groupPick, { search: '', label: '', results: [] })
+    Object.assign(groupFilter, { modality_id: '', campus_id: '' })
     modalMsg.value = ''; showNew.value = true
     if (!periods.value.length) periods.value = (await api.get(SS.collegeAcademicPeriods.list)).data?.data ?? (await api.get(SS.collegeAcademicPeriods.list)).data ?? []
 }
