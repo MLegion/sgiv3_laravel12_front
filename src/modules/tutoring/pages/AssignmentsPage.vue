@@ -159,7 +159,11 @@ function searchGroups() {
         groupPick.results = data.data ?? []
     }, 300)
 }
-function pickGroup(g: any) { form.group_id = g.id; groupPick.label = g.label; groupPick.results = []; groupPick.search = '' }
+function pickGroup(g: any) {
+    form.group_id = g.id; groupPick.label = g.label; groupPick.results = []; groupPick.search = ''
+    // Deriva la carrera del grupo (si tiene exactamente una).
+    if (Array.isArray(g.career_ids) && g.career_ids.length === 1) form.career_id = g.career_ids[0]
+}
 function clearGroup() { form.group_id = null; groupPick.label = '' }
 function onGroupFilterChange() { clearGroup(); groupPick.results = []; searchGroups() }
 
