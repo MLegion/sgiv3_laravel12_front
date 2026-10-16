@@ -193,6 +193,13 @@ async function loadGroup() {
     const { data } = await api.get(T.determination.groupSubject)
     group.current = data.current ?? null
     group.history = data.history ?? []
+    // Prellena el selector con la materia vigente (que se vea la seleccionada).
+    if (group.current) {
+        group.form.subject_id = group.current.subject_id
+        group.form.subject_label = group.current.official_code
+            ? `${group.current.subject_name} · ${group.current.official_code}`
+            : group.current.subject_name
+    }
 }
 async function saveGroup() {
     await act(async () => {
@@ -203,7 +210,6 @@ async function saveGroup() {
         })
         toast.success('Materia de tutoría grupal fijada.')
         group.form.note = ''
-        clearSubject()
         await loadGroup()
     })
 }
