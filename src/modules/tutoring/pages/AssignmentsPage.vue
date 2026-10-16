@@ -2,7 +2,7 @@
     <div class="space-y-5">
         <div class="flex items-center justify-between">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Asignaciones de Tutoría</h1>
-            <button @click="openNew" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">+ Asignar tutor</button>
+            <button v-if="canManage" @click="openNew" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">+ Asignar tutor</button>
         </div>
 
         <div class="rounded-xl border bg-white p-4 grid sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -126,6 +126,7 @@ const rows = ref<TutoringAssignmentRow[]>([])
 const options = reactive<{ periods: any[]; careers: any[]; campuses: any[]; modalities: any[] }>({ periods: [], careers: [], campuses: [], modalities: [] })
 const filters = reactive({ period_id: '', career_id: '', campus_id: '', modality_id: '', status: '' })
 const periods = ref<any[]>([])
+const canManage = ref(false)
 const showNew = ref(false), saving = ref(false), modalMsg = ref('')
 const form = reactive({ tutor_user_id: null as number | null, college_academic_period_id: null as number | null, career_id: null as number | null, scope: 'grupal', group_id: null as number | null, plan: '' })
 
@@ -172,6 +173,7 @@ function goDetail(id: number) { router.push({ name: 'tutoring.assignment-detail'
 async function fetchList() {
     const { data } = await api.get(T.assignments.list, { params: { period_id: filters.period_id || undefined, career_id: filters.career_id || undefined, campus_id: filters.campus_id || undefined, modality_id: filters.modality_id || undefined, status: filters.status || undefined, per_page: 50 } })
     rows.value = data.data ?? []
+    canManage.value = !!data.can_manage
 }
 async function fetchOptions() {
     // Catálogo del plantel: TODOS los periodos/carreras (no sólo los que ya tienen
