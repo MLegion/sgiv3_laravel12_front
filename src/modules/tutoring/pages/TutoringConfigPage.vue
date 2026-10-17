@@ -106,6 +106,23 @@
                 </table>
             </div>
         </section>
+
+        <!-- Generar / regenerar tutorías grupales del periodo -->
+        <section class="rounded-xl border bg-white p-4 space-y-3">
+            <h2 class="text-sm font-bold uppercase text-slate-500">Generar tutorías grupales</h2>
+            <p class="text-xs text-slate-400">Crea/sincroniza las tutorías grupales desde la asignación de docentes a la materia de tutoría. Se ejecuta solo al <b>liberar</b> la carga; este botón lo fuerza/regenera.</p>
+            <div class="grid sm:grid-cols-3 gap-3 items-end">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Periodo</label>
+                    <select v-model="gen.period_id" class="w-full rounded-lg border-slate-300 text-sm">
+                        <option value="">Elegir…</option>
+                        <option v-for="p in periods" :key="p.id" :value="p.id">{{ p.name }}</option>
+                    </select>
+                </div>
+                <button @click="runGenerate" :disabled="busy || !gen.period_id" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold disabled:opacity-50">Generar / regenerar</button>
+            </div>
+            <p v-if="gen.result" class="text-xs text-slate-600">{{ gen.result }}</p>
+        </section>
     </div>
 </template>
 
@@ -123,6 +140,15 @@ const busy = ref(false)
 
 const win = reactive({ period_id: '', opens_at: '', closes_at: '', is_open: false })
 const limits = reactive({ max_tutees_per_tutor: 0, risk_min_repeat: 1, group_tutoring_max_semester: 1 })
+const gen = reactive<{ period_id: string; result: string }>({ period_id: '', result: '' })
+
+async function runGenerate() {
+    await act(async () => {
+        const { data } = await api.post(T.determination.generateGroup, { period_id: Number(gen.period_id) })
+        gen.result = `Listo: ${data.created ?? 0} creadas, ${data.updated ?? 0} actualizadas, ${data.skipped ?? 0} sin cambios.`
+        toast.success('Tutorías grupales generadas.')
+    })
+}
 const group = reactive<{ current: any; history: any[]; form: { subject_id: number | null; subject_label: string; effective_from: string; note: string } }>({
     current: null, history: [], form: { subject_id: null, subject_label: '', effective_from: '', note: '' },
 })
