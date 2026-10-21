@@ -110,7 +110,15 @@
         <!-- Generar / regenerar tutorías grupales del periodo -->
         <section class="rounded-xl border bg-white p-4 space-y-3">
             <h2 class="text-sm font-bold uppercase text-slate-500">Generar tutorías grupales</h2>
-            <p class="text-xs text-slate-400">Crea/sincroniza las tutorías grupales desde la asignación de docentes a la materia de tutoría. Se ejecuta solo al <b>liberar</b> la carga; este botón lo fuerza/regenera.</p>
+            <p class="text-xs text-slate-400">
+                Crea/actualiza las tutorías grupales desde la asignación de docentes a la materia de tutoría
+                <b>y sincroniza los tutorados</b> con la cohorte real de cada grupo (inscritos del semestre del paquete).
+            </p>
+            <p class="text-[11px] text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                Córrelo <b>tras la inscripción / reinscripción</b>: al liberar la carga solo se crean las asignaciones y el tutor
+                (aún no hay inscritos). Este botón además da de alta/baja a los tutorados según la cohorte vigente,
+                respetando los agregados manualmente.
+            </p>
             <div class="grid sm:grid-cols-3 gap-3 items-end">
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Periodo</label>
@@ -145,7 +153,8 @@ const gen = reactive<{ period_id: string; result: string }>({ period_id: '', res
 async function runGenerate() {
     await act(async () => {
         const { data } = await api.post(T.determination.generateGroup, { period_id: Number(gen.period_id) })
-        gen.result = `Listo: ${data.created ?? 0} creadas, ${data.updated ?? 0} actualizadas, ${data.skipped ?? 0} sin cambios.`
+        gen.result = `Listo: ${data.created ?? 0} creadas, ${data.updated ?? 0} actualizadas, ${data.skipped ?? 0} sin cambios`
+            + ` · tutorados: +${data.tutees_added ?? 0} / -${data.tutees_removed ?? 0}.`
         toast.success('Tutorías grupales generadas.')
     })
 }
