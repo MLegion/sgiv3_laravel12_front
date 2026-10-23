@@ -131,6 +131,38 @@
             </div>
             <p v-if="gen.result" class="text-xs text-slate-600">{{ gen.result }}</p>
         </section>
+
+        <!-- Calendario de hitos del PAT (fechas por etapa, T-G) -->
+        <section class="rounded-xl border bg-white p-4 space-y-3">
+            <h2 class="text-sm font-bold uppercase text-slate-500">Calendario de hitos del PAT</h2>
+            <p class="text-xs text-slate-400">
+                Fecha de cada hito del seguimiento por periodo. <b>Abre</b> = antes de esa fecha el tutor no puede
+                entregar; <b>Límite</b> = después el plazo vence. Deja vacío para no restringir por fecha.
+            </p>
+            <div class="grid sm:grid-cols-4 gap-3 items-end">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Periodo</label>
+                    <select v-model="sched.period_id" @change="loadSchedule" class="w-full rounded-lg border-slate-300 text-sm">
+                        <option value="">Elegir…</option>
+                        <option v-for="p in periods" :key="p.id" :value="p.id">{{ p.name }}</option>
+                    </select>
+                </div>
+            </div>
+            <table v-if="sched.period_id && sched.stages.length" class="w-full text-sm">
+                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
+                    <th class="px-3 py-1">Hito</th><th class="px-3 py-1">Abre</th><th class="px-3 py-1">Límite</th>
+                </tr></thead>
+                <tbody>
+                    <tr v-for="s in sched.stages" :key="s.stage" class="border-b last:border-0">
+                        <td class="px-3 py-2 text-slate-600">{{ s.label }}</td>
+                        <td class="px-3 py-1"><input v-model="s.opens_at" type="date" class="rounded-lg border-slate-300 text-sm" /></td>
+                        <td class="px-3 py-1"><input v-model="s.due_date" type="date" class="rounded-lg border-slate-300 text-sm" /></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button v-if="sched.period_id" @click="saveSchedule" :disabled="busy"
+                class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar calendario</button>
+        </section>
     </div>
 </template>
 
@@ -149,6 +181,26 @@ const busy = ref(false)
 const win = reactive({ period_id: '', opens_at: '', closes_at: '', is_open: false })
 const limits = reactive({ max_tutees_per_tutor: 0, risk_min_repeat: 1, group_tutoring_max_semester: 1 })
 const gen = reactive<{ period_id: string; result: string }>({ period_id: '', result: '' })
+
+type ScheduleStage = { stage: string; label: string; order: number; opens_at: string | null; due_date: string | null }
+const sched = reactive<{ period_id: string; stages: ScheduleStage[] }>({ period_id: '', stages: [] })
+
+async function loadSchedule() {
+    sched.stages = []
+    if (!sched.period_id) return
+    const { data } = await api.get(T.determination.followupSchedule, { params: { period_id: sched.period_id } })
+    sched.stages = (data.stages ?? []).map((s: any) => ({ ...s, opens_at: s.opens_at ?? '', due_date: s.due_date ?? '' }))
+}
+async function saveSchedule() {
+    await act(async () => {
+        const { data } = await api.post(T.determination.followupSchedule, {
+            period_id: Number(sched.period_id),
+            stages: sched.stages.map(s => ({ stage: s.stage, opens_at: s.opens_at || null, due_date: s.due_date || null })),
+        })
+        sched.stages = (data.stages ?? []).map((s: any) => ({ ...s, opens_at: s.opens_at ?? '', due_date: s.due_date ?? '' }))
+        toast.success('Calendario de hitos guardado.')
+    })
+}
 
 async function runGenerate() {
     await act(async () => {

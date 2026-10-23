@@ -79,6 +79,7 @@ const tutoringApi: ApiModule = {
             catalog:      apiUrl('/tutoring/determination/catalog'),
             groups:       apiUrl('/tutoring/determination/groups'),
             generateGroup: apiUrl('/tutoring/determination/generate-group'),
+            followupSchedule: apiUrl('/tutoring/determination/followup-schedule'),
         },
 
         // ── Concentrado / indicadores (Cap. 15, T-B) ──
