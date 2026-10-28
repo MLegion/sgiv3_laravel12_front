@@ -85,6 +85,43 @@
                 </div>
             </div>
 
+            <!-- REQUISITO: TUTORÍA GRUPAL (Actividades Complementarias) -->
+            <div v-if="gt.show" class="px-6 pt-4">
+                <div class="bg-white border border-emerald-200 rounded-xl shadow-sm p-5 space-y-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Tutoría grupal requerida</h3>
+                            <p class="text-xs text-slate-500">Semestres ≤ {{ gt.maxSemester }} requieren Tutoría Grupal (Actividades Complementarias).</p>
+                        </div>
+                        <button
+                            v-if="gt.missing > 0"
+                            type="button"
+                            class="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
+                            :disabled="gt.busy"
+                            @click="generateGroupTutoring"
+                        >
+                            GENERAR {{ gt.missing }} FALTANTE(S)
+                        </button>
+                        <span v-else class="text-[10px] font-bold text-emerald-600">✓ TODAS CREADAS</span>
+                    </div>
+                    <table v-if="gt.groups.length" class="w-full text-sm">
+                        <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
+                            <th class="px-3 py-1">Grupo</th><th>Semestre</th><th>Tutoría grupal</th>
+                        </tr></thead>
+                        <tbody>
+                            <tr v-for="g in gt.groups" :key="g.group_id" class="border-b last:border-0">
+                                <td class="px-3 py-1.5 text-slate-700">{{ g.group_name }}</td>
+                                <td class="text-slate-600">{{ g.target_semester }}</td>
+                                <td>
+                                    <span v-if="g.has_activity" class="text-[11px] text-emerald-600">✓ creada</span>
+                                    <span v-else class="text-[11px] text-amber-600">⚠ falta</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- PHASES GRID -->
             <div class="p-6">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -325,6 +362,12 @@ const updatingStatus = ref(false)
 const errorMsg = ref('')
 const showHistoryDrawer = ref(false)
 
+// Requisito de tutoría grupal (Actividades Complementarias). Se auto-oculta si el
+// módulo AC está apagado (endpoint 404) o si no hay X configurada en Tutorías.
+const gt = reactive<{ show: boolean; maxSemester: number; groups: any[]; missing: number; busy: boolean }>({
+    show: false, maxSemester: 0, groups: [], missing: 0, busy: false,
+})
+
 const reasonModal = reactive({
     visible: false,
     phase: '' as string,
@@ -533,9 +576,36 @@ async function loadHistory() {
     } catch { /* silent */ }
 }
 
+async function loadGroupTutoring() {
+    const capId = config.value?.collegeAcademicPeriod?.id
+    if (!capId || !API.AC_API) { gt.show = false; return }
+    try {
+        const { data } = await api.get(API.AC_API.groupTutoringRequirements, { params: { period_id: capId } })
+        if ((data.max_semester ?? 0) > 0 && (data.groups?.length ?? 0) > 0) {
+            gt.show = true
+            gt.maxSemester = data.max_semester
+            gt.groups = data.groups
+            gt.missing = data.missing ?? 0
+        } else {
+            gt.show = false
+        }
+    } catch { gt.show = false } // 404 = módulo AC apagado o sin permiso → oculto
+}
+
+async function generateGroupTutoring() {
+    const capId = config.value?.collegeAcademicPeriod?.id
+    if (!capId) return
+    gt.busy = true
+    try {
+        await api.post(API.AC_API.generateGroupTutoring, { period_id: capId })
+        await loadGroupTutoring()
+    } catch { /* silent */ }
+    finally { gt.busy = false }
+}
+
 async function loadAll() {
     await loadConfig()
-    await Promise.all([loadSuggested(), loadHistory()])
+    await Promise.all([loadSuggested(), loadHistory(), loadGroupTutoring()])
 }
 
 onMounted(async () => {

@@ -7,6 +7,8 @@ const acApi: ApiModule = {
         catalog:     apiUrl('/complementary-activities/catalog'),
         groups:      apiUrl('/complementary-activities/groups'),
         instructors: apiUrl('/complementary-activities/instructors'),
+        groupTutoringRequirements: apiUrl('/complementary-activities/group-tutoring-requirements'),
+        generateGroupTutoring:     apiUrl('/complementary-activities/group-tutoring-requirements/generate'),
         students:    apiUrl('/complementary-activities/students'),
         activities: apiUrl('/complementary-activities/activities'),
         activity:   (id: string | number) => apiUrl(`/complementary-activities/activities/${id}`),
