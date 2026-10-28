@@ -4,8 +4,10 @@ import type { ApiModule } from '@/shared/api/types'
 const acApi: ApiModule = {
     name: 'AC_API',
     api: {
-        catalog:    apiUrl('/complementary-activities/catalog'),
-        students:   apiUrl('/complementary-activities/students'),
+        catalog:     apiUrl('/complementary-activities/catalog'),
+        groups:      apiUrl('/complementary-activities/groups'),
+        instructors: apiUrl('/complementary-activities/instructors'),
+        students:    apiUrl('/complementary-activities/students'),
         activities: apiUrl('/complementary-activities/activities'),
         activity:   (id: string | number) => apiUrl(`/complementary-activities/activities/${id}`),
         close:      (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/close`),

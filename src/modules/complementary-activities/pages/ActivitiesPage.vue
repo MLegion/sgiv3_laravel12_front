@@ -73,6 +73,44 @@
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre</label>
                         <input v-model="form.name" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Taller de ajedrez" />
                     </div>
+
+                    <!-- Grupo (requerido para tutoría grupal) -->
+                    <div class="sm:col-span-2 relative">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">
+                            Grupo <span v-if="form.type === 'group_tutoring'" class="text-rose-500">*</span>
+                            <span v-else class="text-slate-400">(opcional)</span>
+                        </label>
+                        <div v-if="form.group_id" class="flex items-center gap-2 mb-1 text-sm">
+                            <span class="px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold">{{ form.group_label }}</span>
+                            <button @click="clearGroup" class="text-xs text-slate-400 hover:text-rose-500">cambiar</button>
+                        </div>
+                        <template v-else>
+                            <input v-model="groupSearch" @input="searchGroups" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Buscar grupo por nombre…" />
+                            <ul v-if="groupResults.length" class="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow">
+                                <li v-for="g in groupResults" :key="g.id" @click="pickGroup(g)" class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">
+                                    {{ g.name }} <span class="text-slate-400">· {{ g.shift }}<span v-if="g.careers"> · {{ g.careers }}</span></span>
+                                </li>
+                            </ul>
+                        </template>
+                    </div>
+
+                    <!-- Instructor / tutor -->
+                    <div class="sm:col-span-2 relative">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">
+                            Instructor / tutor
+                            <span v-if="form.type === 'group_tutoring'" class="text-slate-400">(será el tutor del grupo)</span>
+                        </label>
+                        <div v-if="form.instructor_user_id" class="flex items-center gap-2 mb-1 text-sm">
+                            <span class="px-2 py-1 rounded-lg bg-sky-50 border border-sky-200 text-sky-700 font-semibold">{{ form.instructor_label }}</span>
+                            <button @click="clearInstructor" class="text-xs text-slate-400 hover:text-rose-500">cambiar</button>
+                        </div>
+                        <template v-else>
+                            <input v-model="instructorSearch" @input="searchInstructors" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Buscar empleado por nombre…" />
+                            <ul v-if="instructorResults.length" class="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow">
+                                <li v-for="t in instructorResults" :key="t.value" @click="pickInstructor(t)" class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">{{ t.label }}</li>
+                            </ul>
+                        </template>
+                    </div>
                     <div class="sm:col-span-2 relative">
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Lugar</label>
                         <div v-if="form.place_id" class="flex items-center gap-2 mb-1 text-sm">
@@ -100,7 +138,7 @@
                 </div>
                 <div class="flex justify-end gap-2 pt-1">
                     <button @click="showCreate = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
-                    <button @click="create" :disabled="busy || !form.type || !form.name || (!form.place_id && !form.location_label)"
+                    <button @click="create" :disabled="busy || !form.type || !form.name || (!form.place_id && !form.location_label) || (form.type === 'group_tutoring' && !form.group_id)"
                         class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Crear</button>
                 </div>
             </div>
@@ -126,11 +164,48 @@ const typeFilter = ref<string>('')
 const busy = ref(false)
 
 const showCreate = ref(false)
-const form = reactive<any>({ type: '', name: '', career_id: null, place_id: null, place_label: '', location_label: '', capacity: null, credits: 0 })
+const form = reactive<any>({ type: '', name: '', career_id: null, group_id: null, group_label: '', instructor_user_id: null, instructor_label: '', place_id: null, place_label: '', location_label: '', capacity: null, credits: 0 })
 
 const placeSearch = ref('')
 const placeResults = ref<any[]>([])
 let placeTimer: any = null
+
+const groupSearch = ref('')
+const groupResults = ref<any[]>([])
+let groupTimer: any = null
+const instructorSearch = ref('')
+const instructorResults = ref<any[]>([])
+let instructorTimer: any = null
+
+function searchGroups() {
+    clearTimeout(groupTimer)
+    groupTimer = setTimeout(async () => {
+        if (!periodId.value || groupSearch.value.trim().length < 2) { groupResults.value = []; return }
+        const { data } = await api.get(AC.groups, { params: { period_id: periodId.value, career_id: form.career_id || undefined, q: groupSearch.value } })
+        groupResults.value = data ?? []
+    }, 300)
+}
+function pickGroup(g: any) {
+    form.group_id = g.id; form.group_label = g.name
+    // Autollena la carrera si el grupo tiene exactamente una.
+    if (!form.career_id && Array.isArray(g.career_ids) && g.career_ids.length === 1) form.career_id = g.career_ids[0]
+    groupResults.value = []; groupSearch.value = ''
+}
+function clearGroup() { form.group_id = null; form.group_label = '' }
+
+function searchInstructors() {
+    clearTimeout(instructorTimer)
+    instructorTimer = setTimeout(async () => {
+        if (instructorSearch.value.trim().length < 2) { instructorResults.value = []; return }
+        const { data } = await api.get(AC.instructors, { params: { q: instructorSearch.value } })
+        instructorResults.value = data ?? []
+    }, 300)
+}
+function pickInstructor(t: any) {
+    form.instructor_user_id = t.value; form.instructor_label = t.label
+    instructorResults.value = []; instructorSearch.value = ''
+}
+function clearInstructor() { form.instructor_user_id = null; form.instructor_label = '' }
 
 function typeLabel(v: string): string {
     return types.value.find(t => t.value === v)?.label ?? v
@@ -150,8 +225,10 @@ async function loadList() {
 }
 
 function openCreate() {
-    Object.assign(form, { type: '', name: '', career_id: null, place_id: null, place_label: '', location_label: '', capacity: null, credits: 0 })
+    Object.assign(form, { type: '', name: '', career_id: null, group_id: null, group_label: '', instructor_user_id: null, instructor_label: '', place_id: null, place_label: '', location_label: '', capacity: null, credits: 0 })
     placeSearch.value = ''; placeResults.value = []
+    groupSearch.value = ''; groupResults.value = []
+    instructorSearch.value = ''; instructorResults.value = []
     showCreate.value = true
 }
 function searchPlaces() {
@@ -175,6 +252,8 @@ async function create() {
             type: form.type,
             name: form.name,
             career_id: form.career_id,
+            group_id: form.group_id,
+            instructor_user_id: form.instructor_user_id,
             place_id: form.place_id,
             location_label: form.place_id ? null : (form.location_label || null),
             capacity: form.capacity ? Number(form.capacity) : null,
