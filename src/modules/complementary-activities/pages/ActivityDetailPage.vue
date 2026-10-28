@@ -125,9 +125,14 @@ async function checkBlock(i: number) {
         const { data } = await api.post(AC.scheduleConflicts(props.id), {
             day_of_week: b.day_of_week, start_time: b.start_time, end_time: b.end_time,
         })
-        const groups = data.conflicts ?? {}
-        const labels = Object.values(groups).flat().map((c: any) => c.label).filter(Boolean)
-        b._conflict = labels.length ? labels.join(' · ') : null
+        const parts: string[] = []
+        const aula = Object.values(data.conflicts ?? {}).flat().map((c: any) => c.label).filter(Boolean)
+        if (aula.length) parts.push('Aula: ' + aula.join(', '))
+        const gclass = (data.group_class ?? []).map((c: any) => c.subject).filter(Boolean)
+        if (gclass.length) parts.push('Clase del grupo: ' + gclass.join(', '))
+        const sclass = data.students_class ?? []
+        if (sclass.length) parts.push(`${sclass.length} alumno(s) con clase`)
+        b._conflict = parts.length ? parts.join(' · ') : null
     } catch { b._conflict = null }
 }
 
