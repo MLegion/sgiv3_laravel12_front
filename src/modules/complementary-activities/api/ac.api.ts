@@ -12,6 +12,8 @@ const acApi: ApiModule = {
         attendees:  (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/attendees`),
         attendee:   (id: string | number, studentId: string | number) =>
             apiUrl(`/complementary-activities/activities/${id}/attendees/${studentId}`),
+        schedules:         (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/schedules`),
+        scheduleConflicts: (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/schedule-conflicts`),
     },
 }
 
