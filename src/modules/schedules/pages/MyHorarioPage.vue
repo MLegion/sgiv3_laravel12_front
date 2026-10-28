@@ -9,7 +9,7 @@
             Cargando...
         </div>
 
-        <div v-else-if="slots.length === 0" class="bg-white border rounded-xl p-10 text-center text-slate-400 text-sm">
+        <div v-else-if="allSlots.length === 0" class="bg-white border rounded-xl p-10 text-center text-slate-400 text-sm">
             Aún no tienes un horario publicado. Aparecerá aquí cuando se asigne tu grupo y se genere el horario.
         </div>
 
@@ -27,6 +27,7 @@
                             <p class="font-medium text-slate-800">
                                 {{ slot.teacherAssignment?.subject?.name || '—' }}
                                 <span v-if="slot.teacherAssignment?.subject?.officialCode" class="ml-1 text-[11px] font-mono text-slate-400">{{ slot.teacherAssignment.subject.officialCode }}</span>
+                                <span v-if="slot.isComplementary" class="ml-1 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">Tutoría</span>
                             </p>
                             <p class="text-xs text-slate-500 mt-0.5">
                                 <span v-if="!slot.teacherAssignment?.teacher?.isVacancy">{{ slot.teacherAssignment?.teacher?.name || 'Docente por asignar' }}</span>
@@ -52,10 +53,11 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 
 interface Slot {
-    id: number
+    id: number | string
     dayOfWeek: number | null
     startTime: string
     endTime: string
+    isComplementary?: boolean
     teacherAssignment: {
         teacher: { id: number; name: string; isVacancy: boolean } | null
         subject: { id: number; name: string; shortName: string | null; officialCode: string | null } | null
@@ -69,13 +71,34 @@ const DAY_LABELS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sába
 const loading = ref(true)
 const error   = ref<string | null>(null)
 const slots   = ref<Slot[]>([])
+const complementary = ref<any[]>([])
 const groups  = ref<{ name: string; shift: string }[]>([])
 
 const groupsLabel = computed(() => groups.value.map(g => g.name).join(', '))
 
+// Clases + bloques complementarios (p.ej. tutoría grupal) en una sola rejilla.
+const allSlots = computed<Slot[]>(() => [
+    ...slots.value,
+    ...complementary.value
+        .filter(b => b.dayOfWeek !== null && b.dayOfWeek !== undefined)
+        .map((b, i) => ({
+            id: `c${i}`,
+            dayOfWeek: Number(b.dayOfWeek),
+            startTime: b.startTime,
+            endTime: b.endTime,
+            isComplementary: true,
+            teacherAssignment: {
+                teacher: b.sublabel ? { id: 0, name: b.sublabel, isVacancy: false } : null,
+                subject: { id: 0, name: b.label, shortName: null, officialCode: null },
+                group: null,
+            },
+            place: b.placeName ? { id: 0, name: b.placeName, shortName: null } : null,
+        })),
+])
+
 const daysWithClasses = computed(() => {
     const byDay = new Map<number, Slot[]>()
-    for (const s of slots.value) {
+    for (const s of allSlots.value) {
         const d = s.dayOfWeek ?? 0
         if (!byDay.has(d)) byDay.set(d, [])
         byDay.get(d)!.push(s)
@@ -95,6 +118,7 @@ async function load() {
     try {
         const { data } = await api.get(API.SCHEDULES_API.mySchedule)
         slots.value  = data.slots ?? []
+        complementary.value = data.complementaryBlocks ?? []
         groups.value = data.groups ?? []
     } catch (e: any) {
         error.value = e?.response?.data?.message ?? 'No se pudo cargar tu horario.'
