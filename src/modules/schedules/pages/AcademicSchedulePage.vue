@@ -582,6 +582,26 @@
                                 </div>
                             </template>
 
+                            <!-- ── Tutoría grupal (solo lectura, filtro grupo) ── -->
+                            <div
+                                v-for="(b, bi) in visibleGroupComplementary"
+                                :key="'gt-' + bi"
+                                class="border-2 border-dashed m-1 px-1.5 py-1 overflow-hidden flex flex-col justify-center items-center text-center bg-emerald-50 border-emerald-400 pointer-events-none z-10"
+                                :style="groupComplementaryGridStyle(b)"
+                                :title="b.label + (b.sublabel ? ' · ' + b.sublabel : '')"
+                            >
+                                <div class="text-[11px] font-black uppercase text-emerald-800 truncate w-full leading-tight">
+                                    {{ b.label }}
+                                </div>
+                                <div class="text-[9px] font-bold uppercase text-emerald-600 truncate w-full">Tutoría</div>
+                                <div v-if="b.sublabel" class="text-[10px] text-emerald-700 truncate w-full mt-0.5">
+                                    {{ b.sublabel }}
+                                </div>
+                                <div v-if="b.placeName" class="text-[10px] text-emerald-600 truncate w-full">
+                                    {{ b.placeName }}
+                                </div>
+                            </div>
+
                             <!-- ── Preview del drag ── -->
                             <div
                                 v-if="dragPreviewGridStyle"
@@ -1577,6 +1597,20 @@ const complementarySchedules = ref<ComplementarySchedule[]>([])
 const scopedTeachers = ref<{ id: number; name: string; isVacancy?: boolean }[]>([])
 const loadingComplementary = ref(false)
 
+// ═══ Bloques de solo lectura superpuestos (tutoría grupal, módulo AC) ═══
+// Se muestran al filtrar por GRUPO, junto a las clases, sin ser materia.
+interface ComplementaryBlock {
+    dayOfWeek: number | null
+    date: string | null
+    startTime: string
+    endTime: string
+    label: string
+    sublabel: string | null
+    placeName: string | null
+    source: string
+}
+const groupComplementaryBlocks = ref<ComplementaryBlock[]>([])
+
 // ══════════════════════ COMPUTED ═══════════════════════════
 const modalityTypeConfig = computed(() => selectedConfig.value?.modality?.modalityType?.config ?? null)
 
@@ -2000,6 +2034,28 @@ function complementaryPlaceShort(c: ComplementarySchedule): string {
     return c.place.shortName || c.place.name
 }
 
+// Bloques superpuestos (tutoría grupal) visibles al filtrar por grupo. Solo
+// se dibujan los recurrentes que casan con la columna actual (día o fecha).
+const visibleGroupComplementary = computed<ComplementaryBlock[]>(() => {
+    if (filterType.value !== 'group' || !filterValue.value) return []
+    return groupComplementaryBlocks.value
+})
+
+function groupComplementaryGridStyle(b: ComplementaryBlock) {
+    const colKey = b.date ? 'date-' + b.date : 'dow-' + b.dayOfWeek
+    const colIndex = findColIndex(colKey)
+    if (colIndex < 2) return { display: 'none' }
+    const startMin = parseTime(b.startTime)
+    const rowIdx = slotRowIndex(startMin)
+    if (rowIdx < 0) return { display: 'none' }
+    const et = parseTime(b.endTime)
+    const rowspan = Math.max(1, Math.ceil((et - startMin) / blockDuration.value))
+    return {
+        gridColumn: `${colIndex} / span 1`,
+        gridRow: `${rowIdx + 2} / ${rowIdx + 2 + rowspan}`,
+    }
+}
+
 function showError(msg: string) {
     errorMsg.value = msg
     setTimeout(() => { errorMsg.value = '' }, 4000)
@@ -2174,6 +2230,28 @@ async function loadComplementarySchedulesForTeacher() {
 watch(
     () => [filterType.value, filterValue.value, selectedPeriodId.value],
     () => { loadComplementarySchedulesForTeacher() },
+)
+
+// Bloques de solo lectura (tutoría grupal) del grupo seleccionado. El endpoint
+// 404 si el módulo de Actividades Complementarias está apagado → se ignora.
+async function loadGroupComplementaryBlocks() {
+    if (filterType.value !== 'group' || !filterValue.value) {
+        groupComplementaryBlocks.value = []
+        return
+    }
+    try {
+        const { data } = await api.get(API.SCHEDULES_API.academic.complementaryBlocks, {
+            params: { group_id: filterValue.value },
+        })
+        groupComplementaryBlocks.value = Array.isArray(data) ? data : []
+    } catch {
+        groupComplementaryBlocks.value = []
+    }
+}
+
+watch(
+    () => [filterType.value, filterValue.value],
+    () => { loadGroupComplementaryBlocks() },
 )
 
 // Auto-apply del aula preferida del grupo al cambiar el filtro. Solo

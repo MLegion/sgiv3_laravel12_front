@@ -7,6 +7,7 @@ export default {
         mySchedule: apiUrl('/schedules/my-schedule'),
         academic: {
             byConfig:        (configId: string | number) => apiUrl(`/schedules/academic/${configId}`),
+            complementaryBlocks: apiUrl('/schedules/academic/complementary-blocks'),
             assignable:      (configId: string | number) => apiUrl(`/schedules/academic/${configId}/assignable`),
             create:          apiUrl('/schedules/academic'),
             update:          (id: string | number) => apiUrl(`/schedules/academic/${id}`),
