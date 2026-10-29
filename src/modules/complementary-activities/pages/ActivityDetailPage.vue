@@ -81,7 +81,10 @@
                         <td class="px-3 py-2 text-slate-600">{{ s.num_control }}</td>
                         <td class="text-slate-700">{{ s.full_name }}<span v-if="s.added_manually" class="ml-1 text-[10px] text-slate-400">(manual)</span></td>
                         <td class="text-slate-600">{{ statusLabel(s.status) }}</td>
-                        <td class="text-right"><button @click="removeStudent(s)" class="text-xs text-slate-400 hover:text-rose-500">quitar</button></td>
+                        <td class="text-right whitespace-nowrap">
+                            <button v-if="s.status !== 'attended'" @click="creditStudent(s)" class="text-xs text-emerald-600 hover:underline">acreditar</button>
+                            <button @click="removeStudent(s)" class="ml-3 text-xs text-slate-400 hover:text-rose-500">quitar</button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -182,6 +185,13 @@ async function addStudent(s: any) {
         toast.success('Alumno agregado.')
         await load()
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo agregar.') }
+}
+async function creditStudent(s: any) {
+    try {
+        await api.post(AC.creditAttendee(props.id, s.student_id), {})
+        toast.success('Alumno acreditado.')
+        await load()
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo acreditar.') }
 }
 async function removeStudent(s: any) {
     try {
