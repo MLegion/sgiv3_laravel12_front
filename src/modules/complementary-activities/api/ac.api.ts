@@ -5,8 +5,23 @@ const acApi: ApiModule = {
     name: 'AC_API',
     api: {
         catalog:     apiUrl('/complementary-activities/catalog'),
+
+        // Catálogo de actividades estandarizadas (nombres + créditos sugeridos)
+        activityCatalog:       apiUrl('/complementary-activities/activity-catalog'),
+        activityCatalogItem:   (id: string | number) => apiUrl(`/complementary-activities/activity-catalog/${id}`),
+        activeActivityCatalog: apiUrl('/complementary-activities/active-activity-catalog'),
+        myMoocCatalog:         apiUrl('/complementary-activities/me/mooc-catalog'),
+
+        // Registro propio de instructores de AC (distinto de docentes)
+        acInstructors:     apiUrl('/complementary-activities/ac-instructors'),
+        acInstructorItem:  (id: string | number) => apiUrl(`/complementary-activities/ac-instructors/${id}`),
+
         groups:      apiUrl('/complementary-activities/groups'),
         instructors: apiUrl('/complementary-activities/instructors'),
+        personnel:   apiUrl('/complementary-activities/personnel'),
+        personnelById: (id: string | number) => apiUrl(`/complementary-activities/personnel/${id}`),
+        places:      apiUrl('/complementary-activities/places'),
+        placeById:   (id: string | number) => apiUrl(`/complementary-activities/places/${id}`),
         groupTutoringRequirements: apiUrl('/complementary-activities/group-tutoring-requirements'),
         generateGroupTutoring:     apiUrl('/complementary-activities/group-tutoring-requirements/generate'),
 
@@ -23,6 +38,8 @@ const acApi: ApiModule = {
         activities: apiUrl('/complementary-activities/activities'),
         activity:   (id: string | number) => apiUrl(`/complementary-activities/activities/${id}`),
         close:      (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/close`),
+        setInstructor: (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/instructor`),
+        setPlace:      (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/place`),
         attendees:  (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/attendees`),
         attendee:   (id: string | number, studentId: string | number) =>
             apiUrl(`/complementary-activities/activities/${id}/attendees/${studentId}`),

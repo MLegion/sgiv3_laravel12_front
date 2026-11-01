@@ -57,7 +57,7 @@
                 <div class="grid sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Tipo</label>
-                        <select v-model="form.type" class="w-full rounded-lg border-slate-300 text-sm">
+                        <select v-model="form.type" @change="onTypeChange" class="w-full rounded-lg border-slate-300 text-sm">
                             <option value="">Elegir…</option>
                             <option v-for="t in types" :key="t.value" :value="t.value">{{ t.label }}</option>
                         </select>
@@ -71,7 +71,11 @@
                     </div>
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre</label>
-                        <input v-model="form.name" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Taller de ajedrez" />
+                        <input v-model="form.name" @change="onNamePicked" :list="nameCatalog.length ? 'ac-name-catalog' : undefined" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Taller de ajedrez" />
+                        <datalist id="ac-name-catalog">
+                            <option v-for="c in nameCatalog" :key="c.id" :value="c.name" />
+                        </datalist>
+                        <p v-if="nameCatalog.length" class="text-[10px] text-slate-400 mt-0.5">Elige del catálogo o escribe uno nuevo.</p>
                     </div>
 
                     <!-- Grupo (requerido para tutoría grupal) -->
@@ -166,6 +170,25 @@ const busy = ref(false)
 const showCreate = ref(false)
 const form = reactive<any>({ type: '', name: '', career_id: null, group_id: null, group_label: '', instructor_user_id: null, instructor_label: '', place_id: null, place_label: '', location_label: '', capacity: null, credits: 0 })
 
+// Catálogo de nombres estandarizados para el tipo seleccionado (autocompletar).
+const nameCatalog = ref<any[]>([])
+async function loadNameCatalog() {
+    if (form.type !== 'complementaria' && form.type !== 'extraescolar') { nameCatalog.value = []; return }
+    try {
+        const { data } = await api.get(AC.activeActivityCatalog, { params: { category: form.type } })
+        nameCatalog.value = data ?? []
+    } catch { nameCatalog.value = [] }
+}
+function onTypeChange() {
+    form.name = ''
+    loadNameCatalog()
+}
+// Al elegir un nombre del catálogo, autollena los créditos sugeridos (editable).
+function onNamePicked() {
+    const hit = nameCatalog.value.find(c => c.name === form.name)
+    if (hit && hit.default_credits != null) form.credits = hit.default_credits
+}
+
 const placeSearch = ref('')
 const placeResults = ref<any[]>([])
 let placeTimer: any = null
@@ -229,6 +252,7 @@ function openCreate() {
     placeSearch.value = ''; placeResults.value = []
     groupSearch.value = ''; groupResults.value = []
     instructorSearch.value = ''; instructorResults.value = []
+    nameCatalog.value = []
     showCreate.value = true
 }
 function searchPlaces() {

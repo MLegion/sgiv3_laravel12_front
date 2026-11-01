@@ -21,6 +21,53 @@
             </div>
         </section>
 
+        <!-- Instructor (tutor): se asigna desde el personal del instituto -->
+        <section v-if="activity.status === 'active'" id="ac-instructor" class="rounded-xl border bg-white p-4 space-y-2" :class="{ 'ring-2 ring-emerald-400': highlightInstructor }">
+            <h2 class="text-sm font-bold uppercase text-slate-500">Instructor</h2>
+            <p class="text-[11px] text-slate-400">Se asigna desde el personal del instituto. Para la tutoría grupal, el instructor es el tutor del grupo.</p>
+            <div class="flex items-center gap-2 text-sm">
+                <span v-if="activity.instructor_name" class="px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold">{{ activity.instructor_name }}</span>
+                <span v-else class="text-amber-600">Sin instructor asignado</span>
+            </div>
+            <div class="max-w-md">
+                <FormRemoteSelect
+                    v-model="pickedInstructor"
+                    :endpoint="AC.personnel"
+                    :endpoint-by-id="AC.personnelById"
+                    item-value="user_id"
+                    item-label="full_name"
+                    :item-searchs="['full_name']"
+                    placeholder="Ver listado o buscar personal…"
+                    @update:model-value="assignInstructor" />
+            </div>
+        </section>
+
+        <!-- Lugar por defecto (aula o etiqueta libre) para el horario -->
+        <section v-if="activity.status === 'active'" class="rounded-xl border bg-white p-4 space-y-2">
+            <h2 class="text-sm font-bold uppercase text-slate-500">Lugar por defecto</h2>
+            <p class="text-[11px] text-slate-400">Aula o lugar que se usa por defecto al armar el horario de la actividad.</p>
+            <div class="flex items-center gap-2 text-sm">
+                <span v-if="activity.place_name" class="px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold">{{ activity.place_name }}</span>
+                <span v-else-if="activity.location_label" class="px-2 py-1 rounded-lg bg-slate-50 border text-slate-600">{{ activity.location_label }}</span>
+                <span v-else class="text-amber-600">Sin lugar asignado</span>
+            </div>
+            <div class="max-w-md">
+                <FormRemoteSelect
+                    v-model="pickedPlace"
+                    :endpoint="AC.places"
+                    :endpoint-by-id="AC.placeById"
+                    item-value="id"
+                    :item-label="placeLabel"
+                    :item-searchs="['name']"
+                    placeholder="Ver listado o buscar aula…"
+                    @update:model-value="assignPlace" />
+            </div>
+            <div class="max-w-md flex items-center gap-2">
+                <input v-model="locationLabelInput" class="flex-1 rounded-lg border-slate-300 text-sm" placeholder="…o escribe un lugar (no salón)" />
+                <button @click="assignLocationLabel" :disabled="!locationLabelInput" class="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-semibold disabled:opacity-50">Usar</button>
+            </div>
+        </section>
+
         <!-- Horario -->
         <section class="rounded-xl border bg-white p-4 space-y-3">
             <div class="flex items-center justify-between">
@@ -94,12 +141,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 
 const props = defineProps<{ id: string | number }>()
+const route = useRoute()
 const AC = API.AC_API
 const toast = useToast()
 
@@ -108,6 +158,40 @@ const attendees = ref<any[]>([])
 const studentSearch = ref('')
 const studentResults = ref<any[]>([])
 let studentTimer: any = null
+
+const pickedInstructor = ref<number | null>(null)
+const highlightInstructor = ref(false)
+async function assignInstructor(userId: number | null) {
+    if (!userId) return
+    try {
+        await api.put(AC.setInstructor(props.id), { instructor_user_id: userId })
+        toast.success('Instructor asignado.')
+        pickedInstructor.value = null
+        await load()
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo asignar el instructor.') }
+}
+
+const pickedPlace = ref<number | null>(null)
+const locationLabelInput = ref('')
+const placeLabel = (p: any) => p.building_name ? `${p.name} · ${p.building_name}` : p.name
+async function assignPlace(placeId: number | null) {
+    if (!placeId) return
+    try {
+        await api.put(AC.setPlace(props.id), { place_id: placeId })
+        toast.success('Lugar asignado.')
+        pickedPlace.value = null
+        await load()
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo asignar el lugar.') }
+}
+async function assignLocationLabel() {
+    if (!locationLabelInput.value) return
+    try {
+        await api.put(AC.setPlace(props.id), { location_label: locationLabelInput.value })
+        toast.success('Lugar asignado.')
+        locationLabelInput.value = ''
+        await load()
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo asignar el lugar.') }
+}
 
 const DAYS = [
     { v: 1, label: 'Lunes' }, { v: 2, label: 'Martes' }, { v: 3, label: 'Miércoles' },
@@ -201,5 +285,14 @@ async function removeStudent(s: any) {
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo quitar.') }
 }
 
-onMounted(load)
+onMounted(async () => {
+    await load()
+    // Si venimos del enlace "Asignar tutor →", enfocamos la asignación de instructor.
+    if (route.query.assign != null) {
+        await nextTick()
+        document.getElementById('ac-instructor')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        highlightInstructor.value = true
+        setTimeout(() => { highlightInstructor.value = false }, 2500)
+    }
+})
 </script>

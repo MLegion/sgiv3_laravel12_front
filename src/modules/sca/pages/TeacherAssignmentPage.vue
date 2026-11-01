@@ -78,6 +78,41 @@
 
         <template v-if="resolvedConfigId && !configError && selectedAcademicOfferId">
 
+        <!-- REQUISITO: TUTORÍA GRUPAL (Actividades Complementarias) — por carrera -->
+        <div v-if="gt.show" class="bg-white border border-emerald-200 rounded-xl shadow-sm p-5 space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="text-left">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Tutoría grupal requerida</h3>
+                    <p class="text-xs text-slate-500">Los grupos de semestre ≤ {{ gt.maxSemester }} de esta carrera requieren Tutoría Grupal. Genera las faltantes y asigna al tutor.</p>
+                </div>
+                <button v-if="gt.missing > 0" type="button"
+                    class="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
+                    :disabled="gt.busy" @click="generateGroupTutoring">
+                    GENERAR {{ gt.missing }} FALTANTE(S)
+                </button>
+                <span v-else class="text-[10px] font-bold text-emerald-600">✓ TODAS CREADAS</span>
+            </div>
+            <table v-if="gt.groups.length" class="w-full text-sm">
+                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
+                    <th class="px-3 py-1">Grupo</th><th>Semestre</th><th>Tutoría grupal</th><th></th>
+                </tr></thead>
+                <tbody>
+                    <tr v-for="g in gt.groups" :key="g.group_id" class="border-b last:border-0">
+                        <td class="px-3 py-1.5 text-slate-700">{{ g.group_name }}</td>
+                        <td class="text-slate-600">{{ g.target_semester }}</td>
+                        <td>
+                            <span v-if="g.has_activity" class="text-[11px] text-emerald-600">✓ creada</span>
+                            <span v-else class="text-[11px] text-amber-600">⚠ falta</span>
+                        </td>
+                        <td class="text-right pr-3">
+                            <router-link v-if="g.has_activity && g.activity_id" :to="`/complementary-activities/${g.activity_id}?assign=1`"
+                                class="text-[11px] font-bold text-blue-600 hover:underline">Asignar tutor →</router-link>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
         <div v-if="loadingPackages && !packageItems.length" class="flex justify-center py-12">
             <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         </div>
@@ -631,8 +666,18 @@ type ScaContext = {
 }
 const ctx = ref<ScaContext | null>(null)
 const campuses = ref<any[]>([])
-const modalityTypes = ref<any[]>([])
+const allModalityTypes = ref<any[]>([])
 const modalities = ref<any[]>([])
+
+// Tipos de modalidad disponibles para el campus seleccionado (derivados del
+// catálogo de modalidades, que liga campus ↔ tipo). Sin campus elegido, todos.
+const modalityTypes = computed(() => {
+    if (!selectedCampusId.value) return allModalityTypes.value
+    const typesInCampus = modalities.value
+        .filter((m: any) => (m.campusId ?? m.campus_id) === selectedCampusId.value)
+        .map((m: any) => m.modalityTypeId ?? m.modality_type_id)
+    return allModalityTypes.value.filter((mt: any) => typesInCampus.includes(mt.id))
+})
 const academicOffers = ref<any[]>([])
 const periodSelectorRef = ref<InstanceType<typeof PeriodSelector> | null>(null)
 const periodLocked = useQueryFilter('locked', false, QueryFilters.bool)
@@ -683,6 +728,42 @@ const careerColor = ref<string | null>(null)
 const careerSetting = ref<any>(null)
 const selectedCareer = ref<any>(null)
 const tableScrollRef = ref<HTMLElement | null>(null)
+
+/* ── Requisito de tutoría grupal (Actividades Complementarias) por carrera ── */
+const gt = reactive<{ show: boolean; maxSemester: number; groups: any[]; missing: number; busy: boolean }>({
+    show: false, maxSemester: 0, groups: [], missing: 0, busy: false,
+})
+function currentCareerId(): number | null {
+    const ao = academicOffers.value.find((o: any) => o.id === selectedAcademicOfferId.value)
+    return ao?.career?.id ?? null
+}
+async function loadGroupTutoring() {
+    const capId = selectedPeriodId.value
+    const careerId = currentCareerId()
+    if (!capId || !careerId || !API.AC_API) { gt.show = false; return }
+    try {
+        const { data } = await api.get(API.AC_API.groupTutoringRequirements, { params: { period_id: capId, career_id: careerId } })
+        if ((data.max_semester ?? 0) > 0 && (data.groups?.length ?? 0) > 0) {
+            gt.show = true; gt.maxSemester = data.max_semester; gt.groups = data.groups; gt.missing = data.missing ?? 0
+        } else { gt.show = false }
+    } catch { gt.show = false } // 404 = módulo AC apagado o sin permiso → oculto
+}
+async function generateGroupTutoring() {
+    const capId = selectedPeriodId.value
+    const careerId = currentCareerId()
+    if (!capId || !careerId) return
+    gt.busy = true
+    try {
+        await api.post(API.AC_API.generateGroupTutoring, { period_id: capId, career_id: careerId })
+        await loadGroupTutoring()
+    } catch { /* silent */ } finally { gt.busy = false }
+}
+// Carga el requisito cuando ya hay config + carrera (cubre tanto la selección del
+// usuario como la restauración de filtros desde el query string).
+watch([resolvedConfigId, selectedAcademicOfferId, () => academicOffers.value.length], () => {
+    if (resolvedConfigId.value && selectedAcademicOfferId.value) loadGroupTutoring()
+    else gt.show = false
+})
 
 /* ── Estado filas editables ──────────────────────────────────────── */
 const rowState = ref(new Map<string, { checked: boolean; shift: string; groupName: string; capacity: number; sessionsCount: number | null }>())
@@ -1223,8 +1304,8 @@ async function fetchModalityTypes() {
         if (ctx.value && !ctx.value.isAdmin && ctx.value.modalityTypeIds) {
             list = list.filter((mt: any) => ctx.value!.modalityTypeIds!.includes(mt.id))
         }
-        modalityTypes.value = list
-    } catch { modalityTypes.value = [] }
+        allModalityTypes.value = list
+    } catch { allModalityTypes.value = [] }
 }
 
 const usesSpecificDates = computed(() => {

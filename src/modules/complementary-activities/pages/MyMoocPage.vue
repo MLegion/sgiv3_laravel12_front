@@ -18,7 +18,10 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre del curso</label>
-                    <input v-model="form.course_name" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Ética profesional" />
+                    <input v-model="form.course_name" :list="courseCatalog.length ? 'mooc-course-catalog' : undefined" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Ética profesional" />
+                    <datalist id="mooc-course-catalog">
+                        <option v-for="c in courseCatalog" :key="c.id" :value="c.name" />
+                    </datalist>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Horas (opcional)</label>
@@ -67,6 +70,7 @@ import { useToast } from '@/app/composables/useToast'
 const AC = API.AC_API
 const toast = useToast()
 const platforms = ref<any[]>([])
+const courseCatalog = ref<any[]>([])
 const rows = ref<any[]>([])
 const busy = ref(false)
 const form = reactive<any>({ platform_id: '', course_name: '', hours: null, folio: '', file: null as File | null })
@@ -76,9 +80,14 @@ function statusClass(s: string) { return s === 'validated' ? 'text-emerald-600' 
 function onFile(e: Event) { form.file = (e.target as HTMLInputElement).files?.[0] ?? null }
 
 async function load() {
-    const [p, m] = await Promise.all([api.get(AC.moocActivePlatforms), api.get(AC.myMoocCompletions)])
+    const [p, m, c] = await Promise.all([
+        api.get(AC.moocActivePlatforms),
+        api.get(AC.myMoocCompletions),
+        api.get(AC.myMoocCatalog).catch(() => ({ data: [] })),
+    ])
     platforms.value = p.data ?? []
     rows.value = m.data ?? []
+    courseCatalog.value = c.data ?? []
 }
 async function submit() {
     busy.value = true

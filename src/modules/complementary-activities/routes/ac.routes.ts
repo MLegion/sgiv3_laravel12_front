@@ -12,6 +12,18 @@ export default [
         meta: { title: 'Plataformas MOOC' },
     },
     {
+        path: 'complementary-activities/activity-catalog',
+        name: 'ac.activity-catalog',
+        component: () => import('@/modules/complementary-activities/pages/AcCatalogPage.vue'),
+        meta: { title: 'Catálogo de actividades' },
+    },
+    {
+        path: 'complementary-activities/instructors',
+        name: 'ac.instructors',
+        component: () => import('@/modules/complementary-activities/pages/AcInstructorsPage.vue'),
+        meta: { title: 'Instructores' },
+    },
+    {
         path: 'complementary-activities/mooc-inbox',
         name: 'ac.mooc-inbox',
         component: () => import('@/modules/complementary-activities/pages/MoocInboxPage.vue'),
