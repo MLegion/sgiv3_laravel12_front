@@ -17,6 +17,7 @@
                     <div v-if="a.instructor_name">Instructor: {{ a.instructor_name }}</div>
                     <div v-if="a.place_name || a.location_label">Lugar: {{ a.place_name ?? a.location_label }}</div>
                     <div>Créditos: {{ a.credits }}<span v-if="a.weekly_hours"> · {{ a.weekly_hours }} h/sem</span></div>
+                    <div v-if="a.starts_on || a.ends_on">Duración: {{ fmtDate(a.starts_on) }} → {{ fmtDate(a.ends_on) }}</div>
                     <div>Cupo: {{ a.attendees_count }}<span v-if="a.capacity"> / {{ a.capacity }}</span></div>
                     <div v-if="a.enrollment_closes_at" class="text-amber-600">Cierra: {{ fmt(a.enrollment_closes_at) }}</div>
                 </dl>
@@ -57,6 +58,7 @@ const TYPE_LABELS: Record<string, string> = {
 }
 const typeLabel = (t: string) => TYPE_LABELS[t] ?? t
 const fmt = (v: string) => (v ? new Date(v.replace(' ', 'T')).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '')
+const fmtDate = (v: string) => (v ? new Date(String(v).substring(0, 10) + 'T00:00:00').toLocaleDateString('es-MX', { dateStyle: 'medium' }) : '…')
 
 async function load() {
     loading.value = true

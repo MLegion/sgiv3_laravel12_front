@@ -43,8 +43,20 @@
                     <label class="block text-[10px] uppercase text-slate-400 mb-1">Cupo (opcional)</label>
                     <input v-model.number="info.capacity" type="number" min="1" max="1000" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Periodo (semestre)</label>
+                    <input :value="activity.period_name ?? '—'" disabled class="w-full rounded-lg border-slate-200 bg-slate-50 text-sm text-slate-500" />
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Inicia (duración)</label>
+                    <input v-model="info.starts_on" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Termina (duración)</label>
+                    <input v-model="info.ends_on" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
+                </div>
             </div>
-            <p class="text-[11px] text-slate-400">{{ typeLabel }} · {{ activity.period_name }}<span v-if="activity.career_name"> · {{ activity.career_name }}</span></p>
+            <p class="text-[11px] text-slate-400">{{ typeLabel }} · {{ activity.period_name }}<span v-if="activity.career_name"> · {{ activity.career_name }}</span><span v-if="info.starts_on || info.ends_on"> · {{ info.starts_on || '…' }} → {{ info.ends_on || '…' }}</span></p>
             <button @click="saveInfo" :disabled="savingInfo || !info.name" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar información</button>
         </section>
 
@@ -318,8 +330,8 @@ async function saveRules() {
 }
 
 // ── Información general editable ───────────────────────────────────────
-const info = reactive<{ name: string; credits: number | null; capacity: number | null; weekly_hours: number | null }>({
-    name: '', credits: 0, capacity: null, weekly_hours: null,
+const info = reactive<{ name: string; credits: number | null; capacity: number | null; weekly_hours: number | null; starts_on: string | null; ends_on: string | null }>({
+    name: '', credits: 0, capacity: null, weekly_hours: null, starts_on: null, ends_on: null,
 })
 const savingInfo = ref(false)
 async function saveInfo() {
@@ -330,6 +342,8 @@ async function saveInfo() {
             credits: Number(info.credits) || 0,
             capacity: info.capacity ? Number(info.capacity) : null,
             weekly_hours: (info.weekly_hours === null || (info.weekly_hours as any) === '') ? null : Number(info.weekly_hours),
+            starts_on: info.starts_on || null,
+            ends_on: info.ends_on || null,
         })
         toast.success('Información guardada.')
         await load()
@@ -452,6 +466,8 @@ async function load() {
     info.credits = data.credits ?? 0
     info.capacity = data.capacity ?? null
     info.weekly_hours = data.weekly_hours ?? null
+    info.starts_on = data.starts_on ? String(data.starts_on).substring(0, 10) : null
+    info.ends_on = data.ends_on ? String(data.ends_on).substring(0, 10) : null
     // Estado/ventana + restricciones.
     const toLocal = (v: any) => (v ? String(v).replace(' ', 'T').substring(0, 16) : null)
     enroll.status = data.status ?? 'draft'
