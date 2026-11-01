@@ -66,7 +66,9 @@ interface Slot {
     place: { id: number; name: string; shortName: string | null } | null
 }
 
-const DAY_LABELS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+// day_of_week es 1-based (1=Lunes), igual que academic_schedules y el editor
+// principal (DAY_LABELS_FULL). El índice 0 queda vacío a propósito.
+const DAY_LABELS = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
 const loading = ref(true)
 const error   = ref<string | null>(null)

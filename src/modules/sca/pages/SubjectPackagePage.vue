@@ -1251,11 +1251,43 @@ async function checkCanApprove() {
     } catch { canApprove.value = false }
 }
 
+// Reconstruye la cascada de filtros cuando se entra con periodo/campus/modalidad
+// ya seleccionados (persistidos en el query string). Los `@change` NO se disparan
+// al restaurar el estado, por lo que aquí replicamos: resolver modalidad → cargar
+// ofertas (planes) → y si venía un plan, su config + materias. Sin esto, al entrar
+// con todo preseleccionado el filtro de planes aparece vacío (hay que re-elegir el
+// periodo para forzar la cascada).
+async function initFromPersistedFilters() {
+    await fetchModalities()
+    if (!selectedCampusId.value || !selectedModalityTypeId.value) return
+
+    const match = modalities.value.find((m: any) =>
+        (m.campusId === selectedCampusId.value || m.campus_id === selectedCampusId.value) &&
+        (m.modalityTypeId === selectedModalityTypeId.value || m.modality_type_id === selectedModalityTypeId.value)
+    )
+    if (!match) return
+
+    // Se fija resolvedModalityId directamente (sin pasar por resolveModality, que
+    // limpiaría el plan persistido) y se cargan las ofertas.
+    resolvedModalityId.value = match.id
+    await fetchStudyPlans()
+
+    if (selectedStudyPlanId.value && studyPlans.value.some((p: any) => p.id === selectedStudyPlanId.value)) {
+        await resolveConfig()
+        if (resolvedConfigId.value) {
+            fetchSpecialties()
+            fetchOptionalGroups()
+            fetchCurriculumSubjects()
+            fetchPackageItems()
+        }
+    }
+}
+
 onMounted(() => {
     fetchContext()
     fetchCampuses()
     fetchModalityTypes()
-    fetchModalities()
+    initFromPersistedFilters()
     checkCanApprove()
 })
 </script>
