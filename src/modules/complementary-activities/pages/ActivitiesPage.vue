@@ -9,14 +9,14 @@
         <section class="rounded-xl border bg-white p-4 grid sm:grid-cols-4 gap-3 items-end">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Periodo</label>
-                <select v-model="periodId" @change="loadList" class="w-full rounded-lg border-slate-300 text-sm">
+                <select v-model="periodId" @change="onFilterChange" class="w-full rounded-lg border-slate-300 text-sm">
                     <option value="">Elegir…</option>
                     <option v-for="p in periods" :key="p.id" :value="p.id">{{ p.name }}</option>
                 </select>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Tipo</label>
-                <select v-model="typeFilter" @change="loadList" class="w-full rounded-lg border-slate-300 text-sm">
+                <select v-model="typeFilter" @change="onFilterChange" class="w-full rounded-lg border-slate-300 text-sm">
                     <option value="">Todos</option>
                     <option v-for="t in types" :key="t.value" :value="t.value">{{ t.label }}</option>
                 </select>
@@ -27,27 +27,50 @@
         </section>
 
         <!-- Lista -->
-        <section v-if="periodId" class="rounded-xl border bg-white p-4">
-            <p v-if="!rows.length" class="text-sm text-slate-400">Sin actividades para este periodo.</p>
-            <table v-else class="w-full text-sm">
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                    <th class="px-3 py-1">Actividad</th><th>Tipo</th><th>Lugar</th><th>Créditos</th><th>Inscritos</th><th>Estado</th><th></th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="a in rows" :key="a.id" class="border-b last:border-0 hover:bg-slate-50">
-                        <td class="px-3 py-2 text-slate-700">{{ a.name }}<span v-if="a.career_name" class="block text-[11px] text-slate-400">{{ a.career_name }}</span></td>
-                        <td class="text-slate-600">{{ typeLabel(a.type) }}</td>
-                        <td class="text-slate-600">{{ a.place_name ?? a.location_label ?? '—' }}</td>
-                        <td class="text-slate-600">{{ a.credits }}</td>
-                        <td class="text-slate-600">{{ a.attendees_count }}<span v-if="a.capacity"> / {{ a.capacity }}</span></td>
-                        <td><span :class="a.status === 'active' ? 'text-emerald-600' : 'text-slate-400'">{{ a.status === 'active' ? 'Activa' : 'Cerrada' }}</span></td>
-                        <td class="text-right whitespace-nowrap">
-                            <RouterLink :to="`/complementary-activities/${a.id}`" class="text-xs text-emerald-600 hover:underline">ver</RouterLink>
-                            <button v-if="a.status === 'active'" @click="close(a)" class="ml-3 text-xs text-slate-400 hover:text-rose-500">cerrar</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <section v-if="periodId">
+            <DataTable
+                :columns="columns"
+                :rows="rows"
+                :loading="loading"
+                :pagination="pagination"
+                :initial-search="initialSearch"
+                search-placeholder="Buscar actividad por nombre…"
+                @change="handleChange">
+
+                <template #cell-name="{ row }">
+                    <span class="text-slate-700">{{ row.name }}</span>
+                    <span v-if="row.career_name" class="block text-[11px] text-slate-400">{{ row.career_name }}</span>
+                </template>
+                <template #cell-type="{ row }">{{ typeLabel(row.type) }}</template>
+                <template #cell-place="{ row }">{{ row.place_name ?? row.location_label ?? '—' }}</template>
+                <template #cell-attendees="{ row }">{{ row.attendees_count }}<span v-if="row.capacity" class="text-slate-400"> / {{ row.capacity }}</span></template>
+                <template #cell-status="{ row }">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full" :class="row.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'">
+                        {{ row.status === 'active' ? 'ACTIVA' : 'ARCHIVADA' }}
+                    </span>
+                </template>
+
+                <template #cell-opciones="{ row }">
+                    <div class="flex items-center justify-center gap-2">
+                        <RouterLink :to="`/complementary-activities/${row.id}`" aria-label="Ver" title="Ver"
+                            class="border p-1.5 rounded-md text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 transition">
+                            <EyeIcon class="w-4 h-4" />
+                        </RouterLink>
+                        <button v-if="row.status === 'active'" @click="archive(row)" aria-label="Archivar" title="Archivar"
+                            class="border p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition">
+                            <ArchiveBoxArrowDownIcon class="w-4 h-4" />
+                        </button>
+                        <button v-else @click="reopen(row)" aria-label="Reabrir" title="Reabrir"
+                            class="border p-1.5 rounded-md text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 transition">
+                            <ArrowUturnLeftIcon class="w-4 h-4" />
+                        </button>
+                        <button v-if="row.attendees_count === 0" @click="remove(row)" aria-label="Eliminar" title="Eliminar (sin alumnos)"
+                            class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition">
+                            <TrashIcon class="w-4 h-4" />
+                        </button>
+                    </div>
+                </template>
+            </DataTable>
         </section>
 
         <!-- Modal alta -->
@@ -151,10 +174,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { EyeIcon, ArchiveBoxArrowDownIcon, ArrowUturnLeftIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const AC = API.AC_API
 const toast = useToast()
@@ -162,10 +189,36 @@ const toast = useToast()
 const periods = ref<any[]>([])
 const careers = ref<any[]>([])
 const types = ref<any[]>([])
-const rows = ref<any[]>([])
 const periodId = ref<string>('')
 const typeFilter = ref<string>('')
 const busy = ref(false)
+
+// ── Tabla paginada (DataTable del proyecto) ──────────────────────────────────
+const columns: DataTableColumn[] = [
+    { key: 'name',      label: 'ACTIVIDAD', field: 'name',    sortable: true, searchable: true },
+    { key: 'type',      label: 'TIPO',      field: 'type',    sortable: true },
+    { key: 'place',     label: 'LUGAR' },
+    { key: 'credits',   label: 'CRÉDITOS',  field: 'credits', sortable: true, align: 'center' },
+    { key: 'attendees', label: 'INSCRITOS', align: 'center' },
+    { key: 'status',    label: 'ESTADO',    field: 'status',  sortable: true, align: 'center' },
+    { key: 'opciones',  label: 'OPCIONES',  align: 'center' },
+]
+// period_id/type viajan como filtros extra (se fusionan en search[] del backend).
+const extraSearch = computed<Record<string, any>>(() => {
+    const s: Record<string, any> = {}
+    if (periodId.value) s.period_id = Number(periodId.value)
+    if (typeFilter.value) s.type = typeFilter.value
+    return s
+})
+const { rows, loading, pagination, handleChange, fetchData, initialSearch } = useDataTableFetch<any>({
+    endpoint: AC.activities,
+    extraSearch,
+})
+function onFilterChange() {
+    if (!periodId.value) { rows.value = []; pagination.value.total = 0; return }
+    pagination.value.page = 1
+    fetchData()
+}
 
 const showCreate = ref(false)
 const form = reactive<any>({ type: '', name: '', career_id: null, group_id: null, group_label: '', instructor_user_id: null, instructor_label: '', place_id: null, place_label: '', location_label: '', capacity: null, credits: 0 })
@@ -240,12 +293,6 @@ async function loadCatalog() {
     careers.value = data.careers ?? []
     types.value = data.types ?? []
 }
-async function loadList() {
-    rows.value = []
-    if (!periodId.value) return
-    const { data } = await api.get(AC.activities, { params: { period_id: periodId.value, type: typeFilter.value || undefined } })
-    rows.value = data ?? []
-}
 
 function openCreate() {
     Object.assign(form, { type: '', name: '', career_id: null, group_id: null, group_label: '', instructor_user_id: null, instructor_label: '', place_id: null, place_label: '', location_label: '', capacity: null, credits: 0 })
@@ -285,15 +332,31 @@ async function create() {
         })
         toast.success('Actividad creada.')
         showCreate.value = false
-        await loadList()
+        await fetchData()
     })
 }
-async function close(a: any) {
-    if (!confirm(`¿Cerrar la actividad "${a.name}"?`)) return
+// Archivar (reabrible) / Reabrir / Eliminar (solo sin alumnos registrados).
+async function archive(a: any) {
+    if (!confirm(`¿Archivar la actividad "${a.name}"? Podrás reabrirla después.`)) return
     await act(async () => {
         await api.post(AC.close(a.id), {})
-        toast.success('Actividad cerrada.')
-        await loadList()
+        toast.success('Actividad archivada.')
+        await fetchData()
+    })
+}
+async function reopen(a: any) {
+    await act(async () => {
+        await api.post(AC.reopen(a.id), {})
+        toast.success('Actividad reabierta.')
+        await fetchData()
+    })
+}
+async function remove(a: any) {
+    if (!confirm(`¿Eliminar la actividad "${a.name}"? Esta acción no se puede deshacer.`)) return
+    await act(async () => {
+        await api.delete(AC.destroy(a.id))
+        toast.success('Actividad eliminada.')
+        await fetchData()
     })
 }
 
@@ -306,6 +369,6 @@ async function act(fn: () => Promise<void>) {
 
 onMounted(async () => {
     await loadCatalog()
-    if (periods.value.length) { periodId.value = String(periods.value[0].id); await loadList() }
+    if (periods.value.length) { periodId.value = String(periods.value[0].id); await fetchData() }
 })
 </script>

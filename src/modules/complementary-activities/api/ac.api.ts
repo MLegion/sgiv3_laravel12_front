@@ -38,6 +38,8 @@ const acApi: ApiModule = {
         activities: apiUrl('/complementary-activities/activities'),
         activity:   (id: string | number) => apiUrl(`/complementary-activities/activities/${id}`),
         close:      (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/close`),
+        reopen:     (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/reopen`),
+        destroy:    (id: string | number) => apiUrl(`/complementary-activities/activities/${id}`),
         setInstructor: (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/instructor`),
         setPlace:      (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/place`),
         setInfo:       (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/info`),
