@@ -24,7 +24,7 @@
         <section class="rounded-xl border bg-white p-4 space-y-3">
             <div class="flex items-center justify-between">
                 <h2 class="text-sm font-bold uppercase text-slate-500">Datos generales</h2>
-                <span :class="activity.status === 'active' ? 'text-emerald-600' : 'text-slate-400'" class="text-xs font-bold uppercase">{{ activity.status === 'active' ? 'Activa' : 'Cerrada' }}</span>
+                <span class="text-xs font-bold uppercase px-2 py-1 rounded-full" :class="STATUS_META[activity.status]?.cls ?? 'text-slate-400'">{{ STATUS_META[activity.status]?.label ?? activity.status }}</span>
             </div>
             <div class="grid sm:grid-cols-3 gap-3">
                 <div class="sm:col-span-3">
@@ -48,8 +48,68 @@
             <button @click="saveInfo" :disabled="savingInfo || !info.name" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar información</button>
         </section>
 
+        <!-- Reglas de inscripción + estado/ventana (restricciones del grupo) -->
+        <section v-if="activity.status !== 'closed'" class="rounded-xl border bg-white p-4 space-y-4">
+            <h2 class="text-sm font-bold uppercase text-slate-500">Inscripción y restricciones</h2>
+
+            <div class="grid sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Estado</label>
+                    <select v-model="enroll.status" class="w-full rounded-lg border-slate-300 text-sm">
+                        <option value="draft">Borrador (no visible)</option>
+                        <option value="enrollment">Inscripción abierta</option>
+                        <option value="active">Activa (en curso)</option>
+                        <option value="closed">Archivada</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Abre (opcional)</label>
+                    <input v-model="enroll.opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Cierra (opcional)</label>
+                    <input v-model="enroll.closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                </div>
+            </div>
+            <p class="text-[11px] text-slate-400">La inscripción del alumno solo se permite en estado <strong>Inscripción abierta</strong> y dentro de la ventana. Si la dejas vacía, aplica la ventana general del periodo. El cupo lo controla el campo “Cupo”.</p>
+            <button @click="saveEnrollment" :disabled="savingEnroll" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-semibold disabled:opacity-50">Guardar estado/ventana</button>
+
+            <hr class="border-slate-100" />
+
+            <h3 class="text-xs font-bold uppercase text-slate-400">Restricciones de elegibilidad (opcionales)</h3>
+            <div class="grid sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Carrera</label>
+                    <select v-model="rules.career_id" class="w-full rounded-lg border-slate-300 text-sm">
+                        <option :value="null">Cualquiera</option>
+                        <option v-for="c in careerOptions" :key="c.id" :value="c.id">{{ c.name }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Género</label>
+                    <select v-model="rules.gender" class="w-full rounded-lg border-slate-300 text-sm">
+                        <option :value="null">Cualquiera</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Femenino</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Semestres permitidos</label>
+                    <div class="flex flex-wrap gap-1">
+                        <button v-for="n in 12" :key="n" type="button" @click="toggleSemester(n)"
+                            class="w-7 h-7 rounded text-xs font-semibold border"
+                            :class="rules.semesters.includes(n) ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-slate-500 border-slate-300'">
+                            {{ n }}
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Vacío = cualquier semestre.</p>
+                </div>
+            </div>
+            <button @click="saveRules" :disabled="savingRules" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-semibold disabled:opacity-50">Guardar restricciones</button>
+        </section>
+
         <!-- Instructor (tutor): se asigna desde el personal del instituto -->
-        <section v-if="activity.status === 'active'" id="ac-instructor" class="rounded-xl border bg-white p-4 space-y-2" :class="{ 'ring-2 ring-emerald-400': highlightInstructor }">
+        <section v-if="activity.status !== 'closed'" id="ac-instructor" class="rounded-xl border bg-white p-4 space-y-2" :class="{ 'ring-2 ring-emerald-400': highlightInstructor }">
             <h2 class="text-sm font-bold uppercase text-slate-500">Instructor</h2>
             <p class="text-[11px] text-slate-400">Se asigna desde el personal del instituto. Para la tutoría grupal, el instructor es el tutor del grupo.</p>
             <div class="max-w-md">
@@ -66,7 +126,7 @@
         </section>
 
         <!-- Lugar por defecto (aula o etiqueta libre) para el horario -->
-        <section v-if="activity.status === 'active'" class="rounded-xl border bg-white p-4 space-y-2">
+        <section v-if="activity.status !== 'closed'" class="rounded-xl border bg-white p-4 space-y-2">
             <h2 class="text-sm font-bold uppercase text-slate-500">Lugar por defecto</h2>
             <p class="text-[11px] text-slate-400">Aula (o un lugar libre, no salón) que se usa por defecto al armar el horario de la actividad.</p>
             <div class="max-w-md">
@@ -218,6 +278,51 @@ const TYPE_LABELS: Record<string, string> = {
 }
 const typeLabel = computed(() => TYPE_LABELS[activity.value?.type] ?? activity.value?.type ?? '')
 
+const STATUS_META: Record<string, { label: string; cls: string }> = {
+    draft:      { label: 'Borrador',   cls: 'bg-slate-100 text-slate-500' },
+    enrollment: { label: 'Inscripción abierta', cls: 'bg-sky-100 text-sky-700' },
+    active:     { label: 'Activa',     cls: 'bg-emerald-100 text-emerald-700' },
+    closed:     { label: 'Archivada',  cls: 'bg-slate-100 text-slate-400' },
+}
+
+// ── Inscripción (estado + ventana) y restricciones ───────────────────────
+const careers = ref<any[]>([])
+const enroll = reactive<{ status: string; opens_at: string | null; closes_at: string | null }>({ status: 'draft', opens_at: null, closes_at: null })
+const rules = reactive<{ career_id: number | null; gender: string | null; semesters: number[] }>({ career_id: null, gender: null, semesters: [] })
+const savingEnroll = ref(false)
+const savingRules = ref(false)
+// Incluye la carrera ya fijada aunque el catálogo del plantel no la liste.
+const careerOptions = computed(() => {
+    const list = [...careers.value]
+    if (rules.career_id && !list.some((c: any) => c.id === rules.career_id)) {
+        list.unshift({ id: rules.career_id, name: activity.value?.rule_career_name ?? `Carrera #${rules.career_id}` })
+    }
+    return list
+})
+const toIso = (v: string | null) => (v ? v.replace('T', ' ') + ':00' : null)
+function toggleSemester(n: number) {
+    const i = rules.semesters.indexOf(n)
+    if (i >= 0) rules.semesters.splice(i, 1); else rules.semesters.push(n)
+}
+async function saveEnrollment() {
+    savingEnroll.value = true
+    try {
+        await api.put(AC.setEnrollment(props.id), { status: enroll.status, opens_at: toIso(enroll.opens_at), closes_at: toIso(enroll.closes_at) })
+        toast.success('Estado/ventana guardados.')
+        await load()
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo guardar.') }
+    finally { savingEnroll.value = false }
+}
+async function saveRules() {
+    savingRules.value = true
+    try {
+        await api.put(AC.setRules(props.id), { career_id: rules.career_id, gender: rules.gender, semesters: rules.semesters })
+        toast.success('Restricciones guardadas.')
+        await load()
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo guardar.') }
+    finally { savingRules.value = false }
+}
+
 // ── Información general editable ───────────────────────────────────────
 const info = reactive<{ name: string; credits: number | null; capacity: number | null; weekly_hours: number | null }>({
     name: '', credits: 0, capacity: null, weekly_hours: null,
@@ -363,6 +468,17 @@ async function load() {
     info.credits = data.credits ?? 0
     info.capacity = data.capacity ?? null
     info.weekly_hours = data.weekly_hours ?? null
+    // Estado/ventana + restricciones.
+    const toLocal = (v: any) => (v ? String(v).replace(' ', 'T').substring(0, 16) : null)
+    enroll.status = data.status ?? 'draft'
+    enroll.opens_at = toLocal(data.enrollment_opens_at)
+    enroll.closes_at = toLocal(data.enrollment_closes_at)
+    rules.career_id = data.rule_career_id ?? null
+    rules.gender = data.rule_gender ?? null
+    rules.semesters = Array.isArray(data.rule_semesters) ? data.rule_semesters.map(Number) : []
+    if (!careers.value.length) {
+        try { const r = await api.get(AC.catalog); careers.value = r.data?.careers ?? [] } catch { /* noop */ }
+    }
     loadOccupancy()
     attendees.value = (data.attendees ?? []).filter((a: any) => a.status !== 'dropped')
     blocks.value = (data.schedules ?? [])
@@ -382,13 +498,24 @@ function searchStudents() {
         studentResults.value = data ?? []
     }, 300)
 }
-async function addStudent(s: any) {
+async function addStudent(s: any, force = false) {
     try {
-        await api.post(AC.attendees(props.id), { student_id: s.id })
+        await api.post(AC.attendees(props.id), { student_id: s.id, force })
         studentResults.value = []; studentSearch.value = ''
         toast.success('Alumno agregado.')
         await load()
-    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo agregar.') }
+    } catch (e: any) {
+        const d = e?.response?.data
+        // Avisa los incumplimientos y permite forzar (override del encargado).
+        if (e?.response?.status === 422 && d?.can_force && Array.isArray(d.violations)) {
+            const reasons = d.violations.map((v: any) => '• ' + v.message).join('\n')
+            if (confirm(`El alumno no cumple:\n${reasons}\n\n¿Inscribir de todos modos?`)) {
+                await addStudent(s, true)
+            }
+            return
+        }
+        toast.error(d?.message ?? 'No se pudo agregar.')
+    }
 }
 async function creditStudent(s: any) {
     try {

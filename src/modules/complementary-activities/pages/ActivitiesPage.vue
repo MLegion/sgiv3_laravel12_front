@@ -21,7 +21,8 @@
                     <option v-for="t in types" :key="t.value" :value="t.value">{{ t.label }}</option>
                 </select>
             </div>
-            <div class="sm:col-span-2 text-right">
+            <div class="sm:col-span-2 text-right flex gap-2 justify-end">
+                <button @click="openWindow" :disabled="!periodId" class="px-4 py-2 rounded-lg border text-slate-600 text-sm font-semibold disabled:opacity-50">Ventana de inscripción</button>
                 <button @click="openCreate" :disabled="!periodId" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Nueva actividad</button>
             </div>
         </section>
@@ -72,6 +73,33 @@
                 </template>
             </DataTable>
         </section>
+
+        <!-- Modal ventana general de inscripción (por periodo) -->
+        <div v-if="showWindow" class="fixed inset-0 bg-black/30 flex items-center justify-center z-20 p-4" @click.self="showWindow = false">
+            <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-5 space-y-3">
+                <h2 class="text-sm font-bold uppercase text-slate-500">Ventana general de inscripción</h2>
+                <p class="text-[11px] text-slate-400">Aplica a TODAS las actividades del periodo (una actividad puede tener su propia ventana que pisa ésta).</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Abre</label>
+                        <input v-model="windowForm.opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Cierra</label>
+                        <input v-model="windowForm.closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Máx. actividades por alumno en el periodo</label>
+                        <input v-model.number="windowForm.max_per_period" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
+                        <p class="text-[10px] text-slate-400 mt-0.5">0 = sin límite. (SGIv2 usaba 3.)</p>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-1">
+                    <button @click="showWindow = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
+                    <button @click="saveWindow" :disabled="busy" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar</button>
+                </div>
+            </div>
+        </div>
 
         <!-- Modal alta -->
         <div v-if="showCreate" class="fixed inset-0 bg-black/30 flex items-center justify-center z-20 p-4" @click.self="showCreate = false">
@@ -218,6 +246,34 @@ function onFilterChange() {
     if (!periodId.value) { rows.value = []; pagination.value.total = 0; return }
     pagination.value.page = 1
     fetchData()
+}
+
+// ── Ventana GENERAL de inscripción (por periodo) ─────────────────────────────
+const showWindow = ref(false)
+const windowForm = reactive<{ opens_at: string | null; closes_at: string | null; max_per_period: number }>({ opens_at: null, closes_at: null, max_per_period: 3 })
+const toLocal = (v: any) => (v ? String(v).replace(' ', 'T').substring(0, 16) : null)
+const toIso = (v: string | null) => (v ? v.replace('T', ' ') + ':00' : null)
+async function openWindow() {
+    if (!periodId.value) return
+    try {
+        const { data } = await api.get(AC.enrollmentWindow, { params: { period_id: periodId.value } })
+        windowForm.opens_at = toLocal(data?.opens_at)
+        windowForm.closes_at = toLocal(data?.closes_at)
+        windowForm.max_per_period = data?.max_per_period ?? 3
+    } catch { windowForm.opens_at = null; windowForm.closes_at = null; windowForm.max_per_period = 3 }
+    showWindow.value = true
+}
+async function saveWindow() {
+    await act(async () => {
+        await api.put(AC.enrollmentWindow, {
+            period_id: Number(periodId.value),
+            opens_at: toIso(windowForm.opens_at),
+            closes_at: toIso(windowForm.closes_at),
+            max_per_period: Number(windowForm.max_per_period) || 0,
+        })
+        toast.success('Ventana de inscripción guardada.')
+        showWindow.value = false
+    })
 }
 
 const showCreate = ref(false)

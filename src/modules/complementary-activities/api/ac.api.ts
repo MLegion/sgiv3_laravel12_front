@@ -43,6 +43,13 @@ const acApi: ApiModule = {
         setInstructor: (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/instructor`),
         setPlace:      (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/place`),
         setInfo:       (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/info`),
+        setRules:      (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/rules`),
+        setEnrollment: (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/enrollment`),
+        enrollmentWindow: apiUrl('/complementary-activities/enrollment-window'),
+        // Portal del alumno
+        myActivities: apiUrl('/complementary-activities/me/activities'),
+        selfEnroll:   (id: string | number) => apiUrl(`/complementary-activities/me/activities/${id}/enroll`),
+        selfDrop:     (id: string | number) => apiUrl(`/complementary-activities/me/activities/${id}/drop`),
         occupancy:     (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/occupancy`),
         attendees:  (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/attendees`),
         attendee:   (id: string | number, studentId: string | number) =>

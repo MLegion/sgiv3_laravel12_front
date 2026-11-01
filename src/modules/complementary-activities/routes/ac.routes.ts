@@ -36,6 +36,12 @@ export default [
         meta: { title: 'Mis cursos MOOC' },
     },
     {
+        path: 'complementary-activities/my-activities',
+        name: 'ac.my-activities',
+        component: () => import('@/modules/complementary-activities/pages/MyAcActivitiesPage.vue'),
+        meta: { title: 'Actividades disponibles' },
+    },
+    {
         path: 'complementary-activities/:id',
         name: 'ac.activity-detail',
         component: () => import('@/modules/complementary-activities/pages/ActivityDetailPage.vue'),
