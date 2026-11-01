@@ -74,11 +74,9 @@ const tutoringApi: ApiModule = {
             reject:       (id: string | number) => apiUrl(`/tutoring/determination/proposals/${id}/reject`),
             confirm:      (id: string | number) => apiUrl(`/tutoring/determination/proposals/${id}/confirm`),
             window:       apiUrl('/tutoring/determination/window'),
-            groupSubject: apiUrl('/tutoring/determination/group-subject'),
             limits:       apiUrl('/tutoring/determination/limits'),
             catalog:      apiUrl('/tutoring/determination/catalog'),
             groups:       apiUrl('/tutoring/determination/groups'),
-            generateGroup: apiUrl('/tutoring/determination/generate-group'),
             followupSchedule: apiUrl('/tutoring/determination/followup-schedule'),
         },
 
