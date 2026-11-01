@@ -77,32 +77,38 @@
             <hr class="border-slate-100" />
 
             <h3 class="text-xs font-bold uppercase text-slate-400">Restricciones de elegibilidad (opcionales)</h3>
-            <div class="grid sm:grid-cols-3 gap-3">
+            <div class="grid sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Carrera</label>
-                    <select v-model="rules.career_id" class="w-full rounded-lg border-slate-300 text-sm">
-                        <option :value="null">Cualquiera</option>
-                        <option v-for="c in careerOptions" :key="c.id" :value="c.id">{{ c.name }}</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Género</label>
-                    <select v-model="rules.gender" class="w-full rounded-lg border-slate-300 text-sm">
-                        <option :value="null">Cualquiera</option>
-                        <option value="M">Masculino</option>
-                        <option value="F">Femenino</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Semestres permitidos</label>
-                    <div class="flex flex-wrap gap-1">
-                        <button v-for="n in 12" :key="n" type="button" @click="toggleSemester(n)"
-                            class="w-7 h-7 rounded text-xs font-semibold border"
-                            :class="rules.semesters.includes(n) ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-slate-500 border-slate-300'">
-                            {{ n }}
-                        </button>
+                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Ofertas permitidas (carrera · modalidad · campus)</label>
+                    <div v-if="offers.length" class="border border-slate-200 rounded-lg max-h-44 overflow-y-auto divide-y divide-slate-100">
+                        <label v-for="o in offers" :key="o.id" class="flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" :value="o.id" v-model="rules.offer_ids" class="rounded border-slate-300 text-emerald-600" />
+                            <span>{{ o.label }}</span>
+                        </label>
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Vacío = cualquier semestre.</p>
+                    <p v-else class="text-[11px] text-slate-400">No hay ofertas en el plantel.</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Vacío = cualquier oferta. La oferta ya incluye campus y modalidad.</p>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Género</label>
+                        <select v-model="rules.gender" class="w-full rounded-lg border-slate-300 text-sm">
+                            <option :value="null">Cualquiera</option>
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Semestres permitidos</label>
+                        <div class="flex flex-wrap gap-1">
+                            <button v-for="n in 12" :key="n" type="button" @click="toggleSemester(n)"
+                                class="w-7 h-7 rounded text-xs font-semibold border"
+                                :class="rules.semesters.includes(n) ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-slate-500 border-slate-300'">
+                                {{ n }}
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Vacío = cualquier semestre.</p>
+                    </div>
                 </div>
             </div>
             <button @click="saveRules" :disabled="savingRules" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-semibold disabled:opacity-50">Guardar restricciones</button>
@@ -125,10 +131,10 @@
             </div>
         </section>
 
-        <!-- Lugar por defecto (aula o etiqueta libre) para el horario -->
+        <!-- Lugar por defecto para el horario (se elige de los lugares registrados) -->
         <section v-if="activity.status !== 'closed'" class="rounded-xl border bg-white p-4 space-y-2">
             <h2 class="text-sm font-bold uppercase text-slate-500">Lugar por defecto</h2>
-            <p class="text-[11px] text-slate-400">Aula (o un lugar libre, no salón) que se usa por defecto al armar el horario de la actividad.</p>
+            <p class="text-[11px] text-slate-400">Lugar que se usa por defecto al armar el horario de la actividad. Se elige de los lugares registrados del plantel.</p>
             <div class="max-w-md">
                 <FormRemoteSelect
                     v-model="placeModel"
@@ -137,12 +143,8 @@
                     item-value="id"
                     :item-label="placeLabel"
                     :item-searchs="['name']"
-                    placeholder="Ver listado o buscar aula…"
+                    placeholder="Ver listado o buscar lugar…"
                     @update:model-value="assignPlace" />
-            </div>
-            <div class="max-w-md flex items-center gap-2">
-                <input v-model="locationLabelInput" class="flex-1 rounded-lg border-slate-300 text-sm" placeholder="…o escribe un lugar (no salón)" />
-                <button @click="assignLocationLabel" :disabled="!locationLabelInput" class="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-semibold disabled:opacity-50">Usar</button>
             </div>
         </section>
 
@@ -286,19 +288,11 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
 }
 
 // ── Inscripción (estado + ventana) y restricciones ───────────────────────
-const careers = ref<any[]>([])
+const offers = ref<any[]>([]) // ofertas del plantel (carrera · modalidad · campus)
 const enroll = reactive<{ status: string; opens_at: string | null; closes_at: string | null }>({ status: 'draft', opens_at: null, closes_at: null })
-const rules = reactive<{ career_id: number | null; gender: string | null; semesters: number[] }>({ career_id: null, gender: null, semesters: [] })
+const rules = reactive<{ offer_ids: number[]; gender: string | null; semesters: number[] }>({ offer_ids: [], gender: null, semesters: [] })
 const savingEnroll = ref(false)
 const savingRules = ref(false)
-// Incluye la carrera ya fijada aunque el catálogo del plantel no la liste.
-const careerOptions = computed(() => {
-    const list = [...careers.value]
-    if (rules.career_id && !list.some((c: any) => c.id === rules.career_id)) {
-        list.unshift({ id: rules.career_id, name: activity.value?.rule_career_name ?? `Carrera #${rules.career_id}` })
-    }
-    return list
-})
 const toIso = (v: string | null) => (v ? v.replace('T', ' ') + ':00' : null)
 function toggleSemester(n: number) {
     const i = rules.semesters.indexOf(n)
@@ -316,7 +310,7 @@ async function saveEnrollment() {
 async function saveRules() {
     savingRules.value = true
     try {
-        await api.put(AC.setRules(props.id), { career_id: rules.career_id, gender: rules.gender, semesters: rules.semesters })
+        await api.put(AC.setRules(props.id), { offer_ids: rules.offer_ids, gender: rules.gender, semesters: rules.semesters })
         toast.success('Restricciones guardadas.')
         await load()
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo guardar.') }
@@ -392,21 +386,12 @@ async function assignInstructor(userId: number | null) {
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo asignar el instructor.') }
 }
 
-const locationLabelInput = ref('')
 const placeLabel = (p: any) => p.building_name ? `${p.name} · ${p.building_name}` : p.name
 async function assignPlace(placeId: number | null) {
     if (placeId === (activity.value?.place_id ?? null)) return
     try {
         await api.put(AC.setPlace(props.id), { place_id: placeId })
         toast.success(placeId ? 'Lugar asignado.' : 'Lugar quitado.')
-        await load()
-    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo asignar el lugar.') }
-}
-async function assignLocationLabel() {
-    if (!locationLabelInput.value) return
-    try {
-        await api.put(AC.setPlace(props.id), { location_label: locationLabelInput.value })
-        toast.success('Lugar asignado.')
         await load()
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo asignar el lugar.') }
 }
@@ -463,7 +448,6 @@ async function load() {
     // El RemoteSelect refleja el valor ACTUAL (lo muestra adentro).
     instructorModel.value = data.instructor_user_id ?? null
     placeModel.value = data.place_id ?? null
-    locationLabelInput.value = data.place_id ? '' : (data.location_label ?? '')
     info.name = data.name ?? ''
     info.credits = data.credits ?? 0
     info.capacity = data.capacity ?? null
@@ -473,11 +457,11 @@ async function load() {
     enroll.status = data.status ?? 'draft'
     enroll.opens_at = toLocal(data.enrollment_opens_at)
     enroll.closes_at = toLocal(data.enrollment_closes_at)
-    rules.career_id = data.rule_career_id ?? null
+    rules.offer_ids = Array.isArray(data.rule_offer_ids) ? data.rule_offer_ids.map(Number) : []
     rules.gender = data.rule_gender ?? null
     rules.semesters = Array.isArray(data.rule_semesters) ? data.rule_semesters.map(Number) : []
-    if (!careers.value.length) {
-        try { const r = await api.get(AC.catalog); careers.value = r.data?.careers ?? [] } catch { /* noop */ }
+    if (!offers.value.length) {
+        try { const r = await api.get(AC.academicOffers); offers.value = r.data ?? [] } catch { /* noop */ }
     }
     loadOccupancy()
     attendees.value = (data.attendees ?? []).filter((a: any) => a.status !== 'dropped')

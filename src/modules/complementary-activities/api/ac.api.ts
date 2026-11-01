@@ -44,6 +44,7 @@ const acApi: ApiModule = {
         setPlace:      (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/place`),
         setInfo:       (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/info`),
         setRules:      (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/rules`),
+        academicOffers: apiUrl('/complementary-activities/academic-offers'),
         setEnrollment: (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/enrollment`),
         enrollmentWindow: apiUrl('/complementary-activities/enrollment-window'),
         // Portal del alumno
