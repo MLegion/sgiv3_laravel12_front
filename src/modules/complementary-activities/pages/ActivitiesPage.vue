@@ -78,7 +78,8 @@
         <div v-if="showWindow" class="fixed inset-0 bg-black/30 flex items-center justify-center z-20 p-4" @click.self="showWindow = false">
             <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-5 space-y-3">
                 <h2 class="text-sm font-bold uppercase text-slate-500">Ventana general de inscripción</h2>
-                <p class="text-[11px] text-slate-400">Aplica a TODAS las actividades del periodo (una actividad puede tener su propia ventana que pisa ésta).</p>
+                <p class="text-[11px] text-slate-500">Periodo: <strong>{{ selectedPeriodName }}</strong></p>
+                <p class="text-[11px] text-slate-400">Aplica a TODAS las actividades de ESTE periodo (el seleccionado arriba). Una actividad puede fijar su propia ventana que pisa ésta.</p>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] uppercase text-slate-400 mb-1">Abre</label>
@@ -249,6 +250,7 @@ function onFilterChange() {
 }
 
 // ── Ventana GENERAL de inscripción (por periodo) ─────────────────────────────
+const selectedPeriodName = computed(() => periods.value.find((p: any) => String(p.id) === String(periodId.value))?.name ?? '—')
 const showWindow = ref(false)
 const windowForm = reactive<{ opens_at: string | null; closes_at: string | null; max_per_period: number }>({ opens_at: null, closes_at: null, max_per_period: 3 })
 const toLocal = (v: any) => (v ? String(v).replace(' ', 'T').substring(0, 16) : null)

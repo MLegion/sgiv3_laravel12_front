@@ -38,9 +38,9 @@
                         <div v-for="(o, oi) in occupancyAt(c.v, slot)" :key="'o' + oi"
                             class="rounded-sm px-1 py-0.5 mb-0.5 border-l-2 pointer-events-none overflow-hidden"
                             :class="dimClass(o.dimension)"
-                            :title="`${dimLabel(o.dimension)}: ${o.label} (${sourceLabel(o.source)})`">
+                            :title="`${dimsLabel(o)}: ${o.label} (${sourceLabel(o.source)})`">
                             <p class="text-[9px] font-semibold leading-tight truncate">{{ o.label }}</p>
-                            <p class="text-[8px] opacity-70 truncate">{{ dimLabel(o.dimension) }}</p>
+                            <p class="text-[8px] opacity-70 truncate">{{ dimsLabel(o) }}</p>
                         </div>
 
                         <!-- Bloque colocado de la actividad (arrastrable dentro del horario) -->
@@ -68,7 +68,7 @@
 import { ref, computed } from 'vue'
 
 interface Col { v: number; label: string }
-interface Block { day_of_week: number; start_time: string; end_time: string; label?: string; sublabel?: string; source?: string; dimension?: string; _conflict?: string | null }
+interface Block { day_of_week: number; start_time: string; end_time: string; label?: string; sublabel?: string; source?: string; dimension?: string; dimensions?: string[]; _conflict?: string | null }
 
 const props = withDefaults(defineProps<{
     columns: Col[]
@@ -125,6 +125,11 @@ const sourceLabel = (s?: string) => (s ? (SOURCE_LABELS[s] ?? s) : '')
 
 const DIM_LABELS: Record<string, string> = { teacher: 'Docente', place: 'Aula', group: 'Grupo' }
 const dimLabel = (d?: string) => (d ? (DIM_LABELS[d] ?? d) : '')
+// Etiqueta de dimensiones fusionadas (ej. "Aula · Grupo") si la clase ocupa varias.
+const dimsLabel = (o: any) => {
+    const ds: string[] = Array.isArray(o?.dimensions) && o.dimensions.length ? o.dimensions : [o?.dimension]
+    return ds.map((d: string) => dimLabel(d)).join(' · ')
+}
 const DIM_CLASS: Record<string, string> = {
     teacher: 'bg-sky-100/80 border-sky-400 text-sky-700',
     place: 'bg-slate-200/70 border-slate-400 text-slate-600',
