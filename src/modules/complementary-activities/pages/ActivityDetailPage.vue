@@ -204,7 +204,7 @@
             <div class="flex items-center justify-between flex-wrap gap-2">
                 <div>
                     <h2 class="text-sm font-bold uppercase text-slate-500">Horario</h2>
-                    <p class="text-[11px] text-slate-400">Como el horario de docencia: cada sesión dura <strong>1 hora</strong> (unidad mínima). Arma las horas semanales colocando varias sesiones. El choque de aula/clase se avisa (no bloquea). Lugar por defecto: {{ activity.place_name ?? activity.location_label ?? '—' }}.</p>
+                    <p class="text-[11px] text-slate-400">La rejilla muestra el <strong>horario del grupo</strong> (cuándo los alumnos ya tienen clase). Cada sesión dura <strong>1 hora</strong>; arrástrala a un día/hora libre. Cada sesión usa el aula por defecto (<strong>{{ activity.place_name ?? '—' }}</strong>); si esa aula está ocupada, elige otra libre en la lista de bloques. Si el aula está ocupada NO se guarda.</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <span v-if="info.weekly_hours" class="text-[11px] font-semibold"
@@ -234,7 +234,7 @@
                 </summary>
                 <table v-if="blocks.length" class="w-full text-sm mt-2">
                     <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                        <th class="px-2 py-1">Día</th><th class="px-2 py-1">Inicio</th><th class="px-2 py-1">Fin</th><th class="px-2 py-1">Aviso</th><th></th>
+                        <th class="px-2 py-1">Día</th><th class="px-2 py-1">Inicio</th><th class="px-2 py-1">Fin</th><th class="px-2 py-1">Aula</th><th class="px-2 py-1">Aviso</th><th></th>
                     </tr></thead>
                     <tbody>
                         <tr v-for="(b, i) in blocks" :key="i" class="border-b last:border-0">
@@ -246,7 +246,17 @@
                             <td class="px-2 py-1"><input v-model="b.start_time" @change="checkBlock(i)" type="time" class="rounded-lg border-slate-300 text-sm" /></td>
                             <td class="px-2 py-1"><input v-model="b.end_time" @change="checkBlock(i)" type="time" class="rounded-lg border-slate-300 text-sm" /></td>
                             <td class="px-2 py-1">
-                                <span v-if="b._conflict" class="text-[11px] text-amber-600" :title="b._conflict">⚠ choque</span>
+                                <select v-model.number="b.place_id" @focus="loadBlockPlaces(i)" @change="checkBlock(i)"
+                                    class="rounded-lg border-slate-300 text-sm" :class="b._roomError ? 'border-rose-400 text-rose-600' : ''">
+                                    <option :value="null">Por defecto ({{ activity.place_name ?? '—' }})</option>
+                                    <option v-for="p in (b._places ?? [])" :key="p.id" :value="p.id" :disabled="!p.free">
+                                        {{ p.name }}{{ p.free ? '' : ' — ocupada' }}
+                                    </option>
+                                </select>
+                            </td>
+                            <td class="px-2 py-1">
+                                <span v-if="b._roomError" class="text-[11px] text-rose-600" title="Aula ocupada">⛔ aula</span>
+                                <span v-else-if="b._conflict" class="text-[11px] text-amber-600" :title="b._conflict">⚠ {{ b._conflict }}</span>
                                 <span v-else class="text-[11px] text-slate-300">—</span>
                             </td>
                             <td class="text-right"><button @click="removeBlock(i)" class="text-xs text-slate-400 hover:text-rose-500">quitar</button></td>
@@ -373,8 +383,19 @@ const placedHours = computed(() => blocks.value.reduce((sum, b: any) => {
     return sum + Math.max(0, (toMin(b.end_time) - toMin(b.start_time)) / 60)
 }, 0))
 function onPlace(b: { day_of_week: number; start_time: string; end_time: string }) {
-    blocks.value.push({ ...b, _conflict: null })
+    blocks.value.push({ ...b, place_id: null, _conflict: null, _roomError: false, _places: [] })
     checkBlock(blocks.value.length - 1)
+}
+// Aulas de la carrera LIBRES en el slot del bloque (como el editor de horarios).
+async function loadBlockPlaces(i: number) {
+    const b = blocks.value[i]
+    if (!b?.day_of_week || !b.start_time || !b.end_time) return
+    try {
+        const { data } = await api.post(AC.availablePlaces(props.id), {
+            day_of_week: b.day_of_week, start_time: b.start_time, end_time: b.end_time,
+        })
+        b._places = data ?? []
+    } catch { b._places = [] }
 }
 // Re-arrastrar un bloque ya colocado dentro del horario (solo en esta interfaz AC).
 function onMove(m: { index: number; day_of_week: number; start_time: string; end_time: string }) {
@@ -423,11 +444,12 @@ async function checkBlock(i: number) {
     if (!b.day_of_week || !b.start_time || !b.end_time) return
     try {
         const { data } = await api.post(AC.scheduleConflicts(props.id), {
-            day_of_week: b.day_of_week, start_time: b.start_time, end_time: b.end_time,
+            place_id: b.place_id ?? null, day_of_week: b.day_of_week, start_time: b.start_time, end_time: b.end_time,
         })
-        const parts: string[] = []
+        // Aula ocupada = ERROR duro (no se podrá guardar); lo demás = aviso.
         const aula = Object.values(data.conflicts ?? {}).flat().map((c: any) => c.label).filter(Boolean)
-        if (aula.length) parts.push('Aula: ' + aula.join(', '))
+        b._roomError = aula.length > 0
+        const parts: string[] = []
         const gclass = (data.group_class ?? []).map((c: any) => c.subject).filter(Boolean)
         if (gclass.length) parts.push('Clase del grupo: ' + gclass.join(', '))
         const sclass = data.students_class ?? []
@@ -435,7 +457,7 @@ async function checkBlock(i: number) {
         const tbusy = (data.teacher_busy ?? []).map((c: any) => c.label).filter(Boolean)
         if (tbusy.length) parts.push('Docente: ' + tbusy.join(', '))
         b._conflict = parts.length ? parts.join(' · ') : null
-    } catch { b._conflict = null }
+    } catch { b._conflict = null; b._roomError = false }
 }
 
 async function saveSchedule() {
@@ -443,13 +465,19 @@ async function saveSchedule() {
     try {
         await api.put(AC.schedules(props.id), {
             blocks: blocks.value.map(b => ({
-                day_of_week: b.day_of_week, date: null, start_time: b.start_time, end_time: b.end_time,
+                place_id: b.place_id ?? null, day_of_week: b.day_of_week, date: null, start_time: b.start_time, end_time: b.end_time,
             })),
         })
         toast.success('Horario guardado.')
         await load()
-    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo guardar el horario.') }
-    finally { savingSchedule.value = false }
+    } catch (e: any) {
+        const d = e?.response?.data
+        if (e?.response?.status === 422 && Array.isArray(d?.room_errors)) {
+            toast.error(d.room_errors.join(' · '))
+        } else {
+            toast.error(d?.message ?? 'No se pudo guardar el horario.')
+        }
+    } finally { savingSchedule.value = false }
 }
 
 function statusLabel(s: string): string {
@@ -483,12 +511,19 @@ async function load() {
     attendees.value = (data.attendees ?? []).filter((a: any) => a.status !== 'dropped')
     blocks.value = (data.schedules ?? [])
         .filter((s: any) => s.day_of_week !== null)
-        .map((s: any) => ({
-            day_of_week: Number(s.day_of_week),
-            start_time: String(s.start_time).substring(0, 5),
-            end_time: String(s.end_time).substring(0, 5),
-            _conflict: null,
-        }))
+        .map((s: any) => {
+            // place_id null = usa el aula por defecto; distinto = aula específica.
+            const custom = s.place_id && s.place_id !== data.place_id
+            return {
+                day_of_week: Number(s.day_of_week),
+                start_time: String(s.start_time).substring(0, 5),
+                end_time: String(s.end_time).substring(0, 5),
+                place_id: custom ? Number(s.place_id) : null,
+                _places: custom ? [{ id: Number(s.place_id), name: s.place_name, free: true }] : [],
+                _conflict: null,
+                _roomError: false,
+            }
+        })
 }
 function searchStudents() {
     clearTimeout(studentTimer)
