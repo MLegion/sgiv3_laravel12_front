@@ -2037,7 +2037,7 @@ function complementaryPlaceShort(c: ComplementarySchedule): string {
 // Bloques superpuestos (tutoría grupal) visibles al filtrar por grupo. Solo
 // se dibujan los recurrentes que casan con la columna actual (día o fecha).
 const visibleGroupComplementary = computed<ComplementaryBlock[]>(() => {
-    if (filterType.value !== 'group' || !filterValue.value) return []
+    if (!filterValue.value || (filterType.value !== 'group' && filterType.value !== 'teacher')) return []
     return groupComplementaryBlocks.value
 })
 
@@ -2235,14 +2235,13 @@ watch(
 // Bloques de solo lectura (tutoría grupal) del grupo seleccionado. El endpoint
 // 404 si el módulo de Actividades Complementarias está apagado → se ignora.
 async function loadGroupComplementaryBlocks() {
-    if (filterType.value !== 'group' || !filterValue.value) {
-        groupComplementaryBlocks.value = []
-        return
-    }
+    const params: Record<string, number> = {}
+    if (filterType.value === 'group' && filterValue.value) params.group_id = filterValue.value
+    else if (filterType.value === 'teacher' && filterValue.value) params.teacher_id = filterValue.value
+    else { groupComplementaryBlocks.value = []; return }
     try {
-        const { data } = await api.get(API.SCHEDULES_API.academic.complementaryBlocks, {
-            params: { group_id: filterValue.value },
-        })
+        // 404 = módulo de Actividades Complementarias apagado → se ignora.
+        const { data } = await api.get(API.SCHEDULES_API.academic.complementaryBlocks, { params })
         groupComplementaryBlocks.value = Array.isArray(data) ? data : []
     } catch {
         groupComplementaryBlocks.value = []

@@ -40,6 +40,8 @@ const acApi: ApiModule = {
         close:      (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/close`),
         setInstructor: (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/instructor`),
         setPlace:      (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/place`),
+        setInfo:       (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/info`),
+        occupancy:     (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/occupancy`),
         attendees:  (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/attendees`),
         attendee:   (id: string | number, studentId: string | number) =>
             apiUrl(`/complementary-activities/activities/${id}/attendees/${studentId}`),
