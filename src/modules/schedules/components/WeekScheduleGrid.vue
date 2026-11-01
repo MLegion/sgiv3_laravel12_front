@@ -1,69 +1,71 @@
 <template>
-    <div class="space-y-3">
-        <!-- Recuadro arrastrable (opcional): su alto = sus horas -->
-        <div v-if="palette" class="flex items-center gap-3">
-            <div
-                draggable="true"
-                @dragstart="onPaletteDragStart"
-                @dragend="dragging = false"
-                :style="`height: ${(palette.hours || 1) * hourHeight}px`"
-                class="w-36 shrink-0 rounded-md bg-emerald-500 text-white p-2 cursor-grab active:cursor-grabbing shadow select-none flex flex-col justify-center">
-                <p class="text-[11px] font-bold leading-tight truncate">{{ palette.label }}</p>
-                <p class="text-[10px] opacity-90">{{ palette.hours || 1 }} h · arrastra →</p>
-            </div>
-            <p class="text-[11px] text-slate-400">Arrastra el recuadro a un día y hora. En gris se ve lo ocupado (aula/docente): si lo sueltas encima, se avisa el choque.</p>
-        </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-[760px] w-full border-collapse select-none">
+            <thead>
+                <tr class="bg-slate-50">
+                    <th class="border border-slate-300 px-2 py-2 text-[11px] font-black uppercase text-slate-500 w-40">Asign. / H. Desc.</th>
+                    <th class="border border-slate-300 px-2 py-2 text-[11px] font-black uppercase text-slate-500 w-24">Días / Horas</th>
+                    <th v-for="c in columns" :key="c.v" class="border border-slate-300 px-2 py-2 text-[11px] font-black uppercase text-slate-500">{{ c.label }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(slot, ri) in hourSlots" :key="slot.start">
+                    <!-- Columna 1: la actividad complementaria arrastrable (ocupa todas las filas) -->
+                    <td v-if="ri === 0" :rowspan="hourSlots.length" class="border border-slate-300 align-top p-2 bg-white">
+                        <div v-if="palette"
+                            draggable="true"
+                            @dragstart="onPaletteDragStart"
+                            @dragend="dragging = false"
+                            class="rounded-md bg-emerald-500 text-white p-2 cursor-grab active:cursor-grabbing shadow select-none">
+                            <p class="text-[11px] font-bold leading-tight">{{ palette.label }}</p>
+                            <p class="text-[10px] opacity-90">{{ palette.hours || 1 }} h · arrastra →</p>
+                        </div>
+                        <p v-else class="text-[11px] text-slate-300 text-center mt-2">SIN ASIGNACIONES</p>
+                    </td>
 
-        <div class="overflow-x-auto">
-            <div class="min-w-[680px]">
-                <!-- Encabezado de días -->
-                <div class="grid" :style="gridCols">
-                    <div></div>
-                    <div v-for="c in columns" :key="c.v" class="text-center text-[10px] font-black uppercase text-slate-500 py-1 border-b border-slate-200">{{ c.label }}</div>
-                </div>
-                <!-- Cuerpo -->
-                <div class="grid" :style="gridCols">
-                    <!-- Gutter de horas -->
-                    <div class="relative" :style="gridBodyStyle">
-                        <div v-for="h in gridHours" :key="h" class="absolute right-1 text-[9px] text-slate-400" :style="hourLabelStyle(h)">{{ h }}:00</div>
-                    </div>
+                    <!-- Columna 2: rango horario de la fila -->
+                    <td class="border border-slate-300 px-1 py-1 text-center text-[10px] font-semibold text-slate-500 whitespace-nowrap">
+                        {{ slot.label }}
+                    </td>
+
                     <!-- Columnas por día -->
-                    <div v-for="c in columns" :key="c.v"
-                        class="relative border-l border-slate-100"
-                        :class="dragging ? 'bg-emerald-50/60' : ''"
-                        :style="gridBodyStyle"
-                        @dragover.prevent @drop="onDrop(c.v, $event)">
-                        <div v-for="h in gridHours" :key="h" class="absolute left-0 right-0 border-t border-slate-100" :style="hourLineStyle(h)"></div>
+                    <td v-for="c in columns" :key="c.v"
+                        class="border border-slate-300 p-0.5 align-top h-14 relative"
+                        :class="dragging ? 'bg-emerald-50/50' : ''"
+                        @dragover.prevent @drop="onDrop(c.v, slot, $event)">
 
-                        <!-- Ocupación (read-only): aula/docente/grupo según la dimensión -->
-                        <div v-for="(o, oi) in occupancyForDay(c.v)" :key="'o' + oi"
-                            class="absolute left-0 right-0 px-1 overflow-hidden pointer-events-none border-l-2"
+                        <!-- Ocupación (read-only): aula/docente/grupo según dimensión -->
+                        <div v-for="(o, oi) in occupancyAt(c.v, slot)" :key="'o' + oi"
+                            class="rounded-sm px-1 py-0.5 mb-0.5 border-l-2 pointer-events-none overflow-hidden"
                             :class="dimClass(o.dimension)"
-                            :style="blockStyle(o)"
                             :title="`${dimLabel(o.dimension)}: ${o.label} (${sourceLabel(o.source)})`">
                             <p class="text-[9px] font-semibold leading-tight truncate">{{ o.label }}</p>
-                            <p class="text-[8px] opacity-70 truncate">{{ dimLabel(o.dimension) }} · {{ sourceLabel(o.source) }}</p>
+                            <p class="text-[8px] opacity-70 truncate">{{ dimLabel(o.dimension) }}</p>
                         </div>
 
-                        <!-- Bloques colocados de la actividad -->
-                        <div v-for="b in placedForDay(c.v)" :key="'b' + b.i"
-                            class="absolute left-0.5 right-0.5 rounded-md bg-emerald-100 border p-1 overflow-hidden z-10"
-                            :class="b._conflict ? 'border-amber-400' : 'border-emerald-400'"
-                            :style="blockStyle(b)">
+                        <!-- Bloque colocado de la actividad (arrastrable dentro del horario) -->
+                        <div v-for="b in placedAt(c.v, slot)" :key="'b' + b.i"
+                            :draggable="editable"
+                            @dragstart="onBlockDragStart(b.i, $event)"
+                            @dragend="dragging = false"
+                            class="rounded-md bg-emerald-100 border p-1 overflow-hidden"
+                            :class="[b._conflict ? 'border-amber-400' : 'border-emerald-500', editable ? 'cursor-grab active:cursor-grabbing' : '']">
                             <p class="text-[10px] font-bold text-emerald-800 leading-tight">{{ b.start_time }}–{{ b.end_time }}</p>
-                            <p class="text-[9px] text-emerald-700 truncate">{{ b.sublabel ?? '' }}</p>
-                            <span v-if="b._conflict" class="text-[9px] text-amber-700" :title="b._conflict">⚠ choque</span>
-                            <button v-if="editable" @click="$emit('remove', b.i)" class="absolute top-0.5 right-1 text-[11px] text-rose-400 hover:text-rose-600 leading-none">×</button>
+                            <p v-if="b.sublabel" class="text-[9px] text-emerald-700 truncate">{{ b.sublabel }}</p>
+                            <div class="flex items-center justify-between">
+                                <span v-if="b._conflict" class="text-[9px] text-amber-700" :title="b._conflict">⚠ choque</span><span v-else></span>
+                                <button v-if="editable" @click="$emit('remove', b.i)" class="text-[12px] text-rose-400 hover:text-rose-600 leading-none">×</button>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 interface Col { v: number; label: string }
 interface Block { day_of_week: number; start_time: string; end_time: string; label?: string; sublabel?: string; source?: string; dimension?: string; _conflict?: string | null }
@@ -75,47 +77,52 @@ const props = withDefaults(defineProps<{
     palette?: { label: string; hours: number } | null
     startHour?: number
     endHour?: number
-    hourHeight?: number
     editable?: boolean
-    snapMinutes?: number
 }>(), {
     occupancy: () => [],
     palette: null,
     startHour: 7,
     endHour: 21,
-    hourHeight: 40,
     editable: true,
-    snapMinutes: 30,
 })
 
-const emit = defineEmits<{ place: [{ day_of_week: number; start_time: string; end_time: string }]; remove: [number] }>()
+const emit = defineEmits<{
+    place: [{ day_of_week: number; start_time: string; end_time: string }]
+    move: [{ index: number; day_of_week: number; start_time: string; end_time: string }]
+    remove: [number]
+}>()
 
-const hourHeight = props.hourHeight
-const gridHours = Array.from({ length: props.endHour - props.startHour + 1 }, (_, i) => props.startHour + i)
-const gridCols = `grid-template-columns: 48px repeat(${props.columns.length}, minmax(110px, 1fr))`
-const gridBodyStyle = `position: relative; height: ${(props.endHour - props.startHour) * hourHeight}px`
-const hourLineStyle = (h: number) => `top: ${(h - props.startHour) * hourHeight}px`
-const hourLabelStyle = (h: number) => `top: ${(h - props.startHour) * hourHeight - 5}px`
+// Una fila por hora (unidad mínima del horario): 07:00-08:00, 08:00-09:00, …
+const pad = (n: number) => String(n).padStart(2, '0')
+const hourSlots = computed(() =>
+    Array.from({ length: props.endHour - props.startHour }, (_, i) => {
+        const h = props.startHour + i
+        return { start: h, startTime: `${pad(h)}:00`, label: `${pad(h)}:00 - ${pad(h + 1)}:00` }
+    }),
+)
 
 function parseTime(t: string): number { const [h, m] = String(t || '0:0').split(':').map(Number); return (h || 0) * 60 + (m || 0) }
-function fmtMin(min: number): string { const h = Math.floor(min / 60), m = min % 60; return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}` }
-function blockStyle(b: Block) {
-    const top = ((parseTime(b.start_time) - props.startHour * 60) / 60) * hourHeight
-    const height = Math.max(((parseTime(b.end_time) - parseTime(b.start_time)) / 60) * hourHeight, 14)
-    return `top: ${top}px; height: ${height}px`
+function fmtMin(min: number): string { return `${pad(Math.floor(min / 60))}:${pad(min % 60)}` }
+
+// Ocupación que cae en esta celda (día + hora): se solapa con [slot, slot+1h).
+function occupancyAt(dayV: number, slot: { start: number }) {
+    const s = slot.start * 60, e = s + 60
+    return props.occupancy.filter(o => o.day_of_week === dayV && o.start_time && o.end_time
+        && parseTime(o.start_time) < e && parseTime(o.end_time) > s)
 }
-function occupancyForDay(v: number) { return props.occupancy.filter(o => o.day_of_week === v && o.start_time && o.end_time) }
-function placedForDay(v: number) {
-    return props.placed.map((b: any, i: number) => ({ ...b, i })).filter((b: any) => b.day_of_week === v && b.start_time && b.end_time)
+// Bloque colocado cuyo INICIO cae en esta celda.
+function placedAt(dayV: number, slot: { start: number }) {
+    const s = slot.start * 60, e = s + 60
+    return props.placed.map((b: any, i: number) => ({ ...b, i }))
+        .filter((b: any) => b.day_of_week === dayV && b.start_time && parseTime(b.start_time) >= s && parseTime(b.start_time) < e)
 }
 
 const SOURCE_LABELS: Record<string, string> = {
-    academic_schedule: 'Clase', complementary_schedule: 'Descarga',
-    complementary_activity: 'Act. complementaria', exam_session: 'Examen', titulacion_act: 'Titulación',
+    academic_schedule: 'Clase', academic_class: 'Clase', complementary_schedule: 'Descarga', discharge: 'Descarga',
+    complementary_activity: 'Act. complementaria', exam_session: 'Examen', titulacion_act: 'Titulación', group_tutoring: 'Tutoría',
 }
 const sourceLabel = (s?: string) => (s ? (SOURCE_LABELS[s] ?? s) : '')
 
-// Dimensión de la ocupación: por qué está ocupado ese espacio (docente/aula/grupo).
 const DIM_LABELS: Record<string, string> = { teacher: 'Docente', place: 'Aula', group: 'Grupo' }
 const dimLabel = (d?: string) => (d ? (DIM_LABELS[d] ?? d) : '')
 const DIM_CLASS: Record<string, string> = {
@@ -125,22 +132,35 @@ const DIM_CLASS: Record<string, string> = {
 }
 const dimClass = (d?: string) => (d ? (DIM_CLASS[d] ?? DIM_CLASS.place) : DIM_CLASS.place)
 
-// Arrastre del recuadro
+// Arrastre: recuadro nuevo ('new') vs mover uno existente ('move:<index>').
 const dragging = ref(false)
 function onPaletteDragStart(e: DragEvent) {
     dragging.value = true
-    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'copy'
+    if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('text/plain', 'new') }
 }
-function onDrop(dayV: number, e: DragEvent) {
+function onBlockDragStart(i: number, e: DragEvent) {
+    if (!props.editable) return
+    dragging.value = true
+    if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', 'move:' + i) }
+}
+function onDrop(dayV: number, slot: { start: number; startTime: string }, e: DragEvent) {
     e.preventDefault()
     dragging.value = false
+    const token = e.dataTransfer?.getData('text/plain') || 'new'
+    const maxEnd = props.endHour * 60
+
+    if (token.startsWith('move:')) {
+        const i = Number(token.slice(5))
+        const b = props.placed[i]
+        if (!b) return
+        const durMin = Math.max(60, parseTime(b.end_time) - parseTime(b.start_time))
+        const start = Math.min(slot.start * 60, maxEnd - durMin)
+        emit('move', { index: i, day_of_week: dayV, start_time: fmtMin(start), end_time: fmtMin(start + durMin) })
+        return
+    }
     if (!props.palette) return
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    const y = e.clientY - rect.top
     const durMin = (props.palette.hours || 1) * 60
-    const snap = props.snapMinutes || 30
-    let startMin = props.startHour * 60 + Math.round((y / hourHeight * 60) / snap) * snap
-    startMin = Math.max(props.startHour * 60, Math.min(startMin, props.endHour * 60 - durMin))
-    emit('place', { day_of_week: dayV, start_time: fmtMin(startMin), end_time: fmtMin(startMin + durMin) })
+    const start = Math.min(slot.start * 60, maxEnd - durMin)
+    emit('place', { day_of_week: dayV, start_time: fmtMin(start), end_time: fmtMin(start + durMin) })
 }
 </script>

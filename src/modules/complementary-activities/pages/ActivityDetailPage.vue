@@ -141,24 +141,24 @@
                 </div>
             </div>
 
-            <!-- Rejilla reusable (misma que carga académica): recuadro arrastrable (1 h) + ocupación de providers -->
+            <!-- Rejilla reusable: la actividad va en la 1ª columna; arrástrala a un día/hora
+                 (cada sesión = 1 h). Los bloques ya colocados se pueden re-arrastrar. -->
             <WeekScheduleGrid
                 :columns="DAYS_GRID"
                 :placed="blocks"
                 :occupancy="occupancy"
                 :palette="{ label: activity.name, hours: sessionHours }"
-                :snap-minutes="60"
                 editable
                 @place="onPlace"
+                @move="onMove"
                 @remove="removeBlock" />
 
-            <!-- Editor de bloques -->
-            <div class="space-y-2">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-bold uppercase text-slate-400">Bloques</h3>
-                    <button @click="addBlock" class="text-xs text-emerald-600 hover:underline">+ agregar bloque</button>
-                </div>
-                <table v-if="blocks.length" class="w-full text-sm">
+            <!-- Lista de bloques (oculta por defecto; la rejilla es la fuente principal) -->
+            <details class="group">
+                <summary class="cursor-pointer text-xs font-bold uppercase text-slate-400 hover:text-slate-600 select-none">
+                    Ver bloques en lista ({{ blocks.length }})
+                </summary>
+                <table v-if="blocks.length" class="w-full text-sm mt-2">
                     <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
                         <th class="px-2 py-1">Día</th><th class="px-2 py-1">Inicio</th><th class="px-2 py-1">Fin</th><th class="px-2 py-1">Aviso</th><th></th>
                     </tr></thead>
@@ -179,8 +179,8 @@
                         </tr>
                     </tbody>
                 </table>
-                <p v-else class="text-sm text-slate-400">Sin bloques. Agrega el primero.</p>
-            </div>
+                <p v-else class="text-sm text-slate-400 mt-2">Sin bloques. Arrastra la actividad a la rejilla.</p>
+            </details>
         </section>
         </div><!-- /Horario -->
     </div>
@@ -263,6 +263,15 @@ function onPlace(b: { day_of_week: number; start_time: string; end_time: string 
     blocks.value.push({ ...b, _conflict: null })
     checkBlock(blocks.value.length - 1)
 }
+// Re-arrastrar un bloque ya colocado dentro del horario (solo en esta interfaz AC).
+function onMove(m: { index: number; day_of_week: number; start_time: string; end_time: string }) {
+    const b = blocks.value[m.index]
+    if (!b) return
+    b.day_of_week = m.day_of_week
+    b.start_time = m.start_time
+    b.end_time = m.end_time
+    checkBlock(m.index)
+}
 
 // Atados al valor ACTUAL de la actividad: el RemoteSelect muestra la selección
 // adentro (se re-sincronizan en load()).
@@ -303,9 +312,6 @@ const DAYS = [
 const blocks = ref<any[]>([])
 const savingSchedule = ref(false)
 
-function addBlock() {
-    blocks.value.push({ day_of_week: 1, start_time: '07:00', end_time: '08:00', _conflict: null })
-}
 function removeBlock(i: number) { blocks.value.splice(i, 1) }
 
 async function checkBlock(i: number) {
