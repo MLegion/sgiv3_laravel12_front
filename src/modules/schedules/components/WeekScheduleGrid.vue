@@ -77,6 +77,7 @@ const props = withDefaults(defineProps<{
     endHour?: number
     hourHeight?: number
     editable?: boolean
+    snapMinutes?: number
 }>(), {
     occupancy: () => [],
     palette: null,
@@ -84,6 +85,7 @@ const props = withDefaults(defineProps<{
     endHour: 21,
     hourHeight: 40,
     editable: true,
+    snapMinutes: 30,
 })
 
 const emit = defineEmits<{ place: [{ day_of_week: number; start_time: string; end_time: string }]; remove: [number] }>()
@@ -136,7 +138,8 @@ function onDrop(dayV: number, e: DragEvent) {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
     const y = e.clientY - rect.top
     const durMin = (props.palette.hours || 1) * 60
-    let startMin = props.startHour * 60 + Math.round((y / hourHeight * 60) / 30) * 30
+    const snap = props.snapMinutes || 30
+    let startMin = props.startHour * 60 + Math.round((y / hourHeight * 60) / snap) * snap
     startMin = Math.max(props.startHour * 60, Math.min(startMin, props.endHour * 60 - durMin))
     emit('place', { day_of_week: dayV, start_time: fmtMin(startMin), end_time: fmtMin(startMin + durMin) })
 }

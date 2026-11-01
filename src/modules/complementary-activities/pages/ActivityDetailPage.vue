@@ -130,17 +130,24 @@
             <div class="flex items-center justify-between flex-wrap gap-2">
                 <div>
                     <h2 class="text-sm font-bold uppercase text-slate-500">Horario</h2>
-                    <p class="text-[11px] text-slate-400">Como el horario de docencia: día y hora. El choque de aula/clase se avisa (no bloquea). Lugar por defecto: {{ activity.place_name ?? activity.location_label ?? '—' }}.</p>
+                    <p class="text-[11px] text-slate-400">Como el horario de docencia: cada sesión dura <strong>1 hora</strong> (unidad mínima). Arma las horas semanales colocando varias sesiones. El choque de aula/clase se avisa (no bloquea). Lugar por defecto: {{ activity.place_name ?? activity.location_label ?? '—' }}.</p>
                 </div>
-                <button @click="saveSchedule" :disabled="savingSchedule" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar horario</button>
+                <div class="flex items-center gap-3">
+                    <span v-if="info.weekly_hours" class="text-[11px] font-semibold"
+                        :class="placedHours === Number(info.weekly_hours) ? 'text-emerald-600' : 'text-amber-600'">
+                        {{ placedHours }} / {{ info.weekly_hours }} h semanales
+                    </span>
+                    <button @click="saveSchedule" :disabled="savingSchedule" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar horario</button>
+                </div>
             </div>
 
-            <!-- Rejilla reusable (misma que carga académica): recuadro arrastrable + ocupación de providers -->
+            <!-- Rejilla reusable (misma que carga académica): recuadro arrastrable (1 h) + ocupación de providers -->
             <WeekScheduleGrid
                 :columns="DAYS_GRID"
                 :placed="blocks"
                 :occupancy="occupancy"
                 :palette="{ label: activity.name, hours: sessionHours }"
+                :snap-minutes="60"
                 editable
                 @place="onPlace"
                 @remove="removeBlock" />
@@ -244,8 +251,14 @@ async function loadOccupancy() {
         occupancy.value = data?.occupancy ?? []
     } catch { occupancy.value = [] }
 }
-// El recuadro arrastrable mide = las horas semanales (mínimo 1 h).
-const sessionHours = computed(() => Number(info.weekly_hours) > 0 ? Number(info.weekly_hours) : 1)
+// Cada sesión en la semana dura la UNIDAD MÍNIMA del horario = 1 hora. Las horas
+// semanales son el total que se arma colocando varias sesiones de 1 h en la semana.
+const sessionHours = 1
+// Horas ya colocadas (suma de los bloques) vs. la meta de horas semanales.
+const placedHours = computed(() => blocks.value.reduce((sum, b: any) => {
+    const toMin = (t: string) => { const [h, m] = String(t || '0:0').split(':').map(Number); return (h || 0) * 60 + (m || 0) }
+    return sum + Math.max(0, (toMin(b.end_time) - toMin(b.start_time)) / 60)
+}, 0))
 function onPlace(b: { day_of_week: number; start_time: string; end_time: string }) {
     blocks.value.push({ ...b, _conflict: null })
     checkBlock(blocks.value.length - 1)
