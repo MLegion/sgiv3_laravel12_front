@@ -439,21 +439,20 @@ function onAssignRange() {
 }
 async function saveAssign() {
     assign.errors = []
-    // UN solo bloque con el rango completo (como el generador académico).
+    // Valida/guarda SOLO el bloque nuevo (como el generador académico); el backend
+    // lo fusiona con los contiguos. NO reenvía los que ya estaban.
     const startM = assign.startHour * 60
     const endM = assign.endHour * 60
     const toMin = (t: string) => { const [h, m] = String(t).split(':').map(Number); return (h || 0) * 60 + (m || 0) }
     if (blocks.value.some((b: any) => b.day_of_week === assign.day && toMin(b.start_time) < endM && toMin(b.end_time) > startM)) {
         assign.errors = ['Ya hay una sesión en ese rango de horas.']; return
     }
-    const newBlock = { place_id: assign.placeId, day_of_week: assign.day, date: null, start_time: hh(assign.startHour), end_time: hh(assign.endHour) }
-    const all = [
-        ...blocks.value.map((b: any) => ({ place_id: b.place_id ?? null, day_of_week: b.day_of_week, date: null, start_time: b.start_time, end_time: b.end_time })),
-        newBlock,
-    ]
     assign.saving = true
     try {
-        await api.put(AC.schedules(props.id), { blocks: all })
+        await api.post(AC.scheduleBlock(props.id), {
+            place_id: assign.placeId, day_of_week: assign.day, date: null,
+            start_time: hh(assign.startHour), end_time: hh(assign.endHour),
+        })
         toast.success('Horario asignado.')
         assign.show = false
         await load()
@@ -468,9 +467,8 @@ function confirmDelete(i: number) { del.index = i; del.block = blocks.value[i]; 
 async function doDelete() {
     del.saving = true
     try {
-        const remaining = blocks.value.filter((_: any, idx: number) => idx !== del.index)
-            .map((b: any) => ({ place_id: b.place_id ?? null, day_of_week: b.day_of_week, date: null, start_time: b.start_time, end_time: b.end_time }))
-        await api.put(AC.schedules(props.id), { blocks: remaining })
+        // Elimina SOLO ese bloque por su id (no re-valida el resto).
+        await api.delete(AC.scheduleBlockItem(props.id, del.block.id))
         toast.success('Bloque eliminado.')
         del.show = false
         await load()
@@ -543,6 +541,7 @@ async function load() {
             // place_id null = usa el aula por defecto; distinto = aula específica.
             const custom = s.place_id && s.place_id !== data.place_id
             return {
+                id: s.id,
                 day_of_week: Number(s.day_of_week),
                 start_time: String(s.start_time).substring(0, 5),
                 end_time: String(s.end_time).substring(0, 5),

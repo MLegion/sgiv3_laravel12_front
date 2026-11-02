@@ -58,6 +58,8 @@ const acApi: ApiModule = {
         creditAttendee: (id: string | number, studentId: string | number) =>
             apiUrl(`/complementary-activities/activities/${id}/attendees/${studentId}/credit`),
         schedules:         (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/schedules`),
+        scheduleBlock:     (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/schedule-blocks`),
+        scheduleBlockItem: (id: string | number, blockId: string | number) => apiUrl(`/complementary-activities/activities/${id}/schedule-blocks/${blockId}`),
         scheduleConflicts: (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/schedule-conflicts`),
         availablePlaces:   (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/available-places`),
     },
