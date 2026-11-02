@@ -1,37 +1,52 @@
 <template>
-    <div class="space-y-6">
+    <div class="space-y-5">
         <div class="flex items-center justify-between flex-wrap gap-2">
-            <h1 class="text-xl font-semibold text-slate-800 uppercase">Catálogo de actividades</h1>
-            <button @click="openCreate" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold">Nueva entrada</button>
+            <div>
+                <h1 class="text-xl font-semibold text-slate-800 uppercase">Catálogo de actividades</h1>
+                <p class="text-xs text-slate-400">Nombres estandarizados (y créditos sugeridos) para no reescribirlos al crear actividades. Categorías: complementaria, extraescolar y curso MOOC. Las inactivas no aparecen en los selectores.</p>
+            </div>
+            <button @click="openCreate" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold flex items-center gap-2">
+                <PlusIcon class="w-4 h-4" /> Nueva entrada
+            </button>
         </div>
-        <p class="text-xs text-slate-400">Nombres estandarizados (y créditos sugeridos) para no reescribirlos al crear actividades. Categorías: actividad complementaria, actividad extraescolar y curso MOOC. Las inactivas no aparecen en los selectores.</p>
 
         <div class="flex items-center gap-2">
             <label class="text-xs font-semibold text-slate-500">Categoría</label>
-            <select v-model="categoryFilter" @change="load" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="categoryFilter" @change="onFilterChange" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todas</option>
                 <option v-for="c in CATEGORIES" :key="c.value" :value="c.value">{{ c.label }}</option>
             </select>
         </div>
 
-        <section class="rounded-xl border bg-white p-4">
-            <p v-if="!rows.length" class="text-sm text-slate-400">Sin entradas. Crea la primera.</p>
-            <table v-else class="w-full text-sm">
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                    <th class="px-3 py-1">Nombre</th><th>Categoría</th><th>Créditos</th><th>Ámbito</th><th>Activa</th><th></th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="r in rows" :key="r.id" class="border-b last:border-0">
-                        <td class="px-3 py-2 text-slate-700">{{ r.name }}</td>
-                        <td class="text-slate-500">{{ categoryLabel(r.category) }}</td>
-                        <td class="text-slate-600">{{ r.default_credits ?? '—' }}</td>
-                        <td class="text-slate-500">{{ r.is_global ? 'Global' : 'Plantel' }}</td>
-                        <td><span :class="r.is_active ? 'text-emerald-600' : 'text-slate-400'">{{ r.is_active ? 'Sí' : 'No' }}</span></td>
-                        <td class="text-right"><button v-if="!r.is_global" @click="openEdit(r)" class="text-xs text-emerald-600 hover:underline">editar</button><span v-else class="text-[10px] text-slate-300">global</span></td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
+        <DataTable
+            :columns="columns"
+            :rows="rows"
+            :loading="loading"
+            :pagination="pagination"
+            :initial-search="initialSearch"
+            search-placeholder="Buscar por nombre…"
+            @change="handleChange">
+
+            <template #cell-category="{ row }">{{ categoryLabel(row.category) }}</template>
+            <template #cell-default_credits="{ row }">{{ row.default_credits ?? '—' }}</template>
+            <template #cell-scope="{ row }">
+                <span class="text-xs" :class="row.is_global ? 'text-indigo-600' : 'text-slate-500'">{{ row.is_global ? 'Global' : 'Plantel' }}</span>
+            </template>
+            <template #cell-is_active="{ row }">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full" :class="row.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'">
+                    {{ row.is_active ? 'ACTIVA' : 'INACTIVA' }}
+                </span>
+            </template>
+            <template #cell-opciones="{ row }">
+                <div class="flex items-center justify-center gap-2">
+                    <button v-if="!row.is_global" @click="openEdit(row)" aria-label="Editar" title="Editar"
+                        class="border p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition">
+                        <PencilSquareIcon class="w-4 h-4" />
+                    </button>
+                    <span v-else class="text-[10px] text-slate-300">global</span>
+                </div>
+            </template>
+        </DataTable>
 
         <div v-if="showForm" class="fixed inset-0 bg-black/30 flex items-center justify-center z-20 p-4" @click.self="showForm = false">
             <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-5 space-y-3">
@@ -63,10 +78,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed } from 'vue'
+import { PlusIcon, PencilSquareIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const CATEGORIES = [
     { value: 'complementaria', label: 'Actividad complementaria' },
@@ -77,16 +96,26 @@ const categoryLabel = (v: string) => CATEGORIES.find(c => c.value === v)?.label 
 
 const AC = API.AC_API
 const toast = useToast()
-const rows = ref<any[]>([])
 const busy = ref(false)
 const showForm = ref(false)
 const categoryFilter = ref('')
 const form = reactive<any>({ id: null, category: 'complementaria', name: '', default_credits: null, is_active: true })
 
-async function load() {
-    const { data } = await api.get(AC.activityCatalog, { params: categoryFilter.value ? { category: categoryFilter.value } : {} })
-    rows.value = data ?? []
-}
+const columns: DataTableColumn[] = [
+    { key: 'name',            label: 'NOMBRE',    field: 'name', sortable: true, searchable: true },
+    { key: 'category',        label: 'CATEGORÍA', field: 'category', sortable: true },
+    { key: 'default_credits', label: 'CRÉDITOS',  field: 'default_credits', sortable: true, align: 'center' },
+    { key: 'scope',           label: 'ÁMBITO',    align: 'center' },
+    { key: 'is_active',       label: 'ESTADO',    field: 'is_active', sortable: true, align: 'center' },
+    { key: 'opciones',        label: 'OPCIONES',  align: 'center' },
+]
+const extraSearch = computed<Record<string, any>>(() => (categoryFilter.value ? { category: categoryFilter.value } : {}))
+const { rows, loading, pagination, handleChange, fetchData, initialSearch } = useDataTableFetch<any>({
+    endpoint: AC.activityCatalog,
+    extraSearch,
+})
+function onFilterChange() { pagination.value.page = 1; fetchData() }
+
 function openCreate() {
     Object.assign(form, { id: null, category: categoryFilter.value || 'complementaria', name: '', default_credits: null, is_active: true })
     showForm.value = true
@@ -95,7 +124,6 @@ function openEdit(r: any) {
     Object.assign(form, { id: r.id, category: r.category, name: r.name, default_credits: r.default_credits, is_active: r.is_active })
     showForm.value = true
 }
-
 async function save() {
     busy.value = true
     try {
@@ -107,10 +135,10 @@ async function save() {
         }
         toast.success('Catálogo guardado.')
         showForm.value = false
-        await load()
+        await fetchData()
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo guardar.') }
     finally { busy.value = false }
 }
 
-onMounted(load)
+fetchData()
 </script>
