@@ -15,7 +15,7 @@
                 <div v-if="palette"
                     :draggable="clickToPlace"
                     @dragstart="onPaletteDragStart"
-                    @dragend="dragging = false"
+                    @dragend="dragging = false; dragOverCell = null"
                     class="rounded-md bg-emerald-500 text-white p-2 shadow select-none"
                     :class="clickToPlace ? 'cursor-grab active:cursor-grabbing' : ''">
                     <p class="text-[11px] font-bold leading-tight">{{ palette.label }}</p>
@@ -39,11 +39,12 @@
                     class="border-b border-l-2 border-slate-800 transition"
                     :class="[
                         clickToPlace && cellEmpty(c.v, slot) ? 'cursor-pointer hover:bg-emerald-50/50' : (cellEmpty(c.v, slot) ? '' : 'bg-slate-50/40'),
-                        dragging && cellEmpty(c.v, slot) ? 'bg-emerald-100/70 ring-1 ring-emerald-400' : '',
+                        isDragOver(c.v, slot) ? 'bg-emerald-200/80 ring-2 ring-emerald-500 ring-inset' : '',
                     ]"
                     :style="{ gridColumn: ci + 3, gridRow: ri + 2, height: ROW_H + 'px' }"
                     @click="clickToPlace && cellEmpty(c.v, slot) && emit('cell', { day_of_week: c.v, start_hour: slot.start, start_time: slot.startTime })"
-                    @dragover.prevent
+                    @dragenter.prevent="onCellDragOver(c.v, slot)"
+                    @dragover.prevent="onCellDragOver(c.v, slot)"
                     @drop="onCellDrop(c.v, slot, $event)"></div>
             </template>
 
@@ -101,13 +102,22 @@ const emit = defineEmits<{
 const ROW_H = 54
 // Arrastre de la tarjeta de la actividad hacia una celda libre.
 const dragging = ref(false)
+const dragOverCell = ref<{ day: number; start: number } | null>(null)
 function onPaletteDragStart(e: DragEvent) {
     dragging.value = true
     if (e.dataTransfer) e.dataTransfer.effectAllowed = 'copy'
 }
+// Solo resalta la celda LIBRE bajo el cursor.
+function onCellDragOver(dayV: number, slot: { start: number }) {
+    dragOverCell.value = cellEmpty(dayV, slot) ? { day: dayV, start: slot.start } : null
+}
+function isDragOver(dayV: number, slot: { start: number }) {
+    return dragging.value && dragOverCell.value?.day === dayV && dragOverCell.value?.start === slot.start
+}
 function onCellDrop(dayV: number, slot: { start: number; startTime: string }, e: DragEvent) {
     e.preventDefault()
     dragging.value = false
+    dragOverCell.value = null
     if (cellEmpty(dayV, slot)) {
         emit('cell', { day_of_week: dayV, start_hour: slot.start, start_time: slot.startTime })
     }
