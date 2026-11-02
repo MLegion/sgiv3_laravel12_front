@@ -42,6 +42,12 @@ export default [
         meta: { title: 'Actividades disponibles' },
     },
     {
+        path: 'complementary-activities/category-places',
+        name: 'ac.category-places',
+        component: () => import('@/modules/complementary-activities/pages/AcCategoryPlacesPage.vue'),
+        meta: { title: 'Lugares por categoría' },
+    },
+    {
         path: 'complementary-activities/:id',
         name: 'ac.activity-detail',
         component: () => import('@/modules/complementary-activities/pages/ActivityDetailPage.vue'),

@@ -12,6 +12,9 @@ const acApi: ApiModule = {
         activeActivityCatalog: apiUrl('/complementary-activities/active-activity-catalog'),
         myMoocCatalog:         apiUrl('/complementary-activities/me/mooc-catalog'),
 
+        // Lugares por categoría (admin del colegio)
+        categoryPlaces: apiUrl('/complementary-activities/category-places'),
+
         // Registro propio de instructores de AC (distinto de docentes)
         acInstructors:     apiUrl('/complementary-activities/ac-instructors'),
         acInstructorItem:  (id: string | number) => apiUrl(`/complementary-activities/ac-instructors/${id}`),
