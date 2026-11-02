@@ -12,9 +12,14 @@
 
             <!-- Columna 1: la actividad (ocupa todas las filas de slots) -->
             <div class="border-r-2 border-slate-800 p-2 align-top" :style="{ gridColumn: 1, gridRow: `2 / span ${hourSlots.length}` }">
-                <div v-if="palette" class="rounded-md bg-emerald-500 text-white p-2 shadow select-none">
+                <div v-if="palette"
+                    :draggable="clickToPlace"
+                    @dragstart="onPaletteDragStart"
+                    @dragend="dragging = false"
+                    class="rounded-md bg-emerald-500 text-white p-2 shadow select-none"
+                    :class="clickToPlace ? 'cursor-grab active:cursor-grabbing' : ''">
                     <p class="text-[11px] font-bold leading-tight">{{ palette.label }}</p>
-                    <p class="text-[10px] opacity-90 mt-1">{{ clickHint }}</p>
+                    <p v-if="clickToPlace" class="text-[10px] opacity-90 mt-1">Arrástrala a una celda libre, o haz clic en ella.</p>
                 </div>
                 <p v-else class="text-[11px] text-slate-300 text-center mt-2">SIN ASIGNACIONES</p>
             </div>
@@ -32,9 +37,14 @@
             <template v-for="(slot, ri) in hourSlots">
                 <div v-for="(c, ci) in columns" :key="'cell' + c.v + '-' + slot.start"
                     class="border-b border-l-2 border-slate-800 transition"
-                    :class="clickToPlace && cellEmpty(c.v, slot) ? 'cursor-pointer hover:bg-emerald-50/50' : (cellEmpty(c.v, slot) ? '' : 'bg-slate-50/40')"
+                    :class="[
+                        clickToPlace && cellEmpty(c.v, slot) ? 'cursor-pointer hover:bg-emerald-50/50' : (cellEmpty(c.v, slot) ? '' : 'bg-slate-50/40'),
+                        dragging && cellEmpty(c.v, slot) ? 'bg-emerald-100/70 ring-1 ring-emerald-400' : '',
+                    ]"
                     :style="{ gridColumn: ci + 3, gridRow: ri + 2, height: ROW_H + 'px' }"
-                    @click="clickToPlace && cellEmpty(c.v, slot) && $emit('cell', { day_of_week: c.v, start_hour: slot.start, start_time: slot.startTime })"></div>
+                    @click="clickToPlace && cellEmpty(c.v, slot) && emit('cell', { day_of_week: c.v, start_hour: slot.start, start_time: slot.startTime })"
+                    @dragover.prevent
+                    @drop="onCellDrop(c.v, slot, $event)"></div>
             </template>
 
             <!-- Ocupación del grupo (read-only), abarca sus filas -->
@@ -60,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 interface Col { v: number; label: string }
 interface Block { day_of_week: number; start_time: string; end_time: string; label?: string; source?: string; dimension?: string; dimensions?: string[]; place_name?: string | null }
@@ -83,14 +93,26 @@ const props = withDefaults(defineProps<{
     clickToPlace: false,
 })
 
-defineEmits<{
+const emit = defineEmits<{
     cell: [{ day_of_week: number; start_hour: number; start_time: string }]
     remove: [number]
 }>()
 
 const ROW_H = 54
+// Arrastre de la tarjeta de la actividad hacia una celda libre.
+const dragging = ref(false)
+function onPaletteDragStart(e: DragEvent) {
+    dragging.value = true
+    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'copy'
+}
+function onCellDrop(dayV: number, slot: { start: number; startTime: string }, e: DragEvent) {
+    e.preventDefault()
+    dragging.value = false
+    if (cellEmpty(dayV, slot)) {
+        emit('cell', { day_of_week: dayV, start_hour: slot.start, start_time: slot.startTime })
+    }
+}
 const pad = (n: number) => String(n).padStart(2, '0')
-const clickHint = computed(() => (props.clickToPlace ? 'Haz clic en una celda libre →' : ''))
 const paletteShort = computed(() => props.palette?.label ?? '')
 
 const hourSlots = computed(() =>
