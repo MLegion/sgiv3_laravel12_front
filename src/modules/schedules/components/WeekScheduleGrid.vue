@@ -10,15 +10,19 @@
             </thead>
             <tbody>
                 <tr v-for="(slot, ri) in hourSlots" :key="slot.start">
-                    <!-- Columna 1: la actividad complementaria arrastrable (ocupa todas las filas) -->
+                    <!-- Columna 1: la actividad (info; arrastrable solo en modo drag) -->
                     <td v-if="ri === 0" :rowspan="hourSlots.length" class="border border-slate-300 align-top p-2 bg-white">
-                        <div v-if="palette"
+                        <div v-if="palette && !clickToPlace"
                             draggable="true"
                             @dragstart="onPaletteDragStart"
                             @dragend="dragging = false"
                             class="rounded-md bg-emerald-500 text-white p-2 cursor-grab active:cursor-grabbing shadow select-none">
                             <p class="text-[11px] font-bold leading-tight">{{ palette.label }}</p>
                             <p class="text-[10px] opacity-90">{{ palette.hours || 1 }} h · arrastra →</p>
+                        </div>
+                        <div v-else-if="palette" class="rounded-md bg-emerald-500 text-white p-2 shadow select-none">
+                            <p class="text-[11px] font-bold leading-tight">{{ palette.label }}</p>
+                            <p class="text-[10px] opacity-90">Haz clic en una celda libre →</p>
                         </div>
                         <p v-else class="text-[11px] text-slate-300 text-center mt-2">SIN ASIGNACIONES</p>
                     </td>
@@ -31,8 +35,9 @@
                     <!-- Columnas por día -->
                     <td v-for="c in columns" :key="c.v"
                         class="border border-slate-300 p-0.5 align-top h-14 relative"
-                        :class="dragging ? 'bg-emerald-50/50' : ''"
-                        @dragover.prevent @drop="onDrop(c.v, slot, $event)">
+                        :class="[dragging ? 'bg-emerald-50/50' : '', clickToPlace && cellEmpty(c.v, slot) ? 'cursor-pointer hover:bg-emerald-50/60' : '']"
+                        @dragover.prevent="!clickToPlace && $event.preventDefault()" @drop="!clickToPlace && onDrop(c.v, slot, $event)"
+                        @click="clickToPlace && cellEmpty(c.v, slot) && $emit('cell', { day_of_week: c.v, start_hour: slot.start, start_time: slot.startTime })">
 
                         <!-- Ocupación (read-only): aula/docente/grupo según dimensión -->
                         <div v-for="(o, oi) in occupancyAt(c.v, slot)" :key="'o' + oi"
@@ -43,18 +48,17 @@
                             <p class="text-[8px] opacity-70 truncate">{{ dimsLabel(o) }}</p>
                         </div>
 
-                        <!-- Bloque colocado de la actividad (arrastrable dentro del horario) -->
+                        <!-- Bloque colocado de la actividad -->
                         <div v-for="b in placedAt(c.v, slot)" :key="'b' + b.i"
-                            :draggable="editable"
-                            @dragstart="onBlockDragStart(b.i, $event)"
+                            :draggable="editable && !clickToPlace"
+                            @dragstart="!clickToPlace && onBlockDragStart(b.i, $event)"
                             @dragend="dragging = false"
-                            class="rounded-md bg-emerald-100 border p-1 overflow-hidden"
-                            :class="[b._conflict ? 'border-amber-400' : 'border-emerald-500', editable ? 'cursor-grab active:cursor-grabbing' : '']">
+                            class="rounded-md bg-emerald-100 border border-emerald-500 p-1 overflow-hidden"
+                            :class="(editable && !clickToPlace) ? 'cursor-grab active:cursor-grabbing' : ''">
                             <p class="text-[10px] font-bold text-emerald-800 leading-tight">{{ b.start_time }}–{{ b.end_time }}</p>
                             <p v-if="b.sublabel" class="text-[9px] text-emerald-700 truncate">{{ b.sublabel }}</p>
-                            <div class="flex items-center justify-between">
-                                <span v-if="b._conflict" class="text-[9px] text-amber-700" :title="b._conflict">⚠ choque</span><span v-else></span>
-                                <button v-if="editable" @click="$emit('remove', b.i)" class="text-[12px] text-rose-400 hover:text-rose-600 leading-none">×</button>
+                            <div class="flex items-center justify-end">
+                                <button v-if="editable" @click.stop="$emit('remove', b.i)" class="text-[12px] text-rose-400 hover:text-rose-600 leading-none">×</button>
                             </div>
                         </div>
                     </td>
@@ -78,17 +82,20 @@ const props = withDefaults(defineProps<{
     startHour?: number
     endHour?: number
     editable?: boolean
+    clickToPlace?: boolean
 }>(), {
     occupancy: () => [],
     palette: null,
     startHour: 7,
     endHour: 21,
     editable: true,
+    clickToPlace: false,
 })
 
 const emit = defineEmits<{
     place: [{ day_of_week: number; start_time: string; end_time: string }]
     move: [{ index: number; day_of_week: number; start_time: string; end_time: string }]
+    cell: [{ day_of_week: number; start_hour: number; start_time: string }]
     remove: [number]
 }>()
 
@@ -115,6 +122,10 @@ function placedAt(dayV: number, slot: { start: number }) {
     const s = slot.start * 60, e = s + 60
     return props.placed.map((b: any, i: number) => ({ ...b, i }))
         .filter((b: any) => b.day_of_week === dayV && b.start_time && parseTime(b.start_time) >= s && parseTime(b.start_time) < e)
+}
+// Celda libre (sin ocupación del grupo ni bloque colocado) → clicable para asignar.
+function cellEmpty(dayV: number, slot: { start: number }) {
+    return occupancyAt(dayV, slot).length === 0 && placedAt(dayV, slot).length === 0
 }
 
 const SOURCE_LABELS: Record<string, string> = {

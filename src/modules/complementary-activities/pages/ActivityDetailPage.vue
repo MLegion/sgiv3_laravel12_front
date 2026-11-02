@@ -204,60 +204,95 @@
             <div class="flex items-center justify-between flex-wrap gap-2">
                 <div>
                     <h2 class="text-sm font-bold uppercase text-slate-500">Horario</h2>
-                    <p class="text-[11px] text-slate-400">La rejilla muestra el <strong>horario del grupo</strong> (cuándo los alumnos ya tienen clase). Cada sesión dura <strong>1 hora</strong>; arrástrala a un día/hora libre. Cada sesión usa el aula por defecto (<strong>{{ activity.place_name ?? '—' }}</strong>); si esa aula está ocupada, elige otra libre en la lista de bloques. Si el aula está ocupada NO se guarda.</p>
+                    <p class="text-[11px] text-slate-400">La rejilla muestra el <strong>horario del grupo</strong>. Haz <strong>clic en una celda libre</strong> para asignar la sesión: se abre el aula por defecto si está libre, o eliges otra disponible.</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <span v-if="info.weekly_hours" class="text-[11px] font-semibold"
-                        :class="placedHours === Number(info.weekly_hours) ? 'text-emerald-600' : 'text-amber-600'">
-                        {{ placedHours }} / {{ info.weekly_hours }} h semanales
-                    </span>
-                    <button @click="saveSchedule" :disabled="savingSchedule" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar horario</button>
-                </div>
+                <span v-if="info.weekly_hours" class="text-[11px] font-semibold"
+                    :class="placedHours === Number(info.weekly_hours) ? 'text-emerald-600' : 'text-amber-600'">
+                    {{ placedHours }} / {{ info.weekly_hours }} h semanales
+                </span>
             </div>
 
-            <!-- Rejilla reusable: la actividad va en la 1ª columna; arrástrala a un día/hora
-                 (cada sesión = 1 h). Los bloques ya colocados se pueden re-arrastrar. -->
             <WeekScheduleGrid
                 :columns="DAYS_GRID"
                 :placed="blocks"
                 :occupancy="occupancy"
                 :palette="{ label: activity.name, hours: sessionHours }"
-                editable
-                @place="onPlace"
-                @move="onMove"
-                @remove="removeBlock" />
-
-            <!-- Lista de bloques (oculta por defecto; la rejilla es la fuente principal) -->
-            <details class="group">
-                <summary class="cursor-pointer text-xs font-bold uppercase text-slate-400 hover:text-slate-600 select-none">
-                    Ver bloques en lista ({{ blocks.length }})
-                </summary>
-                <table v-if="blocks.length" class="w-full text-sm mt-2">
-                    <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                        <th class="px-2 py-1">Día</th><th class="px-2 py-1">Inicio</th><th class="px-2 py-1">Fin</th><th class="px-2 py-1">Aula</th><th></th>
-                    </tr></thead>
-                    <tbody>
-                        <tr v-for="(b, i) in blocks" :key="i" class="border-b last:border-0">
-                            <td class="px-2 py-1 text-slate-600">{{ dayLabel(b.day_of_week) }}</td>
-                            <td class="px-2 py-1 text-slate-600">{{ b.start_time }}</td>
-                            <td class="px-2 py-1 text-slate-600">{{ b.end_time }}</td>
-                            <td class="px-2 py-1">
-                                <select v-model.number="b.place_id" @focus="loadBlockPlaces(i)"
-                                    class="rounded-lg border-slate-300 text-sm">
-                                    <option :value="null">Por defecto ({{ activity.place_name ?? '—' }})</option>
-                                    <option v-for="p in (b._places ?? [])" :key="p.id" :value="p.id" :disabled="!p.free">
-                                        {{ p.name }}{{ p.free ? '' : ' — ocupada' }}
-                                    </option>
-                                </select>
-                            </td>
-                            <td class="text-right"><button @click="removeBlock(i)" class="text-xs text-slate-400 hover:text-rose-500">quitar</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <p v-else class="text-sm text-slate-400 mt-2">Sin bloques. Arrastra la actividad a la rejilla.</p>
-            </details>
+                click-to-place
+                @cell="openAssign"
+                @remove="confirmDelete" />
         </section>
         </div><!-- /Horario -->
+
+        <!-- Modal ASIGNAR HORARIO -->
+        <div v-if="assign.show" class="fixed inset-0 bg-black/30 flex items-center justify-center z-30 p-4" @click.self="assign.show = false">
+            <div class="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden">
+                <div class="flex items-center justify-between px-5 py-3 bg-emerald-50">
+                    <h2 class="text-sm font-bold uppercase text-emerald-700">Asignar horario</h2>
+                    <button @click="assign.show = false" class="text-slate-400 hover:text-slate-600">✕</button>
+                </div>
+                <div class="p-5 space-y-3">
+                    <dl class="text-[11px] text-slate-500 space-y-0.5">
+                        <div><span class="uppercase font-semibold">Actividad:</span> {{ activity.name }}</div>
+                        <div v-if="activity.instructor_name"><span class="uppercase font-semibold">Instructor:</span> {{ activity.instructor_name }}</div>
+                        <div v-if="activity.group_name"><span class="uppercase font-semibold">Grupo:</span> {{ activity.group_name }}</div>
+                        <div><span class="uppercase font-semibold">Slot:</span> {{ dayLabel(assign.day).toUpperCase() }} · {{ hh(assign.startHour) }} – {{ hh(assign.endHour) }}</div>
+                    </dl>
+
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Aula · {{ (assign.places.filter((p:any)=>p.free)).length }} disponibles</label>
+                        <select v-model.number="assign.placeId" class="w-full rounded-lg border-slate-300 text-sm">
+                            <option :value="null">— Sin aula —</option>
+                            <option v-for="p in assign.places" :key="p.id" :value="p.id" :disabled="!p.free">
+                                {{ p.name }}{{ p.id === activity.place_id ? ' (por defecto)' : '' }}{{ p.free ? '' : ' — ocupada' }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] uppercase text-slate-400 mb-1">Hora inicio</label>
+                            <select v-model.number="assign.startHour" @change="onAssignRange" class="w-full rounded-lg border-slate-300 text-sm">
+                                <option v-for="h in HOURS.slice(0, -1)" :key="h" :value="h">{{ hh(h) }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase text-slate-400 mb-1">Hora término</label>
+                            <select v-model.number="assign.endHour" @change="onAssignRange" class="w-full rounded-lg border-slate-300 text-sm">
+                                <option v-for="h in HOURS.filter(x => x > assign.startHour)" :key="h" :value="h">{{ hh(h) }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-400">Bloques de 60 min. Puedes elegir varios bloques consecutivos.</p>
+
+                    <div v-if="assign.errors.length" class="rounded-lg bg-rose-50 border border-rose-200 p-2">
+                        <p class="text-[11px] font-bold text-rose-600">⚠ No se puede guardar:</p>
+                        <ul class="text-[11px] text-rose-600 list-disc list-inside"><li v-for="(e,i) in assign.errors" :key="i">{{ e }}</li></ul>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 px-5 py-3 border-t">
+                    <button @click="assign.show = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
+                    <button @click="saveAssign" :disabled="assign.saving" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal ELIMINAR BLOQUE -->
+        <div v-if="del.show" class="fixed inset-0 bg-black/30 flex items-center justify-center z-30 p-4" @click.self="del.show = false">
+            <div class="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden">
+                <div class="px-5 py-3 bg-rose-50"><h2 class="text-sm font-bold uppercase text-rose-600">⚠ Eliminar bloque</h2></div>
+                <div class="p-5 space-y-3">
+                    <dl class="text-[11px] text-slate-500 space-y-0.5 rounded-lg border p-3">
+                        <div><span class="uppercase font-semibold">Actividad:</span> {{ activity.name }}</div>
+                        <div v-if="del.block"><span class="uppercase font-semibold">Aula:</span> {{ del.block.place_name ?? activity.place_name ?? '—' }}</div>
+                        <div v-if="del.block"><span class="uppercase font-semibold">Horario:</span> {{ dayLabel(del.block.day_of_week).toUpperCase() }} · {{ del.block.start_time }} – {{ del.block.end_time }}</div>
+                    </dl>
+                    <p class="text-sm text-slate-600">¿Deseas eliminar este bloque del horario?</p>
+                </div>
+                <div class="flex justify-end gap-2 px-5 py-3 border-t">
+                    <button @click="del.show = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
+                    <button @click="doDelete" :disabled="del.saving" class="px-4 py-2 rounded-lg bg-rose-600 text-white text-sm font-semibold disabled:opacity-50">Eliminar</button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -373,75 +408,73 @@ const placedHours = computed(() => blocks.value.reduce((sum, b: any) => {
     const toMin = (t: string) => { const [h, m] = String(t || '0:0').split(':').map(Number); return (h || 0) * 60 + (m || 0) }
     return sum + Math.max(0, (toMin(b.end_time) - toMin(b.start_time)) / 60)
 }, 0))
-// Valida un slot ANTES de colocar/mover. Bloquean: grupo con clase y docente
-// ocupado (no se pueden mover). El aula se resuelve: usa la por defecto si está
-// libre, si no la 1ª aula libre de la carrera; si no hay ninguna, también bloquea.
-// Devuelve {ok, error?, place_id, places, note?}.
-async function validateSlot(day: number, start: string, end: string) {
-    const { data } = await api.post(AC.scheduleConflicts(props.id), { day_of_week: day, start_time: start, end_time: end })
-    const g = (data.group_class ?? []).map((c: any) => c.subject).filter(Boolean)
-    if (g.length) return { ok: false, error: `Ocupado: el grupo tiene clase (${g.join(', ')}) a esa hora.` }
-    const t = (data.teacher_busy ?? []).map((c: any) => c.label).filter(Boolean)
-    if (t.length) return { ok: false, error: `Ocupado: el instructor está dando clase (${t.join(', ')}) a esa hora.` }
+// ── Horario estilo generador: clic en celda → modal "Asignar horario" ──
+const HOURS = Array.from({ length: 21 - 7 + 1 }, (_, i) => 7 + i) // 7..21
+const hh = (h: number) => String(h).padStart(2, '0') + ':00'
 
-    let placeId: number | null = null
-    let places: any[] = []
-    let note: string | null = null
-    if (activity.value?.place_id) {
-        const { data: pool } = await api.post(AC.availablePlaces(props.id), { day_of_week: day, start_time: start, end_time: end })
-        places = pool ?? []
-        const def = places.find((p: any) => p.id === activity.value.place_id)
-        if (def && def.free) {
-            placeId = null // usa el aula por defecto
-        } else {
-            const free = places.find((p: any) => p.free)
-            if (!free) return { ok: false, error: 'Ocupado: no hay aulas de la carrera libres a esa hora.' }
-            placeId = free.id
-            note = `El aula por defecto estaba ocupada; se asignó ${free.name}.`
-        }
-    }
-    return { ok: true, place_id: placeId, places, note }
+const assign = reactive<{ show: boolean; day: number; startHour: number; endHour: number; places: any[]; placeId: number | null; errors: string[]; saving: boolean }>({
+    show: false, day: 1, startHour: 7, endHour: 8, places: [], placeId: null, errors: [], saving: false,
+})
+async function openAssign(c: { day_of_week: number; start_hour: number }) {
+    assign.day = c.day_of_week
+    assign.startHour = c.start_hour
+    assign.endHour = Math.min(c.start_hour + 1, 21)
+    assign.errors = []
+    assign.placeId = null
+    assign.show = true
+    await loadAssignPlaces()
 }
-
-// Aulas de la carrera LIBRES en el slot del bloque (para cambiar el aula luego).
-async function loadBlockPlaces(i: number) {
-    const b = blocks.value[i]
-    if (!b?.day_of_week || !b.start_time || !b.end_time) return
+async function loadAssignPlaces() {
     try {
-        const { data } = await api.post(AC.availablePlaces(props.id), {
-            day_of_week: b.day_of_week, start_time: b.start_time, end_time: b.end_time,
-        })
-        b._places = data ?? []
-    } catch { b._places = [] }
+        const { data } = await api.post(AC.availablePlaces(props.id), { day_of_week: assign.day, start_time: hh(assign.startHour), end_time: hh(assign.endHour) })
+        assign.places = data ?? []
+    } catch { assign.places = [] }
+    // Por defecto: el aula predefinida si está libre; si no, la 1ª disponible.
+    const def = assign.places.find((p: any) => p.id === activity.value?.place_id)
+    assign.placeId = (def && def.free) ? def.id : (assign.places.find((p: any) => p.free)?.id ?? null)
+}
+function onAssignRange() {
+    if (assign.endHour <= assign.startHour) assign.endHour = Math.min(assign.startHour + 1, 21)
+    loadAssignPlaces()
+}
+async function saveAssign() {
+    assign.errors = []
+    const newBlocks: any[] = []
+    for (let h = assign.startHour; h < assign.endHour; h++) {
+        if (blocks.value.some((b: any) => b.day_of_week === assign.day && b.start_time === hh(h))) {
+            assign.errors = [`Ya hay una sesión el ${dayLabel(assign.day)} ${hh(h)}.`]; return
+        }
+        newBlocks.push({ place_id: assign.placeId, day_of_week: assign.day, date: null, start_time: hh(h), end_time: hh(h + 1) })
+    }
+    const all = [
+        ...blocks.value.map((b: any) => ({ place_id: b.place_id ?? null, day_of_week: b.day_of_week, date: null, start_time: b.start_time, end_time: b.end_time })),
+        ...newBlocks,
+    ]
+    assign.saving = true
+    try {
+        await api.put(AC.schedules(props.id), { blocks: all })
+        toast.success('Horario asignado.')
+        assign.show = false
+        await load()
+    } catch (e: any) {
+        const d = e?.response?.data
+        assign.errors = Array.isArray(d?.room_errors) ? d.room_errors : [d?.message ?? 'No se pudo guardar.']
+    } finally { assign.saving = false }
 }
 
-// Una sola sesión por celda (mismo día + misma hora de inicio).
-function cellTaken(day: number, start: string, exceptIndex = -1) {
-    return blocks.value.some((x, idx) => idx !== exceptIndex && x.day_of_week === day && x.start_time === start)
-}
-
-async function onPlace(b: { day_of_week: number; start_time: string; end_time: string }) {
-    if (cellTaken(b.day_of_week, b.start_time)) { toast.error('Solo se permite una sesión por celda.'); return }
-    const r = await validateSlot(b.day_of_week, b.start_time, b.end_time)
-    if (!r.ok) { toast.error(r.error as string); return } // NO se coloca
-    blocks.value.push({ ...b, place_id: r.place_id, _places: r.places, _conflict: null, _roomError: false })
-    if (r.note) toast.success(r.note)
-}
-// Re-arrastrar un bloque ya colocado: también valida ANTES de mover.
-async function onMove(m: { index: number; day_of_week: number; start_time: string; end_time: string }) {
-    const b = blocks.value[m.index]
-    if (!b) return
-    if (cellTaken(m.day_of_week, m.start_time, m.index)) { toast.error('Solo se permite una sesión por celda.'); return }
-    const r = await validateSlot(m.day_of_week, m.start_time, m.end_time)
-    if (!r.ok) { toast.error(r.error as string); return } // NO se mueve
-    b.day_of_week = m.day_of_week
-    b.start_time = m.start_time
-    b.end_time = m.end_time
-    b.place_id = r.place_id
-    b._places = r.places
-    b._conflict = null
-    b._roomError = false
-    if (r.note) toast.success(r.note)
+const del = reactive<{ show: boolean; index: number; block: any; saving: boolean }>({ show: false, index: -1, block: null, saving: false })
+function confirmDelete(i: number) { del.index = i; del.block = blocks.value[i]; del.show = true }
+async function doDelete() {
+    del.saving = true
+    try {
+        const remaining = blocks.value.filter((_: any, idx: number) => idx !== del.index)
+            .map((b: any) => ({ place_id: b.place_id ?? null, day_of_week: b.day_of_week, date: null, start_time: b.start_time, end_time: b.end_time }))
+        await api.put(AC.schedules(props.id), { blocks: remaining })
+        toast.success('Bloque eliminado.')
+        del.show = false
+        await load()
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo eliminar.') }
+    finally { del.saving = false }
 }
 
 // Atados al valor ACTUAL de la actividad: el RemoteSelect muestra la selección
@@ -472,30 +505,7 @@ const DAYS = [
     { v: 4, label: 'Jueves' }, { v: 5, label: 'Viernes' }, { v: 6, label: 'Sábado' }, { v: 7, label: 'Domingo' },
 ]
 const blocks = ref<any[]>([])
-const savingSchedule = ref(false)
-
-function removeBlock(i: number) { blocks.value.splice(i, 1) }
-const dayLabel = (v: number) => DAYS.find(d => d.v === v)?.label ?? v
-
-async function saveSchedule() {
-    savingSchedule.value = true
-    try {
-        await api.put(AC.schedules(props.id), {
-            blocks: blocks.value.map(b => ({
-                place_id: b.place_id ?? null, day_of_week: b.day_of_week, date: null, start_time: b.start_time, end_time: b.end_time,
-            })),
-        })
-        toast.success('Horario guardado.')
-        await load()
-    } catch (e: any) {
-        const d = e?.response?.data
-        if (e?.response?.status === 422 && Array.isArray(d?.room_errors)) {
-            toast.error(d.room_errors.join(' · '))
-        } else {
-            toast.error(d?.message ?? 'No se pudo guardar el horario.')
-        }
-    } finally { savingSchedule.value = false }
-}
+const dayLabel = (v: number): string => DAYS.find(d => d.v === v)?.label ?? String(v)
 
 function statusLabel(s: string): string {
     return ({ enrolled: 'Inscrito', attended: 'Acreditado', dropped: 'Baja' } as Record<string, string>)[s] ?? s
@@ -536,9 +546,7 @@ async function load() {
                 start_time: String(s.start_time).substring(0, 5),
                 end_time: String(s.end_time).substring(0, 5),
                 place_id: custom ? Number(s.place_id) : null,
-                _places: custom ? [{ id: Number(s.place_id), name: s.place_name, free: true }] : [],
-                _conflict: null,
-                _roomError: false,
+                place_name: s.place_name ?? null,
             }
         })
 }
