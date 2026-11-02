@@ -358,6 +358,8 @@ function openCreate() {
     groupSearch.value = ''; groupResults.value = []
     instructorSearch.value = ''; instructorResults.value = []
     nameCatalog.value = []
+    // Si el usuario solo puede crear una categoría (encargado), autoselecciónala.
+    if (types.value.length === 1) { form.type = types.value[0].value; onTypeChange() }
     showCreate.value = true
 }
 function searchPlaces() {
