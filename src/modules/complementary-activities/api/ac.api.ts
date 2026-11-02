@@ -25,6 +25,7 @@ const acApi: ApiModule = {
         personnelById: (id: string | number) => apiUrl(`/complementary-activities/personnel/${id}`),
         places:      apiUrl('/complementary-activities/places'),
         placeById:   (id: string | number) => apiUrl(`/complementary-activities/places/${id}`),
+        placePool:   apiUrl('/complementary-activities/place-pool'),
         groupTutoringRequirements: apiUrl('/complementary-activities/group-tutoring-requirements'),
         generateGroupTutoring:     apiUrl('/complementary-activities/group-tutoring-requirements/generate'),
 

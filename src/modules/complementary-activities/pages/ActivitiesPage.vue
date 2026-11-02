@@ -107,18 +107,11 @@
             <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-5 space-y-3">
                 <h2 class="text-sm font-bold uppercase text-slate-500">Nueva actividad</h2>
                 <div class="grid sm:grid-cols-2 gap-3">
-                    <div>
+                    <div :class="types.length === 1 ? 'sm:col-span-2' : ''">
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Tipo</label>
                         <select v-model="form.type" @change="onTypeChange" class="w-full rounded-lg border-slate-300 text-sm">
                             <option value="">Elegir…</option>
                             <option v-for="t in types" :key="t.value" :value="t.value">{{ t.label }}</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Carrera (opcional)</label>
-                        <select v-model="form.career_id" class="w-full rounded-lg border-slate-300 text-sm">
-                            <option :value="null">—</option>
-                            <option v-for="c in careers" :key="c.id" :value="c.id">{{ c.name }}</option>
                         </select>
                     </div>
                     <div class="sm:col-span-2">
@@ -130,59 +123,52 @@
                         <p v-if="nameCatalog.length" class="text-[10px] text-slate-400 mt-0.5">Elige del catálogo o escribe uno nuevo.</p>
                     </div>
 
-                    <!-- Grupo (requerido para tutoría grupal) -->
-                    <div class="sm:col-span-2 relative">
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">
-                            Grupo <span v-if="form.type === 'group_tutoring'" class="text-rose-500">*</span>
-                            <span v-else class="text-slate-400">(opcional)</span>
-                        </label>
-                        <div v-if="form.group_id" class="flex items-center gap-2 mb-1 text-sm">
-                            <span class="px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold">{{ form.group_label }}</span>
-                            <button @click="clearGroup" class="text-xs text-slate-400 hover:text-rose-500">cambiar</button>
-                        </div>
-                        <template v-else>
-                            <input v-model="groupSearch" @input="searchGroups" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Buscar grupo por nombre…" />
-                            <ul v-if="groupResults.length" class="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow">
-                                <li v-for="g in groupResults" :key="g.id" @click="pickGroup(g)" class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">
-                                    {{ g.name }} <span class="text-slate-400">· {{ g.shift }}<span v-if="g.careers"> · {{ g.careers }}</span></span>
-                                </li>
-                            </ul>
-                        </template>
+                    <!-- Grupo (solo tutoría grupal; la carrera se deriva del grupo) -->
+                    <div v-if="form.type === 'group_tutoring'" class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Grupo <span class="text-rose-500">*</span></label>
+                        <FormRemoteSelect
+                            v-model="form.group_id"
+                            :endpoint="AC.groups"
+                            :params="{ period_id: periodId }"
+                            item-value="id"
+                            item-label="name"
+                            :item-searchs="['name']"
+                            placeholder="Buscar grupo por nombre…"
+                            @update:model-value="form.place_id = null" />
                     </div>
 
                     <!-- Instructor / tutor -->
-                    <div class="sm:col-span-2 relative">
+                    <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold text-slate-500 mb-1">
-                            Instructor / tutor
-                            <span v-if="form.type === 'group_tutoring'" class="text-slate-400">(será el tutor del grupo)</span>
+                            Instructor / tutor <span v-if="form.type === 'group_tutoring'" class="text-slate-400">(será el tutor del grupo)</span>
                         </label>
-                        <div v-if="form.instructor_user_id" class="flex items-center gap-2 mb-1 text-sm">
-                            <span class="px-2 py-1 rounded-lg bg-sky-50 border border-sky-200 text-sky-700 font-semibold">{{ form.instructor_label }}</span>
-                            <button @click="clearInstructor" class="text-xs text-slate-400 hover:text-rose-500">cambiar</button>
-                        </div>
-                        <template v-else>
-                            <input v-model="instructorSearch" @input="searchInstructors" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Buscar empleado por nombre…" />
-                            <ul v-if="instructorResults.length" class="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow">
-                                <li v-for="t in instructorResults" :key="t.value" @click="pickInstructor(t)" class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">{{ t.label }}</li>
-                            </ul>
-                        </template>
+                        <FormRemoteSelect
+                            v-model="form.instructor_user_id"
+                            :endpoint="AC.personnel"
+                            :endpoint-by-id="AC.personnelById"
+                            item-value="user_id"
+                            item-label="full_name"
+                            :item-searchs="['full_name']"
+                            placeholder="Ver listado o buscar personal…" />
                     </div>
-                    <div class="sm:col-span-2 relative">
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Lugar</label>
-                        <div v-if="form.place_id" class="flex items-center gap-2 mb-1 text-sm">
-                            <span class="px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold">{{ form.place_label }}</span>
-                            <button @click="clearPlace" class="text-xs text-slate-400 hover:text-rose-500">cambiar</button>
-                        </div>
-                        <template v-else>
-                            <input v-model="placeSearch" @input="searchPlaces" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Buscar aula…" />
-                            <ul v-if="placeResults.length" class="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow">
-                                <li v-for="pl in placeResults" :key="pl.id" @click="pickPlace(pl)" class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">
-                                    {{ pl.name }} <span class="text-slate-400">· {{ pl.building_name }}</span>
-                                </li>
-                            </ul>
-                            <input v-model="form.location_label" class="w-full rounded-lg border-slate-300 text-sm mt-1" placeholder="…o escribe un lugar (no salón)" />
-                        </template>
+
+                    <!-- Lugar por defecto (limitado por el tipo) -->
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Lugar por defecto (opcional)</label>
+                        <FormRemoteSelect
+                            :key="`place-${form.type}-${form.group_id ?? ''}`"
+                            v-model="form.place_id"
+                            :endpoint="AC.placePool"
+                            :endpoint-by-id="AC.placeById"
+                            :params="{ type: form.type, group_id: form.group_id ?? undefined }"
+                            item-value="id"
+                            item-label="name"
+                            :item-searchs="['name']"
+                            :disabled="!form.type || (form.type === 'group_tutoring' && !form.group_id)"
+                            placeholder="Elegir aula de las permitidas…" />
+                        <p class="text-[10px] text-slate-400 mt-0.5">Solo las aulas que corresponden al tipo (oferta de la carrera o lugares de la categoría). Se puede ajustar después.</p>
                     </div>
+
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Cupo (opcional)</label>
                         <input v-model="form.capacity" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm" />
@@ -194,7 +180,7 @@
                 </div>
                 <div class="flex justify-end gap-2 pt-1">
                     <button @click="showCreate = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
-                    <button @click="create" :disabled="busy || !form.type || !form.name || (!form.place_id && !form.location_label) || (form.type === 'group_tutoring' && !form.group_id)"
+                    <button @click="create" :disabled="busy || !form.type || !form.name || (form.type === 'group_tutoring' && !form.group_id)"
                         class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Crear</button>
                 </div>
             </div>
@@ -211,12 +197,12 @@ import { useToast } from '@/app/composables/useToast'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 
 const AC = API.AC_API
 const toast = useToast()
 
 const periods = ref<any[]>([])
-const careers = ref<any[]>([])
 const types = ref<any[]>([])
 const periodId = ref<string>('')
 const typeFilter = ref<string>('')
@@ -279,7 +265,7 @@ async function saveWindow() {
 }
 
 const showCreate = ref(false)
-const form = reactive<any>({ type: '', name: '', career_id: null, group_id: null, group_label: '', instructor_user_id: null, instructor_label: '', place_id: null, place_label: '', location_label: '', capacity: null, credits: 0 })
+const form = reactive<any>({ type: '', name: '', group_id: null, instructor_user_id: null, place_id: null, capacity: null, credits: 0 })
 
 // Catálogo de nombres estandarizados para el tipo seleccionado (autocompletar).
 const nameCatalog = ref<any[]>([])
@@ -291,7 +277,10 @@ async function loadNameCatalog() {
     } catch { nameCatalog.value = [] }
 }
 function onTypeChange() {
+    // El tipo limita grupo/lugar: se reinician al cambiarlo.
     form.name = ''
+    form.group_id = null
+    form.place_id = null
     loadNameCatalog()
 }
 // Al elegir un nombre del catálogo, autollena los créditos sugeridos (editable).
@@ -300,47 +289,6 @@ function onNamePicked() {
     if (hit && hit.default_credits != null) form.credits = hit.default_credits
 }
 
-const placeSearch = ref('')
-const placeResults = ref<any[]>([])
-let placeTimer: any = null
-
-const groupSearch = ref('')
-const groupResults = ref<any[]>([])
-let groupTimer: any = null
-const instructorSearch = ref('')
-const instructorResults = ref<any[]>([])
-let instructorTimer: any = null
-
-function searchGroups() {
-    clearTimeout(groupTimer)
-    groupTimer = setTimeout(async () => {
-        if (!periodId.value || groupSearch.value.trim().length < 2) { groupResults.value = []; return }
-        const { data } = await api.get(AC.groups, { params: { period_id: periodId.value, career_id: form.career_id || undefined, q: groupSearch.value } })
-        groupResults.value = data ?? []
-    }, 300)
-}
-function pickGroup(g: any) {
-    form.group_id = g.id; form.group_label = g.name
-    // Autollena la carrera si el grupo tiene exactamente una.
-    if (!form.career_id && Array.isArray(g.career_ids) && g.career_ids.length === 1) form.career_id = g.career_ids[0]
-    groupResults.value = []; groupSearch.value = ''
-}
-function clearGroup() { form.group_id = null; form.group_label = '' }
-
-function searchInstructors() {
-    clearTimeout(instructorTimer)
-    instructorTimer = setTimeout(async () => {
-        if (instructorSearch.value.trim().length < 2) { instructorResults.value = []; return }
-        const { data } = await api.get(AC.instructors, { params: { q: instructorSearch.value } })
-        instructorResults.value = data ?? []
-    }, 300)
-}
-function pickInstructor(t: any) {
-    form.instructor_user_id = t.value; form.instructor_label = t.label
-    instructorResults.value = []; instructorSearch.value = ''
-}
-function clearInstructor() { form.instructor_user_id = null; form.instructor_label = '' }
-
 function typeLabel(v: string): string {
     return types.value.find(t => t.value === v)?.label ?? v
 }
@@ -348,33 +296,16 @@ function typeLabel(v: string): string {
 async function loadCatalog() {
     const { data } = await api.get(AC.catalog)
     periods.value = data.periods ?? []
-    careers.value = data.careers ?? []
     types.value = data.types ?? []
 }
 
 function openCreate() {
-    Object.assign(form, { type: '', name: '', career_id: null, group_id: null, group_label: '', instructor_user_id: null, instructor_label: '', place_id: null, place_label: '', location_label: '', capacity: null, credits: 0 })
-    placeSearch.value = ''; placeResults.value = []
-    groupSearch.value = ''; groupResults.value = []
-    instructorSearch.value = ''; instructorResults.value = []
+    Object.assign(form, { type: '', name: '', group_id: null, instructor_user_id: null, place_id: null, capacity: null, credits: 0 })
     nameCatalog.value = []
     // Si el usuario solo puede crear una categoría (encargado), autoselecciónala.
     if (types.value.length === 1) { form.type = types.value[0].value; onTypeChange() }
     showCreate.value = true
 }
-function searchPlaces() {
-    clearTimeout(placeTimer)
-    placeTimer = setTimeout(async () => {
-        if (placeSearch.value.trim().length < 2) { placeResults.value = []; return }
-        const { data } = await api.get(AC.catalog, { params: { place_search: placeSearch.value } })
-        placeResults.value = data.places ?? []
-    }, 300)
-}
-function pickPlace(pl: any) {
-    form.place_id = pl.id; form.place_label = pl.name; form.location_label = ''
-    placeResults.value = []; placeSearch.value = ''
-}
-function clearPlace() { form.place_id = null; form.place_label = '' }
 
 async function create() {
     await act(async () => {
@@ -382,11 +313,9 @@ async function create() {
             period_id: Number(periodId.value),
             type: form.type,
             name: form.name,
-            career_id: form.career_id,
             group_id: form.group_id,
             instructor_user_id: form.instructor_user_id,
             place_id: form.place_id,
-            location_label: form.place_id ? null : (form.location_label || null),
             capacity: form.capacity ? Number(form.capacity) : null,
             credits: Number(form.credits) || 0,
         })
