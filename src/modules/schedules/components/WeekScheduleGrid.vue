@@ -1,78 +1,69 @@
 <template>
-    <div class="overflow-x-auto">
-        <table class="min-w-[760px] w-full border-collapse select-none">
-            <thead>
-                <tr class="bg-slate-50">
-                    <th class="border border-slate-300 px-2 py-2 text-[11px] font-black uppercase text-slate-500 w-40">Asign. / H. Desc.</th>
-                    <th class="border border-slate-300 px-2 py-2 text-[11px] font-black uppercase text-slate-500 w-24">Días / Horas</th>
-                    <th v-for="c in columns" :key="c.v" class="border border-slate-300 px-2 py-2 text-[11px] font-black uppercase text-slate-500">{{ c.label }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(slot, ri) in hourSlots" :key="slot.start">
-                    <!-- Columna 1: la actividad (info; arrastrable solo en modo drag) -->
-                    <td v-if="ri === 0" :rowspan="hourSlots.length" class="border border-slate-300 align-top p-2 bg-white">
-                        <div v-if="palette && !clickToPlace"
-                            draggable="true"
-                            @dragstart="onPaletteDragStart"
-                            @dragend="dragging = false"
-                            class="rounded-md bg-emerald-500 text-white p-2 cursor-grab active:cursor-grabbing shadow select-none">
-                            <p class="text-[11px] font-bold leading-tight">{{ palette.label }}</p>
-                            <p class="text-[10px] opacity-90">{{ palette.hours || 1 }} h · arrastra →</p>
-                        </div>
-                        <div v-else-if="palette" class="rounded-md bg-emerald-500 text-white p-2 shadow select-none">
-                            <p class="text-[11px] font-bold leading-tight">{{ palette.label }}</p>
-                            <p class="text-[10px] opacity-90">Haz clic en una celda libre →</p>
-                        </div>
-                        <p v-else class="text-[11px] text-slate-300 text-center mt-2">SIN ASIGNACIONES</p>
-                    </td>
+    <div class="overflow-x-auto border-2 border-slate-800 bg-white">
+        <div class="relative grid min-w-[760px]" :style="gridStyle">
+            <!-- Header (fila 1) -->
+            <div class="px-2 py-2 border-b-2 border-slate-800 bg-slate-50 text-[11px] font-black uppercase text-slate-600 text-center"
+                style="grid-column: 1; grid-row: 1;">Asign. / H. Desc.</div>
+            <div class="px-2 py-2 border-b-2 border-l-2 border-slate-800 bg-slate-50 text-[11px] font-black uppercase text-slate-600 text-center"
+                style="grid-column: 2; grid-row: 1;">Días / Horas</div>
+            <div v-for="(c, ci) in columns" :key="'h' + c.v"
+                class="px-2 py-2 border-b-2 border-l-2 border-slate-800 bg-slate-50 text-[11px] font-black uppercase text-slate-600 text-center"
+                :style="{ gridColumn: ci + 3, gridRow: 1 }">{{ c.label }}</div>
 
-                    <!-- Columna 2: rango horario de la fila -->
-                    <td class="border border-slate-300 px-1 py-1 text-center text-[10px] font-semibold text-slate-500 whitespace-nowrap">
-                        {{ slot.label }}
-                    </td>
+            <!-- Columna 1: la actividad (ocupa todas las filas de slots) -->
+            <div class="border-r-2 border-slate-800 p-2 align-top" :style="{ gridColumn: 1, gridRow: `2 / span ${hourSlots.length}` }">
+                <div v-if="palette" class="rounded-md bg-emerald-500 text-white p-2 shadow select-none">
+                    <p class="text-[11px] font-bold leading-tight">{{ palette.label }}</p>
+                    <p class="text-[10px] opacity-90 mt-1">{{ clickHint }}</p>
+                </div>
+                <p v-else class="text-[11px] text-slate-300 text-center mt-2">SIN ASIGNACIONES</p>
+            </div>
 
-                    <!-- Columnas por día -->
-                    <td v-for="c in columns" :key="c.v"
-                        class="border border-slate-300 p-0.5 align-top h-14 relative"
-                        :class="[dragging ? 'bg-emerald-50/50' : '', clickToPlace && cellEmpty(c.v, slot) ? 'cursor-pointer hover:bg-emerald-50/60' : '']"
-                        @dragover.prevent="!clickToPlace && $event.preventDefault()" @drop="!clickToPlace && onDrop(c.v, slot, $event)"
-                        @click="clickToPlace && cellEmpty(c.v, slot) && $emit('cell', { day_of_week: c.v, start_hour: slot.start, start_time: slot.startTime })">
+            <!-- Columna 2: etiquetas de hora -->
+            <div v-for="(slot, ri) in hourSlots" :key="'hr' + slot.start"
+                class="border-b border-r-2 border-slate-800 flex items-center justify-center text-center bg-white"
+                :style="{ gridColumn: 2, gridRow: ri + 2, height: ROW_H + 'px' }">
+                <div class="text-[10px] font-bold text-slate-500 leading-tight">
+                    <div>{{ slot.startTime }}</div><div>-</div><div>{{ slot.endTime }}</div>
+                </div>
+            </div>
 
-                        <!-- Ocupación (read-only): aula/docente/grupo según dimensión -->
-                        <div v-for="(o, oi) in occupancyAt(c.v, slot)" :key="'o' + oi"
-                            class="rounded-sm px-1 py-0.5 mb-0.5 border-l-2 pointer-events-none overflow-hidden"
-                            :class="dimClass(o.dimension)"
-                            :title="`${dimsLabel(o)}: ${o.label} (${sourceLabel(o.source)})`">
-                            <p class="text-[9px] font-semibold leading-tight truncate">{{ o.label }}</p>
-                            <p class="text-[8px] opacity-70 truncate">{{ dimsLabel(o) }}</p>
-                        </div>
+            <!-- Celdas de fondo (día × hora): clicables si están libres -->
+            <template v-for="(slot, ri) in hourSlots">
+                <div v-for="(c, ci) in columns" :key="'cell' + c.v + '-' + slot.start"
+                    class="border-b border-l-2 border-slate-800 transition"
+                    :class="clickToPlace && cellEmpty(c.v, slot) ? 'cursor-pointer hover:bg-emerald-50/50' : (cellEmpty(c.v, slot) ? '' : 'bg-slate-50/40')"
+                    :style="{ gridColumn: ci + 3, gridRow: ri + 2, height: ROW_H + 'px' }"
+                    @click="clickToPlace && cellEmpty(c.v, slot) && $emit('cell', { day_of_week: c.v, start_hour: slot.start, start_time: slot.startTime })"></div>
+            </template>
 
-                        <!-- Bloque colocado de la actividad -->
-                        <div v-for="b in placedAt(c.v, slot)" :key="'b' + b.i"
-                            :draggable="editable && !clickToPlace"
-                            @dragstart="!clickToPlace && onBlockDragStart(b.i, $event)"
-                            @dragend="dragging = false"
-                            class="rounded-md bg-emerald-100 border border-emerald-500 p-1 overflow-hidden"
-                            :class="(editable && !clickToPlace) ? 'cursor-grab active:cursor-grabbing' : ''">
-                            <p class="text-[10px] font-bold text-emerald-800 leading-tight">{{ b.start_time }}–{{ b.end_time }}</p>
-                            <p v-if="b.sublabel" class="text-[9px] text-emerald-700 truncate">{{ b.sublabel }}</p>
-                            <div class="flex items-center justify-end">
-                                <button v-if="editable" @click.stop="$emit('remove', b.i)" class="text-[12px] text-rose-400 hover:text-rose-600 leading-none">×</button>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+            <!-- Ocupación del grupo (read-only), abarca sus filas -->
+            <div v-for="(o, oi) in occupancyBlocks" :key="'occ' + oi"
+                class="m-0.5 rounded px-1 py-0.5 border-l-2 overflow-hidden pointer-events-none z-10"
+                :class="dimClass(o.dimension)" :style="spanStyle(o)"
+                :title="`${dimsLabel(o)}: ${o.label}`">
+                <p class="text-[9px] font-semibold leading-tight truncate">{{ o.label }}</p>
+                <p class="text-[8px] opacity-70 truncate">{{ dimsLabel(o) }}</p>
+            </div>
+
+            <!-- Bloques colocados de la actividad, abarcan sus filas -->
+            <div v-for="b in placedBlocks" :key="'pb' + b.i"
+                class="m-0.5 rounded-md bg-emerald-100 border-2 border-emerald-500 px-1 py-1 overflow-hidden flex flex-col items-center justify-center text-center z-20"
+                :style="spanStyle(b)">
+                <p class="text-[10px] font-bold text-emerald-800 leading-tight truncate w-full">{{ paletteShort }}</p>
+                <p class="text-[9px] text-emerald-700 leading-tight">{{ b.start_time }}–{{ b.end_time }}</p>
+                <p v-if="b.place_name" class="text-[8px] text-emerald-600 truncate w-full">{{ b.place_name }}</p>
+                <button v-if="editable" @click.stop="$emit('remove', b.i)" class="mt-0.5 text-[11px] text-rose-500 hover:text-rose-700 leading-none">🗑</button>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 
 interface Col { v: number; label: string }
-interface Block { day_of_week: number; start_time: string; end_time: string; label?: string; sublabel?: string; source?: string; dimension?: string; dimensions?: string[]; _conflict?: string | null }
+interface Block { day_of_week: number; start_time: string; end_time: string; label?: string; source?: string; dimension?: string; dimensions?: string[]; place_name?: string | null }
 
 const props = withDefaults(defineProps<{
     columns: Col[]
@@ -92,51 +83,57 @@ const props = withDefaults(defineProps<{
     clickToPlace: false,
 })
 
-const emit = defineEmits<{
-    place: [{ day_of_week: number; start_time: string; end_time: string }]
-    move: [{ index: number; day_of_week: number; start_time: string; end_time: string }]
+defineEmits<{
     cell: [{ day_of_week: number; start_hour: number; start_time: string }]
     remove: [number]
 }>()
 
-// Una fila por hora (unidad mínima del horario): 07:00-08:00, 08:00-09:00, …
+const ROW_H = 54
 const pad = (n: number) => String(n).padStart(2, '0')
+const clickHint = computed(() => (props.clickToPlace ? 'Haz clic en una celda libre →' : ''))
+const paletteShort = computed(() => props.palette?.label ?? '')
+
 const hourSlots = computed(() =>
     Array.from({ length: props.endHour - props.startHour }, (_, i) => {
         const h = props.startHour + i
-        return { start: h, startTime: `${pad(h)}:00`, label: `${pad(h)}:00 - ${pad(h + 1)}:00` }
+        return { start: h, startTime: `${pad(h)}:00`, endTime: `${pad(h + 1)}:00` }
     }),
 )
 
+const gridStyle = computed(() => ({
+    gridTemplateColumns: `140px 54px repeat(${props.columns.length}, minmax(110px, 1fr))`,
+    gridTemplateRows: `auto repeat(${hourSlots.value.length}, ${ROW_H}px)`,
+}))
+
 function parseTime(t: string): number { const [h, m] = String(t || '0:0').split(':').map(Number); return (h || 0) * 60 + (m || 0) }
-function fmtMin(min: number): string { return `${pad(Math.floor(min / 60))}:${pad(min % 60)}` }
 
-// Ocupación que cae en esta celda (día + hora): se solapa con [slot, slot+1h).
-function occupancyAt(dayV: number, slot: { start: number }) {
-    const s = slot.start * 60, e = s + 60
-    return props.occupancy.filter(o => o.day_of_week === dayV && o.start_time && o.end_time
-        && parseTime(o.start_time) < e && parseTime(o.end_time) > s)
+// Posición de un bloque {day_of_week, start_time, end_time} en el CSS grid: columna
+// del día + filas que abarca (grid-row start / span).
+function spanStyle(b: any) {
+    const ci = props.columns.findIndex(c => c.v === b.day_of_week)
+    if (ci < 0) return { display: 'none' }
+    const s = parseTime(b.start_time)
+    const e = parseTime(b.end_time)
+    const startRow = Math.floor(s / 60 - props.startHour) + 2
+    const span = Math.max(1, Math.round((e - s) / 60))
+    return { gridColumn: String(ci + 3), gridRow: `${startRow} / span ${span}` }
 }
-// Bloque colocado cuyo INICIO cae en esta celda.
-function placedAt(dayV: number, slot: { start: number }) {
-    const s = slot.start * 60, e = s + 60
-    return props.placed.map((b: any, i: number) => ({ ...b, i }))
-        .filter((b: any) => b.day_of_week === dayV && b.start_time && parseTime(b.start_time) >= s && parseTime(b.start_time) < e)
+
+const occupancyBlocks = computed(() => props.occupancy.filter(o => o.start_time && o.end_time && props.columns.some(c => c.v === o.day_of_week)))
+const placedBlocks = computed(() => props.placed.map((b: any, i: number) => ({ ...b, i })).filter((b: any) => b.start_time && b.end_time))
+
+// Celda libre = sin ocupación del grupo ni bloque colocado que la cubra.
+function covers(b: any, dayV: number, hour: number): boolean {
+    if (b.day_of_week !== dayV) return false
+    const s = parseTime(b.start_time), e = parseTime(b.end_time)
+    return s <= hour * 60 && e > hour * 60
 }
-// Celda libre (sin ocupación del grupo ni bloque colocado) → clicable para asignar.
 function cellEmpty(dayV: number, slot: { start: number }) {
-    return occupancyAt(dayV, slot).length === 0 && placedAt(dayV, slot).length === 0
+    return !props.occupancy.some(o => covers(o, dayV, slot.start)) && !props.placed.some(b => covers(b, dayV, slot.start))
 }
-
-const SOURCE_LABELS: Record<string, string> = {
-    academic_schedule: 'Clase', academic_class: 'Clase', complementary_schedule: 'Descarga', discharge: 'Descarga',
-    complementary_activity: 'Act. complementaria', exam_session: 'Examen', titulacion_act: 'Titulación', group_tutoring: 'Tutoría',
-}
-const sourceLabel = (s?: string) => (s ? (SOURCE_LABELS[s] ?? s) : '')
 
 const DIM_LABELS: Record<string, string> = { teacher: 'Docente', place: 'Aula', group: 'Grupo' }
 const dimLabel = (d?: string) => (d ? (DIM_LABELS[d] ?? d) : '')
-// Etiqueta de dimensiones fusionadas (ej. "Aula · Grupo") si la clase ocupa varias.
 const dimsLabel = (o: any) => {
     const ds: string[] = Array.isArray(o?.dimensions) && o.dimensions.length ? o.dimensions : [o?.dimension]
     return ds.map((d: string) => dimLabel(d)).join(' · ')
@@ -146,37 +143,5 @@ const DIM_CLASS: Record<string, string> = {
     place: 'bg-slate-200/70 border-slate-400 text-slate-600',
     group: 'bg-violet-100/80 border-violet-400 text-violet-700',
 }
-const dimClass = (d?: string) => (d ? (DIM_CLASS[d] ?? DIM_CLASS.place) : DIM_CLASS.place)
-
-// Arrastre: recuadro nuevo ('new') vs mover uno existente ('move:<index>').
-const dragging = ref(false)
-function onPaletteDragStart(e: DragEvent) {
-    dragging.value = true
-    if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('text/plain', 'new') }
-}
-function onBlockDragStart(i: number, e: DragEvent) {
-    if (!props.editable) return
-    dragging.value = true
-    if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', 'move:' + i) }
-}
-function onDrop(dayV: number, slot: { start: number; startTime: string }, e: DragEvent) {
-    e.preventDefault()
-    dragging.value = false
-    const token = e.dataTransfer?.getData('text/plain') || 'new'
-    const maxEnd = props.endHour * 60
-
-    if (token.startsWith('move:')) {
-        const i = Number(token.slice(5))
-        const b = props.placed[i]
-        if (!b) return
-        const durMin = Math.max(60, parseTime(b.end_time) - parseTime(b.start_time))
-        const start = Math.min(slot.start * 60, maxEnd - durMin)
-        emit('move', { index: i, day_of_week: dayV, start_time: fmtMin(start), end_time: fmtMin(start + durMin) })
-        return
-    }
-    if (!props.palette) return
-    const durMin = (props.palette.hours || 1) * 60
-    const start = Math.min(slot.start * 60, maxEnd - durMin)
-    emit('place', { day_of_week: dayV, start_time: fmtMin(start), end_time: fmtMin(start + durMin) })
-}
+const dimClass = (d?: string) => (d ? (DIM_CLASS[d] ?? DIM_CLASS.group) : DIM_CLASS.group)
 </script>

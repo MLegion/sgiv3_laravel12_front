@@ -439,16 +439,17 @@ function onAssignRange() {
 }
 async function saveAssign() {
     assign.errors = []
-    const newBlocks: any[] = []
-    for (let h = assign.startHour; h < assign.endHour; h++) {
-        if (blocks.value.some((b: any) => b.day_of_week === assign.day && b.start_time === hh(h))) {
-            assign.errors = [`Ya hay una sesión el ${dayLabel(assign.day)} ${hh(h)}.`]; return
-        }
-        newBlocks.push({ place_id: assign.placeId, day_of_week: assign.day, date: null, start_time: hh(h), end_time: hh(h + 1) })
+    // UN solo bloque con el rango completo (como el generador académico).
+    const startM = assign.startHour * 60
+    const endM = assign.endHour * 60
+    const toMin = (t: string) => { const [h, m] = String(t).split(':').map(Number); return (h || 0) * 60 + (m || 0) }
+    if (blocks.value.some((b: any) => b.day_of_week === assign.day && toMin(b.start_time) < endM && toMin(b.end_time) > startM)) {
+        assign.errors = ['Ya hay una sesión en ese rango de horas.']; return
     }
+    const newBlock = { place_id: assign.placeId, day_of_week: assign.day, date: null, start_time: hh(assign.startHour), end_time: hh(assign.endHour) }
     const all = [
         ...blocks.value.map((b: any) => ({ place_id: b.place_id ?? null, day_of_week: b.day_of_week, date: null, start_time: b.start_time, end_time: b.end_time })),
-        ...newBlocks,
+        newBlock,
     ]
     assign.saving = true
     try {
