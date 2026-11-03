@@ -127,6 +127,7 @@
                             </div>
                             <p class="text-[10px] text-slate-400 mt-0.5">Elige del catálogo. Si falta, usa “+ Nueva” para agregarla al catálogo del plantel.</p>
                         </template>
+                        <p v-else-if="form.type === 'group_tutoring'" class="text-xs text-slate-400 py-2">Se genera automáticamente del grupo: <strong>“Tutoría grupal …”</strong>.</p>
                         <input v-else v-model="form.name" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Nombre de la actividad" />
                     </div>
 
@@ -187,7 +188,7 @@
                 </div>
                 <div class="flex justify-end gap-2 pt-1">
                     <button @click="showCreate = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
-                    <button @click="create" :disabled="busy || !form.type || !form.name || (form.type === 'group_tutoring' && !form.group_id)"
+                    <button @click="create" :disabled="busy || !form.type || (form.type === 'group_tutoring' ? !form.group_id : !form.name)"
                         class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Crear</button>
                 </div>
             </div>
@@ -359,7 +360,7 @@ async function create() {
         await api.post(AC.activities, {
             period_id: Number(periodId.value),
             type: form.type,
-            name: form.name,
+            name: form.type === 'group_tutoring' ? null : form.name, // tutoría grupal se autonombra del grupo
             group_id: form.group_id,
             instructor_user_id: form.instructor_user_id,
             place_id: form.place_id,
