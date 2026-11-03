@@ -64,9 +64,14 @@
         <section v-if="activity.status !== 'closed'" class="rounded-xl border bg-white p-4 space-y-4">
             <h2 class="text-sm font-bold uppercase text-slate-500">Inscripción y restricciones</h2>
 
-            <div class="grid sm:grid-cols-3 gap-3">
+            <div v-if="isGroupTutoring" class="rounded-lg bg-sky-50 border border-sky-100 p-3 text-[11px] text-sky-800">
+                <strong>Tutoría grupal:</strong> permanece en <strong>inscripción todo el periodo</strong> y es <strong>invisible</strong> en el portal del alumno.
+                Los alumnos los asigna <strong>Servicios Escolares</strong> al dar de alta a los de nuevo ingreso, según el grupo que les asigne — no por auto-inscripción. No tiene ventana de inscripción.
+            </div>
+
+            <div v-else class="grid sm:grid-cols-3 gap-3">
                 <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Estado</label>
+                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Estado (sigue la ventana)</label>
                     <select v-model="enroll.status" class="w-full rounded-lg border-slate-300 text-sm">
                         <option value="draft">Borrador (no visible)</option>
                         <option value="enrollment">Inscripción abierta</option>
@@ -83,7 +88,7 @@
                     <input v-model="enroll.closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
             </div>
-            <p class="text-[11px] text-slate-400">La inscripción del alumno solo se permite en estado <strong>Inscripción abierta</strong> y dentro de la ventana. Si la dejas vacía, aplica la ventana general del periodo. El cupo lo controla el campo “Cupo”.</p>
+            <p v-if="!isGroupTutoring" class="text-[11px] text-slate-400">Si fijas una ventana, el estado se mueve <strong>solo</strong>: Borrador → Inscripción abierta (cuando abre, los alumnos la ven) → Activa (al cerrar). Sin ventana, controlas el estado a mano. Las fechas deben estar dentro del periodo. El cupo lo controla el campo “Cupo”.</p>
 
             <div class="grid sm:grid-cols-2 gap-3 pt-1">
                 <div>
@@ -365,6 +370,7 @@ const TYPE_LABELS: Record<string, string> = {
     extraescolar: 'Actividad extraescolar', mooc: 'Curso MOOC',
 }
 const typeLabel = computed(() => TYPE_LABELS[activity.value?.type] ?? activity.value?.type ?? '')
+const isGroupTutoring = computed(() => activity.value?.type === 'group_tutoring')
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
     draft:      { label: 'Borrador',   cls: 'bg-slate-100 text-slate-500' },
