@@ -142,9 +142,11 @@ async function saveSchedule() {
     })
 }
 
+const activePeriodId = ref<number | null>(null)
 async function fetchOptions() {
     const { data } = await api.get(T.determination.catalog)
     periods.value = data.periods ?? []
+    activePeriodId.value = data.active_period_id ?? null
 }
 async function loadWindow() {
     if (!win.period_id) return
@@ -193,5 +195,13 @@ async function act(fn: () => Promise<void>) {
     finally { busy.value = false }
 }
 
-onMounted(async () => { await Promise.all([fetchOptions(), loadLimits()]) })
+onMounted(async () => {
+    await Promise.all([fetchOptions(), loadLimits()])
+    // Auto-selecciona el periodo ACTIVO en ambos paneles y carga sus datos.
+    if (activePeriodId.value !== null) {
+        win.period_id = activePeriodId.value as any
+        sched.period_id = activePeriodId.value as any
+        await Promise.all([loadWindow(), loadSchedule()])
+    }
+})
 </script>
