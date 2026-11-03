@@ -7,7 +7,7 @@
 
         <!-- Filtros -->
         <div class="rounded-xl border bg-white p-4 grid sm:grid-cols-3 gap-3">
-            <select v-model="filters.period_id" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.period_id" @change="load" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todos los periodos</option>
                 <option v-for="p in options.periods" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>
@@ -104,13 +104,20 @@ const referralChart = computed(() => {
 })
 
 async function fetchOptions() {
-    const { data } = await api.get(T.assignments.filterOptions)
+    // Catálogo del plantel: TODOS los periodos + el activo (para preseleccionarlo).
+    const { data } = await api.get(T.determination.catalog)
     options.periods = data.periods ?? []
+    if (data.active_period_id != null) {
+        filters.period_id = data.active_period_id
+    }
 }
 async function load() {
     const { data } = await api.get(T.dashboard, { params: { period_id: filters.period_id || undefined } })
     d.value = data
 }
 
-onMounted(async () => { await Promise.all([fetchOptions(), load()]) })
+onMounted(async () => {
+    await fetchOptions()   // primero resuelve el periodo activo…
+    await load()           // …y carga el concentrado ya con ese periodo.
+})
 </script>
