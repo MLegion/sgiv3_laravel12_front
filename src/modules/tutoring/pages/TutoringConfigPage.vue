@@ -5,8 +5,13 @@
             <p class="text-xs text-slate-400">Ventana de propuestas, umbrales y créditos de tutoría grupal (Cap. 15).</p>
         </div>
 
+        <!-- Pestañas -->
+        <div class="border-b border-slate-200 flex gap-1">
+            <button v-for="t in TABS" :key="t.k" @click="tab = t.k" :class="tabClass(t.k)">{{ t.label }}</button>
+        </div>
+
         <!-- Ventana de propuesta (por periodo) -->
-        <section class="rounded-xl border bg-white p-4 space-y-3">
+        <section v-show="tab === 'window'" class="rounded-xl border bg-white p-4 space-y-3">
             <h2 class="text-sm font-bold uppercase text-slate-500">Ventana de propuesta individual</h2>
             <div class="grid sm:grid-cols-4 gap-3 items-end">
                 <div>
@@ -32,7 +37,7 @@
         </section>
 
         <!-- Límites / umbrales -->
-        <section class="rounded-xl border bg-white p-4 space-y-3">
+        <section v-show="tab === 'limits'" class="rounded-xl border bg-white p-4 space-y-3">
             <h2 class="text-sm font-bold uppercase text-slate-500">Límites y umbrales</h2>
             <div class="grid sm:grid-cols-4 gap-3 items-end">
                 <div>
@@ -57,7 +62,7 @@
         </section>
 
         <!-- Calendario de hitos del PAT (fechas por etapa, T-G) -->
-        <section class="rounded-xl border bg-white p-4 space-y-3">
+        <section v-show="tab === 'schedule'" class="rounded-xl border bg-white p-4 space-y-3">
             <h2 class="text-sm font-bold uppercase text-slate-500">Calendario de hitos del PAT</h2>
             <p class="text-xs text-slate-400">
                 Fecha de cada hito del seguimiento por periodo. <b>Abre</b> = antes de esa fecha el tutor no puede
@@ -101,6 +106,18 @@ const toast = useToast()
 
 const periods = ref<any[]>([])
 const busy = ref(false)
+
+// Pestañas (un panel por pestaña).
+const TABS = [
+    { k: 'window', label: 'Ventana de propuesta' },
+    { k: 'limits', label: 'Límites y umbrales' },
+    { k: 'schedule', label: 'Calendario de hitos' },
+] as const
+const tab = ref<'window' | 'limits' | 'schedule'>('window')
+const tabClass = (t: string) => [
+    'px-4 py-2 text-sm font-semibold border-b-2 -mb-px',
+    tab.value === t ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-400 hover:text-slate-600',
+]
 
 const win = reactive({ period_id: '', opens_at: '', closes_at: '', is_open: false })
 const limits = reactive({ max_tutees_per_tutor: 0, risk_min_repeat: 1, group_tutoring_max_semester: 1, group_tutoring_credits: 0 })
