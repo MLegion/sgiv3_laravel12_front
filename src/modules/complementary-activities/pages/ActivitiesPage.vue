@@ -114,13 +114,20 @@
                             <option v-for="t in types" :key="t.value" :value="t.value">{{ t.label }}</option>
                         </select>
                     </div>
+                    <!-- Nombre: del CATÁLOGO (complementaria/extraescolar) o libre (tutoría grupal) -->
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre</label>
-                        <input v-model="form.name" @change="onNamePicked" :list="nameCatalog.length ? 'ac-name-catalog' : undefined" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Taller de ajedrez" />
-                        <datalist id="ac-name-catalog">
-                            <option v-for="c in nameCatalog" :key="c.id" :value="c.name" />
-                        </datalist>
-                        <p v-if="nameCatalog.length" class="text-[10px] text-slate-400 mt-0.5">Elige del catálogo o escribe uno nuevo.</p>
+                        <template v-if="usesCatalog">
+                            <div class="flex items-center gap-2">
+                                <select v-model="form.name" @change="onCatalogPick" class="flex-1 rounded-lg border-slate-300 text-sm">
+                                    <option value="">Elige del catálogo…</option>
+                                    <option v-for="c in nameCatalog" :key="c.id" :value="c.name">{{ c.name }}<span v-if="c.default_credits != null"> · {{ c.default_credits }} cr</span></option>
+                                </select>
+                                <button type="button" @click="openCatalogAdd" class="px-3 py-2 rounded-lg border text-xs font-semibold text-emerald-600 whitespace-nowrap">+ Nueva</button>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Elige del catálogo. Si falta, usa “+ Nueva” para agregarla al catálogo del plantel.</p>
+                        </template>
+                        <input v-else v-model="form.name" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Nombre de la actividad" />
                     </div>
 
                     <!-- Grupo (solo tutoría grupal; la carrera se deriva del grupo) -->
@@ -182,6 +189,26 @@
                     <button @click="showCreate = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
                     <button @click="create" :disabled="busy || !form.type || !form.name || (form.type === 'group_tutoring' && !form.group_id)"
                         class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Crear</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub-modal: agregar al catálogo del plantel -->
+        <div v-if="showCatalogAdd" class="fixed inset-0 bg-black/40 flex items-center justify-center z-30 p-4" @click.self="showCatalogAdd = false">
+            <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-5 space-y-3">
+                <h2 class="text-sm font-bold uppercase text-slate-500">Agregar al catálogo ({{ typeLabel(form.type) }})</h2>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre</label>
+                    <input v-model="catalogAdd.name" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Taller de ajedrez" />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Créditos sugeridos (opcional)</label>
+                    <input v-model.number="catalogAdd.default_credits" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
+                </div>
+                <p class="text-[10px] text-slate-400">Se guarda en el catálogo de este plantel (no global). Si ya existe, se reutiliza.</p>
+                <div class="flex justify-end gap-2 pt-1">
+                    <button @click="showCatalogAdd = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
+                    <button @click="saveCatalogAdd" :disabled="busy || !catalogAdd.name" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Agregar</button>
                 </div>
             </div>
         </div>
@@ -267,13 +294,14 @@ async function saveWindow() {
 const showCreate = ref(false)
 const form = reactive<any>({ type: '', name: '', group_id: null, instructor_user_id: null, place_id: null, capacity: null, credits: 0 })
 
-// Catálogo de nombres estandarizados para el tipo seleccionado (autocompletar).
+// El nombre se elige del CATÁLOGO para complementaria/extraescolar; libre para tutoría grupal.
+const usesCatalog = computed(() => form.type === 'complementaria' || form.type === 'extraescolar')
 const nameCatalog = ref<any[]>([])
 async function loadNameCatalog() {
-    if (form.type !== 'complementaria' && form.type !== 'extraescolar') { nameCatalog.value = []; return }
+    if (!usesCatalog.value) { nameCatalog.value = []; return }
     try {
         const { data } = await api.get(AC.activeActivityCatalog, { params: { category: form.type } })
-        nameCatalog.value = data ?? []
+        nameCatalog.value = data?.items ?? data ?? []
     } catch { nameCatalog.value = [] }
 }
 function onTypeChange() {
@@ -284,9 +312,28 @@ function onTypeChange() {
     loadNameCatalog()
 }
 // Al elegir un nombre del catálogo, autollena los créditos sugeridos (editable).
-function onNamePicked() {
+function onCatalogPick() {
     const hit = nameCatalog.value.find(c => c.name === form.name)
     if (hit && hit.default_credits != null) form.credits = hit.default_credits
+}
+
+// ── Sub-modal: agregar un nombre al catálogo del plantel (categoría = tipo) ──
+const showCatalogAdd = ref(false)
+const catalogAdd = reactive<{ name: string; default_credits: number | null }>({ name: '', default_credits: null })
+function openCatalogAdd() { catalogAdd.name = ''; catalogAdd.default_credits = null; showCatalogAdd.value = true }
+async function saveCatalogAdd() {
+    await act(async () => {
+        await api.post(AC.activityCatalog, {
+            category: form.type,
+            name: catalogAdd.name.trim(),
+            default_credits: catalogAdd.default_credits === null || (catalogAdd.default_credits as any) === '' ? null : Number(catalogAdd.default_credits),
+        })
+        toast.success('Agregada al catálogo.')
+        showCatalogAdd.value = false
+        await loadNameCatalog()
+        form.name = catalogAdd.name.trim()
+        onCatalogPick()
+    })
 }
 
 function typeLabel(v: string): string {

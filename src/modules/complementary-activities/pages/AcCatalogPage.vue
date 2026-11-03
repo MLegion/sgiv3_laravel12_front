@@ -12,9 +12,9 @@
 
         <div class="flex items-center gap-2">
             <label class="text-xs font-semibold text-slate-500">Categoría</label>
-            <select v-model="categoryFilter" @change="onFilterChange" class="rounded-lg border-slate-300 text-sm">
-                <option value="">Todas</option>
-                <option v-for="c in CATEGORIES" :key="c.value" :value="c.value">{{ c.label }}</option>
+            <select v-model="categoryFilter" @change="onFilterChange" class="rounded-lg border-slate-300 text-sm" :disabled="visibleCategories.length === 1">
+                <option v-if="visibleCategories.length > 1" value="">Todas</option>
+                <option v-for="c in visibleCategories" :key="c.value" :value="c.value">{{ c.label }}</option>
             </select>
         </div>
 
@@ -54,7 +54,7 @@
                 <div v-if="!form.id">
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Categoría</label>
                     <select v-model="form.category" class="w-full rounded-lg border-slate-300 text-sm">
-                        <option v-for="c in CATEGORIES" :key="c.value" :value="c.value">{{ c.label }}</option>
+                        <option v-for="c in visibleCategories" :key="c.value" :value="c.value">{{ c.label }}</option>
                     </select>
                 </div>
                 <div>
@@ -101,6 +101,21 @@ const showForm = ref(false)
 const categoryFilter = ref('')
 const form = reactive<any>({ id: null, category: 'complementaria', name: '', default_credits: null, is_active: true })
 
+// Categorías permitidas según el rol (encargado = solo la suya; coordinador = todas).
+const allowedCats = ref<string[]>(CATEGORIES.map(c => c.value))
+const visibleCategories = computed(() => CATEGORIES.filter(c => allowedCats.value.includes(c.value)))
+async function loadAllowedCategories() {
+    try {
+        const { data } = await api.get(AC.catalogCategories)
+        allowedCats.value = Array.isArray(data?.categories) && data.categories.length ? data.categories : CATEGORIES.map(c => c.value)
+    } catch { /* deja todas */ }
+    // Encargado con una sola categoría: fija el filtro y el formulario.
+    if (visibleCategories.value.length === 1) {
+        categoryFilter.value = visibleCategories.value[0].value
+        form.category = visibleCategories.value[0].value
+    }
+}
+
 const columns: DataTableColumn[] = [
     { key: 'name',            label: 'NOMBRE',    field: 'name', sortable: true, searchable: true },
     { key: 'category',        label: 'CATEGORÍA', field: 'category', sortable: true },
@@ -117,7 +132,8 @@ const { rows, loading, pagination, handleChange, fetchData, initialSearch } = us
 function onFilterChange() { pagination.value.page = 1; fetchData() }
 
 function openCreate() {
-    Object.assign(form, { id: null, category: categoryFilter.value || 'complementaria', name: '', default_credits: null, is_active: true })
+    const def = categoryFilter.value || visibleCategories.value[0]?.value || 'complementaria'
+    Object.assign(form, { id: null, category: def, name: '', default_credits: null, is_active: true })
     showForm.value = true
 }
 function openEdit(r: any) {
@@ -140,5 +156,5 @@ async function save() {
     finally { busy.value = false }
 }
 
-fetchData()
+loadAllowedCategories().then(() => fetchData())
 </script>

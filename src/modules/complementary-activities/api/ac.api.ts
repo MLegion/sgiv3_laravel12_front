@@ -10,6 +10,7 @@ const acApi: ApiModule = {
         activityCatalog:       apiUrl('/complementary-activities/activity-catalog'),
         activityCatalogItem:   (id: string | number) => apiUrl(`/complementary-activities/activity-catalog/${id}`),
         activeActivityCatalog: apiUrl('/complementary-activities/active-activity-catalog'),
+        catalogCategories:     apiUrl('/complementary-activities/catalog-categories'),
         myMoocCatalog:         apiUrl('/complementary-activities/me/mooc-catalog'),
 
         // Lugares por categoría (admin del colegio)
