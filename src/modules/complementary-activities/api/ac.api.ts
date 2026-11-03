@@ -52,6 +52,7 @@ const acApi: ApiModule = {
         academicOffers: apiUrl('/complementary-activities/academic-offers'),
         setEnrollment: (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/enrollment`),
         enrollmentWindow: apiUrl('/complementary-activities/enrollment-window'),
+        resultWindow: apiUrl('/complementary-activities/result-window'),
         // Portal del alumno
         myActivities: apiUrl('/complementary-activities/me/activities'),
         selfEnroll:   (id: string | number) => apiUrl(`/complementary-activities/me/activities/${id}/enroll`),
@@ -62,6 +63,8 @@ const acApi: ApiModule = {
             apiUrl(`/complementary-activities/activities/${id}/attendees/${studentId}`),
         creditAttendee: (id: string | number, studentId: string | number) =>
             apiUrl(`/complementary-activities/activities/${id}/attendees/${studentId}/credit`),
+        attendeeResult: (id: string | number, studentId: string | number) =>
+            apiUrl(`/complementary-activities/activities/${id}/attendees/${studentId}/result`),
         schedules:         (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/schedules`),
         scheduleBlock:     (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/schedule-blocks`),
         scheduleBlockItem: (id: string | number, blockId: string | number) => apiUrl(`/complementary-activities/activities/${id}/schedule-blocks/${blockId}`),

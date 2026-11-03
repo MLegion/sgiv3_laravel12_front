@@ -84,6 +84,18 @@
                 </div>
             </div>
             <p class="text-[11px] text-slate-400">La inscripción del alumno solo se permite en estado <strong>Inscripción abierta</strong> y dentro de la ventana. Si la dejas vacía, aplica la ventana general del periodo. El cupo lo controla el campo “Cupo”.</p>
+
+            <div class="grid sm:grid-cols-2 gap-3 pt-1">
+                <div>
+                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Captura de resultados — abre (opcional)</label>
+                    <input v-model="enroll.result_opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Captura de resultados — cierra (opcional)</label>
+                    <input v-model="enroll.result_closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                </div>
+            </div>
+            <p class="text-[11px] text-slate-400">Ventana de cierre en que el instructor/encargado puede marcar acreditó/no acreditó para ESTA actividad. Vacío = aplica la ventana general del periodo.</p>
             <button @click="saveEnrollment" :disabled="savingEnroll" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-semibold disabled:opacity-50">Guardar estado/ventana</button>
 
             <hr class="border-slate-100" />
@@ -177,18 +189,44 @@
                 </ul>
             </div>
 
+            <p class="text-[11px] text-slate-400">
+                El resultado NO es calificación: solo <strong>acreditó</strong> / <strong>no acreditó</strong>. Lo puede
+                asignar el instructor de la actividad o el encargado, dentro de la ventana de cierre. Siempre queda
+                registrado quién lo asignó. Al cerrar la actividad, lo que quede sin determinar se marca “no acreditó” por cierre.
+            </p>
+
             <table v-if="attendees.length" class="w-full text-sm">
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                    <th class="px-3 py-1">Control</th><th>Alumno</th><th>Estado</th><th></th>
+                    <th class="px-3 py-1">Control</th><th>Alumno</th><th>Resultado</th><th></th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="s in attendees" :key="s.id" class="border-b last:border-0">
                         <td class="px-3 py-2 text-slate-600">{{ s.num_control }}</td>
                         <td class="text-slate-700">{{ s.full_name }}<span v-if="s.added_manually" class="ml-1 text-[10px] text-slate-400">(manual)</span></td>
-                        <td class="text-slate-600">{{ statusLabel(s.status) }}</td>
+                        <td class="py-1">
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full"
+                                :class="s.result === 'passed' ? 'bg-emerald-100 text-emerald-700'
+                                    : s.result === 'not_passed' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-500'">
+                                {{ s.result === 'passed' ? 'Acreditó' : s.result === 'not_passed' ? 'No acreditó' : 'Sin determinar' }}
+                                <span v-if="s.result === 'not_passed' && s.result_source === 'auto_close'" class="font-normal">· por cierre</span>
+                            </span>
+                            <div v-if="s.result_by_name" class="text-[10px] text-slate-400 mt-0.5">
+                                {{ s.result_source === 'auto_close' ? 'Asentado al cerrar por' : 'Asignado por' }}
+                                {{ s.result_by_name }}<span v-if="s.result_at"> · {{ fmtDateTime(s.result_at) }}</span>
+                            </div>
+                        </td>
                         <td class="text-right whitespace-nowrap">
-                            <button v-if="s.status !== 'attended'" @click="creditStudent(s)" class="text-xs text-emerald-600 hover:underline">acreditar</button>
-                            <button @click="removeStudent(s)" class="ml-3 text-xs text-slate-400 hover:text-rose-500">quitar</button>
+                            <template v-if="activity.status !== 'closed'">
+                                <button @click="setResult(s, 'passed')"
+                                    class="text-xs px-2 py-1 rounded font-semibold"
+                                    :class="s.result === 'passed' ? 'bg-emerald-600 text-white' : 'text-emerald-600 hover:bg-emerald-50'">Acreditó</button>
+                                <button @click="setResult(s, 'not_passed')"
+                                    class="ml-1 text-xs px-2 py-1 rounded font-semibold"
+                                    :class="s.result === 'not_passed' ? 'bg-rose-600 text-white' : 'text-rose-600 hover:bg-rose-50'">No acreditó</button>
+                                <button v-if="s.result" @click="setResult(s, null)" class="ml-1 text-xs text-slate-400 hover:text-slate-600">limpiar</button>
+                                <button @click="removeStudent(s)" class="ml-3 text-xs text-slate-400 hover:text-rose-500">quitar</button>
+                            </template>
+                            <span v-else class="text-[10px] text-slate-400">actividad cerrada</span>
                         </td>
                     </tr>
                 </tbody>
@@ -337,7 +375,7 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
 
 // ── Inscripción (estado + ventana) y restricciones ───────────────────────
 const offers = ref<any[]>([]) // ofertas del plantel (carrera · modalidad · campus)
-const enroll = reactive<{ status: string; opens_at: string | null; closes_at: string | null }>({ status: 'draft', opens_at: null, closes_at: null })
+const enroll = reactive<{ status: string; opens_at: string | null; closes_at: string | null; result_opens_at: string | null; result_closes_at: string | null }>({ status: 'draft', opens_at: null, closes_at: null, result_opens_at: null, result_closes_at: null })
 const rules = reactive<{ offer_ids: number[]; gender: string | null; semesters: number[] }>({ offer_ids: [], gender: null, semesters: [] })
 const savingEnroll = ref(false)
 const savingRules = ref(false)
@@ -349,7 +387,7 @@ function toggleSemester(n: number) {
 async function saveEnrollment() {
     savingEnroll.value = true
     try {
-        await api.put(AC.setEnrollment(props.id), { status: enroll.status, opens_at: toIso(enroll.opens_at), closes_at: toIso(enroll.closes_at) })
+        await api.put(AC.setEnrollment(props.id), { status: enroll.status, opens_at: toIso(enroll.opens_at), closes_at: toIso(enroll.closes_at), result_opens_at: toIso(enroll.result_opens_at), result_closes_at: toIso(enroll.result_closes_at) })
         toast.success('Estado/ventana guardados.')
         await load()
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo guardar.') }
@@ -506,10 +544,6 @@ const DAYS = [
 const blocks = ref<any[]>([])
 const dayLabel = (v: number): string => DAYS.find(d => d.v === v)?.label ?? String(v)
 
-function statusLabel(s: string): string {
-    return ({ enrolled: 'Inscrito', attended: 'Acreditado', dropped: 'Baja' } as Record<string, string>)[s] ?? s
-}
-
 async function load() {
     const { data } = await api.get(AC.activity(props.id))
     activity.value = data
@@ -527,6 +561,8 @@ async function load() {
     enroll.status = data.status ?? 'draft'
     enroll.opens_at = toLocal(data.enrollment_opens_at)
     enroll.closes_at = toLocal(data.enrollment_closes_at)
+    enroll.result_opens_at = toLocal(data.result_opens_at)
+    enroll.result_closes_at = toLocal(data.result_closes_at)
     rules.offer_ids = Array.isArray(data.rule_offer_ids) ? data.rule_offer_ids.map(Number) : []
     rules.gender = data.rule_gender ?? null
     rules.semesters = Array.isArray(data.rule_semesters) ? data.rule_semesters.map(Number) : []
@@ -577,12 +613,17 @@ async function addStudent(s: any, force = false) {
         toast.error(d?.message ?? 'No se pudo agregar.')
     }
 }
-async function creditStudent(s: any) {
+async function setResult(s: any, result: 'passed' | 'not_passed' | null) {
     try {
-        await api.post(AC.creditAttendee(props.id, s.student_id), {})
-        toast.success('Alumno acreditado.')
+        await api.post(AC.attendeeResult(props.id, s.student_id), { result })
+        toast.success(result === 'passed' ? 'Marcado como acreditó.' : result === 'not_passed' ? 'Marcado como no acreditó.' : 'Resultado limpiado.')
         await load()
-    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo acreditar.') }
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo guardar el resultado.') }
+}
+function fmtDateTime(v: any): string {
+    if (!v) return ''
+    const d = new Date(String(v).replace(' ', 'T'))
+    return isNaN(d.getTime()) ? String(v) : d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })
 }
 async function removeStudent(s: any) {
     try {

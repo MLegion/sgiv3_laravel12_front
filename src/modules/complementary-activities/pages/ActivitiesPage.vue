@@ -23,6 +23,7 @@
             </div>
             <div class="sm:col-span-2 text-right flex gap-2 justify-end">
                 <button @click="openWindow" :disabled="!periodId" class="px-4 py-2 rounded-lg border text-slate-600 text-sm font-semibold disabled:opacity-50">Ventana de inscripción</button>
+                <button @click="openResultWindow" :disabled="!periodId" class="px-4 py-2 rounded-lg border text-slate-600 text-sm font-semibold disabled:opacity-50">Ventana de cierre</button>
                 <button @click="openCreate" :disabled="!periodId" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Nueva actividad</button>
             </div>
         </section>
@@ -98,6 +99,29 @@
                 <div class="flex justify-end gap-2 pt-1">
                     <button @click="showWindow = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
                     <button @click="saveWindow" :disabled="busy" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal ventana general de cierre / determinación de resultados -->
+        <div v-if="showResultWindow" class="fixed inset-0 bg-black/30 flex items-center justify-center z-20 p-4" @click.self="showResultWindow = false">
+            <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-5 space-y-3">
+                <h2 class="text-sm font-bold uppercase text-slate-500">Ventana general de cierre (resultados)</h2>
+                <p class="text-[11px] text-slate-500">Periodo: <strong>{{ selectedPeriodName }}</strong></p>
+                <p class="text-[11px] text-slate-400">Tiempo en que el instructor/encargado puede marcar acreditó/no acreditó. Aplica a TODAS las actividades de este periodo; una actividad puede fijar su propia ventana que pisa ésta. Vacío = sin límite de tiempo.</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Abre</label>
+                        <input v-model="resultWindowForm.opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Cierra</label>
+                        <input v-model="resultWindowForm.closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-1">
+                    <button @click="showResultWindow = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
+                    <button @click="saveResultWindow" :disabled="busy" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar</button>
                 </div>
             </div>
         </div>
@@ -289,6 +313,30 @@ async function saveWindow() {
         })
         toast.success('Ventana de inscripción guardada.')
         showWindow.value = false
+    })
+}
+
+// ── Ventana GENERAL de cierre / determinación de resultados (por periodo) ─────
+const showResultWindow = ref(false)
+const resultWindowForm = reactive<{ opens_at: string | null; closes_at: string | null }>({ opens_at: null, closes_at: null })
+async function openResultWindow() {
+    if (!periodId.value) return
+    try {
+        const { data } = await api.get(AC.resultWindow, { params: { period_id: periodId.value } })
+        resultWindowForm.opens_at = toLocal(data?.opens_at)
+        resultWindowForm.closes_at = toLocal(data?.closes_at)
+    } catch { resultWindowForm.opens_at = null; resultWindowForm.closes_at = null }
+    showResultWindow.value = true
+}
+async function saveResultWindow() {
+    await act(async () => {
+        await api.put(AC.resultWindow, {
+            period_id: Number(periodId.value),
+            opens_at: toIso(resultWindowForm.opens_at),
+            closes_at: toIso(resultWindowForm.closes_at),
+        })
+        toast.success('Ventana de cierre guardada.')
+        showResultWindow.value = false
     })
 }
 
