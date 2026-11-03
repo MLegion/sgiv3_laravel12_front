@@ -31,7 +31,6 @@
         </div>
         <div class="flex gap-2">
             <button @click="fetchRisk" class="px-4 py-2 rounded-lg border text-sm font-semibold text-slate-600">Buscar candidatos</button>
-            <span class="text-xs text-slate-400 self-center" v-if="minRepeat">Umbral de recurse: {{ minRepeat }}</span>
         </div>
 
         <!-- Tabla de candidatos en riesgo -->
@@ -45,11 +44,8 @@
                         <td class="px-4 py-2"><span class="font-semibold text-slate-700">{{ r.num_control }}</span> <span class="text-slate-500">{{ r.full_name }}</span></td>
                         <td class="text-slate-600">{{ r.semester }}</td>
                         <td class="space-x-1">
-                            <Sig v-if="r.repeated" :t="'Recurse ' + r.repeated" />
-                            <Sig v-if="r.drop_risk" :t="'Riesgo de baja'" tone="rose" />
-                            <Sig v-if="r.cedula_flags" :t="'Cédula ' + r.cedula_flags" tone="violet" />
-                            <Sig v-if="r.open_referrals" :t="'Canaliz. ' + r.open_referrals" tone="amber" />
-                            <span v-if="!r.repeated && !r.drop_risk && !r.cedula_flags && !r.open_referrals" class="text-slate-300">—</span>
+                            <Sig v-for="s in r.signals" :key="s.key" :t="sigText(s)" :tone="s.tone" />
+                            <span v-if="!r.signals || !r.signals.length" class="text-slate-300">—</span>
                         </td>
                         <td><Badge :ok="r.suggested" on="Sí" off="No" /></td>
                         <td class="pr-3 text-right">
@@ -159,11 +155,13 @@ const Modal = defineComponent({
     ]),
 })
 
+// Texto del chip de señal: muestra el valor cuando aporta (p. ej. "Materias reprobadas 3").
+const sigText = (s: any) => (s.value > 1 ? `${s.label} ${s.value}` : s.label)
+
 const options = reactive<{ periods: any[]; careers: any[] }>({ periods: [], careers: [] })
 const filters = reactive({ period_id: '', career_id: '', semester: '', search: '', only_suggested: false })
 const risk = ref<any[]>([])
 const proposals = ref<any[]>([])
-const minRepeat = ref<number | null>(null)
 const windowOpen = ref(false)
 const windowInfo = ref('')
 const busy = ref(false)
@@ -190,7 +188,6 @@ async function fetchRisk() {
         only_suggested: filters.only_suggested ? 1 : undefined,
     } })
     risk.value = data.data ?? []
-    minRepeat.value = data.min_repeat ?? null
     await Promise.all([fetchWindow(), fetchProposals()])
 }
 async function fetchProposals() {
