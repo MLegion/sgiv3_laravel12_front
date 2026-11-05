@@ -55,6 +55,9 @@
                 search-placeholder="Buscar alumno…"
                 @change="onTableChange"
             >
+                <template #cell-foto="{ row }">
+                    <UserAvatar :url="avatarUrl(row.student_id)" :name="row.nombre" size="sm" shape="square" />
+                </template>
                 <template #cell-num_control="{ row }">
                     <span class="font-mono text-xs">{{ row.num_control }}</span>
                 </template>
@@ -114,6 +117,7 @@ import { useToast } from '@/app/composables/useToast'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import type { DataTableColumn, DataTableChangeEvent } from '@/app/components/ui/datatable/types'
 import RollCallMode from '@/modules/midocencia/components/RollCallMode.vue'
+import UserAvatar from '@/app/components/ui/UserAvatar.vue'
 
 const toast = useToast()
 const GA = API.MIDOCENCIA_API.groupAttendance
@@ -145,6 +149,7 @@ const page = ref(1)
 const perPage = ref(10)
 const term = ref('')
 const columns: DataTableColumn<Student>[] = [
+    { key: 'foto', label: '', width: '52px', align: 'center' },
     { key: 'num_control', label: 'No. Control', searchable: true },
     { key: 'nombre', label: 'Nombre', field: 'nombre', searchable: true },
     { key: 'asistencia', label: 'Asistencia', width: '150px' },
@@ -171,6 +176,10 @@ const campuses = computed(() => dedupe(groups.value.map(g => ({ id: g.campus_id,
 const modalidades = computed(() => dedupe(groups.value.filter(g => g.campus_id === campusId.value).map(g => ({ id: g.modality_type_id, name: g.modalidad }))))
 const materias = computed(() => groups.value.filter(g => g.campus_id === campusId.value && g.modality_type_id === modalityTypeId.value))
 const absentCount = computed(() => Object.values(marks).filter(m => m.status !== 'present').length)
+
+function avatarUrl(sid: number): string | null {
+    return selectedGroup.value ? GA.avatar(selectedGroup.value, sid) : null
+}
 
 function dedupe(arr: Array<{ id: number; name: string }>): Array<{ id: number; name: string }> {
     const seen = new Map<number, string>()
