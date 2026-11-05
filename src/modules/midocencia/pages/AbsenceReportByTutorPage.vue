@@ -15,50 +15,36 @@
             <button @click="load" class="px-4 py-2 rounded-lg bg-slate-700 text-white text-sm font-medium">Filtrar</button>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-500">Cargando…</div>
-        <div v-else-if="!rows.length" class="text-sm text-slate-500">Sin ausencias registradas en el periodo.</div>
-
-        <div v-else class="bg-white rounded-xl border border-slate-200 overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="bg-slate-50 text-slate-600">
-                    <tr>
-                        <th class="text-left px-3 py-2">Tutor</th>
-                        <th class="text-left px-3 py-2">No. Control</th>
-                        <th class="text-left px-3 py-2">Estudiante</th>
-                        <th class="text-left px-3 py-2">Materia</th>
-                        <th class="text-left px-3 py-2">Grupo</th>
-                        <th class="text-left px-3 py-2">Fecha</th>
-                        <th class="text-left px-3 py-2">Estado</th>
-                        <th class="text-left px-3 py-2">Motivo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(r, i) in rows" :key="i" class="border-t border-slate-100">
-                        <td class="px-3 py-1.5">{{ r.tutor }}</td>
-                        <td class="px-3 py-1.5 font-mono text-xs">{{ r.num_control }}</td>
-                        <td class="px-3 py-1.5">{{ r.nombre }}</td>
-                        <td class="px-3 py-1.5">{{ r.materia }}</td>
-                        <td class="px-3 py-1.5">{{ r.grupo }}</td>
-                        <td class="px-3 py-1.5">{{ r.fecha }}</td>
-                        <td class="px-3 py-1.5">
-                            <span class="px-2 py-0.5 rounded-full text-xs"
-                                :class="r.status === 'absent' ? 'bg-rose-100 text-rose-700' : r.status === 'late' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'">
-                                {{ statusLabel(r.status) }}
-                            </span>
-                        </td>
-                        <td class="px-3 py-1.5 text-slate-500">{{ r.motivo }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <DataTable
+            :columns="columns"
+            :rows="pagedRows"
+            :loading="loading"
+            :pagination="{ page, perPage, total: filtered.length }"
+            :exportable="['csv', 'xlsx']"
+            search-placeholder="Buscar tutor o estudiante…"
+            empty-text="Sin ausencias registradas en el periodo."
+            @change="onTableChange"
+        >
+            <template #cell-num_control="{ row }">
+                <span class="font-mono text-xs">{{ row.num_control }}</span>
+            </template>
+            <template #cell-status="{ row }">
+                <span class="px-2 py-0.5 rounded-full text-xs"
+                    :class="row.status === 'absent' ? 'bg-rose-100 text-rose-700' : row.status === 'late' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'">
+                    {{ statusLabel(row.status) }}
+                </span>
+            </template>
+        </DataTable>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn, DataTableChangeEvent } from '@/app/components/ui/datatable/types'
 
 const toast = useToast()
 const GA = API.MIDOCENCIA_API.groupAttendance
@@ -70,12 +56,42 @@ const from = ref<string>('')
 const to = ref<string>('')
 const loading = ref(false)
 
+const page = ref(1)
+const perPage = ref(25)
+const term = ref('')
+const columns: DataTableColumn<Row>[] = [
+    { key: 'tutor', label: 'Tutor', searchable: true },
+    { key: 'num_control', label: 'No. Control', searchable: true },
+    { key: 'nombre', label: 'Estudiante', searchable: true },
+    { key: 'materia', label: 'Materia' },
+    { key: 'grupo', label: 'Grupo' },
+    { key: 'fecha', label: 'Fecha' },
+    { key: 'status', label: 'Estado' },
+    { key: 'motivo', label: 'Motivo' },
+]
+const filtered = computed(() => {
+    const t = term.value.trim().toLowerCase()
+    if (!t) return rows.value
+    return rows.value.filter(r => r.tutor.toLowerCase().includes(t) || r.nombre.toLowerCase().includes(t) || (r.num_control ?? '').toLowerCase().includes(t))
+})
+const pagedRows = computed(() => filtered.value.slice((page.value - 1) * perPage.value, page.value * perPage.value))
+
+function onTableChange(e: DataTableChangeEvent) {
+    page.value = e.page
+    perPage.value = e.perPage
+    if (e.search !== undefined) {
+        term.value = typeof e.search === 'string' ? e.search : (Object.values(e.search)[0] ?? '')
+        page.value = 1
+    }
+}
+
 function statusLabel(s: string): string {
     return s === 'absent' ? 'Ausente' : s === 'late' ? 'Retardo' : s === 'excused' ? 'Justificado' : s
 }
 
 async function load() {
     loading.value = true
+    page.value = 1
     try {
         const { data } = await api.get(GA.absenceReport, { params: { from: from.value || null, to: to.value || null } })
         rows.value = data

@@ -5,7 +5,6 @@
 
         <!-- Cascada -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-            <!-- 1. Campus -->
             <div>
                 <label class="block text-xs font-medium text-slate-600">1 · Campus</label>
                 <select v-model="campusId" @change="onCampus" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
@@ -13,7 +12,6 @@
                     <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
             </div>
-            <!-- 2. Modalidad -->
             <div>
                 <label class="block text-xs font-medium text-slate-600">2 · Modalidad</label>
                 <select v-model="modalityTypeId" @change="onModality" :disabled="!campusId"
@@ -22,7 +20,6 @@
                     <option v-for="m in modalidades" :key="m.id" :value="m.id">{{ m.name }}</option>
                 </select>
             </div>
-            <!-- 3. Materia / grupo -->
             <div>
                 <label class="block text-xs font-medium text-slate-600">3 · Materia / grupo</label>
                 <select v-model="selectedGroup" @change="onGroup" :disabled="!modalityTypeId"
@@ -33,7 +30,6 @@
                     </option>
                 </select>
             </div>
-            <!-- 4. Fecha -->
             <div>
                 <label class="block text-xs font-medium text-slate-600">4 · Fecha (horario)</label>
                 <select v-if="dates.length" v-model="date" @change="loadRoster" :disabled="!selectedGroup"
@@ -49,41 +45,37 @@
             Este grupo no tiene horario cargado; elige la fecha manualmente.
         </p>
 
-        <div v-if="loading" class="text-sm text-slate-500">Cargando…</div>
+        <!-- Roster (DataTable) -->
+        <div v-if="selectedGroup && date && roster.length">
+            <DataTable
+                :columns="columns"
+                :rows="pagedRows"
+                :loading="loading"
+                :pagination="{ page, perPage, total: filtered.length }"
+                search-placeholder="Buscar alumno…"
+                @change="onTableChange"
+            >
+                <template #cell-num_control="{ row }">
+                    <span class="font-mono text-xs">{{ row.num_control }}</span>
+                </template>
+                <template #cell-asistencia="{ row }">
+                    <select v-model="marks[row.student_id].status"
+                        class="w-full rounded-lg text-xs"
+                        :class="marks[row.student_id].status === 'present' ? 'border-slate-300' : 'border-rose-300 bg-rose-50'">
+                        <option value="present">Presente</option>
+                        <option value="absent">Ausente</option>
+                        <option value="late">Retardo</option>
+                        <option value="excused">Justificado</option>
+                    </select>
+                </template>
+                <template #cell-motivo="{ row }">
+                    <input v-model="marks[row.student_id].notes" type="text" maxlength="255"
+                        :disabled="marks[row.student_id].status === 'present'"
+                        class="w-full rounded-lg border-slate-300 text-xs disabled:bg-slate-100" placeholder="Opcional" />
+                </template>
+            </DataTable>
 
-        <!-- Roster -->
-        <div v-else-if="selectedGroup && date && roster.length" class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="bg-slate-50 text-slate-600">
-                    <tr>
-                        <th class="text-left px-3 py-2">No. Control</th>
-                        <th class="text-left px-3 py-2">Nombre</th>
-                        <th class="text-left px-3 py-2 w-40">Asistencia</th>
-                        <th class="text-left px-3 py-2">Motivo (si falta)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="s in roster" :key="s.student_id" class="border-t border-slate-100"
-                        :class="{ 'bg-rose-50/50': marks[s.student_id].status !== 'present' }">
-                        <td class="px-3 py-1.5 font-mono text-xs">{{ s.num_control }}</td>
-                        <td class="px-3 py-1.5">{{ s.nombre }}</td>
-                        <td class="px-3 py-1.5">
-                            <select v-model="marks[s.student_id].status" class="w-full rounded-lg border-slate-300 text-xs">
-                                <option value="present">Presente</option>
-                                <option value="absent">Ausente</option>
-                                <option value="late">Retardo</option>
-                                <option value="excused">Justificado</option>
-                            </select>
-                        </td>
-                        <td class="px-3 py-1.5">
-                            <input v-model="marks[s.student_id].notes" type="text" maxlength="255"
-                                :disabled="marks[s.student_id].status === 'present'"
-                                class="w-full rounded-lg border-slate-300 text-xs disabled:bg-slate-100" placeholder="Opcional" />
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <div class="flex items-center justify-between px-3 py-3 bg-slate-50 border-t border-slate-200">
+            <div class="flex items-center justify-between mt-3">
                 <span class="text-xs text-slate-500">{{ absentCount }} ausencia(s) · {{ roster.length }} alumnos</span>
                 <button @click="save" :disabled="saving" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium disabled:opacity-50">
                     {{ saving ? 'Guardando…' : 'Guardar asistencia' }}
@@ -91,6 +83,7 @@
             </div>
         </div>
 
+        <div v-else-if="loading" class="text-sm text-slate-500">Cargando…</div>
         <div v-else-if="selectedGroup && date" class="text-sm text-slate-500">No hay alumnos inscritos en este grupo.</div>
     </div>
 </template>
@@ -100,6 +93,8 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn, DataTableChangeEvent } from '@/app/components/ui/datatable/types'
 
 const toast = useToast()
 const GA = API.MIDOCENCIA_API.groupAttendance
@@ -119,6 +114,32 @@ const selectedGroup = ref<number | null>(null)
 const date = ref<string>('')
 const loading = ref(false)
 const saving = ref(false)
+
+// Paginación/búsqueda local del roster.
+const page = ref(1)
+const perPage = ref(10)
+const term = ref('')
+const columns: DataTableColumn<Student>[] = [
+    { key: 'num_control', label: 'No. Control', searchable: true },
+    { key: 'nombre', label: 'Nombre', field: 'nombre', searchable: true },
+    { key: 'asistencia', label: 'Asistencia', width: '150px' },
+    { key: 'motivo', label: 'Motivo (si falta)' },
+]
+const filtered = computed(() => {
+    const t = term.value.trim().toLowerCase()
+    if (!t) return roster.value
+    return roster.value.filter(s => s.nombre.toLowerCase().includes(t) || (s.num_control ?? '').toLowerCase().includes(t))
+})
+const pagedRows = computed(() => filtered.value.slice((page.value - 1) * perPage.value, page.value * perPage.value))
+
+function onTableChange(e: DataTableChangeEvent) {
+    page.value = e.page
+    perPage.value = e.perPage
+    if (e.search !== undefined) {
+        term.value = typeof e.search === 'string' ? e.search : (Object.values(e.search)[0] ?? '')
+        page.value = 1
+    }
+}
 
 // Cascada derivada de la lista completa de grupos del docente.
 const campuses = computed(() => dedupe(groups.value.map(g => ({ id: g.campus_id, name: g.campus }))))
@@ -155,6 +176,7 @@ async function onGroup() {
 async function loadRoster() {
     if (!selectedGroup.value || !date.value) { roster.value = []; return }
     loading.value = true
+    page.value = 1; term.value = ''
     try {
         const { data } = await api.get(GA.roster(selectedGroup.value, date.value))
         roster.value = data.students
