@@ -3,18 +3,20 @@
         <h1 class="text-xl font-semibold text-slate-800">Asistencia de mis grupos</h1>
         <p class="text-sm text-slate-500 mb-4">Elige en orden: campus → modalidad → materia → fecha. Marca solo a los ausentes.</p>
 
-        <!-- Cascada -->
+        <!-- Cascada: con una sola opción se muestra como etiqueta fija; con varias, selector. -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
             <div>
                 <label class="block text-xs font-medium text-slate-600">1 · Campus</label>
-                <select v-model="campusId" @change="onCampus" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
+                <div v-if="campuses.length === 1" class="mt-1 px-3 py-2 rounded-lg bg-slate-100 text-sm text-slate-700 truncate">{{ campuses[0].name }}</div>
+                <select v-else v-model="campusId" @change="onCampus" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
                     <option :value="null">— Elige —</option>
                     <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
             </div>
             <div>
                 <label class="block text-xs font-medium text-slate-600">2 · Modalidad</label>
-                <select v-model="modalityTypeId" @change="onModality" :disabled="!campusId"
+                <div v-if="campusId && modalidades.length === 1" class="mt-1 px-3 py-2 rounded-lg bg-slate-100 text-sm text-slate-700 truncate">{{ modalidades[0].name }}</div>
+                <select v-else v-model="modalityTypeId" @change="onModality" :disabled="!campusId"
                         class="mt-1 w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-100">
                     <option :value="null">— Elige —</option>
                     <option v-for="m in modalidades" :key="m.id" :value="m.id">{{ m.name }}</option>
@@ -22,7 +24,8 @@
             </div>
             <div>
                 <label class="block text-xs font-medium text-slate-600">3 · Materia / grupo</label>
-                <select v-model="selectedGroup" @change="onGroup" :disabled="!modalityTypeId"
+                <div v-if="modalityTypeId && materias.length === 1" class="mt-1 px-3 py-2 rounded-lg bg-slate-100 text-sm text-slate-700 truncate">{{ materias[0].grupo }} · {{ materias[0].materia }}</div>
+                <select v-else v-model="selectedGroup" @change="onGroup" :disabled="!modalityTypeId"
                         class="mt-1 w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-100">
                     <option :value="null">— Elige —</option>
                     <option v-for="g in materias" :key="g.teacher_assignment_id" :value="g.teacher_assignment_id">
@@ -32,7 +35,8 @@
             </div>
             <div>
                 <label class="block text-xs font-medium text-slate-600">4 · Fecha (horario)</label>
-                <select v-if="dates.length" v-model="date" @change="loadRoster" :disabled="!selectedGroup"
+                <div v-if="dates.length === 1" class="mt-1 px-3 py-2 rounded-lg bg-slate-100 text-sm text-slate-700 truncate">{{ dates[0].weekday }} {{ dates[0].date }}</div>
+                <select v-else-if="dates.length" v-model="date" @change="loadRoster" :disabled="!selectedGroup"
                         class="mt-1 w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-100">
                     <option v-for="d in dates" :key="d.date" :value="d.date">{{ d.weekday }} {{ d.date }}</option>
                 </select>
