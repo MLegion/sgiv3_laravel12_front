@@ -181,14 +181,24 @@ function avatarUrl(sid: number): string | null {
     return selectedGroup.value ? GA.avatar(selectedGroup.value, sid) : null
 }
 
+/** Preselecciona en cascada cuando solo hay una opción en cada nivel. */
+async function autoSelect() {
+    if (!campusId.value && campuses.value.length === 1) campusId.value = campuses.value[0].id
+    if (campusId.value && !modalityTypeId.value && modalidades.value.length === 1) modalityTypeId.value = modalidades.value[0].id
+    if (modalityTypeId.value && !selectedGroup.value && materias.value.length === 1) {
+        selectedGroup.value = materias.value[0].teacher_assignment_id
+        await onGroup() // carga fechas (más cercana a hoy) + roster
+    }
+}
+
 function dedupe(arr: Array<{ id: number; name: string }>): Array<{ id: number; name: string }> {
     const seen = new Map<number, string>()
     for (const x of arr) if (!seen.has(x.id)) seen.set(x.id, x.name)
     return [...seen].map(([id, name]) => ({ id, name }))
 }
 
-function onCampus() { modalityTypeId.value = null; onModality() }
-function onModality() { selectedGroup.value = null; dates.value = []; date.value = ''; roster.value = [] }
+function onCampus() { modalityTypeId.value = null; selectedGroup.value = null; dates.value = []; date.value = ''; roster.value = []; autoSelect() }
+function onModality() { selectedGroup.value = null; dates.value = []; date.value = ''; roster.value = []; autoSelect() }
 
 async function onGroup() {
     dates.value = []; date.value = ''; roster.value = []
@@ -238,7 +248,10 @@ async function saveFromRollCall() {
 }
 
 onMounted(async () => {
-    try { const { data } = await api.get(GA.groups); groups.value = data }
-    catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudieron cargar tus grupos.') }
+    try {
+        const { data } = await api.get(GA.groups)
+        groups.value = data
+        await autoSelect()
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudieron cargar tus grupos.') }
 })
 </script>
