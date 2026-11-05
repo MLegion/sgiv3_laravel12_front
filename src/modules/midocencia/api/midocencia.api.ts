@@ -132,6 +132,7 @@ export default {
             filters: apiUrl('/midocencia/group-attendance/filters'),
             groups:  apiUrl('/midocencia/group-attendance/groups'),
             dates:   (ta: string | number) => apiUrl(`/midocencia/group-attendance/${ta}/dates`),
+            avatar:  (ta: string | number, studentId: string | number) => apiUrl(`/midocencia/group-attendance/${ta}/avatar/${studentId}`),
             roster:  (ta: string | number, date: string) => apiUrl(`/midocencia/group-attendance/${ta}/${date}`),
             record:  (ta: string | number, date: string) => apiUrl(`/midocencia/group-attendance/${ta}/${date}`),
             absenceReport: apiUrl('/midocencia/group-attendance/report/absences'),

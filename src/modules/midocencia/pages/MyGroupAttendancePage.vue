@@ -77,11 +77,29 @@
 
             <div class="flex items-center justify-between mt-3">
                 <span class="text-xs text-slate-500">{{ absentCount }} ausencia(s) · {{ roster.length }} alumnos</span>
-                <button @click="save" :disabled="saving" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium disabled:opacity-50">
-                    {{ saving ? 'Guardando…' : 'Guardar asistencia' }}
-                </button>
+                <div class="flex items-center gap-2">
+                    <button @click="rollCall = true" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                        Pase de lista
+                    </button>
+                    <button @click="save" :disabled="saving" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium disabled:opacity-50">
+                        {{ saving ? 'Guardando…' : 'Guardar asistencia' }}
+                    </button>
+                </div>
             </div>
         </div>
+
+        <!-- Modo pase de lista (fullscreen, móvil-friendly) -->
+        <RollCallMode
+            v-if="rollCall && selectedGroup && date"
+            :students="roster"
+            :marks="marks"
+            :teacher-assignment-id="selectedGroup"
+            :subtitle="rollCallSubtitle"
+            :saving="saving"
+            @close="rollCall = false"
+            @save="saveFromRollCall"
+        />
 
         <div v-else-if="loading" class="text-sm text-slate-500">Cargando…</div>
         <div v-else-if="selectedGroup && date" class="text-sm text-slate-500">No hay alumnos inscritos en este grupo.</div>
@@ -95,6 +113,7 @@ import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import type { DataTableColumn, DataTableChangeEvent } from '@/app/components/ui/datatable/types'
+import RollCallMode from '@/modules/midocencia/components/RollCallMode.vue'
 
 const toast = useToast()
 const GA = API.MIDOCENCIA_API.groupAttendance
@@ -114,6 +133,12 @@ const selectedGroup = ref<number | null>(null)
 const date = ref<string>('')
 const loading = ref(false)
 const saving = ref(false)
+const rollCall = ref(false)
+
+const rollCallSubtitle = computed(() => {
+    const g = materias.value.find(x => x.teacher_assignment_id === selectedGroup.value)
+    return g ? `${g.grupo} · ${g.materia} · ${date.value}` : date.value
+})
 
 // Paginación/búsqueda local del roster.
 const page = ref(1)
@@ -196,6 +221,11 @@ async function save() {
         toast.success('Asistencia guardada.')
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo guardar.') }
     finally { saving.value = false }
+}
+
+async function saveFromRollCall() {
+    await save()
+    rollCall.value = false
 }
 
 onMounted(async () => {
