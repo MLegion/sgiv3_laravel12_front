@@ -136,6 +136,7 @@ export default {
             roster:  (ta: string | number, date: string) => apiUrl(`/midocencia/group-attendance/${ta}/${date}`),
             record:  (ta: string | number, date: string) => apiUrl(`/midocencia/group-attendance/${ta}/${date}`),
             absenceReport: apiUrl('/midocencia/group-attendance/report/absences'),
+            absenceSummary: apiUrl('/midocencia/group-attendance/report/absences-summary'),
         },
     },
 } satisfies ApiModule
