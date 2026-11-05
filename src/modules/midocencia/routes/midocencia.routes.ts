@@ -107,4 +107,16 @@ export default [
         component: () => import('@/modules/midocencia/pages/OficiosEmitidosPage.vue'),
         meta: { title: 'Oficios Emitidos' },
     },
+    {
+        path: 'midocencia/group-attendance',
+        name: 'midocencia.group-attendance',
+        component: () => import('@/modules/midocencia/pages/MyGroupAttendancePage.vue'),
+        meta: { title: 'Asistencia de mis grupos' },
+    },
+    {
+        path: 'midocencia/absence-report',
+        name: 'midocencia.absence-report',
+        component: () => import('@/modules/midocencia/pages/AbsenceReportByTutorPage.vue'),
+        meta: { title: 'Ausentes por tutor' },
+    },
 ]
