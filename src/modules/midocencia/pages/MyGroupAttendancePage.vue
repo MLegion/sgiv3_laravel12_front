@@ -83,12 +83,6 @@
                         <option value="excused">Justificado</option>
                     </select>
                 </template>
-                <template #cell-motivo="{ row }">
-                    <span v-if="row.locked" class="text-xs text-slate-400">Ver detalle →</span>
-                    <input v-else v-model="marks[row.student_id].notes" type="text" maxlength="255"
-                        :disabled="marks[row.student_id].status === 'present'"
-                        class="w-full rounded-lg border-slate-300 text-xs disabled:bg-slate-100" placeholder="Opcional" />
-                </template>
             </DataTable>
 
             <div class="flex items-center justify-between mt-3">
@@ -189,7 +183,6 @@ const columns: DataTableColumn<Student>[] = [
     { key: 'num_control', label: 'No. Control', searchable: true },
     { key: 'nombre', label: 'Nombre', field: 'nombre', searchable: true },
     { key: 'asistencia', label: 'Asistencia', width: '150px' },
-    { key: 'motivo', label: 'Motivo (si falta)' },
 ]
 const filtered = computed(() => {
     const t = term.value.trim().toLowerCase()
