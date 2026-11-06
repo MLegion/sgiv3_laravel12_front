@@ -18,6 +18,11 @@
                 <input type="date" v-model="to" class="mt-1 rounded-lg border-slate-300 text-sm" />
             </div>
             <button @click="load" class="px-4 py-2 rounded-lg bg-slate-700 text-white text-sm font-medium">Filtrar</button>
+            <button @click="exportPdf" :disabled="exporting"
+                class="px-4 py-2 rounded-lg bg-rose-600 text-white text-sm font-medium disabled:opacity-50 flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6M9 17h3"/></svg>
+                {{ exporting ? 'Generando…' : 'PDF informativo' }}
+            </button>
         </div>
 
         <!-- RESUMEN: conteo por alumno -->
@@ -150,6 +155,87 @@ async function load() {
         }
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo cargar el reporte.') }
     finally { loading.value = false }
+}
+
+// --- PDF informativo (para el encargado de tutorías), agrupado por tutor ---
+const exporting = ref(false)
+
+function esc(s: unknown): string {
+    return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!))
+}
+function fmtDate(s: string): string { return s ? String(s).slice(0, 10) : '' }
+
+function buildPdfHtml(rows: DetailRow[]): string {
+    // Agrupa por tutor (eje principal del reporte), conservando el orden recibido.
+    const groups = new Map<string, DetailRow[]>()
+    for (const r of rows) {
+        const key = r.tutor || '(Sin tutor)'
+        if (!groups.has(key)) groups.set(key, [])
+        groups.get(key)!.push(r)
+    }
+    const rango = from.value || to.value
+        ? `Del ${esc(from.value || '…')} al ${esc(to.value || '…')}`
+        : 'Periodo activo'
+    const th = (t: string, w?: string) => `<th style="border:1px solid #475569;padding:3px 4px;background:#e2e8f0;font-size:9px;text-align:left;${w ? `width:${w};` : ''}">${t}</th>`
+    const td = (t: string) => `<td style="border:1px solid #94a3b8;padding:3px 4px;font-size:9px;vertical-align:top;">${t}</td>`
+
+    let html = `<div style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;">`
+    let first = true
+    for (const [tutor, list] of groups) {
+        const programa = list.find(r => r.programa)?.programa || ''
+        html += `<div style="${first ? '' : 'page-break-before:always;'}padding:4px 0 10px;">`
+        first = false
+        html += `<div style="text-align:center;">
+            <div style="font-size:12px;font-weight:bold;">REPORTE DE ESTUDIANTES AUSENTES POR TUTORES Y TUTORAS</div>
+            <div style="font-size:10px;">${esc(rango)}</div>
+        </div>`
+        html += `<div style="font-size:10px;margin:6px 0 4px;">
+            <b>Tutor(a):</b> ${esc(tutor)} &nbsp;·&nbsp; <b>Programa educativo:</b> ${esc(programa) || '—'}
+        </div>`
+        html += `<table style="border-collapse:collapse;width:100%;table-layout:fixed;">
+            <thead><tr>
+            ${th('NO.', '3%')}${th('FECHA', '7%')}${th('No. CONTROL', '8%')}${th('NOMBRE DEL ESTUDIANTE', '15%')}${th('MATERIA', '12%')}${th('GRUPO Y SEM.', '7%')}${th('TELÉFONO', '7%')}${th('CORREO', '11%')}${th('OBSERVACIONES (MOTIVO)', '10%')}${th('DOCENTE QUE REPORTA', '10%')}${th('ACCIONES')}${th('RESULTADOS')}
+            </tr></thead><tbody>`
+        list.forEach((r, i) => {
+            const grupoSem = `${esc(r.grupo)}${r.semestre ? ' · ' + esc(r.semestre) + 'º' : ''}`
+            html += `<tr>${td(String(i + 1))}${td(esc(fmtDate(r.fecha)))}${td(esc(r.num_control))}${td(esc(r.nombre))}${td(esc(r.materia))}${td(grupoSem)}${td(esc(r.telefono || ''))}${td(esc(r.correo || ''))}${td(esc(r.motivo || ''))}${td(esc(r.docente || ''))}${td('')}${td('')}</tr>`
+        })
+        html += `</tbody></table>`
+        html += `<div style="font-size:8px;color:#64748b;margin-top:4px;">Documento informativo generado por el sistema · las columnas Acciones y Resultados las registra el tutor(a).</div>`
+        html += `</div>`
+    }
+    html += `</div>`
+    return html
+}
+
+async function exportPdf() {
+    exporting.value = true
+    try {
+        // El PDF siempre usa el detalle por ausencia (no el resumen).
+        let rows = detailRows.value
+        if (mode.value === 'summary' || !rows.length) {
+            const { data } = await api.get(GA.absenceReport, { params: { from: from.value || null, to: to.value || null } })
+            rows = data; detailRows.value = data
+        }
+        if (!rows.length) { toast.info('No hay ausencias para exportar en el rango seleccionado.'); return }
+        // @ts-ignore — html2pdf.js no tiene types oficiales
+        const { default: html2pdf } = await import('html2pdf.js')
+        const host = document.createElement('div')
+        host.style.cssText = 'position:absolute;left:-99999px;top:0;width:1050px;'
+        host.innerHTML = buildPdfHtml(rows)
+        document.body.appendChild(host)
+        try {
+            await html2pdf().set({
+                margin:      [8, 8, 8, 8],
+                filename:    'reporte-ausentes-por-tutor.pdf',
+                image:       { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF:       { unit: 'mm', format: 'letter', orientation: 'landscape' },
+                pagebreak:   { mode: ['css', 'legacy'] },
+            } as any).from(host).save()
+        } finally { document.body.removeChild(host) }
+    } catch (e: any) { toast.error('No se pudo generar el PDF.') }
+    finally { exporting.value = false }
 }
 
 onMounted(load)
