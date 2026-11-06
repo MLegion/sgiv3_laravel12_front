@@ -7,22 +7,26 @@
         <div class="bg-white rounded-xl border border-slate-200 p-4 mb-5">
             <h2 class="text-sm font-semibold text-slate-700 mb-3">Nuevo justificante</h2>
 
-            <!-- Alumno -->
+            <!-- Alumno (FormRemoteSelect + botón de búsqueda avanzada) -->
             <div class="mb-3">
                 <label class="block text-xs font-medium text-slate-600">Alumno</label>
-                <div v-if="form.student" class="mt-1 flex items-center justify-between px-3 py-2 rounded-lg bg-slate-100 text-sm">
-                    <span>{{ form.student.nombre }} · <span class="font-mono text-xs">{{ form.student.num_control }}</span></span>
-                    <button @click="resetStudent" class="text-slate-400 hover:text-slate-600 text-xs">cambiar</button>
-                </div>
-                <div v-else class="relative mt-1">
-                    <input v-model="studentTerm" @input="searchStudents" type="text" placeholder="Buscar por nombre o número de control…"
-                        class="w-full rounded-lg border-slate-300 text-sm" />
-                    <ul v-if="studentResults.length" class="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow max-h-56 overflow-auto">
-                        <li v-for="s in studentResults" :key="s.student_id" @click="pickStudent(s)"
-                            class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">
-                            {{ s.nombre }} · <span class="font-mono text-xs text-slate-500">{{ s.num_control }}</span>
-                        </li>
-                    </ul>
+                <div class="mt-1 flex gap-2">
+                    <div class="flex-1">
+                        <FormRemoteSelect
+                            v-model="studentId"
+                            :endpoint="J.students"
+                            :endpoint-by-id="J.studentById"
+                            :item-label="studentLabel"
+                            item-value="student_id"
+                            :item-searchs="['nombre', 'num_control']"
+                            placeholder="Buscar por nombre o número de control…"
+                        />
+                    </div>
+                    <button type="button" @click="searchOpen = true" title="Búsqueda avanzada"
+                        class="px-3 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 text-sm flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        Buscar
+                    </button>
                 </div>
             </div>
 
@@ -36,18 +40,23 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-600">Evidencia PDF o imagen (opcional)</label>
-                    <input type="file" accept="application/pdf,image/jpeg,image/png" @change="onFile" class="mt-1 w-full text-xs" />
+                    <div class="mt-1 flex items-center gap-2">
+                        <input ref="fileInput" type="file" accept="application/pdf,image/jpeg,image/png" @change="onFile" class="flex-1 text-xs" />
+                        <button v-if="form.evidence" type="button" @click="previewSelected" title="Ver evidencia"
+                            class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 shrink-0">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Alcance: día(s) completo(s) o por horas del horario -->
+            <!-- Alcance -->
             <div class="mt-4">
                 <div class="inline-flex rounded-lg border border-slate-200 overflow-hidden text-sm mb-3">
                     <button type="button" @click="mode = 'full'" :class="mode === 'full' ? 'bg-slate-700 text-white' : 'bg-white text-slate-600'" class="px-3 py-1.5">Día(s) completo(s)</button>
                     <button type="button" @click="switchHours" :class="mode === 'hours' ? 'bg-slate-700 text-white' : 'bg-white text-slate-600'" class="px-3 py-1.5 border-l border-slate-200">Horas específicas</button>
                 </div>
 
-                <!-- Día completo: solo fechas -->
                 <div v-if="mode === 'full'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-slate-600">Desde (día)</label>
@@ -59,12 +68,11 @@
                     </div>
                 </div>
 
-                <!-- Horas específicas: fecha + horario del alumno -->
                 <div v-else>
                     <div class="flex items-end gap-3 mb-2">
                         <div>
                             <label class="block text-xs font-medium text-slate-600">Día</label>
-                            <input type="date" v-model="hourDate" @change="loadSchedule" :disabled="!form.student"
+                            <input type="date" v-model="hourDate" @change="loadSchedule" :disabled="!studentId"
                                 class="mt-1 rounded-lg border-slate-300 text-sm disabled:bg-slate-100" />
                         </div>
                         <p class="text-xs text-slate-400 pb-2">Marca las clases a las que NO podrá asistir.</p>
@@ -84,7 +92,7 @@
                 </div>
             </div>
 
-            <!-- Descripción: genérica o propia -->
+            <!-- Descripción -->
             <div class="mt-4">
                 <label class="block text-xs font-medium text-slate-600">Descripción / motivo <span class="text-rose-500">*</span></label>
                 <select v-model="reasonChoice" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
@@ -121,19 +129,63 @@
                 <span class="text-xs">{{ fmt(row.starts_at) }} → {{ fmt(row.ends_at) }}</span>
             </template>
             <template #cell-evidencia="{ row }">
-                <button v-if="row.has_evidence" @click="openEvidence(row.id)" title="Ver evidencia"
+                <button v-if="row.has_evidence" @click="openSavedEvidence(row.id)" title="Ver evidencia"
                     class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                 </button>
                 <span v-else class="text-slate-300 text-xs">—</span>
             </template>
             <template #cell-acciones="{ row }">
-                <button @click="remove(row.id)" title="Eliminar justificante"
-                    class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50">
+                <button @click="remove(row.id)" title="Eliminar justificante" class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </button>
             </template>
         </DataTable>
+
+        <!-- Modal de búsqueda avanzada de alumnos -->
+        <div v-if="searchOpen" class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" @click.self="searchOpen = false">
+            <div class="bg-white rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700">Buscar alumno</h3>
+                    <button @click="searchOpen = false" class="text-slate-400 hover:text-slate-600">✕</button>
+                </div>
+                <div class="p-4">
+                    <input v-model="modalTerm" @input="modalSearch" type="text" autofocus placeholder="Nombre o número de control…"
+                        class="w-full rounded-lg border-slate-300 text-sm" />
+                </div>
+                <div class="flex-1 overflow-auto px-4 pb-4">
+                    <div v-if="modalLoading" class="text-sm text-slate-500 py-4 text-center">Buscando…</div>
+                    <ul v-else-if="modalResults.length" class="divide-y divide-slate-100">
+                        <li v-for="s in modalResults" :key="s.student_id" class="flex items-center justify-between py-2.5">
+                            <div>
+                                <p class="text-sm text-slate-700">{{ s.nombre }}</p>
+                                <p class="font-mono text-xs text-slate-400">{{ s.num_control }}</p>
+                            </div>
+                            <button @click="selectFromModal(s)" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium">Seleccionar</button>
+                        </li>
+                    </ul>
+                    <p v-else-if="modalTerm.length >= 2" class="text-sm text-slate-400 py-4 text-center">Sin resultados.</p>
+                    <p v-else class="text-sm text-slate-400 py-4 text-center">Escribe al menos 2 caracteres.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Drawer de evidencia -->
+        <div v-if="drawer.open" class="fixed inset-0 z-50 flex">
+            <div class="flex-1 bg-black/40" @click="closeDrawer"></div>
+            <div class="w-full max-w-2xl bg-white h-full flex flex-col shadow-xl">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700">Evidencia</h3>
+                    <button @click="closeDrawer" class="text-slate-400 hover:text-slate-600">✕</button>
+                </div>
+                <div class="flex-1 overflow-auto bg-slate-50 flex items-center justify-center">
+                    <p v-if="drawer.loading" class="text-sm text-slate-500">Cargando…</p>
+                    <img v-else-if="drawer.kind === 'image'" :src="drawer.url!" class="max-w-full max-h-full object-contain" />
+                    <iframe v-else-if="drawer.kind === 'pdf'" :src="drawer.url!" class="w-full h-full" />
+                    <p v-else class="text-sm text-slate-500">No se pudo mostrar.</p>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -143,6 +195,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import type { DataTableColumn, DataTableChangeEvent } from '@/app/components/ui/datatable/types'
 
 const toast = useToast()
@@ -153,12 +206,8 @@ interface Block { start_time: string; end_time: string; materia: string; docente
 interface Row { id: number; type: string; reason: string; starts_at: string; ends_at: string; has_evidence: number; num_control: string; alumno: string }
 
 const genericReasons = [
-    'Cita o incapacidad médica',
-    'Enfermedad',
-    'Asunto familiar',
-    'Duelo familiar',
-    'Trámite escolar',
-    'Participación en evento institucional',
+    'Cita o incapacidad médica', 'Enfermedad', 'Asunto familiar', 'Duelo familiar',
+    'Trámite escolar', 'Participación en evento institucional',
     'Actividad deportiva/cultural representando al plantel',
 ]
 
@@ -166,36 +215,40 @@ const rows = ref<Row[]>([])
 const loading = ref(false)
 const saving = ref(false)
 
-const studentTerm = ref('')
-const studentResults = ref<Student[]>([])
-let searchTimer: any = null
+// Alumno seleccionado (FormRemoteSelect por id).
+const studentId = ref<number | null>(null)
+function studentLabel(s: Student): string { return `${s.nombre} · ${s.num_control}` }
 
-const form = reactive<{ student: Student | null; type: string; evidence: File | null }>({ student: null, type: 'medical', evidence: null })
+const form = reactive<{ type: string; evidence: File | null }>({ type: 'medical', evidence: null })
+const fileInput = ref<HTMLInputElement | null>(null)
 
 // Alcance
 const mode = ref<'full' | 'hours'>('full')
-const dayFrom = ref('')
-const dayTo = ref('')
-const hourDate = ref('')
+const dayFrom = ref(''); const dayTo = ref(''); const hourDate = ref('')
 const schedule = ref<Block[]>([])
 const blockChecked = reactive<Record<number, boolean>>({})
 const scheduleLoading = ref(false)
 
 // Descripción
-const reasonChoice = ref(genericReasons[0])
-const customReason = ref('')
+const reasonChoice = ref(genericReasons[0]); const customReason = ref('')
 const reasonValue = computed(() => reasonChoice.value === '__custom__' ? customReason.value.trim() : reasonChoice.value)
+
+// Modal búsqueda
+const searchOpen = ref(false)
+const modalTerm = ref(''); const modalResults = ref<Student[]>([]); const modalLoading = ref(false)
+let modalTimer: any = null
+
+// Drawer evidencia
+const drawer = reactive<{ open: boolean; loading: boolean; kind: 'image' | 'pdf' | null; url: string | null }>({ open: false, loading: false, kind: null, url: null })
 
 const selectedBlocks = computed(() => schedule.value.filter((_, i) => blockChecked[i]))
 const canSave = computed(() => {
-    if (!form.student || !reasonValue.value) return false
+    if (!studentId.value || !reasonValue.value) return false
     if (mode.value === 'full') return !!dayFrom.value && !!dayTo.value && dayTo.value >= dayFrom.value
     return !!hourDate.value && selectedBlocks.value.length > 0
 })
 
-const page = ref(1)
-const perPage = ref(25)
-const term = ref('')
+const page = ref(1); const perPage = ref(25); const term = ref('')
 const columns: DataTableColumn<Row>[] = [
     { key: 'num_control', label: 'No. Control', searchable: true },
     { key: 'alumno', label: 'Alumno', searchable: true },
@@ -218,39 +271,27 @@ function onTableChange(e: DataTableChangeEvent) {
 }
 function fmt(s: string): string { return s ? s.replace('T', ' ').slice(0, 16) : '' }
 
-function searchStudents() {
-    clearTimeout(searchTimer)
-    const q = studentTerm.value.trim()
-    if (q.length < 2) { studentResults.value = []; return }
-    searchTimer = setTimeout(async () => {
-        try { const { data } = await api.get(J.students, { params: { q } }); studentResults.value = data } catch { studentResults.value = [] }
-    }, 300)
-}
-function pickStudent(s: Student) { form.student = s; studentResults.value = []; studentTerm.value = ''; schedule.value = []; clearBlocks() }
-function resetStudent() { form.student = null; schedule.value = []; clearBlocks() }
 function onFile(e: Event) { form.evidence = (e.target as HTMLInputElement).files?.[0] ?? null }
 
-function switchHours() { mode.value = 'hours'; if (form.student && hourDate.value) loadSchedule() }
+function switchHours() { mode.value = 'hours'; if (studentId.value && hourDate.value) loadSchedule() }
 function clearBlocks() { for (const k of Object.keys(blockChecked)) delete blockChecked[Number(k)] }
 
 async function loadSchedule() {
     schedule.value = []; clearBlocks()
-    if (!form.student || !hourDate.value) return
+    if (!studentId.value || !hourDate.value) return
     scheduleLoading.value = true
     try {
-        const { data } = await api.get(J.studentSchedule, { params: { student_id: form.student.student_id, date: hourDate.value } })
+        const { data } = await api.get(J.studentSchedule, { params: { student_id: studentId.value, date: hourDate.value } })
         schedule.value = data
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo cargar el horario.') }
     finally { scheduleLoading.value = false }
 }
 
 function range(): { starts_at: string; ends_at: string } {
-    if (mode.value === 'full') {
-        return { starts_at: `${dayFrom.value} 00:00:00`, ends_at: `${dayTo.value} 23:59:59` }
-    }
-    const blocks = selectedBlocks.value
-    const start = blocks.reduce((m, b) => b.start_time < m ? b.start_time : m, blocks[0].start_time)
-    const end = blocks.reduce((m, b) => b.end_time > m ? b.end_time : m, blocks[0].end_time)
+    if (mode.value === 'full') return { starts_at: `${dayFrom.value} 00:00:00`, ends_at: `${dayTo.value} 23:59:59` }
+    const b = selectedBlocks.value
+    const start = b.reduce((m, x) => x.start_time < m ? x.start_time : m, b[0].start_time)
+    const end = b.reduce((m, x) => x.end_time > m ? x.end_time : m, b[0].end_time)
     return { starts_at: `${hourDate.value} ${start}:00`, ends_at: `${hourDate.value} ${end}:00` }
 }
 
@@ -260,7 +301,7 @@ async function save() {
     try {
         const { starts_at, ends_at } = range()
         const fd = new FormData()
-        fd.append('student_id', String(form.student!.student_id))
+        fd.append('student_id', String(studentId.value))
         fd.append('type', form.type)
         fd.append('reason', reasonValue.value)
         fd.append('starts_at', starts_at)
@@ -268,7 +309,8 @@ async function save() {
         if (form.evidence) fd.append('evidence', form.evidence)
         await api.post(J.create, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
         toast.success('Justificante registrado.')
-        resetStudent(); dayFrom.value = ''; dayTo.value = ''; hourDate.value = ''; form.evidence = null
+        studentId.value = null; dayFrom.value = ''; dayTo.value = ''; hourDate.value = ''
+        form.evidence = null; if (fileInput.value) fileInput.value.value = ''
         reasonChoice.value = genericReasons[0]; customReason.value = ''
         await load()
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo registrar.') }
@@ -281,11 +323,45 @@ async function remove(id: number) {
     catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo eliminar.') }
 }
 
-async function openEvidence(id: number) {
+// Modal
+function modalSearch() {
+    clearTimeout(modalTimer)
+    const q = modalTerm.value.trim()
+    if (q.length < 2) { modalResults.value = []; return }
+    modalLoading.value = true
+    modalTimer = setTimeout(async () => {
+        try { const { data } = await api.get(J.students, { params: { q } }); modalResults.value = data.items ?? data }
+        catch { modalResults.value = [] }
+        finally { modalLoading.value = false }
+    }, 300)
+}
+function selectFromModal(s: Student) {
+    studentId.value = s.student_id
+    searchOpen.value = false; modalTerm.value = ''; modalResults.value = []
+}
+
+// Drawer de evidencia
+function closeDrawer() {
+    if (drawer.url) URL.revokeObjectURL(drawer.url)
+    drawer.open = false; drawer.url = null; drawer.kind = null
+}
+function previewSelected() {
+    if (!form.evidence) return
+    if (drawer.url) URL.revokeObjectURL(drawer.url)
+    drawer.kind = form.evidence.type === 'application/pdf' ? 'pdf' : 'image'
+    drawer.url = URL.createObjectURL(form.evidence)
+    drawer.loading = false; drawer.open = true
+}
+async function openSavedEvidence(id: number) {
+    drawer.open = true; drawer.loading = true; drawer.kind = null
+    if (drawer.url) { URL.revokeObjectURL(drawer.url); drawer.url = null }
     try {
         const res = await api.get(J.evidence(id), { responseType: 'blob' })
-        window.open(URL.createObjectURL(res.data as Blob), '_blank')
-    } catch { toast.error('No se pudo abrir la evidencia.') }
+        const blob = res.data as Blob
+        drawer.kind = blob.type === 'application/pdf' ? 'pdf' : 'image'
+        drawer.url = URL.createObjectURL(blob)
+    } catch { toast.error('No se pudo abrir la evidencia.'); drawer.kind = null }
+    finally { drawer.loading = false }
 }
 
 async function load() {
