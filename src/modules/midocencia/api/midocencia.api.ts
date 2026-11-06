@@ -141,6 +141,7 @@ export default {
         // Justificantes de inasistencia (jefe de carrera).
         justifications: {
             students: apiUrl('/midocencia/justifications/students'),
+            studentSchedule: apiUrl('/midocencia/justifications/student-schedule'),
             list:     apiUrl('/midocencia/justifications'),
             create:   apiUrl('/midocencia/justifications'),
             evidence: (id: string | number) => apiUrl(`/midocencia/justifications/${id}/evidence`),
