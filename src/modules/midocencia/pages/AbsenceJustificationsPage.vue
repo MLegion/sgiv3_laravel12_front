@@ -128,12 +128,11 @@
             <template #cell-rango="{ row }">
                 <span class="text-xs">{{ fmt(row.starts_at) }} → {{ fmt(row.ends_at) }}</span>
             </template>
-            <template #cell-evidencia="{ row }">
-                <button v-if="row.has_evidence" @click="openSavedEvidence(row.id)" title="Ver evidencia"
+            <template #cell-ver="{ row }">
+                <button @click="openDetail(row)" title="Ver motivo y evidencia"
                     class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                 </button>
-                <span v-else class="text-slate-300 text-xs">—</span>
             </template>
             <template #cell-acciones="{ row }">
                 <button @click="remove(row.id)" title="Eliminar justificante" class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50">
@@ -191,18 +190,32 @@
             </div>
         </div>
 
-        <!-- Drawer de evidencia -->
+        <!-- Drawer de detalle (motivo + evidencia) -->
         <div v-if="drawer.open" class="fixed inset-0 z-50 flex">
             <div class="flex-1 bg-black/40" @click="closeDrawer"></div>
             <div class="w-full max-w-2xl bg-white h-full flex flex-col shadow-xl">
                 <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-                    <h3 class="text-sm font-semibold text-slate-700">Evidencia</h3>
+                    <h3 class="text-sm font-semibold text-slate-700">{{ drawer.detail ? 'Detalle del justificante' : 'Evidencia' }}</h3>
                     <button @click="closeDrawer" class="text-slate-400 hover:text-slate-600">✕</button>
+                </div>
+                <!-- Motivo / tipo (solo en modo detalle) -->
+                <div v-if="drawer.detail" class="px-4 py-3 border-b border-slate-100 bg-slate-50/60 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded-full text-xs" :class="drawer.detail.type === 'medical' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'">
+                            {{ drawer.detail.type === 'medical' ? 'Médico' : 'Personal' }}
+                        </span>
+                        <span class="text-xs text-slate-500">{{ fmt(drawer.detail.starts_at) }} → {{ fmt(drawer.detail.ends_at) }}</span>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">Motivo</p>
+                        <p class="text-sm text-slate-800 whitespace-pre-line">{{ drawer.detail.reason }}</p>
+                    </div>
                 </div>
                 <div class="flex-1 overflow-auto bg-slate-50 flex items-center justify-center">
                     <p v-if="drawer.loading" class="text-sm text-slate-500">Cargando…</p>
                     <img v-else-if="drawer.kind === 'image'" :src="drawer.url!" class="max-w-full max-h-full object-contain" />
                     <iframe v-else-if="drawer.kind === 'pdf'" :src="drawer.url!" class="w-full h-full" />
+                    <p v-else-if="drawer.detail" class="text-sm text-slate-400">Sin evidencia adjunta.</p>
                     <p v-else class="text-sm text-slate-500">No se pudo mostrar.</p>
                 </div>
             </div>
@@ -282,8 +295,8 @@ const {
     rows: modalRows, loading: modalLoading, pagination: modalPagination, handleChange: modalOnChange, fetchData: modalFetch,
 } = useDataTableFetch<any>({ endpoint: J.studentsPaged, searchableFields: ['num_control', 'nombre'], extraSearch: modalExtraSearch })
 
-// Drawer evidencia
-const drawer = reactive<{ open: boolean; loading: boolean; kind: 'image' | 'pdf' | null; url: string | null }>({ open: false, loading: false, kind: null, url: null })
+// Drawer evidencia / detalle
+const drawer = reactive<{ open: boolean; loading: boolean; kind: 'image' | 'pdf' | null; url: string | null; detail: Row | null }>({ open: false, loading: false, kind: null, url: null, detail: null })
 
 const selectedBlocks = computed(() => schedule.value.filter((_, i) => blockChecked[i]))
 const canSave = computed(() => {
@@ -298,8 +311,7 @@ const columns: DataTableColumn<Row>[] = [
     { key: 'alumno', label: 'Alumno', searchable: true },
     { key: 'tipo', label: 'Tipo' },
     { key: 'rango', label: 'Periodo' },
-    { key: 'reason', label: 'Motivo' },
-    { key: 'evidencia', label: 'Evidencia' },
+    { key: 'ver', label: '' },
     { key: 'acciones', label: '' },
 ]
 const filtered = computed(() => {
@@ -397,23 +409,27 @@ function selectFromModal(s: Student) {
     searchOpen.value = false
 }
 
-// Drawer de evidencia
+// Drawer de evidencia / detalle
 function closeDrawer() {
     if (drawer.url) URL.revokeObjectURL(drawer.url)
-    drawer.open = false; drawer.url = null; drawer.kind = null
+    drawer.open = false; drawer.url = null; drawer.kind = null; drawer.detail = null
 }
 function previewSelected() {
     if (!form.evidence) return
     if (drawer.url) URL.revokeObjectURL(drawer.url)
+    drawer.detail = null
     drawer.kind = form.evidence.type === 'application/pdf' ? 'pdf' : 'image'
     drawer.url = URL.createObjectURL(form.evidence)
     drawer.loading = false; drawer.open = true
 }
-async function openSavedEvidence(id: number) {
-    drawer.open = true; drawer.loading = true; drawer.kind = null
+/** Detalle de un justificante del listado: motivo + evidencia (si tiene). */
+async function openDetail(row: Row) {
     if (drawer.url) { URL.revokeObjectURL(drawer.url); drawer.url = null }
+    drawer.detail = row; drawer.kind = null; drawer.open = true
+    if (!row.has_evidence) { drawer.loading = false; return }
+    drawer.loading = true
     try {
-        const res = await api.get(J.evidence(id), { responseType: 'blob' })
+        const res = await api.get(J.evidence(row.id), { responseType: 'blob' })
         const blob = res.data as Blob
         drawer.kind = blob.type === 'application/pdf' ? 'pdf' : 'image'
         drawer.url = URL.createObjectURL(blob)

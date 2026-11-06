@@ -41,6 +41,11 @@
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                     Justificado por jefatura (no editable)
                 </div>
+                <button v-if="current.justification_has_evidence" @click="$emit('view-evidence', current.student_id)"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700 text-sm font-medium hover:bg-slate-600">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    Ver evidencia
+                </button>
                 <button @click="next" class="w-full max-w-sm py-4 rounded-2xl bg-slate-700 text-lg font-semibold active:scale-95 transition">Siguiente →</button>
             </template>
 
@@ -50,7 +55,7 @@
                     v-model="marks[current.student_id].notes" type="text" maxlength="255" placeholder="Motivo (opcional)"
                     class="w-full max-w-sm rounded-xl bg-slate-800 border border-slate-600 text-sm px-3 py-2 placeholder:text-slate-500" />
 
-                <!-- Botones grandes -->
+                <!-- Botones grandes (el justificante lo registra la jefatura, no el docente) -->
                 <div class="grid grid-cols-2 gap-3 w-full max-w-sm mt-2">
                     <button @click="mark('present')" class="py-5 rounded-2xl text-lg font-bold bg-emerald-600 active:scale-95 transition">
                         ✓ Presente
@@ -58,11 +63,8 @@
                     <button @click="mark('absent')" class="py-5 rounded-2xl text-lg font-bold bg-rose-600 active:scale-95 transition">
                         ✕ Ausente
                     </button>
-                    <button @click="mark('late')" class="py-4 rounded-2xl text-base font-semibold bg-amber-500 active:scale-95 transition">
+                    <button @click="mark('late')" class="col-span-2 py-4 rounded-2xl text-base font-semibold bg-amber-500 active:scale-95 transition">
                         ⏱ Retardo
-                    </button>
-                    <button @click="mark('excused')" class="py-4 rounded-2xl text-base font-semibold bg-sky-600 active:scale-95 transition">
-                        ✎ Justificado
                     </button>
                 </div>
             </template>
@@ -90,7 +92,7 @@ import { ref, computed } from 'vue'
 import UserAvatar from '@/app/components/ui/UserAvatar.vue'
 import { API } from '@/shared/api'
 
-interface Student { student_id: number; num_control: string; nombre: string; status: string; notes?: string; locked?: boolean }
+interface Student { student_id: number; num_control: string; nombre: string; status: string; notes?: string; locked?: boolean; justification_has_evidence?: boolean }
 
 const props = defineProps<{
     students: Student[]
@@ -99,7 +101,7 @@ const props = defineProps<{
     subtitle: string
     saving: boolean
 }>()
-const emit = defineEmits<{ (e: 'close'): void; (e: 'save'): void }>()
+const emit = defineEmits<{ (e: 'close'): void; (e: 'save'): void; (e: 'view-evidence', studentId: number): void }>()
 
 const marks = props.marks
 const index = ref(0)

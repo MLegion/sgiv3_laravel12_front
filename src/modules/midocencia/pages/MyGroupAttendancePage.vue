@@ -69,6 +69,10 @@
                     <div v-if="row.locked" class="flex items-center gap-1.5">
                         <span class="px-2 py-0.5 rounded-full text-xs bg-sky-100 text-sky-700">Justificado</span>
                         <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="Fijado por jefatura"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        <button v-if="row.justification_has_evidence" @click="openEvidence(row.student_id)" title="Ver evidencia"
+                            class="p-1 rounded-lg text-indigo-600 hover:bg-indigo-50">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </button>
                     </div>
                     <select v-else v-model="marks[row.student_id].status"
                         class="w-full rounded-lg text-xs"
@@ -111,10 +115,28 @@
             :saving="saving"
             @close="rollCall = false"
             @save="saveFromRollCall"
+            @view-evidence="openEvidence"
         />
 
         <div v-else-if="loading" class="text-sm text-slate-500">Cargando…</div>
         <div v-else-if="selectedGroup && date" class="text-sm text-slate-500">No hay alumnos inscritos en este grupo.</div>
+
+        <!-- Drawer de evidencia del justificante -->
+        <div v-if="evidence.open" class="fixed inset-0 z-[60] flex">
+            <div class="flex-1 bg-black/40" @click="closeEvidence"></div>
+            <div class="w-full max-w-2xl bg-white h-full flex flex-col shadow-xl">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700">Evidencia del justificante</h3>
+                    <button @click="closeEvidence" class="text-slate-400 hover:text-slate-600">✕</button>
+                </div>
+                <div class="flex-1 overflow-auto bg-slate-50 flex items-center justify-center">
+                    <p v-if="evidence.loading" class="text-sm text-slate-500">Cargando…</p>
+                    <img v-else-if="evidence.kind === 'image'" :src="evidence.url!" class="max-w-full max-h-full object-contain" />
+                    <iframe v-else-if="evidence.kind === 'pdf'" :src="evidence.url!" class="w-full h-full" />
+                    <p v-else class="text-sm text-slate-500">No se pudo mostrar.</p>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -132,7 +154,7 @@ const toast = useToast()
 const GA = API.MIDOCENCIA_API.groupAttendance
 
 interface Group { teacher_assignment_id: number; grupo: string; materia: string; modalidad: string; campus: string; campus_id: number; modality_type_id: number }
-interface Student { student_id: number; num_control: string; nombre: string; status: string; notes?: string; locked?: boolean }
+interface Student { student_id: number; num_control: string; nombre: string; status: string; notes?: string; locked?: boolean; justification_has_evidence?: boolean }
 interface ClassDate { date: string; weekday: string }
 
 const groups = ref<Group[]>([])
@@ -254,6 +276,27 @@ async function save() {
 async function saveFromRollCall() {
     await save()
     rollCall.value = false
+}
+
+// Drawer de evidencia del justificante (la consulta el docente si lo desea).
+const evidence = reactive<{ open: boolean; loading: boolean; kind: 'image' | 'pdf' | null; url: string | null }>({ open: false, loading: false, kind: null, url: null })
+
+function closeEvidence() {
+    if (evidence.url) URL.revokeObjectURL(evidence.url)
+    evidence.open = false; evidence.url = null; evidence.kind = null
+}
+
+async function openEvidence(studentId: number) {
+    if (!selectedGroup.value || !date.value) return
+    if (evidence.url) { URL.revokeObjectURL(evidence.url); evidence.url = null }
+    evidence.open = true; evidence.loading = true; evidence.kind = null
+    try {
+        const res = await api.get(GA.justificationEvidence(selectedGroup.value, studentId), { params: { date: date.value }, responseType: 'blob' })
+        const blob = res.data as Blob
+        evidence.kind = blob.type === 'application/pdf' ? 'pdf' : 'image'
+        evidence.url = URL.createObjectURL(blob)
+    } catch { toast.error('No se pudo abrir la evidencia.'); evidence.kind = null }
+    finally { evidence.loading = false }
 }
 
 onMounted(async () => {
