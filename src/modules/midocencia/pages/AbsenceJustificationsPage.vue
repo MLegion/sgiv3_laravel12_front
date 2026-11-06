@@ -35,7 +35,7 @@
                     <label class="block text-xs font-medium text-slate-600">Tipo</label>
                     <select v-model="form.type" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
                         <option value="medical">Médico</option>
-                        <option value="other">Otro</option>
+                        <option value="personal">Personal</option>
                     </select>
                 </div>
                 <div>
@@ -122,7 +122,7 @@
         >
             <template #cell-tipo="{ row }">
                 <span class="px-2 py-0.5 rounded-full text-xs" :class="row.type === 'medical' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'">
-                    {{ row.type === 'medical' ? 'Médico' : 'Otro' }}
+                    {{ row.type === 'medical' ? 'Médico' : 'Personal' }}
                 </span>
             </template>
             <template #cell-rango="{ row }">
