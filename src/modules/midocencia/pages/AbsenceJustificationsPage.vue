@@ -35,8 +35,8 @@
                 </div>
                 <!-- Evidencia -->
                 <div>
-                    <label class="block text-xs font-medium text-slate-600">Evidencia PDF (opcional)</label>
-                    <input type="file" accept="application/pdf" @change="onFile" class="mt-1 w-full text-xs" />
+                    <label class="block text-xs font-medium text-slate-600">Evidencia PDF o imagen (opcional)</label>
+                    <input type="file" accept="application/pdf,image/jpeg,image/png" @change="onFile" class="mt-1 w-full text-xs" />
                 </div>
                 <!-- Desde -->
                 <div>
@@ -80,7 +80,7 @@
                 <span class="text-xs">{{ fmt(row.starts_at) }} → {{ fmt(row.ends_at) }}</span>
             </template>
             <template #cell-evidencia="{ row }">
-                <a v-if="row.has_evidence" :href="'#'" @click.prevent="openEvidence(row.id)" class="text-indigo-600 text-xs underline">Ver PDF</a>
+                <a v-if="row.has_evidence" :href="'#'" @click.prevent="openEvidence(row.id)" class="text-indigo-600 text-xs underline">Ver</a>
                 <span v-else class="text-slate-300 text-xs">—</span>
             </template>
             <template #cell-acciones="{ row }">
