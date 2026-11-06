@@ -34,26 +34,38 @@
                 </span>
             </div>
 
-            <!-- Motivo (si no es presente) -->
-            <input v-if="marks[current.student_id].status !== 'present'"
-                v-model="marks[current.student_id].notes" type="text" maxlength="255" placeholder="Motivo (opcional)"
-                class="w-full max-w-sm rounded-xl bg-slate-800 border border-slate-600 text-sm px-3 py-2 placeholder:text-slate-500" />
+            <!-- Bloqueado por jefatura: estado fijo -->
+            <template v-if="current.locked">
+                <p class="text-sm text-slate-300 text-center max-w-sm">{{ marks[current.student_id].notes }}</p>
+                <div class="flex items-center gap-2 text-sky-300 text-sm">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    Justificado por jefatura (no editable)
+                </div>
+                <button @click="next" class="w-full max-w-sm py-4 rounded-2xl bg-slate-700 text-lg font-semibold active:scale-95 transition">Siguiente →</button>
+            </template>
 
-            <!-- Botones grandes -->
-            <div class="grid grid-cols-2 gap-3 w-full max-w-sm mt-2">
-                <button @click="mark('present')" class="py-5 rounded-2xl text-lg font-bold bg-emerald-600 active:scale-95 transition">
-                    ✓ Presente
-                </button>
-                <button @click="mark('absent')" class="py-5 rounded-2xl text-lg font-bold bg-rose-600 active:scale-95 transition">
-                    ✕ Ausente
-                </button>
-                <button @click="mark('late')" class="py-4 rounded-2xl text-base font-semibold bg-amber-500 active:scale-95 transition">
-                    ⏱ Retardo
-                </button>
-                <button @click="mark('excused')" class="py-4 rounded-2xl text-base font-semibold bg-sky-600 active:scale-95 transition">
-                    ✎ Justificado
-                </button>
-            </div>
+            <template v-else>
+                <!-- Motivo (si no es presente) -->
+                <input v-if="marks[current.student_id].status !== 'present'"
+                    v-model="marks[current.student_id].notes" type="text" maxlength="255" placeholder="Motivo (opcional)"
+                    class="w-full max-w-sm rounded-xl bg-slate-800 border border-slate-600 text-sm px-3 py-2 placeholder:text-slate-500" />
+
+                <!-- Botones grandes -->
+                <div class="grid grid-cols-2 gap-3 w-full max-w-sm mt-2">
+                    <button @click="mark('present')" class="py-5 rounded-2xl text-lg font-bold bg-emerald-600 active:scale-95 transition">
+                        ✓ Presente
+                    </button>
+                    <button @click="mark('absent')" class="py-5 rounded-2xl text-lg font-bold bg-rose-600 active:scale-95 transition">
+                        ✕ Ausente
+                    </button>
+                    <button @click="mark('late')" class="py-4 rounded-2xl text-base font-semibold bg-amber-500 active:scale-95 transition">
+                        ⏱ Retardo
+                    </button>
+                    <button @click="mark('excused')" class="py-4 rounded-2xl text-base font-semibold bg-sky-600 active:scale-95 transition">
+                        ✎ Justificado
+                    </button>
+                </div>
+            </template>
 
             <!-- Navegación -->
             <div class="flex items-center justify-between w-full max-w-sm text-sm text-slate-300 mt-1">
@@ -78,7 +90,7 @@ import { ref, computed } from 'vue'
 import UserAvatar from '@/app/components/ui/UserAvatar.vue'
 import { API } from '@/shared/api'
 
-interface Student { student_id: number; num_control: string; nombre: string; status: string; notes?: string }
+interface Student { student_id: number; num_control: string; nombre: string; status: string; notes?: string; locked?: boolean }
 
 const props = defineProps<{
     students: Student[]

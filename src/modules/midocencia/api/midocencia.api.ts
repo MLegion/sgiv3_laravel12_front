@@ -138,5 +138,13 @@ export default {
             absenceReport: apiUrl('/midocencia/group-attendance/report/absences'),
             absenceSummary: apiUrl('/midocencia/group-attendance/report/absences-summary'),
         },
+        // Justificantes de inasistencia (jefe de carrera).
+        justifications: {
+            students: apiUrl('/midocencia/justifications/students'),
+            list:     apiUrl('/midocencia/justifications'),
+            create:   apiUrl('/midocencia/justifications'),
+            evidence: (id: string | number) => apiUrl(`/midocencia/justifications/${id}/evidence`),
+            remove:   (id: string | number) => apiUrl(`/midocencia/justifications/${id}`),
+        },
     },
 } satisfies ApiModule

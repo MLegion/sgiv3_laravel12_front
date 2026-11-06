@@ -66,7 +66,11 @@
                     <span class="font-mono text-xs">{{ row.num_control }}</span>
                 </template>
                 <template #cell-asistencia="{ row }">
-                    <select v-model="marks[row.student_id].status"
+                    <div v-if="row.locked" class="flex items-center gap-1.5">
+                        <span class="px-2 py-0.5 rounded-full text-xs bg-sky-100 text-sky-700">Justificado</span>
+                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="Fijado por jefatura"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <select v-else v-model="marks[row.student_id].status"
                         class="w-full rounded-lg text-xs"
                         :class="marks[row.student_id].status === 'present' ? 'border-slate-300' : 'border-rose-300 bg-rose-50'">
                         <option value="present">Presente</option>
@@ -76,7 +80,8 @@
                     </select>
                 </template>
                 <template #cell-motivo="{ row }">
-                    <input v-model="marks[row.student_id].notes" type="text" maxlength="255"
+                    <span v-if="row.locked" class="text-xs text-slate-500">{{ marks[row.student_id].notes }}</span>
+                    <input v-else v-model="marks[row.student_id].notes" type="text" maxlength="255"
                         :disabled="marks[row.student_id].status === 'present'"
                         class="w-full rounded-lg border-slate-300 text-xs disabled:bg-slate-100" placeholder="Opcional" />
                 </template>
@@ -127,7 +132,7 @@ const toast = useToast()
 const GA = API.MIDOCENCIA_API.groupAttendance
 
 interface Group { teacher_assignment_id: number; grupo: string; materia: string; modalidad: string; campus: string; campus_id: number; modality_type_id: number }
-interface Student { student_id: number; num_control: string; nombre: string; status: string; notes?: string }
+interface Student { student_id: number; num_control: string; nombre: string; status: string; notes?: string; locked?: boolean }
 interface ClassDate { date: string; weekday: string }
 
 const groups = ref<Group[]>([])

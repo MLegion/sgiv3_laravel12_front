@@ -119,4 +119,10 @@ export default [
         component: () => import('@/modules/midocencia/pages/AbsenceReportByTutorPage.vue'),
         meta: { title: 'Ausentes por tutor' },
     },
+    {
+        path: 'midocencia/justifications',
+        name: 'midocencia.justifications',
+        component: () => import('@/modules/midocencia/pages/AbsenceJustificationsPage.vue'),
+        meta: { title: 'Justificantes de inasistencia' },
+    },
 ]
