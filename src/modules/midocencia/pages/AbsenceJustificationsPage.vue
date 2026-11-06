@@ -22,7 +22,7 @@
                             placeholder="Buscar por nombre o número de control…"
                         />
                     </div>
-                    <button type="button" @click="searchOpen = true" title="Búsqueda avanzada"
+                    <button type="button" @click="openModal" title="Búsqueda avanzada"
                         class="px-3 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 text-sm flex items-center gap-1.5">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         Buscar
@@ -142,30 +142,51 @@
             </template>
         </DataTable>
 
-        <!-- Modal de búsqueda avanzada de alumnos -->
+        <!-- Modal de búsqueda avanzada: DataTable paginado + filtros -->
         <div v-if="searchOpen" class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" @click.self="searchOpen = false">
-            <div class="bg-white rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+            <div class="bg-white rounded-xl w-full max-w-4xl max-h-[88vh] flex flex-col overflow-hidden">
                 <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
                     <h3 class="text-sm font-semibold text-slate-700">Buscar alumno</h3>
                     <button @click="searchOpen = false" class="text-slate-400 hover:text-slate-600">✕</button>
                 </div>
-                <div class="p-4">
-                    <input v-model="modalTerm" @input="modalSearch" type="text" autofocus placeholder="Nombre o número de control…"
-                        class="w-full rounded-lg border-slate-300 text-sm" />
+                <!-- Filtros -->
+                <div class="px-4 py-3 grid grid-cols-1 sm:grid-cols-3 gap-3 border-b border-slate-100 bg-slate-50/50">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600">Carrera</label>
+                        <select v-model="mfCareer" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
+                            <option :value="''">Todas</option>
+                            <option v-for="c in scopeCareers" :key="c.id" :value="c.id">{{ c.name }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600">Modalidad</label>
+                        <select v-model="mfModality" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
+                            <option :value="''">Todas</option>
+                            <option v-for="m in scopeModalities" :key="m.id" :value="m.id">{{ m.name }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600">Semestre</label>
+                        <select v-model="mfSemester" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
+                            <option :value="''">Todos</option>
+                            <option v-for="n in 12" :key="n" :value="n">{{ n }}</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="flex-1 overflow-auto px-4 pb-4">
-                    <div v-if="modalLoading" class="text-sm text-slate-500 py-4 text-center">Buscando…</div>
-                    <ul v-else-if="modalResults.length" class="divide-y divide-slate-100">
-                        <li v-for="s in modalResults" :key="s.student_id" class="flex items-center justify-between py-2.5">
-                            <div>
-                                <p class="text-sm text-slate-700">{{ s.nombre }}</p>
-                                <p class="font-mono text-xs text-slate-400">{{ s.num_control }}</p>
-                            </div>
-                            <button @click="selectFromModal(s)" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium">Seleccionar</button>
-                        </li>
-                    </ul>
-                    <p v-else-if="modalTerm.length >= 2" class="text-sm text-slate-400 py-4 text-center">Sin resultados.</p>
-                    <p v-else class="text-sm text-slate-400 py-4 text-center">Escribe al menos 2 caracteres.</p>
+                <div class="flex-1 overflow-auto p-4">
+                    <DataTable
+                        :columns="modalColumns"
+                        :rows="modalRows"
+                        :loading="modalLoading"
+                        :pagination="modalPagination"
+                        search-placeholder="Buscar por nombre o número de control…"
+                        @change="modalOnChange"
+                    >
+                        <template #cell-num_control="{ row }"><span class="font-mono text-xs">{{ row.num_control }}</span></template>
+                        <template #cell-accion="{ row }">
+                            <button @click="selectFromModal(row)" class="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-medium">Seleccionar</button>
+                        </template>
+                    </DataTable>
                 </div>
             </div>
         </div>
@@ -190,12 +211,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn, DataTableChangeEvent } from '@/app/components/ui/datatable/types'
 
 const toast = useToast()
@@ -233,10 +255,32 @@ const scheduleLoading = ref(false)
 const reasonChoice = ref(genericReasons[0]); const customReason = ref('')
 const reasonValue = computed(() => reasonChoice.value === '__custom__' ? customReason.value.trim() : reasonChoice.value)
 
-// Modal búsqueda
+// Modal búsqueda (DataTable paginado + filtros)
 const searchOpen = ref(false)
-const modalTerm = ref(''); const modalResults = ref<Student[]>([]); const modalLoading = ref(false)
-let modalTimer: any = null
+const scopeCareers = ref<Array<{ id: number; name: string }>>([])
+const scopeModalities = ref<Array<{ id: number; name: string }>>([])
+const mfCareer = ref<number | ''>('')
+const mfModality = ref<number | ''>('')
+const mfSemester = ref<number | ''>('')
+
+const modalExtraSearch = computed(() => {
+    const s: Record<string, any> = {}
+    if (mfCareer.value !== '') s.career_id = mfCareer.value
+    if (mfModality.value !== '') s.modality_id = mfModality.value
+    if (mfSemester.value !== '') s.semester = mfSemester.value
+    return s
+})
+const modalColumns: DataTableColumn<any>[] = [
+    { key: 'num_control', label: 'No. Control', searchable: true },
+    { key: 'nombre', label: 'Alumno', searchable: true },
+    { key: 'carrera', label: 'Carrera' },
+    { key: 'modalidad', label: 'Modalidad' },
+    { key: 'semestre', label: 'Sem.', align: 'center' },
+    { key: 'accion', label: '' },
+]
+const {
+    rows: modalRows, loading: modalLoading, pagination: modalPagination, handleChange: modalOnChange, fetchData: modalFetch,
+} = useDataTableFetch<any>({ endpoint: J.studentsPaged, searchableFields: ['num_control', 'nombre'], extraSearch: modalExtraSearch })
 
 // Drawer evidencia
 const drawer = reactive<{ open: boolean; loading: boolean; kind: 'image' | 'pdf' | null; url: string | null }>({ open: false, loading: false, kind: null, url: null })
@@ -323,21 +367,25 @@ async function remove(id: number) {
     catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo eliminar.') }
 }
 
-// Modal
-function modalSearch() {
-    clearTimeout(modalTimer)
-    const q = modalTerm.value.trim()
-    if (q.length < 2) { modalResults.value = []; return }
-    modalLoading.value = true
-    modalTimer = setTimeout(async () => {
-        try { const { data } = await api.get(J.students, { params: { q } }); modalResults.value = data.items ?? data }
-        catch { modalResults.value = [] }
-        finally { modalLoading.value = false }
-    }, 300)
+// Modal: abrir (carga catálogo + primera página) y re-fetch al cambiar filtros.
+let catalogLoaded = false
+async function openModal() {
+    searchOpen.value = true
+    if (!catalogLoaded) {
+        try {
+            const { data } = await api.get(J.filters)
+            scopeCareers.value = data.careers ?? []
+            scopeModalities.value = data.modalities ?? []
+            catalogLoaded = true
+        } catch { /* noop */ }
+    }
+    modalFetch()
 }
+watch([mfCareer, mfModality, mfSemester], () => { modalPagination.value.page = 1; modalFetch() })
+
 function selectFromModal(s: Student) {
     studentId.value = s.student_id
-    searchOpen.value = false; modalTerm.value = ''; modalResults.value = []
+    searchOpen.value = false
 }
 
 // Drawer de evidencia
