@@ -208,7 +208,7 @@
                     </div>
                     <div>
                         <p class="text-xs font-medium text-slate-500">Motivo</p>
-                        <p class="text-sm text-slate-800 whitespace-pre-line">{{ drawer.detail.reason }}</p>
+                        <p class="text-sm text-slate-800 whitespace-pre-line max-h-40 overflow-auto">{{ drawer.detail.reason }}</p>
                     </div>
                 </div>
                 <div class="flex-1 overflow-auto bg-slate-50 flex items-center justify-center">
