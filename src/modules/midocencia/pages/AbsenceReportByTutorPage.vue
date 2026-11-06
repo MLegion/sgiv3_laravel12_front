@@ -55,6 +55,7 @@
             @change="onTableChange"
         >
             <template #cell-num_control="{ row }"><span class="font-mono text-xs">{{ row.num_control }}</span></template>
+            <template #cell-unidad="{ row }"><span class="text-xs">{{ row.unidad ?? '—' }}</span></template>
             <template #cell-grupo_sem="{ row }"><span class="text-xs">{{ row.grupo }}{{ row.semestre ? ` · ${row.semestre}º` : '' }}</span></template>
             <template #cell-telefono="{ row }"><span class="text-xs">{{ row.telefono || '—' }}</span></template>
             <template #cell-correo="{ row }"><span class="text-xs">{{ row.correo || '—' }}</span></template>
@@ -80,7 +81,7 @@ import type { DataTableColumn, DataTableChangeEvent } from '@/app/components/ui/
 const toast = useToast()
 const GA = API.MIDOCENCIA_API.groupAttendance
 
-interface DetailRow { tutor: string; programa?: string; semestre?: number | null; num_control: string; nombre: string; materia: string; grupo: string; fecha: string; telefono?: string | null; correo?: string | null; docente?: string | null; status: string; motivo?: string }
+interface DetailRow { tutor: string; programa?: string; semestre?: number | null; num_control: string; nombre: string; materia: string; unidad?: number | null; grupo: string; fecha: string; telefono?: string | null; correo?: string | null; docente?: string | null; status: string; motivo?: string }
 interface SummaryRow { tutor: string; num_control: string; nombre: string; ausencias: number; retardos: number; justificados: number; total: number }
 
 const mode = ref<'summary' | 'detail'>('summary')
@@ -110,6 +111,7 @@ const detailColumns: DataTableColumn<DetailRow>[] = [
     { key: 'num_control', label: 'No. Control', searchable: true },
     { key: 'nombre', label: 'Estudiante', searchable: true },
     { key: 'materia', label: 'Materia' },
+    { key: 'unidad', label: 'Unidad', align: 'center' },
     { key: 'grupo_sem', label: 'Grupo y sem.' },
     { key: 'telefono', label: 'Teléfono' },
     { key: 'correo', label: 'Correo' },
@@ -194,11 +196,11 @@ function buildPdfHtml(rows: DetailRow[]): string {
         </div>`
         html += `<table style="border-collapse:collapse;width:100%;table-layout:fixed;">
             <thead><tr>
-            ${th('NO.', '3%')}${th('FECHA', '7%')}${th('No. CONTROL', '8%')}${th('NOMBRE DEL ESTUDIANTE', '15%')}${th('MATERIA', '12%')}${th('GRUPO Y SEM.', '7%')}${th('TELÉFONO', '7%')}${th('CORREO', '11%')}${th('OBSERVACIONES (MOTIVO)', '10%')}${th('DOCENTE QUE REPORTA', '10%')}${th('ACCIONES')}${th('RESULTADOS')}
+            ${th('NO.', '3%')}${th('FECHA', '7%')}${th('No. CONTROL', '8%')}${th('NOMBRE DEL ESTUDIANTE', '14%')}${th('MATERIA', '11%')}${th('UNIDAD', '4%')}${th('GRUPO Y SEM.', '6%')}${th('TELÉFONO', '7%')}${th('CORREO', '10%')}${th('OBSERVACIONES (MOTIVO)', '9%')}${th('DOCENTE QUE REPORTA', '9%')}${th('ACCIONES')}${th('RESULTADOS')}
             </tr></thead><tbody>`
         list.forEach((r, i) => {
             const grupoSem = `${esc(r.grupo)}${r.semestre ? ' · ' + esc(r.semestre) + 'º' : ''}`
-            html += `<tr>${td(String(i + 1))}${td(esc(fmtDate(r.fecha)))}${td(esc(r.num_control))}${td(esc(r.nombre))}${td(esc(r.materia))}${td(grupoSem)}${td(esc(r.telefono || ''))}${td(esc(r.correo || ''))}${td(esc(r.motivo || ''))}${td(esc(r.docente || ''))}${td('')}${td('')}</tr>`
+            html += `<tr>${td(String(i + 1))}${td(esc(fmtDate(r.fecha)))}${td(esc(r.num_control))}${td(esc(r.nombre))}${td(esc(r.materia))}${td(r.unidad != null ? esc(r.unidad) : '')}${td(grupoSem)}${td(esc(r.telefono || ''))}${td(esc(r.correo || ''))}${td(esc(r.motivo || ''))}${td(esc(r.docente || ''))}${td('')}${td('')}</tr>`
         })
         html += `</tbody></table>`
         html += `<div style="font-size:8px;color:#64748b;margin-top:4px;">Documento informativo generado por el sistema · las columnas Acciones y Resultados las registra el tutor(a).</div>`

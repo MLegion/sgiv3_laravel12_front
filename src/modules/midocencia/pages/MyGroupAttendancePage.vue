@@ -49,6 +49,18 @@
             Este grupo no tiene horario cargado; elige la fecha manualmente.
         </p>
 
+        <!-- Unidad de la sesión (autosugerida por la instrumentación; editable) -->
+        <div v-if="selectedGroup && date && roster.length" class="flex items-center gap-2 mb-3">
+            <label class="text-xs font-medium text-slate-600">Unidad de esta clase:</label>
+            <select v-model="unit" class="rounded-lg border-slate-300 text-sm py-1.5">
+                <option :value="null">— Sin unidad —</option>
+                <option v-for="u in unitOptions" :key="u.number" :value="u.number">
+                    Unidad {{ u.number }}{{ u.title ? ` · ${u.title}` : '' }}
+                </option>
+            </select>
+            <span v-if="!units.length" class="text-xs text-slate-400">(el grupo no tiene instrumentación; captura manual)</span>
+        </div>
+
         <!-- Roster (DataTable) -->
         <div v-if="selectedGroup && date && roster.length">
             <DataTable
@@ -155,11 +167,19 @@ const GA = API.MIDOCENCIA_API.groupAttendance
 interface Group { teacher_assignment_id: number; grupo: string; materia: string; modalidad: string; campus: string; campus_id: number; modality_type_id: number }
 interface Student { student_id: number; num_control: string; nombre: string; status: string; notes?: string; locked?: boolean; justification_has_evidence?: boolean }
 interface ClassDate { date: string; weekday: string }
+interface Unit { number: number; title?: string }
 
 const groups = ref<Group[]>([])
 const dates = ref<ClassDate[]>([])
 const roster = ref<Student[]>([])
 const marks = reactive<Record<number, { status: string; notes: string }>>({})
+
+// Unidad (parcial) de la sesión: de la instrumentación del grupo; si no hay,
+// se ofrece captura manual (1..8). Se autosugiere por fecha desde el backend.
+const units = ref<Unit[]>([])
+const unit = ref<number | null>(null)
+const unitOptions = computed<Unit[]>(() =>
+    units.value.length ? units.value : Array.from({ length: 8 }, (_, i) => ({ number: i + 1 })))
 
 const campusId = ref<number | null>(null)
 const modalityTypeId = ref<number | null>(null)
@@ -171,7 +191,8 @@ const rollCall = ref(false)
 
 const rollCallSubtitle = computed(() => {
     const g = materias.value.find(x => x.teacher_assignment_id === selectedGroup.value)
-    return g ? `${g.grupo} · ${g.materia} · ${date.value}` : date.value
+    const u = unit.value ? ` · U${unit.value}` : ''
+    return (g ? `${g.grupo} · ${g.materia} · ${date.value}` : date.value) + u
 })
 
 // Paginación/búsqueda local del roster.
@@ -253,6 +274,8 @@ async function loadRoster() {
     try {
         const { data } = await api.get(GA.roster(selectedGroup.value, date.value))
         roster.value = data.students
+        units.value = data.units ?? []
+        unit.value = data.unit ?? null
         for (const s of data.students) marks[s.student_id] = { status: s.status ?? 'present', notes: s.notes ?? '' }
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo cargar la lista.') }
     finally { loading.value = false }
@@ -265,7 +288,7 @@ async function save() {
         const absences = roster.value
             .filter(s => marks[s.student_id].status !== 'present')
             .map(s => ({ student_id: s.student_id, status: marks[s.student_id].status, notes: marks[s.student_id].notes || null }))
-        await api.post(GA.record(selectedGroup.value, date.value), { absences })
+        await api.post(GA.record(selectedGroup.value, date.value), { absences, unit: unit.value })
         toast.success('Asistencia guardada.')
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo guardar.') }
     finally { saving.value = false }
