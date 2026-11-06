@@ -50,6 +50,10 @@
             @change="onTableChange"
         >
             <template #cell-num_control="{ row }"><span class="font-mono text-xs">{{ row.num_control }}</span></template>
+            <template #cell-grupo_sem="{ row }"><span class="text-xs">{{ row.grupo }}{{ row.semestre ? ` · ${row.semestre}º` : '' }}</span></template>
+            <template #cell-telefono="{ row }"><span class="text-xs">{{ row.telefono || '—' }}</span></template>
+            <template #cell-correo="{ row }"><span class="text-xs">{{ row.correo || '—' }}</span></template>
+            <template #cell-docente="{ row }"><span class="text-xs">{{ row.docente || '—' }}</span></template>
             <template #cell-status="{ row }">
                 <span class="px-2 py-0.5 rounded-full text-xs"
                     :class="row.status === 'absent' ? 'bg-rose-100 text-rose-700' : row.status === 'late' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'">
@@ -71,7 +75,7 @@ import type { DataTableColumn, DataTableChangeEvent } from '@/app/components/ui/
 const toast = useToast()
 const GA = API.MIDOCENCIA_API.groupAttendance
 
-interface DetailRow { tutor: string; num_control: string; nombre: string; materia: string; grupo: string; fecha: string; status: string; motivo?: string }
+interface DetailRow { tutor: string; programa?: string; semestre?: number | null; num_control: string; nombre: string; materia: string; grupo: string; fecha: string; telefono?: string | null; correo?: string | null; docente?: string | null; status: string; motivo?: string }
 interface SummaryRow { tutor: string; num_control: string; nombre: string; ausencias: number; retardos: number; justificados: number; total: number }
 
 const mode = ref<'summary' | 'detail'>('summary')
@@ -96,13 +100,17 @@ const summaryColumns: DataTableColumn<SummaryRow>[] = [
 ]
 const detailColumns: DataTableColumn<DetailRow>[] = [
     { key: 'tutor', label: 'Tutor', searchable: true },
+    { key: 'programa', label: 'Programa' },
+    { key: 'fecha', label: 'Fecha' },
     { key: 'num_control', label: 'No. Control', searchable: true },
     { key: 'nombre', label: 'Estudiante', searchable: true },
     { key: 'materia', label: 'Materia' },
-    { key: 'grupo', label: 'Grupo' },
-    { key: 'fecha', label: 'Fecha' },
+    { key: 'grupo_sem', label: 'Grupo y sem.' },
+    { key: 'telefono', label: 'Teléfono' },
+    { key: 'correo', label: 'Correo' },
     { key: 'status', label: 'Estado' },
-    { key: 'motivo', label: 'Motivo' },
+    { key: 'motivo', label: 'Observaciones' },
+    { key: 'docente', label: 'Docente que reporta' },
 ]
 
 function matches(r: { tutor: string; nombre: string; num_control: string }): boolean {
