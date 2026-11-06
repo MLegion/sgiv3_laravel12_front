@@ -317,6 +317,17 @@ function fmt(s: string): string { return s ? s.replace('T', ' ').slice(0, 16) : 
 
 function onFile(e: Event) { form.evidence = (e.target as HTMLInputElement).files?.[0] ?? null }
 
+/** Deja el formulario como recién abierto (incluye el modo horas). */
+function resetForm() {
+    studentId.value = null
+    form.type = 'medical'; form.evidence = null
+    if (fileInput.value) fileInput.value.value = ''
+    mode.value = 'full'
+    dayFrom.value = ''; dayTo.value = ''
+    hourDate.value = ''; schedule.value = []; clearBlocks()
+    reasonChoice.value = genericReasons[0]; customReason.value = ''
+}
+
 function switchHours() { mode.value = 'hours'; if (studentId.value && hourDate.value) loadSchedule() }
 function clearBlocks() { for (const k of Object.keys(blockChecked)) delete blockChecked[Number(k)] }
 
@@ -353,9 +364,7 @@ async function save() {
         if (form.evidence) fd.append('evidence', form.evidence)
         await api.post(J.create, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
         toast.success('Justificante registrado.')
-        studentId.value = null; dayFrom.value = ''; dayTo.value = ''; hourDate.value = ''
-        form.evidence = null; if (fileInput.value) fileInput.value.value = ''
-        reasonChoice.value = genericReasons[0]; customReason.value = ''
+        resetForm()
         await load()
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo registrar.') }
     finally { saving.value = false }
