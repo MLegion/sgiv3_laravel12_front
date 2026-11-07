@@ -290,6 +290,7 @@ async function save() {
             .map(s => ({ student_id: s.student_id, status: marks[s.student_id].status, notes: marks[s.student_id].notes || null }))
         await api.post(GA.record(selectedGroup.value, date.value), { absences, unit: unit.value })
         toast.success('Asistencia guardada.')
+        await loadRoster() // refleja el estado persistido (unidad incluida)
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo guardar.') }
     finally { saving.value = false }
 }
