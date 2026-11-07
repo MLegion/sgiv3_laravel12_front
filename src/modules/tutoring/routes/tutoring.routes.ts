@@ -32,6 +32,13 @@ export default [
         props: true,
     },
     {
+        path: 'tutoring/assignments/:id/diagnostico',
+        name: 'tutoring.assignment-diagnostico',
+        component: () => import('@/modules/tutoring/pages/TutoringDiagnosticoPage.vue'),
+        meta: { title: 'Diagnóstico por grupo' },
+        props: true,
+    },
+    {
         path: 'tutoring/followups',
         name: 'tutoring.followups',
         component: () => import('@/modules/tutoring/pages/FollowupsInboxPage.vue'),

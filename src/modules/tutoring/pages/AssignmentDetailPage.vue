@@ -11,6 +11,8 @@
                 <div class="flex gap-2">
                     <router-link :to="`/tutoring/assignments/${a.id}/followups`"
                         class="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 text-xs font-semibold">Seguimientos del PAT</router-link>
+                    <router-link :to="`/tutoring/assignments/${a.id}/diagnostico`"
+                        class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 text-xs font-semibold">Diagnóstico</router-link>
                     <button v-if="a.status === 'active'" @click="showReassign = true" class="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">Reasignar tutor</button>
                     <button v-if="a.status === 'active'" @click="close" class="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 border border-red-200 text-xs font-semibold">Cerrar</button>
                 </div>
