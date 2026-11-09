@@ -49,12 +49,6 @@
         <div v-else-if="selectedGroup && units != null">
             <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2 flex-wrap">
-                    <label v-if="opportunities.length" class="flex items-center gap-1 text-sm text-slate-600">
-                        Oportunidad:
-                        <select v-model.number="opportunity" @change="changeOpportunity" class="rounded-lg border-slate-300 text-sm py-1">
-                            <option v-for="o in opportunities" :key="o.opportunity" :value="o.opportunity">{{ o.name }}</option>
-                        </select>
-                    </label>
                     <span class="text-sm text-slate-600"><b>{{ subject.materia }}</b> · {{ students.length }} alumnos · {{ units }} unidades</span>
                     <!-- Editar nº de unidades -->
                     <button @click="startEditUnits" title="Cambiar nº de unidades" class="p-1 rounded-lg text-slate-500 hover:bg-slate-100">
@@ -77,18 +71,25 @@
                         <tr>
                             <th class="px-3 py-2 text-left sticky left-0 bg-slate-50">No. Control</th>
                             <th class="px-3 py-2 text-left">Alumno</th>
-                            <th v-for="u in unitCols" :key="u" class="px-2 py-2 text-center w-20">U{{ u }}</th>
+                            <th v-for="u in unitCols" :key="u" class="px-2 py-2 text-center w-28">U{{ u }} <span class="font-normal text-slate-400">/ op.</span></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         <tr v-for="s in students" :key="s.student_id" class="hover:bg-slate-50/60">
                             <td class="px-3 py-1.5 font-mono text-xs sticky left-0 bg-white">{{ s.num_control }}</td>
                             <td class="px-3 py-1.5">{{ s.nombre }}</td>
-                            <td v-for="u in unitCols" :key="u" class="px-1 py-1 text-center">
-                                <input type="number" min="0" max="100" step="0.1"
-                                    :value="gradeMap[s.student_id]?.[u] ?? ''"
-                                    @input="onGrade(s.student_id, u, ($event.target as HTMLInputElement).value)"
-                                    class="w-16 rounded-lg border-slate-300 text-sm text-center px-1 py-1" />
+                            <td v-for="u in unitCols" :key="u" class="px-1 py-1">
+                                <div class="flex items-center gap-1 justify-center">
+                                    <input type="number" min="0" max="100" step="0.1"
+                                        :value="cellGrade(s.student_id, u)"
+                                        @input="onGrade(s.student_id, u, ($event.target as HTMLInputElement).value)"
+                                        class="w-14 rounded-lg border-slate-300 text-sm text-center px-1 py-1" />
+                                    <select :value="cellOpp(s.student_id, u)" title="Oportunidad"
+                                        @change="onOpp(s.student_id, u, ($event.target as HTMLSelectElement).value)"
+                                        class="rounded-lg border-slate-300 text-xs py-1 px-0.5">
+                                        <option v-for="o in opportunities" :key="o.opportunity" :value="o.opportunity">{{ o.opportunity }}ª</option>
+                                    </select>
+                                </div>
                             </td>
                         </tr>
                         <tr v-if="!students.length"><td :colspan="2 + unitCols.length" class="px-3 py-4 text-center text-slate-400">Sin alumnos inscritos.</td></tr>
@@ -109,7 +110,7 @@ const toast = useToast()
 const UG = API.MIDOCENCIA_API.unitGrades
 
 interface Group { teacher_assignment_id: number; grupo: string; materia: string; modalidad: string; campus: string; campus_id: number; modality_type_id: number }
-interface Student { student_id: number; num_control: string; nombre: string; grades: Record<number, number | null> }
+interface Student { student_id: number; num_control: string; nombre: string; grades: Record<number, { grade: number | null; opportunity: number }> }
 
 const groups = ref<Group[]>([])
 const campusId = ref<number | null>(null)
@@ -126,13 +127,23 @@ const units = ref<number | null>(null)
 const unitsDraft = ref<number>(5)
 const editingUnits = ref(false)
 
-// Oportunidad (1ra/2da…) — solo ordinarias; la rejilla se captura por oportunidad.
+// Oportunidades ordinarias (1ra/2da…) para el select de cada celda.
 const opportunities = ref<Array<{ opportunity: number; name: string; short_name: string }>>([])
-const opportunity = ref<number>(1)
 
-// gradeMap[studentId][unit] = string (input); dirty = celdas modificadas.
-const gradeMap = reactive<Record<number, Record<number, string>>>({})
+// gradeMap[studentId][unit] = { grade (string del input), opportunity }; dirty = celdas modificadas.
+interface Cell { grade: string; opportunity: number }
+const gradeMap = reactive<Record<number, Record<number, Cell>>>({})
 const dirty = reactive<Set<string>>(new Set())
+
+function ensureCell(sid: number, u: number): Cell {
+    if (!gradeMap[sid]) gradeMap[sid] = {}
+    if (!gradeMap[sid][u]) gradeMap[sid][u] = { grade: '', opportunity: 1 }
+    return gradeMap[sid][u]
+}
+function cellGrade(sid: number, u: number): string { return gradeMap[sid]?.[u]?.grade ?? '' }
+function cellOpp(sid: number, u: number): number { return gradeMap[sid]?.[u]?.opportunity ?? 1 }
+function onGrade(sid: number, u: number, v: string) { ensureCell(sid, u).grade = v; dirty.add(`${sid}:${u}`) }
+function onOpp(sid: number, u: number, v: string) { ensureCell(sid, u).opportunity = Number(v); dirty.add(`${sid}:${u}`) }
 
 const unitCols = computed(() => units.value ? Array.from({ length: units.value }, (_, i) => i + 1) : [])
 const validDraft = computed(() => Number.isInteger(unitsDraft.value) && unitsDraft.value >= 1 && unitsDraft.value <= 20)
@@ -163,19 +174,18 @@ async function autoSelect() {
 
 async function onGroup() {
     resetGrid()
-    opportunity.value = 1
     if (!selectedGroup.value) return
     await loadGrid()
 }
 
-/** Carga la rejilla para la oportunidad actual (reusa al cambiar de oportunidad). */
+/** Carga la rejilla del grupo: materia, oportunidades y calificaciones por celda. */
 async function loadGrid() {
     if (!selectedGroup.value) return
     loading.value = true
     dirty.clear()
     for (const k of Object.keys(gradeMap)) delete gradeMap[Number(k)]
     try {
-        const { data } = await api.get(UG.grid(selectedGroup.value), { params: { opportunity: opportunity.value } })
+        const { data } = await api.get(UG.grid(selectedGroup.value))
         subject.materia = data.subject.materia ?? ''
         subject.grupo = data.subject.grupo ?? ''
         subject.units_count = data.subject.units_count ?? null
@@ -186,20 +196,16 @@ async function loadGrid() {
         students.value = data.students
         for (const s of data.students as Student[]) {
             gradeMap[s.student_id] = {}
-            for (const [u, v] of Object.entries(s.grades ?? {})) {
-                if (v !== null && v !== undefined) gradeMap[s.student_id][Number(u)] = String(v)
+            for (const [u, c] of Object.entries(s.grades ?? {})) {
+                const cell = c as { grade: number | null; opportunity: number }
+                gradeMap[s.student_id][Number(u)] = {
+                    grade: cell.grade != null ? String(cell.grade) : '',
+                    opportunity: cell.opportunity ?? 1,
+                }
             }
         }
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo cargar la rejilla.') }
     finally { loading.value = false }
-}
-
-function changeOpportunity() { loadGrid() }
-
-function onGrade(sid: number, unit: number, value: string) {
-    if (!gradeMap[sid]) gradeMap[sid] = {}
-    gradeMap[sid][unit] = value
-    dirty.add(`${sid}:${unit}`)
 }
 
 function startEditUnits() { editingUnits.value = true; unitsDraft.value = units.value ?? subject.suggested_units ?? 5 }
@@ -223,10 +229,14 @@ async function save() {
     try {
         const grades = [...dirty].map(key => {
             const [sid, unit] = key.split(':').map(Number)
-            const raw = gradeMap[sid]?.[unit]
-            return { student_id: sid, unit_number: unit, grade: raw === '' || raw == null ? null : Number(raw) }
+            const c = gradeMap[sid]?.[unit]
+            return {
+                student_id: sid, unit_number: unit,
+                grade: !c || c.grade === '' ? null : Number(c.grade),
+                opportunity: c?.opportunity ?? 1,
+            }
         })
-        await api.post(UG.save(selectedGroup.value), { opportunity: opportunity.value, grades })
+        await api.post(UG.save(selectedGroup.value), { grades })
         dirty.clear()
         toast.success('Calificaciones guardadas.')
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudieron guardar.') }
