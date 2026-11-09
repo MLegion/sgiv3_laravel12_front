@@ -48,7 +48,13 @@
         <!-- Rejilla de calificaciones -->
         <div v-else-if="selectedGroup && units != null">
             <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <label v-if="opportunities.length" class="flex items-center gap-1 text-sm text-slate-600">
+                        Oportunidad:
+                        <select v-model.number="opportunity" @change="changeOpportunity" class="rounded-lg border-slate-300 text-sm py-1">
+                            <option v-for="o in opportunities" :key="o.opportunity" :value="o.opportunity">{{ o.name }}</option>
+                        </select>
+                    </label>
                     <span class="text-sm text-slate-600"><b>{{ subject.materia }}</b> · {{ students.length }} alumnos · {{ units }} unidades</span>
                     <!-- Editar nº de unidades -->
                     <button @click="startEditUnits" title="Cambiar nº de unidades" class="p-1 rounded-lg text-slate-500 hover:bg-slate-100">
@@ -120,6 +126,10 @@ const units = ref<number | null>(null)
 const unitsDraft = ref<number>(5)
 const editingUnits = ref(false)
 
+// Oportunidad (1ra/2da…) — solo ordinarias; la rejilla se captura por oportunidad.
+const opportunities = ref<Array<{ opportunity: number; name: string; short_name: string }>>([])
+const opportunity = ref<number>(1)
+
 // gradeMap[studentId][unit] = string (input); dirty = celdas modificadas.
 const gradeMap = reactive<Record<number, Record<number, string>>>({})
 const dirty = reactive<Set<string>>(new Set())
@@ -153,16 +163,26 @@ async function autoSelect() {
 
 async function onGroup() {
     resetGrid()
+    opportunity.value = 1
+    if (!selectedGroup.value) return
+    await loadGrid()
+}
+
+/** Carga la rejilla para la oportunidad actual (reusa al cambiar de oportunidad). */
+async function loadGrid() {
     if (!selectedGroup.value) return
     loading.value = true
+    dirty.clear()
+    for (const k of Object.keys(gradeMap)) delete gradeMap[Number(k)]
     try {
-        const { data } = await api.get(UG.grid(selectedGroup.value))
+        const { data } = await api.get(UG.grid(selectedGroup.value), { params: { opportunity: opportunity.value } })
         subject.materia = data.subject.materia ?? ''
         subject.grupo = data.subject.grupo ?? ''
         subject.units_count = data.subject.units_count ?? null
         subject.suggested_units = data.subject.suggested_units ?? null
         units.value = subject.units_count
         unitsDraft.value = subject.units_count ?? subject.suggested_units ?? 5
+        opportunities.value = data.opportunities ?? []
         students.value = data.students
         for (const s of data.students as Student[]) {
             gradeMap[s.student_id] = {}
@@ -173,6 +193,8 @@ async function onGroup() {
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo cargar la rejilla.') }
     finally { loading.value = false }
 }
+
+function changeOpportunity() { loadGrid() }
 
 function onGrade(sid: number, unit: number, value: string) {
     if (!gradeMap[sid]) gradeMap[sid] = {}
@@ -204,7 +226,7 @@ async function save() {
             const raw = gradeMap[sid]?.[unit]
             return { student_id: sid, unit_number: unit, grade: raw === '' || raw == null ? null : Number(raw) }
         })
-        await api.post(UG.save(selectedGroup.value), { grades })
+        await api.post(UG.save(selectedGroup.value), { opportunity: opportunity.value, grades })
         dirty.clear()
         toast.success('Calificaciones guardadas.')
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudieron guardar.') }
