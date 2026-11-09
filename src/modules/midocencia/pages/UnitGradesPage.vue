@@ -50,7 +50,7 @@
             <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2 flex-wrap">
                     <span class="text-sm text-slate-600"><b>{{ subject.materia }}</b> · {{ students.length }} alumnos · {{ units }} unidades</span>
-                    <span class="text-xs text-slate-400">(menor a 70 = 0; de 70 a 100 con 1 decimal)</span>
+                    <span class="text-xs text-slate-400">(unidad: &lt;70 = 0; 70–100 con 1 decimal · final: promedio sin decimal, auto al completar)</span>
                     <!-- Editar nº de unidades -->
                     <button @click="startEditUnits" title="Cambiar nº de unidades" class="p-1 rounded-lg text-slate-500 hover:bg-slate-100">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -91,6 +91,13 @@
                                 </div>
                                 <span class="font-normal text-slate-400 text-[10px]">calif / op.</span>
                             </th>
+                            <th class="px-3 py-2 text-center w-32 bg-slate-100 text-slate-700" title="Promedio de las unidades (sin decimal) y opción de aprobación. Se calcula al tener todas las unidades.">
+                                <div class="flex items-center justify-center gap-1">
+                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                    <span>Final</span>
+                                </div>
+                                <span class="font-normal text-slate-400 text-[10px]">calif / aprobación</span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -111,8 +118,19 @@
                                     </select>
                                 </div>
                             </td>
+                            <td class="px-2 py-1 text-center bg-slate-50/70">
+                                <div v-if="finals[s.student_id]" class="flex flex-col items-center gap-0.5">
+                                    <span :title="finalTooltip(s.student_id)"
+                                        class="inline-block min-w-[2.25rem] px-2 py-1 rounded-lg text-sm font-semibold"
+                                        :class="finals[s.student_id].passed ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'">
+                                        {{ finals[s.student_id].final_grade }}
+                                    </span>
+                                    <span class="text-[10px] leading-tight text-slate-500 whitespace-nowrap">{{ finalApproval(s.student_id) }}</span>
+                                </div>
+                                <span v-else class="text-slate-300" title="Faltan unidades por calificar">—</span>
+                            </td>
                         </tr>
-                        <tr v-if="!students.length"><td :colspan="2 + unitCols.length" class="px-3 py-4 text-center text-slate-400">Sin alumnos inscritos.</td></tr>
+                        <tr v-if="!students.length"><td :colspan="3 + unitCols.length" class="px-3 py-4 text-center text-slate-400">Sin alumnos inscritos.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -149,6 +167,23 @@ const editingUnits = ref(false)
 
 // Oportunidades ordinarias (1ra/2da…) para el select de cada celda.
 const opportunities = ref<Array<{ opportunity: number; name: string; short_name: string }>>([])
+
+// Calificación final (derivada, sin decimal) por alumno: solo con todas las unidades.
+interface Final { final_grade: number; passed: boolean; opportunity: number; approval_type: string | null }
+const finals = ref<Record<number, Final>>({})
+function finalTooltip(sid: number): string {
+    const f = finals.value[sid]
+    if (!f) return ''
+    const estado = f.passed ? 'Acreditada' : 'No acreditada'
+    const tipo = f.approval_type ? ` · ${f.approval_type}` : ''
+    return `${estado} · ${f.opportunity}ª oportunidad${tipo}`
+}
+// Opción de aprobación visible bajo la final: nombre del tipo (p.ej. ORD 1ª) o la oportunidad.
+function finalApproval(sid: number): string {
+    const f = finals.value[sid]
+    if (!f) return ''
+    return f.approval_type ?? `${f.opportunity}ª op.`
+}
 
 // gradeMap[studentId][unit] = { grade (string del input), opportunity }; dirty = celdas modificadas.
 interface Cell { grade: string; opportunity: number }
@@ -220,7 +255,7 @@ function dedupe(arr: Array<{ id: number; name: string }>): Array<{ id: number; n
     return [...seen].map(([id, name]) => ({ id, name }))
 }
 
-function resetGrid() { students.value = []; units.value = null; editingUnits.value = false; dirty.clear(); locked.clear(); lockSuggestion.value = []; for (const k of Object.keys(gradeMap)) delete gradeMap[Number(k)] }
+function resetGrid() { students.value = []; units.value = null; editingUnits.value = false; dirty.clear(); locked.clear(); lockSuggestion.value = []; finals.value = {}; for (const k of Object.keys(gradeMap)) delete gradeMap[Number(k)] }
 function onCampus() { modalityTypeId.value = null; selectedGroup.value = null; resetGrid(); autoSelect() }
 function onModality() { selectedGroup.value = null; resetGrid(); autoSelect() }
 
@@ -256,6 +291,7 @@ async function loadGrid() {
         opportunities.value = data.opportunities ?? []
         locked.clear()
         for (const n of (data.locked ?? []) as number[]) locked.add(n)
+        finals.value = data.finals ?? {}
         students.value = data.students
         for (const s of data.students as Student[]) {
             gradeMap[s.student_id] = {}
