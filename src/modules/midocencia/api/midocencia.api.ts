@@ -139,6 +139,16 @@ export default {
             absenceReport: apiUrl('/midocencia/group-attendance/report/absences'),
             absenceSummary: apiUrl('/midocencia/group-attendance/report/absences-summary'),
         },
+        // Calificaciones por unidad (captura del docente).
+        unitGrades: {
+            filters: apiUrl('/midocencia/unit-grades/filters'),
+            groups:  apiUrl('/midocencia/unit-grades/groups'),
+            grid:    (ta: string | number) => apiUrl(`/midocencia/unit-grades/${ta}/grid`),
+            units:   (ta: string | number) => apiUrl(`/midocencia/unit-grades/${ta}/units`),
+            save:    (ta: string | number) => apiUrl(`/midocencia/unit-grades/${ta}/save`),
+            lock:    (ta: string | number) => apiUrl(`/midocencia/unit-grades/${ta}/lock`),
+            unlock:  (ta: string | number) => apiUrl(`/midocencia/unit-grades/${ta}/unlock`),
+        },
         // Justificantes de inasistencia (jefe de carrera).
         justifications: {
             students: apiUrl('/midocencia/justifications/students'),
