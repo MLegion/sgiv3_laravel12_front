@@ -50,6 +50,7 @@
             <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2 flex-wrap">
                     <span class="text-sm text-slate-600"><b>{{ subject.materia }}</b> · {{ students.length }} alumnos · {{ units }} unidades</span>
+                    <span class="text-xs text-slate-400">(menor a 70 = 0; de 70 a 100 con 1 decimal)</span>
                     <!-- Editar nº de unidades -->
                     <button @click="startEditUnits" title="Cambiar nº de unidades" class="p-1 rounded-lg text-slate-500 hover:bg-slate-100">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -80,10 +81,11 @@
                             <td class="px-3 py-1.5">{{ s.nombre }}</td>
                             <td v-for="u in unitCols" :key="u" class="px-1 py-1">
                                 <div class="flex items-center gap-1 justify-center">
-                                    <input type="number" min="0" max="100" step="0.1"
+                                    <input type="text" inputmode="decimal" placeholder="0–100" maxlength="5"
                                         :value="cellGrade(s.student_id, u)"
                                         @input="onGrade(s.student_id, u, ($event.target as HTMLInputElement).value)"
-                                        class="w-14 rounded-lg border-slate-300 text-sm text-center px-1 py-1" />
+                                        @blur="onGradeBlur(s.student_id, u)"
+                                        class="w-14 rounded-lg border-slate-300 text-sm text-center px-1 py-1 placeholder:text-slate-300" />
                                     <select :value="cellOpp(s.student_id, u)" title="Oportunidad"
                                         @change="onOpp(s.student_id, u, ($event.target as HTMLSelectElement).value)"
                                         class="rounded-lg border-slate-300 text-xs py-1 px-0.5">
@@ -142,8 +144,30 @@ function ensureCell(sid: number, u: number): Cell {
 }
 function cellGrade(sid: number, u: number): string { return gradeMap[sid]?.[u]?.grade ?? '' }
 function cellOpp(sid: number, u: number): number { return gradeMap[sid]?.[u]?.opportunity ?? 1 }
-function onGrade(sid: number, u: number, v: string) { ensureCell(sid, u).grade = v; dirty.add(`${sid}:${u}`) }
+// Máscara: solo dígitos y un punto decimal (mientras escribe).
+function maskGrade(v: string): string {
+    let s = v.replace(/[^\d.]/g, '')
+    const i = s.indexOf('.')
+    if (i !== -1) s = s.slice(0, i + 1) + s.slice(i + 1).replace(/\./g, '')
+    return s
+}
+function onGrade(sid: number, u: number, v: string) { ensureCell(sid, u).grade = maskGrade(v); dirty.add(`${sid}:${u}`) }
 function onOpp(sid: number, u: number, v: string) { ensureCell(sid, u).opportunity = Number(v); dirty.add(`${sid}:${u}`) }
+
+// Regla TecNM: 0–100; < 70 (no aprobatorio) → 0; aprobatorias con 1 decimal. Devuelve ya formateado "xx.x".
+function normGrade(v: string): string {
+    if (v === '' || v === '.') return ''
+    let n = Number(v)
+    if (Number.isNaN(n)) return ''
+    n = Math.max(0, Math.min(100, n))
+    n = n < 70 ? 0 : Math.round(n * 10) / 10
+    return n.toFixed(1)
+}
+function onGradeBlur(sid: number, u: number) {
+    const c = ensureCell(sid, u)
+    const nv = normGrade(c.grade)
+    if (nv !== c.grade) { c.grade = nv; dirty.add(`${sid}:${u}`) }
+}
 
 const unitCols = computed(() => units.value ? Array.from({ length: units.value }, (_, i) => i + 1) : [])
 const validDraft = computed(() => Number.isInteger(unitsDraft.value) && unitsDraft.value >= 1 && unitsDraft.value <= 20)
@@ -199,7 +223,7 @@ async function loadGrid() {
             for (const [u, c] of Object.entries(s.grades ?? {})) {
                 const cell = c as { grade: number | null; opportunity: number }
                 gradeMap[s.student_id][Number(u)] = {
-                    grade: cell.grade != null ? String(cell.grade) : '',
+                    grade: cell.grade != null ? cell.grade.toFixed(1) : '',
                     opportunity: cell.opportunity ?? 1,
                 }
             }
@@ -237,8 +261,8 @@ async function save() {
             }
         })
         await api.post(UG.save(selectedGroup.value), { grades })
-        dirty.clear()
         toast.success('Calificaciones guardadas.')
+        await loadGrid() // refleja la normalización aplicada en el servidor
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudieron guardar.') }
     finally { saving.value = false }
 }
