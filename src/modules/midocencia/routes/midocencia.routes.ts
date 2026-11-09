@@ -114,6 +114,12 @@ export default [
         meta: { title: 'Asistencia de mis grupos' },
     },
     {
+        path: 'midocencia/unit-grades',
+        name: 'midocencia.unit-grades',
+        component: () => import('@/modules/midocencia/pages/UnitGradesPage.vue'),
+        meta: { title: 'Calificaciones por unidad' },
+    },
+    {
         path: 'midocencia/absence-report',
         name: 'midocencia.absence-report',
         component: () => import('@/modules/midocencia/pages/AbsenceReportByTutorPage.vue'),
