@@ -146,6 +146,8 @@ export default {
             grid:    (ta: string | number) => apiUrl(`/midocencia/unit-grades/${ta}/grid`),
             units:   (ta: string | number) => apiUrl(`/midocencia/unit-grades/${ta}/units`),
             save:    (ta: string | number) => apiUrl(`/midocencia/unit-grades/${ta}/save`),
+            lock:    (ta: string | number) => apiUrl(`/midocencia/unit-grades/${ta}/lock`),
+            unlock:  (ta: string | number) => apiUrl(`/midocencia/unit-grades/${ta}/unlock`),
         },
         // Justificantes de inasistencia (jefe de carrera).
         justifications: {

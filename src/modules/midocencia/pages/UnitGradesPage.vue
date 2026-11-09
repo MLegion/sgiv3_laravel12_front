@@ -66,13 +66,31 @@
                 </button>
             </div>
 
+            <!-- Sugerencia post-guardado: bloquear las unidades recién capturadas -->
+            <div v-if="lockSuggestion.length" class="mb-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 flex items-center gap-2 flex-wrap">
+                <span class="text-sm text-slate-700">¿Ya terminaste de calificar esa unidad? Bloquéala para no cambiar una calificación por error:</span>
+                <button v-for="u in lockSuggestion" :key="u" @click="lockFromSuggestion(u)"
+                    class="px-2 py-1 rounded-lg bg-amber-600 text-white text-xs font-medium">🔒 Bloquear U{{ u }}</button>
+                <button @click="lockSuggestion = []" class="text-xs text-slate-500 hover:underline ml-auto">Omitir</button>
+            </div>
+
             <div class="overflow-x-auto rounded-xl border border-slate-200">
                 <table class="min-w-full text-sm">
                     <thead class="bg-slate-50 text-slate-600">
                         <tr>
                             <th class="px-3 py-2 text-left sticky left-0 bg-slate-50">No. Control</th>
                             <th class="px-3 py-2 text-left">Alumno</th>
-                            <th v-for="u in unitCols" :key="u" class="px-2 py-2 text-center w-28">U{{ u }} <span class="font-normal text-slate-400">/ op.</span></th>
+                            <th v-for="u in unitCols" :key="u" class="px-2 py-2 text-center w-28">
+                                <div class="flex items-center justify-center gap-1">
+                                    <span>U{{ u }}</span>
+                                    <button @click="toggleLock(u)" :title="isLocked(u) ? 'Desbloquear unidad' : 'Bloquear unidad'"
+                                        class="p-0.5 rounded hover:bg-slate-200">
+                                        <svg v-if="isLocked(u)" class="w-3.5 h-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                        <svg v-else class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 018 0m-10 4h12a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6a2 2 0 012-2z"/></svg>
+                                    </button>
+                                </div>
+                                <span class="font-normal text-slate-400 text-[10px]">calif / op.</span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -82,13 +100,13 @@
                             <td v-for="u in unitCols" :key="u" class="px-1 py-1">
                                 <div class="flex items-center gap-1 justify-center">
                                     <input type="text" inputmode="decimal" placeholder="0–100" maxlength="5"
-                                        :value="cellGrade(s.student_id, u)"
+                                        :value="cellGrade(s.student_id, u)" :disabled="isLocked(u)"
                                         @input="onGrade(s.student_id, u, ($event.target as HTMLInputElement).value)"
                                         @blur="onGradeBlur(s.student_id, u)"
-                                        class="w-14 rounded-lg border-slate-300 text-sm text-center px-1 py-1 placeholder:text-slate-300" />
-                                    <select :value="cellOpp(s.student_id, u)" title="Oportunidad"
+                                        class="w-14 rounded-lg border-slate-300 text-sm text-center px-1 py-1 placeholder:text-slate-300 disabled:bg-slate-100 disabled:text-slate-500" />
+                                    <select :value="cellOpp(s.student_id, u)" title="Oportunidad" :disabled="isLocked(u)"
                                         @change="onOpp(s.student_id, u, ($event.target as HTMLSelectElement).value)"
-                                        class="rounded-lg border-slate-300 text-xs py-1 px-0.5">
+                                        class="rounded-lg border-slate-300 text-xs py-1 px-0.5 disabled:bg-slate-100 disabled:text-slate-500">
                                         <option v-for="o in opportunities" :key="o.opportunity" :value="o.opportunity">{{ o.opportunity }}ª</option>
                                     </select>
                                 </div>
@@ -169,6 +187,25 @@ function onGradeBlur(sid: number, u: number) {
     if (nv !== c.grade) { c.grade = nv; dirty.add(`${sid}:${u}`) }
 }
 
+// Candado por unidad (seguro contra cambios por error).
+const locked = reactive<Set<number>>(new Set())
+const lockSuggestion = ref<number[]>([])
+function isLocked(u: number): boolean { return locked.has(u) }
+async function toggleLock(u: number) {
+    if (!selectedGroup.value) return
+    try {
+        if (locked.has(u)) {
+            await api.post(UG.unlock(selectedGroup.value), { unit_number: u })
+            locked.delete(u)
+        } else {
+            await api.post(UG.lock(selectedGroup.value), { unit_number: u })
+            locked.add(u)
+            lockSuggestion.value = lockSuggestion.value.filter(x => x !== u)
+        }
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo cambiar el candado.') }
+}
+function lockFromSuggestion(u: number) { toggleLock(u) }
+
 const unitCols = computed(() => units.value ? Array.from({ length: units.value }, (_, i) => i + 1) : [])
 const validDraft = computed(() => Number.isInteger(unitsDraft.value) && unitsDraft.value >= 1 && unitsDraft.value <= 20)
 
@@ -183,7 +220,7 @@ function dedupe(arr: Array<{ id: number; name: string }>): Array<{ id: number; n
     return [...seen].map(([id, name]) => ({ id, name }))
 }
 
-function resetGrid() { students.value = []; units.value = null; editingUnits.value = false; dirty.clear(); for (const k of Object.keys(gradeMap)) delete gradeMap[Number(k)] }
+function resetGrid() { students.value = []; units.value = null; editingUnits.value = false; dirty.clear(); locked.clear(); lockSuggestion.value = []; for (const k of Object.keys(gradeMap)) delete gradeMap[Number(k)] }
 function onCampus() { modalityTypeId.value = null; selectedGroup.value = null; resetGrid(); autoSelect() }
 function onModality() { selectedGroup.value = null; resetGrid(); autoSelect() }
 
@@ -217,6 +254,8 @@ async function loadGrid() {
         units.value = subject.units_count
         unitsDraft.value = subject.units_count ?? subject.suggested_units ?? 5
         opportunities.value = data.opportunities ?? []
+        locked.clear()
+        for (const n of (data.locked ?? []) as number[]) locked.add(n)
         students.value = data.students
         for (const s of data.students as Student[]) {
             gradeMap[s.student_id] = {}
@@ -250,6 +289,7 @@ async function saveUnits() {
 async function save() {
     if (!selectedGroup.value || !dirty.size) return
     saving.value = true
+    const editedUnits = [...new Set([...dirty].map(k => Number(k.split(':')[1])))]
     try {
         const grades = [...dirty].map(key => {
             const [sid, unit] = key.split(':').map(Number)
@@ -263,6 +303,7 @@ async function save() {
         await api.post(UG.save(selectedGroup.value), { grades })
         toast.success('Calificaciones guardadas.')
         await loadGrid() // refleja la normalización aplicada en el servidor
+        lockSuggestion.value = editedUnits.filter(u => !locked.has(u)) // ofrece bloquear lo recién capturado
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudieron guardar.') }
     finally { saving.value = false }
 }
