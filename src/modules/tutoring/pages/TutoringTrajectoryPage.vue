@@ -4,10 +4,10 @@
             <h1 class="text-xl font-semibold text-slate-800">Seguimiento de la trayectoria académica</h1>
             <div class="flex items-center gap-2">
                 <button @click="$router.back()" class="px-3 py-2 rounded-lg border border-slate-300 text-slate-600 text-sm hover:bg-slate-50">← Volver</button>
-                <button @click="exportPdf" :disabled="exporting || !subjects.length"
-                    class="px-4 py-2 rounded-lg bg-rose-600 text-white text-sm font-medium disabled:opacity-50 flex items-center gap-1.5">
+                <button @click="downloadOficial" :disabled="generating || !subjects.length"
+                    class="px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium disabled:opacity-50 flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6M9 17h3"/></svg>
-                    {{ exporting ? 'Generando…' : 'PDF' }}
+                    {{ generating ? 'Generando…' : 'Formato oficial' }}
                 </button>
             </div>
         </div>
@@ -82,10 +82,12 @@ import { ref, reactive, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 
 const props = defineProps<{ id: string | number }>()
 const toast = useToast()
 const T = API.TUTORING_API
+const reportGen = useReportGenerator()
 
 interface Subject { teacher_assignment_id: number; subject_id: number; materia: string; official_code?: string | null; docente?: string | null; units_count: number; target_semester?: number | null }
 interface Student { student_id: number; num_control: string; nombre: string }
@@ -93,7 +95,7 @@ interface UnitCell { grade: number | null; opportunity: number }
 interface FinalCell { grade: number; passed: boolean; opportunity: number }
 
 const loading = ref(false)
-const exporting = ref(false)
+const generating = ref(false)
 const subjects = ref<Subject[]>([])
 const students = ref<Student[]>([])
 const units = ref<Record<number, Record<number, Record<number, UnitCell>>>>({})
@@ -134,71 +136,53 @@ async function load() {
     finally { loading.value = false }
 }
 
-function esc(s: unknown): string {
-    return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!))
-}
-
-/** HTML del formato oficial (encabezado PIT + matriz con unidades/FINAL). */
-function buildPdfHtml(): string {
-    const bb = '1px solid #475569', bl = '1px solid #94a3b8'
-    const th = (t: string, cs = 1, rs = 1, extra = '') =>
-        `<th colspan="${cs}" rowspan="${rs}" style="border:${bb};padding:2px 3px;background:#e2e8f0;font-size:8px;${extra}">${t}</th>`
-    const td = (t: string, extra = '') => `<td style="border:${bl};padding:2px 3px;font-size:8px;text-align:center;${extra}">${t}</td>`
-
-    let head1 = th('No. CONTROL', 1, 2) + th('ALUMNO', 1, 2)
-    let head2 = ''
-    for (const s of subjects.value) {
-        head1 += th(`${esc(s.materia)}<br><span style="font-weight:normal;font-size:7px">${esc(s.docente || '')}</span>`, s.units_count + 1)
-        for (let u = 1; u <= s.units_count; u++) head2 += th(roman(u))
-        head2 += th('FIN', 1, 1, 'background:#cbd5e1;')
-    }
-
-    let body = ''
-    for (const st of students.value) {
-        let row = td(esc(st.num_control)) + `<td style="border:${bl};padding:2px 3px;font-size:8px;white-space:nowrap;">${esc(st.nombre)}</td>`
-        for (const s of subjects.value) {
-            for (let u = 1; u <= s.units_count; u++) row += td(esc(unitGrade(s.teacher_assignment_id, st.student_id, u)))
+/**
+ * Contexto para la plantilla del reporteador (RPT.TUT_SEGUIMIENTO_TRAYECTORIA):
+ * encabezado + materias (columnas, con sus unidades) + estudiantes (filas, con las
+ * celdas alineadas a cada materia). La matriz se pivota aquí a la forma que itera
+ * docxtemplater ({#estudiantes}{#materias}{#unidades}…).
+ */
+function buildReportContext(): Record<string, any> {
+    const materias = subjects.value.map(s => ({
+        materia: s.materia,
+        docente: s.docente || '',
+        official_code: s.official_code || '',
+        units_count: s.units_count,
+        unidades: Array.from({ length: s.units_count }, (_, i) => ({ label: roman(i + 1) })),
+    }))
+    const estudiantes = students.value.map((st, idx) => ({
+        no: idx + 1,
+        num_control: st.num_control,
+        nombre: st.nombre,
+        materias: subjects.value.map(s => {
             const f = final(s.teacher_assignment_id, st.student_id)
-            row += td(f ? String(f.grade) : '—', f ? (f.passed ? 'color:#059669;font-weight:bold;background:#f1f5f9;' : 'color:#e11d48;font-weight:bold;background:#f1f5f9;') : 'background:#f1f5f9;')
-        }
-        body += `<tr>${row}</tr>`
+            return {
+                unidades: Array.from({ length: s.units_count }, (_, i) => ({ v: unitGrade(s.teacher_assignment_id, st.student_id, i + 1) })),
+                final: f ? String(f.grade) : '',
+                acredita: f ? (f.passed ? 'SÍ' : 'NO') : '',
+            }
+        }),
+    }))
+    return {
+        carrera: head.carrera, grupo: head.grupo, semestre: head.semestre ?? '',
+        periodo: head.periodo, tutor: head.tutor, materias, estudiantes,
     }
-
-    return `<div style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
-        <div style="text-align:center;font-size:11px;font-weight:bold;">PROGRAMA INSTITUCIONAL DE TUTORÍAS</div>
-        <div style="text-align:center;font-size:10px;font-weight:bold;margin-bottom:4px;">SEGUIMIENTO DE LA TRAYECTORIA ACADÉMICA</div>
-        <div style="font-size:9px;margin-bottom:6px;">
-            <b>Carrera:</b> ${esc(head.carrera) || '—'} &nbsp;·&nbsp; <b>Grupo:</b> ${esc(head.grupo) || '—'}
-            &nbsp;·&nbsp; <b>Semestre:</b> ${esc(head.semestre) || '—'} &nbsp;·&nbsp; <b>Periodo:</b> ${esc(head.periodo) || '—'}
-            &nbsp;·&nbsp; <b>Tutor(a):</b> ${esc(head.tutor) || '—'}
-        </div>
-        <table style="border-collapse:collapse;width:100%;"><thead><tr>${head1}</tr><tr>${head2}</tr></thead><tbody>${body}</tbody></table>
-        <div style="font-size:7px;color:#64748b;margin-top:6px;">Calificaciones capturadas por los docentes en Mi Docencia. Documento informativo generado por el sistema.</div>
-    </div>`
 }
 
-async function exportPdf() {
+/** Descarga el formato oficial (DOCX) del reporteador, alimentado por este endpoint. */
+async function downloadOficial() {
     if (!subjects.value.length) return
-    exporting.value = true
+    generating.value = true
     try {
-        // @ts-ignore — html2pdf.js no tiene types oficiales
-        const { default: html2pdf } = await import('html2pdf.js')
-        const host = document.createElement('div')
-        host.style.cssText = 'position:absolute;left:-99999px;top:0;width:1400px;'
-        host.innerHTML = buildPdfHtml()
-        document.body.appendChild(host)
-        try {
-            await html2pdf().set({
-                margin:      [6, 6, 6, 6],
-                filename:    `trayectoria-${head.grupo || 'grupo'}.pdf`,
-                image:       { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF:       { unit: 'mm', format: 'legal', orientation: 'landscape' },
-                pagebreak:   { mode: ['css', 'legacy'] },
-            } as any).from(host).save()
-        } finally { document.body.removeChild(host) }
-    } catch (e: any) { toast.error('No se pudo generar el PDF.') }
-    finally { exporting.value = false }
+        await reportGen.downloadFromContext({
+            reportCode: 'RPT.TUT_SEGUIMIENTO_TRAYECTORIA',
+            context: buildReportContext(),
+            filename: `trayectoria-${head.grupo || 'grupo'}`,
+        })
+    } catch (e: any) {
+        if (e?.notAvailable) toast.error('El formato oficial aún no tiene plantilla cargada en el reporteador. Avisa a Servicios Escolares/TI.')
+        else toast.error(e?.response?.data?.message ?? e?.message ?? 'No se pudo generar el formato.')
+    } finally { generating.value = false }
 }
 
 onMounted(load)
