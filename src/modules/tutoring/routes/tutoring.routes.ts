@@ -39,6 +39,13 @@ export default [
         props: true,
     },
     {
+        path: 'tutoring/assignments/:id/trayectoria',
+        name: 'tutoring.assignment-trayectoria',
+        component: () => import('@/modules/tutoring/pages/TutoringTrajectoryPage.vue'),
+        meta: { title: 'Seguimiento de trayectoria académica' },
+        props: true,
+    },
+    {
         path: 'tutoring/followups',
         name: 'tutoring.followups',
         component: () => import('@/modules/tutoring/pages/FollowupsInboxPage.vue'),

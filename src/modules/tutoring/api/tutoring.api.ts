@@ -27,6 +27,7 @@ const tutoringApi: ApiModule = {
             sessions:      (id: string | number) => apiUrl(`/tutoring/assignments/${id}/sessions`),
             cedula:        (id: string | number, studentId: string | number) => apiUrl(`/tutoring/assignments/${id}/cedula/${studentId}`),
             diagnostico:   (id: string | number) => apiUrl(`/tutoring/assignments/${id}/diagnostico`),
+            trayectoria:   (id: string | number) => apiUrl(`/tutoring/assignments/${id}/trayectoria`),
             referrals:     (id: string | number) => apiUrl(`/tutoring/assignments/${id}/referrals`),
         },
 
