@@ -13,49 +13,12 @@
             <span v-if="!windowOpen" class="text-slate-500">— no se pueden registrar propuestas fuera de la ventana.</span>
         </div>
 
-        <!-- Filtros -->
-        <div class="rounded-xl border bg-white p-4 grid sm:grid-cols-5 gap-3">
-            <select v-model="filters.period_id" class="rounded-lg border-slate-300 text-sm">
-                <option value="">Periodo…</option>
-                <option v-for="p in options.periods" :key="p.id" :value="p.id">{{ p.name }}</option>
-            </select>
-            <select v-model="filters.career_id" class="rounded-lg border-slate-300 text-sm">
-                <option value="">Todas las carreras</option>
-                <option v-for="c in options.careers" :key="c.id" :value="c.id">{{ c.name }}</option>
-            </select>
-            <input v-model="filters.semester" type="number" min="1" placeholder="Semestre" class="rounded-lg border-slate-300 text-sm" />
-            <input v-model="filters.search" placeholder="Nombre / nº control" class="rounded-lg border-slate-300 text-sm" />
-            <label class="flex items-center gap-2 text-sm text-slate-600">
-                <input type="checkbox" v-model="filters.only_suggested" /> Solo sugeridos
-            </label>
-        </div>
+        <!-- Acción: abrir el buscador de candidatos -->
         <div class="flex gap-2">
-            <button @click="fetchRisk" class="px-4 py-2 rounded-lg border text-sm font-semibold text-slate-600">Buscar candidatos</button>
-        </div>
-
-        <!-- Tabla de candidatos en riesgo -->
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <table class="w-full text-sm">
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Alumno</th><th>Sem.</th><th>Señales</th><th>Sugerido</th><th></th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="r in risk" :key="r.student_id" class="border-b last:border-0 hover:bg-slate-50">
-                        <td class="px-4 py-2"><span class="font-semibold text-slate-700">{{ r.num_control }}</span> <span class="text-slate-500">{{ r.full_name }}</span></td>
-                        <td class="text-slate-600">{{ r.semester }}</td>
-                        <td class="space-x-1">
-                            <Sig v-for="s in r.signals" :key="s.key" :t="sigText(s)" :tone="s.tone" />
-                            <span v-if="!r.signals || !r.signals.length" class="text-slate-300">—</span>
-                        </td>
-                        <td><Badge :ok="r.suggested" on="Sí" off="No" /></td>
-                        <td class="pr-3 text-right">
-                            <button @click="openPropose(r)" :disabled="!windowOpen"
-                                class="px-3 py-1 rounded-lg border text-xs font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40">Proponer</button>
-                        </td>
-                    </tr>
-                    <tr v-if="!risk.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin candidatos (elige periodo y busca).</td></tr>
-                </tbody>
-            </table>
+            <button @click="openSearch"
+                class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700">
+                Buscar candidatos
+            </button>
         </div>
 
         <!-- Propuestas registradas -->
@@ -89,33 +52,102 @@
             </table>
         </div>
 
+        <!-- Modal: BUSCADOR de candidatos (filtros + datatable) -->
+        <BaseModal v-model="searchOpen" title="Buscar candidatos a tutoría individual" size="xl">
+            <div class="space-y-4">
+                <div class="grid sm:grid-cols-3 gap-3">
+                    <select v-model="filters.period_id" @change="fetchWindow" class="rounded-lg border-slate-300 text-sm">
+                        <option value="">Periodo…</option>
+                        <option v-for="p in options.periods" :key="p.id" :value="p.id">{{ p.name }}</option>
+                    </select>
+                    <select v-model="filters.campus_id" @change="onCampusChange" class="rounded-lg border-slate-300 text-sm">
+                        <option value="">Todos los campus</option>
+                        <option v-for="c in options.campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
+                    </select>
+                    <select v-model="filters.career_id" class="rounded-lg border-slate-300 text-sm">
+                        <option value="">Todas las carreras</option>
+                        <option v-for="c in visibleCareers" :key="c.id" :value="c.id">{{ c.name }}</option>
+                    </select>
+                    <input v-model="filters.semester" type="number" min="1" placeholder="Semestre" class="rounded-lg border-slate-300 text-sm" />
+                    <input v-model="filters.search" @keyup.enter="fetchRisk" placeholder="Nombre / nº control" class="rounded-lg border-slate-300 text-sm" />
+                    <label class="flex items-center gap-2 text-sm text-slate-600">
+                        <input type="checkbox" v-model="filters.only_suggested" /> Solo sugeridos
+                    </label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button @click="fetchRisk" :disabled="riskLoading"
+                        class="px-4 py-2 rounded-lg bg-slate-700 text-white text-sm font-semibold hover:bg-slate-800 disabled:opacity-50">
+                        {{ riskLoading ? 'Buscando…' : 'Buscar' }}
+                    </button>
+                    <span class="text-xs text-slate-400">{{ risk.length }} candidato(s)</span>
+                </div>
+
+                <DataTable
+                    :columns="riskColumns"
+                    :rows="pagedRisk"
+                    :pagination="riskPagination"
+                    :loading="riskLoading"
+                    hide-search
+                    empty-text="Sin candidatos para los filtros (elige periodo y busca)."
+                    @change="onRiskTableChange">
+                    <template #cell-alumno="{ row }">
+                        <span class="font-semibold text-slate-700">{{ row.num_control }}</span>
+                        <span class="ml-2 text-slate-500">{{ row.full_name }}</span>
+                    </template>
+                    <template #cell-signals="{ row }">
+                        <span class="space-x-1">
+                            <Sig v-for="s in row.signals" :key="s.key" :t="sigText(s)" :tone="s.tone" />
+                            <span v-if="!row.signals || !row.signals.length" class="text-slate-300">—</span>
+                        </span>
+                    </template>
+                    <template #cell-suggested="{ row }"><Badge :ok="row.suggested" on="Sí" off="No" /></template>
+                    <template #cell-acciones="{ row }">
+                        <button @click="openPropose(row)" :disabled="!windowOpen"
+                            class="px-3 py-1 rounded-lg border text-xs font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40">Proponer</button>
+                    </template>
+                </DataTable>
+                <p v-if="!windowOpen" class="text-[11px] text-amber-600">La ventana está cerrada: no se pueden registrar propuestas.</p>
+            </div>
+        </BaseModal>
+
         <!-- Modal proponer -->
-        <Modal v-if="propose.open" @close="propose.open = false" :title="'Proponer: ' + propose.row?.full_name">
+        <BaseModal v-model="propose.open" :title="'Proponer: ' + (propose.row?.full_name ?? '')" size="md">
             <label class="block text-xs font-semibold text-slate-500 mb-1">Motivo</label>
             <textarea v-model="propose.reason" rows="3" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Describe la razón de la tutoría individual…"></textarea>
             <p class="text-[11px] text-slate-400 mt-1">Origen: <b>{{ propose.row?.suggested ? 'sugerido por riesgo' : 'manual (academia)' }}</b></p>
             <template #footer>
                 <button @click="submitPropose" :disabled="busy || !propose.reason.trim()" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Registrar propuesta</button>
             </template>
-        </Modal>
+        </BaseModal>
 
         <!-- Modal confirmar (asignar tutor) -->
-        <Modal v-if="confirmM.open" @close="confirmM.open = false" :title="'Confirmar: ' + confirmM.row?.full_name">
-            <label class="block text-xs font-semibold text-slate-500 mb-1">ID de usuario del tutor</label>
-            <input v-model="confirmM.tutor" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm" placeholder="tutor_user_id" />
+        <BaseModal v-model="confirmM.open" :title="'Confirmar: ' + (confirmM.row?.full_name ?? '')" size="md">
+            <FormRemoteSelect
+                v-model="confirmM.tutor"
+                :endpoint="T.determination.personnel"
+                :endpoint-by-id="T.determination.personnelById"
+                item-value="user_id"
+                item-label="full_name"
+                :item-searchs="['full_name']"
+                label="Tutor (personal del plantel)"
+                placeholder="Buscar al tutor por nombre…" />
             <p class="text-[11px] text-slate-400 mt-1">Se creará/usará la asignación individual del tutor y se agregará al alumno.</p>
             <template #footer>
                 <button @click="submitConfirm" :disabled="busy || !confirmM.tutor" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Confirmar y asignar</button>
             </template>
-        </Modal>
+        </BaseModal>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, h, defineComponent } from 'vue'
+import { ref, reactive, computed, onMounted, h, defineComponent } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 
 const T = API.TUTORING_API
 const toast = useToast()
@@ -140,38 +172,63 @@ const PStatus = defineComponent({
         return () => h('span', { class: ['px-2 py-0.5 rounded-full text-[11px] font-bold', (map[p.status ?? ''] ?? map.open)[0]] }, (map[p.status ?? ''] ?? map.open)[1])
     },
 })
-const Modal = defineComponent({
-    props: { title: String },
-    emits: ['close'],
-    setup: (p, { emit, slots }) => () => h('div', { class: 'fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4', onClick: (e: any) => { if (e.target === e.currentTarget) emit('close') } }, [
-        h('div', { class: 'bg-white rounded-xl p-5 w-full max-w-lg space-y-3' }, [
-            h('div', { class: 'flex items-center justify-between' }, [
-                h('h3', { class: 'text-sm font-bold text-slate-700 uppercase' }, p.title),
-                h('button', { class: 'text-slate-400 hover:text-slate-600', onClick: () => emit('close') }, '✕'),
-            ]),
-            slots.default?.(),
-            slots.footer ? h('div', { class: 'flex justify-end pt-2' }, slots.footer()) : null,
-        ]),
-    ]),
-})
 
 // Texto del chip de señal: muestra el valor cuando aporta (p. ej. "Materias reprobadas 3").
 const sigText = (s: any) => (s.value > 1 ? `${s.label} ${s.value}` : s.label)
 
-const options = reactive<{ periods: any[]; careers: any[] }>({ periods: [], careers: [] })
-const filters = reactive({ period_id: '', career_id: '', semester: '', search: '', only_suggested: false })
+const options = reactive<{ periods: any[]; careers: any[]; campuses: any[] }>({ periods: [], careers: [], campuses: [] })
+const filters = reactive({ period_id: '', campus_id: '', career_id: '', semester: '', search: '', only_suggested: false })
+
+// La oferta es POR CAMPUS: al elegir un campus, el dropdown de carreras se acota a
+// las que se ofertan ahí (career.campus_ids). Sin campus = todas las del plantel.
+const visibleCareers = computed(() => {
+    if (!filters.campus_id) return options.careers
+    const cid = Number(filters.campus_id)
+    return options.careers.filter((c: any) => (c.campus_ids ?? []).includes(cid))
+})
+function onCampusChange() {
+    // Si la carrera elegida ya no se oferta en el campus, límpiala.
+    if (filters.career_id && !visibleCareers.value.some((c: any) => c.id === Number(filters.career_id))) {
+        filters.career_id = ''
+    }
+}
+
 const risk = ref<any[]>([])
+const riskLoading = ref(false)
 const proposals = ref<any[]>([])
 const windowOpen = ref(false)
 const windowInfo = ref('')
 const busy = ref(false)
+const searchOpen = ref(false)
+
+// Paginación en CLIENTE del padrón (el endpoint de riesgo devuelve el arreglo completo).
+const riskColumns: DataTableColumn[] = [
+    { key: 'alumno', label: 'Alumno' },
+    { key: 'semester', label: 'Sem.', field: 'semester', align: 'center', width: '70px' },
+    { key: 'signals', label: 'Señales' },
+    { key: 'suggested', label: 'Sugerido', align: 'center', width: '100px' },
+    { key: 'acciones', label: '', align: 'right', width: '130px' },
+]
+const tablePage = ref(1)
+const tablePerPage = ref(10)
+const pagedRisk = computed(() => {
+    const start = (tablePage.value - 1) * tablePerPage.value
+    return risk.value.slice(start, start + tablePerPage.value)
+})
+const riskPagination = computed(() => ({ page: tablePage.value, perPage: tablePerPage.value, total: risk.value.length }))
+function onRiskTableChange(e: any) { tablePage.value = e.page; tablePerPage.value = e.perPage }
 
 const propose = reactive<{ open: boolean; row: any; reason: string }>({ open: false, row: null, reason: '' })
-const confirmM = reactive<{ open: boolean; row: any; tutor: string }>({ open: false, row: null, tutor: '' })
+const confirmM = reactive<{ open: boolean; row: any; tutor: number | null }>({ open: false, row: null, tutor: null })
 
 async function fetchOptions() {
     const { data } = await api.get(T.determination.catalog)
-    options.periods = data.periods ?? []; options.careers = data.careers ?? []
+    options.periods = data.periods ?? []; options.careers = data.careers ?? []; options.campuses = data.campuses ?? []
+    // Auto-selecciona el periodo activo (o el más reciente) que ya resuelve el backend.
+    if (!filters.period_id && data.active_period_id) {
+        filters.period_id = data.active_period_id
+        await Promise.all([fetchWindow(), fetchProposals()])
+    }
 }
 async function fetchWindow() {
     if (!filters.period_id) { windowOpen.value = false; windowInfo.value = ''; return }
@@ -180,15 +237,28 @@ async function fetchWindow() {
     const w = data.window
     windowInfo.value = w ? [w.opens_at, w.closes_at].filter(Boolean).map((d: string) => new Date(d).toLocaleDateString()).join(' → ') : ''
 }
+function openSearch() {
+    searchOpen.value = true
+    if (!risk.value.length && filters.period_id) fetchRisk()
+}
 async function fetchRisk() {
     if (!filters.period_id) { toast.error('Elige un periodo.'); return }
-    const { data } = await api.get(T.determination.risk, { params: {
-        period_id: filters.period_id, career_id: filters.career_id || undefined,
-        semester: filters.semester || undefined, search: filters.search || undefined,
-        only_suggested: filters.only_suggested ? 1 : undefined,
-    } })
-    risk.value = data.data ?? []
-    await Promise.all([fetchWindow(), fetchProposals()])
+    riskLoading.value = true
+    try {
+        const { data } = await api.get(T.determination.risk, { params: {
+            period_id: filters.period_id, campus_id: filters.campus_id || undefined,
+            career_id: filters.career_id || undefined,
+            semester: filters.semester || undefined, search: filters.search || undefined,
+            only_suggested: filters.only_suggested ? 1 : undefined,
+        } })
+        risk.value = data.data ?? []
+        tablePage.value = 1
+        await Promise.all([fetchWindow(), fetchProposals()])
+    } catch (e: any) {
+        toast.error(e?.response?.data?.message ?? 'No se pudo buscar candidatos.')
+    } finally {
+        riskLoading.value = false
+    }
 }
 async function fetchProposals() {
     const { data } = await api.get(T.determination.proposals, { params: { period_id: filters.period_id || undefined, career_id: filters.career_id || undefined } })
@@ -212,7 +282,7 @@ async function submitPropose() {
     })
 }
 
-function openConfirm(p: any) { confirmM.row = p; confirmM.tutor = ''; confirmM.open = true }
+function openConfirm(p: any) { confirmM.row = p; confirmM.tutor = null; confirmM.open = true }
 async function submitConfirm() {
     await act(async () => {
         await api.post(T.determination.confirm(confirmM.row.id), { tutor_user_id: Number(confirmM.tutor) })

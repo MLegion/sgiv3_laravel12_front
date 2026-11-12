@@ -79,6 +79,8 @@ const tutoringApi: ApiModule = {
             limits:       apiUrl('/tutoring/determination/limits'),
             catalog:      apiUrl('/tutoring/determination/catalog'),
             groups:       apiUrl('/tutoring/determination/groups'),
+            personnel:    apiUrl('/tutoring/determination/personnel'),
+            personnelById: (id: string | number) => apiUrl(`/tutoring/determination/personnel/${id}`),
             followupSchedule: apiUrl('/tutoring/determination/followup-schedule'),
         },
 
