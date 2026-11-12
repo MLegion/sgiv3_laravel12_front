@@ -75,6 +75,56 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Evaluación de desempeño al término (T-C, sólo grupal) -->
+            <div v-if="a.scope === 'grupal' && ev && ev.applicable" class="rounded-xl border bg-white p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-slate-700 uppercase">Evaluación de desempeño</h2>
+                    <span class="px-2 py-0.5 rounded-full text-[11px] font-bold" :class="evBadge.cls">{{ evBadge.text }}</span>
+                </div>
+
+                <!-- Fechas / disponibilidad -->
+                <div class="rounded-lg border p-3 text-xs"
+                     :class="ev.final_report_submitted ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'">
+                    <template v-if="ev.final_report_schedule && (ev.final_report_schedule.opens_at || ev.final_report_schedule.due_date)">
+                        Podrás asentar el nivel al concluir la tutoría (entregar el <b>Reporte final</b>), programado:
+                        <b>{{ fmtDate(ev.final_report_schedule.opens_at) }}</b> → <b>{{ fmtDate(ev.final_report_schedule.due_date) }}</b>.
+                    </template>
+                    <template v-else>Se habilita al <b>entregar el Reporte final</b> del PAT.</template>
+                    <div class="mt-1 font-semibold">
+                        <span v-if="ev.final_report_submitted">● Reporte final entregado — captura habilitada.</span>
+                        <span v-else>○ Reporte final aún no entregado — captura deshabilitada.</span>
+                    </div>
+                </div>
+
+                <table class="w-full text-sm">
+                    <thead><tr class="text-left text-[10px] uppercase text-slate-400 border-b"><th class="py-2">Alumno</th><th class="w-60">Nivel de desempeño</th></tr></thead>
+                    <tbody>
+                        <tr v-for="t in ev.tutees" :key="t.student_id" class="border-b last:border-0">
+                            <td class="py-2"><span class="font-mono text-xs text-slate-400">{{ t.num_control }}</span> {{ t.full_name }}</td>
+                            <td>
+                                <select v-model.number="evLevels[t.student_id]" :disabled="!ev.can_capture" class="w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-50">
+                                    <option :value="undefined">—</option>
+                                    <option v-for="o in ev.level_options" :key="o.value" :value="o.value">{{ o.value }} · {{ o.label }}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr v-if="!ev.tutees.length"><td colspan="2" class="py-3 text-center text-slate-400">Sin tutorados.</td></tr>
+                    </tbody>
+                </table>
+                <p class="text-[11px] text-slate-400">Sólo <b>Insuficiente</b> NO acredita el crédito de actividad complementaria; los demás niveles acreditan.</p>
+
+                <div class="flex justify-end gap-2" v-if="ev.can_capture">
+                    <button @click="saveEval(false)" class="px-4 py-2 rounded-lg border text-sm font-semibold text-slate-600">Guardar</button>
+                    <button @click="saveEval(true)" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold">Entregar</button>
+                </div>
+                <div class="flex justify-end gap-2" v-if="ev.can_validate && ev.status === 'submitted'">
+                    <button @click="validateEval" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Validar y asentar créditos</button>
+                </div>
+                <div class="flex justify-end" v-else-if="ev.can_validate && ev.status === 'validated'">
+                    <button @click="revertEval" class="px-3 py-1.5 rounded-lg border text-xs font-semibold text-amber-700">Revertir validación</button>
+                </div>
+            </div>
         </template>
 
         <!-- Modal sesión -->
@@ -154,7 +204,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { REFERRAL_STATUS_LABELS, type TutoringAssignment, type TutoringSession, type TutoringReferral, type ReferralArea, type TutoringTutee, type TuteeCedula } from '@/modules/tutoring/types/tutoring.type'
@@ -180,6 +230,20 @@ const cedula = ref<TuteeCedula>({ set_id: null, fields: [], answers: {}, risk_fl
 const cAnswers = reactive<Record<string, any>>({})
 const studentSearch = ref(''), studentResults = ref<any[]>([])
 
+// Evaluación de desempeño (T-C)
+const ev = ref<any | null>(null)
+const evLevels = reactive<Record<number, number | undefined>>({})
+const evBadge = computed(() => {
+    const map: Record<string, { cls: string; text: string }> = {
+        none:      { cls: 'bg-slate-100 text-slate-500', text: 'Sin capturar' },
+        draft:     { cls: 'bg-amber-100 text-amber-700', text: 'Borrador' },
+        submitted: { cls: 'bg-blue-100 text-blue-700', text: 'Entregada' },
+        validated: { cls: 'bg-emerald-100 text-emerald-700', text: 'Validada' },
+    }
+    return map[ev.value?.status ?? 'none'] ?? map.none
+})
+function fmtDate(d: string | null) { return d ? new Date(d).toLocaleDateString() : '—' }
+
 function flash(t: string, e = false) { msg.value = t; msgError.value = e; setTimeout(() => (msg.value = ''), 4000) }
 
 async function load() {
@@ -189,7 +253,31 @@ async function load() {
         a.value = data; plan.value = data?.plan ?? ''
         const [ses, ref_, ar] = await Promise.all([api.get(T.assignments.sessions(props.id)), api.get(T.assignments.referrals(props.id)), api.get(T.referralAreas.list)])
         sessions.value = ses.data ?? []; referrals.value = ref_.data ?? []; areas.value = ar.data ?? []
+        if (data?.scope === 'grupal') await loadEval()
     } finally { loading.value = false }
+}
+
+async function loadEval() {
+    const { data } = await api.get(T.assignments.evaluation(props.id))
+    ev.value = data
+    Object.keys(evLevels).forEach(k => delete evLevels[Number(k)])
+    Object.entries(data.levels ?? {}).forEach(([sid, lvl]) => { evLevels[Number(sid)] = Number(lvl) })
+}
+async function saveEval(submit: boolean) {
+    const levels: Record<number, number> = {}
+    for (const [sid, lvl] of Object.entries(evLevels)) if (lvl !== undefined && lvl !== null) levels[Number(sid)] = Number(lvl)
+    try { await api.put(T.assignments.evaluation(props.id), { levels, submit }); await loadEval(); flash(submit ? 'Evaluación entregada.' : 'Evaluación guardada.') }
+    catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) }
+}
+async function validateEval() {
+    if (!confirm('¿Validar la evaluación y asentar los créditos? (Insuficiente no acredita)')) return
+    try { const { data } = await api.post(T.assignments.evaluationValidate(props.id), {}); await loadEval(); flash(`Validada: ${data.accredited} acreditados, ${data.denied} no acreditados.`) }
+    catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) }
+}
+async function revertEval() {
+    if (!confirm('¿Revertir la validación? Se revocan los créditos asentados.')) return
+    try { await api.post(T.assignments.evaluationRevert(props.id), {}); await loadEval(); flash('Validación revertida.') }
+    catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) }
 }
 
 async function savePlan() { try { await api.put(T.assignments.plan(props.id), { plan: plan.value }); flash('Plan guardado.') } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
