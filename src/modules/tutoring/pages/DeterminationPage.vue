@@ -44,6 +44,8 @@
                                 <button @click="act(() => reject(p))" class="px-2 py-1 rounded border text-[11px] text-slate-600 ml-1">Rechazar</button>
                                 <button @click="act(() => withdraw(p))" class="px-2 py-1 rounded border text-[11px] text-slate-600 ml-1">Retirar</button>
                             </template>
+                            <button v-else-if="p.status === 'confirmed'" @click="openChangeTutor(p)"
+                                class="px-2 py-1 rounded border text-[11px] text-slate-600 hover:bg-slate-100">Cambiar tutor</button>
                             <span v-else class="text-[11px] text-slate-400">—</span>
                         </td>
                     </tr>
@@ -136,6 +138,25 @@
                 <button @click="submitConfirm" :disabled="busy || !confirmM.tutor" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Confirmar y asignar</button>
             </template>
         </BaseModal>
+
+        <!-- Modal cambiar tutor (propuesta confirmada) -->
+        <BaseModal v-model="changeM.open" :title="'Cambiar tutor: ' + (changeM.row?.full_name ?? '')" size="md">
+            <p class="text-[11px] text-slate-500 mb-2">Tutor actual: <b>{{ changeM.row?.tutor_name ?? '—' }}</b>. Se mueve SOLO a este alumno al nuevo tutor; los demás tutorados del tutor actual no se afectan.</p>
+            <FormRemoteSelect
+                v-model="changeM.tutor"
+                :endpoint="T.determination.personnel"
+                :endpoint-by-id="T.determination.personnelById"
+                item-value="user_id"
+                item-label="full_name"
+                :item-searchs="['full_name']"
+                label="Nuevo tutor (personal del plantel)"
+                placeholder="Buscar al nuevo tutor por nombre…" />
+            <label class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Motivo del cambio</label>
+            <textarea v-model="changeM.reason" rows="3" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Describe por qué se cambia de tutor…"></textarea>
+            <template #footer>
+                <button @click="submitChangeTutor" :disabled="busy || !changeM.tutor || !changeM.reason.trim()" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Cambiar tutor</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -220,6 +241,7 @@ function onRiskTableChange(e: any) { tablePage.value = e.page; tablePerPage.valu
 
 const propose = reactive<{ open: boolean; row: any; reason: string }>({ open: false, row: null, reason: '' })
 const confirmM = reactive<{ open: boolean; row: any; tutor: number | null }>({ open: false, row: null, tutor: null })
+const changeM = reactive<{ open: boolean; row: any; tutor: number | null; reason: string }>({ open: false, row: null, tutor: null, reason: '' })
 
 async function fetchOptions() {
     const { data } = await api.get(T.determination.catalog)
@@ -288,6 +310,18 @@ async function submitConfirm() {
         await api.post(T.determination.confirm(confirmM.row.id), { tutor_user_id: Number(confirmM.tutor) })
         confirmM.open = false
         toast.success('Propuesta confirmada y tutor asignado.')
+        await fetchProposals()
+    })
+}
+function openChangeTutor(p: any) { changeM.row = p; changeM.tutor = null; changeM.reason = ''; changeM.open = true }
+async function submitChangeTutor() {
+    await act(async () => {
+        await api.post(T.determination.changeTutor(changeM.row.id), {
+            tutor_user_id: Number(changeM.tutor),
+            reason: changeM.reason.trim() || undefined,
+        })
+        changeM.open = false
+        toast.success('Tutor cambiado.')
         await fetchProposals()
     })
 }

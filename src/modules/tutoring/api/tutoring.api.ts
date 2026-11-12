@@ -75,6 +75,7 @@ const tutoringApi: ApiModule = {
             withdraw:     (id: string | number) => apiUrl(`/tutoring/determination/proposals/${id}/withdraw`),
             reject:       (id: string | number) => apiUrl(`/tutoring/determination/proposals/${id}/reject`),
             confirm:      (id: string | number) => apiUrl(`/tutoring/determination/proposals/${id}/confirm`),
+            changeTutor:  (id: string | number) => apiUrl(`/tutoring/determination/proposals/${id}/change-tutor`),
             window:       apiUrl('/tutoring/determination/window'),
             limits:       apiUrl('/tutoring/determination/limits'),
             catalog:      apiUrl('/tutoring/determination/catalog'),
