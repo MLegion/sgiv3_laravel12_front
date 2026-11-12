@@ -124,8 +124,9 @@ const SS = API.SCHOOL_SERVICES_API
 const router = useRouter()
 const rows = ref<TutoringAssignmentRow[]>([])
 const options = reactive<{ periods: any[]; careers: any[]; campuses: any[]; modalities: any[] }>({ periods: [], careers: [], campuses: [], modalities: [] })
-const filters = reactive({ period_id: '', career_id: '', campus_id: '', modality_id: '', status: '' })
+const filters = reactive<{ period_id: number | string; career_id: string; campus_id: string; modality_id: string; status: string }>({ period_id: '', career_id: '', campus_id: '', modality_id: '', status: '' })
 const periods = ref<any[]>([])
+const activePeriodId = ref<number | null>(null)
 const canManage = ref(false)
 const showNew = ref(false), saving = ref(false), modalMsg = ref('')
 const form = reactive({ tutor_user_id: null as number | null, college_academic_period_id: null as number | null, career_id: null as number | null, scope: 'grupal', group_id: null as number | null, plan: '' })
@@ -184,9 +185,12 @@ async function fetchOptions() {
     options.campuses = data.campuses ?? []
     options.modalities = data.modalities ?? []
     periods.value = data.periods ?? []
+    // Autoselecciona el periodo activo (o el más reciente) que resuelve el backend.
+    activePeriodId.value = data.active_period_id ?? null
+    if (!filters.period_id && activePeriodId.value) filters.period_id = activePeriodId.value
 }
 async function openNew() {
-    Object.assign(form, { tutor_user_id: null, college_academic_period_id: null, career_id: null, scope: 'grupal', group_id: null, plan: '' })
+    Object.assign(form, { tutor_user_id: null, college_academic_period_id: activePeriodId.value, career_id: null, scope: 'grupal', group_id: null, plan: '' })
     Object.assign(tutorPick, { search: '', label: '', results: [] })
     Object.assign(groupPick, { search: '', label: '', results: [] })
     Object.assign(groupFilter, { modality_id: '', campus_id: '' })
@@ -205,5 +209,6 @@ async function create() {
     finally { saving.value = false }
 }
 
-onMounted(async () => { await Promise.all([fetchOptions(), fetchList()]) })
+// fetchOptions primero: fija el periodo activo para que la lista ya salga filtrada.
+onMounted(async () => { await fetchOptions(); await fetchList() })
 </script>
