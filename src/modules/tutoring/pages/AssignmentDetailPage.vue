@@ -80,7 +80,13 @@
             <div v-if="a.scope === 'grupal' && ev && ev.applicable" class="rounded-xl border bg-white p-5 space-y-3">
                 <div class="flex items-center justify-between">
                     <h2 class="text-sm font-bold text-slate-700 uppercase">Evaluación de desempeño</h2>
-                    <span class="px-2 py-0.5 rounded-full text-[11px] font-bold" :class="evBadge.cls">{{ evBadge.text }}</span>
+                    <div class="flex items-center gap-2">
+                        <button @click="downloadOficial" :disabled="evGenerating || !ev.tutees.length"
+                            class="px-3 py-1 rounded-lg border text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-40">
+                            {{ evGenerating ? 'Generando…' : 'Formato oficial' }}
+                        </button>
+                        <span class="px-2 py-0.5 rounded-full text-[11px] font-bold" :class="evBadge.cls">{{ evBadge.text }}</span>
+                    </div>
                 </div>
 
                 <!-- Fechas / disponibilidad -->
@@ -208,6 +214,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { REFERRAL_STATUS_LABELS, type TutoringAssignment, type TutoringSession, type TutoringReferral, type ReferralArea, type TutoringTutee, type TuteeCedula } from '@/modules/tutoring/types/tutoring.type'
+import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 
 const props = defineProps<{ id: string | number }>()
 const T = API.TUTORING_API
@@ -278,6 +285,43 @@ async function revertEval() {
     if (!confirm('¿Revertir la validación? Se revocan los créditos asentados.')) return
     try { await api.post(T.assignments.evaluationRevert(props.id), {}); await loadEval(); flash('Validación revertida.') }
     catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) }
+}
+
+// Formato oficial "ACTIVIDAD TUTORÍA GRUPAL" vía el reporteador (plantilla .docx).
+const reportGen = useReportGenerator()
+const evGenerating = ref(false)
+function evReportContext() {
+    const label = (v: number) => ev.value.level_options.find((o: any) => o.value === v)?.label ?? ''
+    const estudiantes = ev.value.tutees.map((t: any, i: number) => {
+        const lvl = ev.value.levels?.[t.student_id]
+        return {
+            no: i + 1,
+            nombre: t.full_name,
+            num_control: t.num_control,
+            esp: t.especialidad ?? '',
+            sem: t.semestre ?? '',
+            nivel: lvl !== undefined && lvl !== null ? label(Number(lvl)) : '',
+        }
+    })
+    return {
+        carrera: ev.value.header?.carrera ?? '',
+        grupo: ev.value.header?.grupo ?? '',
+        periodo: ev.value.header?.periodo ?? '',
+        tutor: ev.value.header?.tutor ?? '',
+        estudiantes,
+    }
+}
+async function downloadOficial() {
+    if (!ev.value?.tutees?.length) return
+    evGenerating.value = true
+    try {
+        await reportGen.downloadFromContext({
+            reportCode: 'RPT.TUT_ACTIVIDAD_GRUPAL',
+            context: evReportContext(),
+            filename: `actividad-tutoria-grupal-${ev.value.header?.grupo || 'grupo'}`,
+        })
+    } catch (e: any) { flash(e?.response?.data?.message ?? 'No se pudo generar el formato (¿plantilla cargada?).', true) }
+    finally { evGenerating.value = false }
 }
 
 async function savePlan() { try { await api.put(T.assignments.plan(props.id), { plan: plan.value }); flash('Plan guardado.') } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
