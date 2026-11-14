@@ -21,68 +21,70 @@
             </div>
             <p v-if="msg" class="text-sm px-4 py-2.5 rounded-lg" :class="msgError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'">{{ msg }}</p>
 
+            <!-- Tabs -->
+            <div class="flex gap-1 border-b border-slate-200 overflow-x-auto">
+                <button v-for="tab in tabs" :key="tab.key" @click="activeTab = tab.key"
+                    class="whitespace-nowrap px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors"
+                    :class="activeTab === tab.key ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'">
+                    {{ tab.label }}
+                </button>
+            </div>
+
             <!-- Plan -->
-            <div class="rounded-xl border bg-white p-5 space-y-2">
+            <div v-if="activeTab === 'plan'" class="rounded-xl border bg-white p-5 space-y-2">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Plan de acción tutorial</h2>
-                <textarea v-model="plan" rows="3" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+                <textarea v-model="plan" rows="5" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
                 <div class="flex justify-end"><button @click="savePlan" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar plan</button></div>
             </div>
 
             <!-- Tutorados -->
-            <div class="rounded-xl border bg-white p-5 space-y-2">
+            <div v-else-if="activeTab === 'tutorados'" class="space-y-2">
                 <div class="flex items-center justify-between">
                     <h2 class="text-sm font-bold text-slate-700 uppercase">Tutorados ({{ a.tutees.length }})</h2>
-                    <button v-if="a.scope === 'individual'" @click="showAddTutee = true" class="text-xs text-blue-600 font-semibold">+ Agregar</button>
+                    <button v-if="a.scope === 'individual'" @click="showAddTutee = true" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold">+ Agregar</button>
                     <button v-else-if="a.scope === 'grupal'" @click="syncRoster" :disabled="syncingRoster"
                         class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50"
                         title="Trae a los alumnos de la cohorte (1er sem) del grupo que falten">
                         {{ syncingRoster ? 'Agregando…' : 'Agregar alumnos del grupo' }}
                     </button>
                 </div>
-                <table class="w-full text-sm">
-                    <tbody>
-                        <tr v-for="t in a.tutees" :key="t.id" class="border-b last:border-0">
-                            <td class="py-2 font-semibold text-slate-700">{{ t.student_name }} <span class="font-mono text-xs text-slate-400">{{ t.num_control }}</span></td>
-                            <td class="text-right whitespace-nowrap">
-                                <button @click="openCedula(t)" class="text-xs text-slate-600 font-semibold mr-2">Cédula</button>
-                                <button @click="openRefer(t)" class="text-xs text-amber-600 font-semibold mr-2">Canalizar</button>
-                                <button v-if="a.scope === 'individual'" @click="removeTutee(t.id)" class="text-xs text-red-500">Quitar</button>
-                            </td>
-                        </tr>
-                        <tr v-if="!a.tutees.length"><td class="py-3 text-center text-slate-400">Sin tutorados.</td></tr>
-                    </tbody>
-                </table>
+                <DataTable :columns="tuteeCols" :rows="tuteesTbl.rows" :pagination="tuteesTbl.pagination" hide-search empty-text="Sin tutorados." @change="tuteesTbl.onChange">
+                    <template #cell-alumno="{ row }">
+                        <span class="font-semibold text-slate-700">{{ row.student_name }}</span>
+                        <span class="ml-2 font-mono text-xs text-slate-400">{{ row.num_control }}</span>
+                    </template>
+                    <template #cell-acciones="{ row }">
+                        <button @click="openCedula(row)" class="text-xs text-slate-600 font-semibold mr-2">Cédula</button>
+                        <button @click="openRefer(row)" class="text-xs text-amber-600 font-semibold mr-2">Canalizar</button>
+                        <button v-if="a.scope === 'individual'" @click="removeTutee(row.id)" class="text-xs text-red-500">Quitar</button>
+                    </template>
+                </DataTable>
             </div>
 
             <!-- Sesiones -->
-            <div class="rounded-xl border bg-white p-5 space-y-2">
+            <div v-else-if="activeTab === 'sesiones'" class="space-y-2">
                 <div class="flex items-center justify-between">
                     <h2 class="text-sm font-bold text-slate-700 uppercase">Sesiones</h2>
-                    <button @click="openSession" class="text-xs text-blue-600 font-semibold">+ Registrar sesión</button>
+                    <button @click="openSession" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold">+ Registrar sesión</button>
                 </div>
-                <table class="w-full text-sm">
-                    <thead><tr class="text-left text-[10px] uppercase text-slate-400 border-b"><th class="py-2">Fecha</th><th>Tipo</th><th>Tema</th><th>Asist.</th></tr></thead>
-                    <tbody>
-                        <tr v-for="s in sessions" :key="s.id" class="border-b last:border-0"><td class="py-2">{{ s.session_date }}</td><td>{{ s.type }}</td><td>{{ s.topic }}</td><td>{{ s.type === 'grupal' ? s.attendance_count : '—' }}</td></tr>
-                        <tr v-if="!sessions.length"><td colspan="4" class="py-3 text-center text-slate-400">Sin sesiones.</td></tr>
-                    </tbody>
-                </table>
+                <DataTable :columns="sessionCols" :rows="sessionsTbl.rows" :pagination="sessionsTbl.pagination" hide-search empty-text="Sin sesiones." @change="sessionsTbl.onChange">
+                    <template #cell-type="{ row }" class="capitalize">{{ row.type }}</template>
+                    <template #cell-asist="{ row }">{{ row.type === 'grupal' ? row.attendance_count : '—' }}</template>
+                </DataTable>
             </div>
 
             <!-- Canalizaciones -->
-            <div class="rounded-xl border bg-white p-5 space-y-2">
+            <div v-else-if="activeTab === 'canalizaciones'" class="space-y-2">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Canalizaciones</h2>
-                <table class="w-full text-sm">
-                    <thead><tr class="text-left text-[10px] uppercase text-slate-400 border-b"><th class="py-2">Alumno</th><th>Área</th><th>Estado</th></tr></thead>
-                    <tbody>
-                        <tr v-for="r in referrals" :key="r.id" class="border-b last:border-0"><td class="py-2">{{ r.student_name }}</td><td>{{ r.area_name }}</td><td><span class="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100">{{ REFERRAL_STATUS_LABELS[r.status] }}</span></td></tr>
-                        <tr v-if="!referrals.length"><td colspan="3" class="py-3 text-center text-slate-400">Sin canalizaciones.</td></tr>
-                    </tbody>
-                </table>
+                <DataTable :columns="referralCols" :rows="referralsTbl.rows" :pagination="referralsTbl.pagination" hide-search empty-text="Sin canalizaciones." @change="referralsTbl.onChange">
+                    <template #cell-estado="{ row }">
+                        <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100">{{ REFERRAL_STATUS_LABELS[row.status] }}</span>
+                    </template>
+                </DataTable>
             </div>
 
             <!-- Evaluación de desempeño al término (T-C, sólo grupal) -->
-            <div v-if="a.scope === 'grupal' && ev && ev.applicable" class="rounded-xl border bg-white p-5 space-y-3">
+            <div v-else-if="activeTab === 'evaluacion' && ev && ev.applicable" class="space-y-3">
                 <div class="flex items-center justify-between">
                     <h2 class="text-sm font-bold text-slate-700 uppercase">Evaluación de desempeño</h2>
                     <div class="flex items-center gap-2">
@@ -108,21 +110,18 @@
                     </div>
                 </div>
 
-                <table class="w-full text-sm">
-                    <thead><tr class="text-left text-[10px] uppercase text-slate-400 border-b"><th class="py-2">Alumno</th><th class="w-60">Nivel de desempeño</th></tr></thead>
-                    <tbody>
-                        <tr v-for="t in ev.tutees" :key="t.student_id" class="border-b last:border-0">
-                            <td class="py-2"><span class="font-mono text-xs text-slate-400">{{ t.num_control }}</span> {{ t.full_name }}</td>
-                            <td>
-                                <select v-model.number="evLevels[t.student_id]" :disabled="!ev.can_capture" class="w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-50">
-                                    <option :value="undefined">—</option>
-                                    <option v-for="o in ev.level_options" :key="o.value" :value="o.value">{{ o.value }} · {{ o.label }}</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr v-if="!ev.tutees.length"><td colspan="2" class="py-3 text-center text-slate-400">Sin tutorados.</td></tr>
-                    </tbody>
-                </table>
+                <DataTable :columns="evCols" :rows="evTbl.rows" :pagination="evTbl.pagination" hide-search empty-text="Sin tutorados." @change="evTbl.onChange">
+                    <template #cell-alumno="{ row }">
+                        <span class="font-mono text-xs text-slate-400">{{ row.num_control }}</span>
+                        <span class="ml-2">{{ row.full_name }}</span>
+                    </template>
+                    <template #cell-nivel="{ row }">
+                        <select v-model.number="evLevels[row.student_id]" :disabled="!ev.can_capture" class="w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-50">
+                            <option :value="undefined">—</option>
+                            <option v-for="o in ev.level_options" :key="o.value" :value="o.value">{{ o.value }} · {{ o.label }}</option>
+                        </select>
+                    </template>
+                </DataTable>
                 <p class="text-[11px] text-slate-400">Sólo <b>Insuficiente</b> NO acredita el crédito de actividad complementaria; los demás niveles acreditan.</p>
 
                 <div class="flex justify-end gap-2" v-if="ev.can_capture">
@@ -185,7 +184,7 @@
             </div>
         </div>
 
-        <!-- Modal agregar tutorado -->
+        <!-- Modal reasignar tutor -->
         <div v-if="showReassign" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showReassign = false">
             <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
                 <h3 class="text-sm font-bold text-slate-700 uppercase">Reasignar tutor</h3>
@@ -201,6 +200,7 @@
             </div>
         </div>
 
+        <!-- Modal agregar tutorado -->
         <div v-if="showAddTutee" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showAddTutee = false">
             <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Agregar tutorado</h2>
@@ -220,6 +220,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { REFERRAL_STATUS_LABELS, type TutoringAssignment, type TutoringSession, type TutoringReferral, type ReferralArea, type TutoringTutee, type TuteeCedula } from '@/modules/tutoring/types/tutoring.type'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const props = defineProps<{ id: string | number }>()
 const T = API.TUTORING_API
@@ -242,6 +244,53 @@ const cedula = ref<TuteeCedula>({ set_id: null, fields: [], answers: {}, risk_fl
 const cAnswers = reactive<Record<string, any>>({})
 const studentSearch = ref(''), studentResults = ref<any[]>([])
 const syncingRoster = ref(false)
+
+// ── Tabs ──────────────────────────────────────────────────────────────────
+const activeTab = ref('tutorados')
+const tabs = computed(() => {
+    const t = [
+        { key: 'plan', label: 'Plan (PAT)' },
+        { key: 'tutorados', label: 'Tutorados' },
+        { key: 'sesiones', label: 'Sesiones' },
+        { key: 'canalizaciones', label: 'Canalizaciones' },
+    ]
+    if (a.value?.scope === 'grupal' && ev.value?.applicable) t.push({ key: 'evaluacion', label: 'Evaluación de desempeño' })
+    return t
+})
+
+// ── Paginación en cliente para los DataTable ───────────────────────────────
+function makePaged(getAll: () => any[]) {
+    const page = ref(1), perPage = ref(10)
+    return reactive({
+        rows: computed(() => { const all = getAll(); return all.slice((page.value - 1) * perPage.value, page.value * perPage.value) }),
+        pagination: computed(() => ({ page: page.value, perPage: perPage.value, total: getAll().length })),
+        onChange: (e: any) => { page.value = e.page; perPage.value = e.perPage },
+    })
+}
+const tuteesTbl = makePaged(() => a.value?.tutees ?? [])
+const sessionsTbl = makePaged(() => sessions.value)
+const referralsTbl = makePaged(() => referrals.value)
+const evTbl = makePaged(() => ev.value?.tutees ?? [])
+
+const tuteeCols: DataTableColumn[] = [
+    { key: 'alumno', label: 'Alumno' },
+    { key: 'acciones', label: '', align: 'right', width: '13rem' },
+]
+const sessionCols: DataTableColumn[] = [
+    { key: 'session_date', label: 'Fecha', field: 'session_date' },
+    { key: 'type', label: 'Tipo', field: 'type' },
+    { key: 'topic', label: 'Tema', field: 'topic' },
+    { key: 'asist', label: 'Asist.', align: 'center' },
+]
+const referralCols: DataTableColumn[] = [
+    { key: 'student_name', label: 'Alumno', field: 'student_name' },
+    { key: 'area_name', label: 'Área', field: 'area_name' },
+    { key: 'estado', label: 'Estado' },
+]
+const evCols: DataTableColumn[] = [
+    { key: 'alumno', label: 'Alumno' },
+    { key: 'nivel', label: 'Nivel de desempeño', width: '18rem' },
+]
 
 // Evaluación de desempeño (T-C)
 const ev = ref<any | null>(null)
