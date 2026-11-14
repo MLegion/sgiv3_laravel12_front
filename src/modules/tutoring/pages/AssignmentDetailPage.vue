@@ -49,14 +49,28 @@
                     </button>
                 </div>
                 <DataTable :columns="tuteeCols" :rows="tuteesTbl.rows" :pagination="tuteesTbl.pagination" hide-search empty-text="Sin tutorados." @change="tuteesTbl.onChange">
-                    <template #cell-alumno="{ row }">
-                        <span class="font-semibold text-slate-700">{{ row.student_name }}</span>
-                        <span class="ml-2 font-mono text-xs text-slate-400">{{ row.num_control }}</span>
+                    <template #cell-num_control="{ row }"><span class="font-mono text-xs text-slate-500">{{ row.num_control }}</span></template>
+                    <template #cell-student_name="{ row }"><span class="font-semibold text-slate-700">{{ row.student_name }}</span></template>
+                    <template #cell-campus_mod="{ row }">
+                        <span class="text-slate-600">{{ row.campus ?? '—' }}</span>
+                        <span v-if="row.modalidad" class="text-slate-400"> · {{ row.modalidad }}</span>
                     </template>
+                    <template #cell-carrera="{ row }"><span class="text-slate-600">{{ row.carrera ?? '—' }}</span></template>
                     <template #cell-acciones="{ row }">
-                        <button @click="openCedula(row)" class="text-xs text-slate-600 font-semibold mr-2">Cédula</button>
-                        <button @click="openRefer(row)" class="text-xs text-amber-600 font-semibold mr-2">Canalizar</button>
-                        <button v-if="a.scope === 'individual'" @click="removeTutee(row.id)" class="text-xs text-red-500">Quitar</button>
+                        <div class="inline-flex items-center gap-1">
+                            <button @click="openCedula(row)" title="Cédula" aria-label="Cédula"
+                                class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700">
+                                <ClipboardDocumentListIcon class="w-5 h-5" />
+                            </button>
+                            <button @click="openRefer(row)" title="Canalizar" aria-label="Canalizar"
+                                class="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50">
+                                <ArrowRightCircleIcon class="w-5 h-5" />
+                            </button>
+                            <button v-if="a.scope === 'individual'" @click="removeTutee(row.id)" title="Quitar" aria-label="Quitar"
+                                class="p-1.5 rounded-lg text-red-500 hover:bg-red-50">
+                                <TrashIcon class="w-5 h-5" />
+                            </button>
+                        </div>
                     </template>
                 </DataTable>
             </div>
@@ -222,6 +236,7 @@ import { REFERRAL_STATUS_LABELS, type TutoringAssignment, type TutoringSession, 
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+import { ClipboardDocumentListIcon, ArrowRightCircleIcon, TrashIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps<{ id: string | number }>()
 const T = API.TUTORING_API
@@ -273,8 +288,11 @@ const referralsTbl = makePaged(() => referrals.value)
 const evTbl = makePaged(() => ev.value?.tutees ?? [])
 
 const tuteeCols: DataTableColumn[] = [
-    { key: 'alumno', label: 'Alumno' },
-    { key: 'acciones', label: '', align: 'right', width: '13rem' },
+    { key: 'num_control', label: 'Nº control', field: 'num_control' },
+    { key: 'student_name', label: 'Tutorado', field: 'student_name' },
+    { key: 'campus_mod', label: 'Campus / Modalidad' },
+    { key: 'carrera', label: 'Carrera', field: 'carrera' },
+    { key: 'acciones', label: '', align: 'right', width: '8rem' },
 ]
 const sessionCols: DataTableColumn[] = [
     { key: 'session_date', label: 'Fecha', field: 'session_date' },
