@@ -181,11 +181,6 @@
         <section class="rounded-xl border bg-white p-4 space-y-3">
             <div class="flex items-center justify-between">
                 <h2 class="text-sm font-bold uppercase text-slate-500">Lista de alumnos ({{ attendees.length }})</h2>
-                <button v-if="isGroupTutoring" @click="syncGroupRoster" :disabled="syncingRoster"
-                    class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50"
-                    title="Trae a los alumnos de la cohorte (1er sem) del grupo que falten">
-                    {{ syncingRoster ? 'Agregando…' : 'Agregar alumnos del grupo' }}
-                </button>
             </div>
 
             <!-- Agregar alumno -->
@@ -360,7 +355,6 @@ const toast = useToast()
 
 const activity = ref<any>(null)
 const attendees = ref<any[]>([])
-const syncingRoster = ref(false)
 const studentSearch = ref('')
 const studentResults = ref<any[]>([])
 let studentTimer: any = null
@@ -624,15 +618,6 @@ async function addStudent(s: any, force = false) {
         }
         toast.error(d?.message ?? 'No se pudo agregar.')
     }
-}
-async function syncGroupRoster() {
-    syncingRoster.value = true
-    try {
-        const { data } = await api.post(AC.syncGroupRoster(props.id), {})
-        toast.success(data.added > 0 ? `${data.added} alumno(s) agregados (cohorte: ${data.cohort_total}).` : `Sin alumnos nuevos (cohorte: ${data.cohort_total}).`)
-        await load()
-    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo agregar a los alumnos del grupo.') }
-    finally { syncingRoster.value = false }
 }
 async function setResult(s: any, result: 'passed' | 'not_passed' | null) {
     try {

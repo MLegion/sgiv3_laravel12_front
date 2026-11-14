@@ -59,7 +59,6 @@ const acApi: ApiModule = {
         selfDrop:     (id: string | number) => apiUrl(`/complementary-activities/me/activities/${id}/drop`),
         occupancy:     (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/occupancy`),
         attendees:  (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/attendees`),
-        syncGroupRoster: (id: string | number) => apiUrl(`/complementary-activities/activities/${id}/sync-group-roster`),
         attendee:   (id: string | number, studentId: string | number) =>
             apiUrl(`/complementary-activities/activities/${id}/attendees/${studentId}`),
         creditAttendee: (id: string | number, studentId: string | number) =>

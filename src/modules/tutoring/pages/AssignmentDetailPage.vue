@@ -33,6 +33,11 @@
                 <div class="flex items-center justify-between">
                     <h2 class="text-sm font-bold text-slate-700 uppercase">Tutorados ({{ a.tutees.length }})</h2>
                     <button v-if="a.scope === 'individual'" @click="showAddTutee = true" class="text-xs text-blue-600 font-semibold">+ Agregar</button>
+                    <button v-else-if="a.scope === 'grupal'" @click="syncRoster" :disabled="syncingRoster"
+                        class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50"
+                        title="Trae a los alumnos de la cohorte (1er sem) del grupo que falten">
+                        {{ syncingRoster ? 'Agregando…' : 'Agregar alumnos del grupo' }}
+                    </button>
                 </div>
                 <table class="w-full text-sm">
                     <tbody>
@@ -236,6 +241,7 @@ const cedulaTutee = ref<TutoringTutee | null>(null)
 const cedula = ref<TuteeCedula>({ set_id: null, fields: [], answers: {}, risk_flags: {}, filled_at: null })
 const cAnswers = reactive<Record<string, any>>({})
 const studentSearch = ref(''), studentResults = ref<any[]>([])
+const syncingRoster = ref(false)
 
 // Evaluación de desempeño (T-C)
 const ev = ref<any | null>(null)
@@ -363,6 +369,15 @@ let timer: any
 function searchStudents() { clearTimeout(timer); timer = setTimeout(async () => { if (studentSearch.value.trim().length < 2) { studentResults.value = []; return } studentResults.value = (await api.get(SS.students.list, { params: { search: studentSearch.value, per_page: 10 } })).data?.data ?? [] }, 300) }
 async function addTutee(studentId: number) { try { await api.post(T.assignments.addTutee(props.id), { student_id: studentId }); showAddTutee.value = false; studentSearch.value = ''; studentResults.value = []; await load() } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
 async function removeTutee(tuteeId: number) { if (!confirm('¿Quitar tutorado?')) return; await api.delete(T.assignments.removeTutee(props.id, tuteeId)); await load() }
+async function syncRoster() {
+    syncingRoster.value = true
+    try {
+        const { data } = await api.post(T.assignments.syncRoster(props.id), {})
+        flash(data.added > 0 ? `${data.added} alumno(s) agregados de la cohorte (${data.cohort_total}).` : `Sin alumnos nuevos (cohorte: ${data.cohort_total}).`)
+        await load()
+    } catch (e: any) { flash(e?.response?.data?.message ?? 'No se pudo agregar a los alumnos del grupo.', true) }
+    finally { syncingRoster.value = false }
+}
 
 onMounted(load)
 </script>
