@@ -30,16 +30,49 @@
                 </button>
             </div>
 
-            <!-- Plan -->
-            <div v-if="activeTab === 'plan'" class="rounded-xl border bg-white p-5 space-y-3">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-sm font-bold text-slate-700 uppercase">Plan de Acción Tutorial (PAT)</h2>
-                    <span class="text-[11px] text-slate-400">{{ plan.length }} caracteres</span>
+            <!-- Plan de Acción Tutorial (PAT) -->
+            <div v-if="activeTab === 'plan'" class="space-y-3">
+                <div class="rounded-xl border bg-white p-4 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-sm font-bold text-slate-700 uppercase">Plan de Acción Tutorial (PAT)</h2>
+                        <button @click="downloadPat" :disabled="patGenerating"
+                            class="px-3 py-1 rounded-lg border text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-40">
+                            {{ patGenerating ? 'Generando…' : 'Formato oficial' }}
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-amber-600">El PAT se elabora una vez conformado el grupo y realizadas las encuestas/cédulas del diagnóstico.</p>
+                    <div class="grid sm:grid-cols-4 gap-2 text-xs">
+                        <div><span class="text-slate-400">Periodo:</span> <b>{{ a.period_name }}</b></div>
+                        <div><span class="text-slate-400">Tutor:</span> <b>{{ a.tutor_name }}</b></div>
+                        <div><span class="text-slate-400">Grupo:</span> <b>{{ a.group_name ?? '—' }}</b></div>
+                        <div><span class="text-slate-400">Alumnos:</span> H={{ patCounts.hombres }} · M={{ patCounts.mujeres }} · <b>Total={{ patCounts.total }}</b></div>
+                    </div>
                 </div>
-                <textarea v-model="plan" rows="22"
-                    class="w-full min-h-[60vh] resize-y rounded-lg border-slate-300 text-sm leading-relaxed"
-                    placeholder="Describe el Plan de Acción Tutorial: objetivos, actividades, metas y seguimiento del grupo/alumno…"></textarea>
-                <div class="flex justify-end"><button @click="savePlan" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar plan</button></div>
+
+                <div class="rounded-xl border bg-white overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
+                            <th class="px-3 py-2 w-1/4">Problemática identificada</th>
+                            <th class="w-1/4">Descripción de las actividades</th>
+                            <th class="w-1/4">Objetivo</th>
+                            <th class="w-1/4">Resultados obtenidos</th>
+                            <th class="w-10"></th>
+                        </tr></thead>
+                        <tbody>
+                            <tr v-for="(r, i) in patRows" :key="i" class="border-b last:border-0 align-top">
+                                <td class="px-3 py-2"><textarea v-model="r.problematica" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
+                                <td class="py-2 pr-2"><textarea v-model="r.descripcion" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
+                                <td class="py-2 pr-2"><textarea v-model="r.objetivo" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
+                                <td class="py-2 pr-2"><textarea v-model="r.resultados" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
+                                <td class="pr-2 text-right"><button @click="removePatRow(i)" title="Quitar fila" class="p-1 text-red-500 hover:bg-red-50 rounded"><TrashIcon class="w-4 h-4" /></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button @click="addPatRow" class="px-3 py-1.5 rounded-lg border text-sm font-semibold text-slate-600 hover:bg-slate-50">+ Agregar fila</button>
+                    <button @click="savePlan" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar PAT</button>
+                </div>
             </div>
 
             <!-- Tutorados -->
@@ -335,7 +368,7 @@ async function load() {
     loading.value = true
     try {
         const { data } = await api.get(T.assignments.byId(props.id))
-        a.value = data; plan.value = data?.plan ?? ''
+        a.value = data; plan.value = data?.plan ?? ''; loadPat(data?.plan ?? null)
         const [ses, ref_, ar] = await Promise.all([api.get(T.assignments.sessions(props.id)), api.get(T.assignments.referrals(props.id)), api.get(T.referralAreas.list)])
         sessions.value = ses.data ?? []; referrals.value = ref_.data ?? []; areas.value = ar.data ?? []
         if (data?.scope === 'grupal') await loadEval()
@@ -402,7 +435,49 @@ async function downloadOficial() {
     finally { evGenerating.value = false }
 }
 
-async function savePlan() { try { await api.put(T.assignments.plan(props.id), { plan: plan.value }); flash('Plan guardado.') } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
+// ── Plan de Acción Tutorial (estructurado por el formato oficial) ──────────
+type PatRow = { problematica: string; descripcion: string; objetivo: string; resultados: string }
+const emptyPatRow = (): PatRow => ({ problematica: '', descripcion: '', objetivo: '', resultados: '' })
+const patRows = ref<PatRow[]>([emptyPatRow()])
+const patGenerating = ref(false)
+function loadPat(raw: string | null) {
+    try {
+        const p = raw ? JSON.parse(raw) : null
+        if (p && Array.isArray(p.rows)) {
+            patRows.value = p.rows.map((r: any) => ({ problematica: r.problematica ?? '', descripcion: r.descripcion ?? '', objetivo: r.objetivo ?? '', resultados: r.resultados ?? '' }))
+            if (!patRows.value.length) patRows.value = [emptyPatRow()]
+            return
+        }
+    } catch { /* texto libre heredado */ }
+    patRows.value = raw ? [{ ...emptyPatRow(), problematica: raw }] : [emptyPatRow()]
+}
+const patCounts = computed(() => {
+    const t = (a.value?.tutees ?? []) as any[]
+    return { hombres: t.filter(x => x.sex === 'M').length, mujeres: t.filter(x => x.sex === 'F').length, total: t.length }
+})
+function addPatRow() { patRows.value.push(emptyPatRow()) }
+function removePatRow(i: number) { patRows.value.splice(i, 1); if (!patRows.value.length) patRows.value = [emptyPatRow()] }
+async function savePlan() {
+    try { await api.put(T.assignments.plan(props.id), { plan: JSON.stringify({ rows: patRows.value }) }); flash('PAT guardado.') }
+    catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) }
+}
+function patReportContext() {
+    return {
+        periodo: a.value?.period_name ?? '',
+        tutor: a.value?.tutor_name ?? '',
+        grupo: a.value?.group_name ?? '',
+        hombres: patCounts.value.hombres,
+        mujeres: patCounts.value.mujeres,
+        total: patCounts.value.total,
+        filas: patRows.value.map(r => ({ ...r })),
+    }
+}
+async function downloadPat() {
+    patGenerating.value = true
+    try { await reportGen.downloadFromContext({ reportCode: 'RPT.TUT_PAT', context: patReportContext(), filename: `pat-${a.value?.group_name || a.value?.id}` }) }
+    catch (e: any) { flash(e?.response?.data?.message ?? 'No se pudo generar el formato (¿plantilla cargada?).', true) }
+    finally { patGenerating.value = false }
+}
 async function close() { if (!confirm('¿Cerrar la asignación?')) return; try { await api.post(T.assignments.close(props.id), {}); await load(); flash('Asignación cerrada.') } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
 async function doReassign() {
     try {
