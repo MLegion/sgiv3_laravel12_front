@@ -31,9 +31,14 @@
             </div>
 
             <!-- Plan -->
-            <div v-if="activeTab === 'plan'" class="rounded-xl border bg-white p-5 space-y-2">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">Plan de acción tutorial</h2>
-                <textarea v-model="plan" rows="5" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+            <div v-if="activeTab === 'plan'" class="rounded-xl border bg-white p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-slate-700 uppercase">Plan de Acción Tutorial (PAT)</h2>
+                    <span class="text-[11px] text-slate-400">{{ plan.length }} caracteres</span>
+                </div>
+                <textarea v-model="plan" rows="22"
+                    class="w-full min-h-[60vh] resize-y rounded-lg border-slate-300 text-sm leading-relaxed"
+                    placeholder="Describe el Plan de Acción Tutorial: objetivos, actividades, metas y seguimiento del grupo/alumno…"></textarea>
                 <div class="flex justify-end"><button @click="savePlan" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar plan</button></div>
             </div>
 
