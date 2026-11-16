@@ -1,9 +1,9 @@
 <template>
     <div class="space-y-5">
-        <button @click="$router.back()" class="text-sm text-slate-500 hover:text-slate-700">← Volver</button>
+        <button v-if="!embedded" @click="$router.back()" class="text-sm text-slate-500 hover:text-slate-700">← Volver</button>
         <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
         <template v-else-if="a">
-            <div class="flex items-center justify-between">
+            <div v-if="!embedded" class="flex items-center justify-between">
                 <div>
                     <h1 class="text-xl font-semibold text-slate-800">{{ a.tutor_name }}</h1>
                     <p class="text-xs text-slate-400">{{ a.scope === 'grupal' ? ('Grupal ' + (a.group_name ?? '')) : 'Individual' }} · {{ a.career_name ?? 'Sin carrera' }} · {{ a.period_name }}</p>
@@ -22,7 +22,7 @@
             <p v-if="msg" class="text-sm px-4 py-2.5 rounded-lg" :class="msgError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'">{{ msg }}</p>
 
             <!-- Tabs -->
-            <div class="flex gap-1 border-b border-slate-200 overflow-x-auto">
+            <div v-if="!embedded" class="flex gap-1 border-b border-slate-200 overflow-x-auto">
                 <button v-for="tab in tabs" :key="tab.key" @click="activeTab = tab.key"
                     class="whitespace-nowrap px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors"
                     :class="activeTab === tab.key ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'">
@@ -314,7 +314,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { REFERRAL_STATUS_LABELS, type TutoringAssignment, type TutoringSession, type TutoringReferral, type ReferralArea, type TutoringTutee, type TuteeCedula } from '@/modules/tutoring/types/tutoring.type'
@@ -323,7 +323,10 @@ import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { ClipboardDocumentListIcon, ArrowRightCircleIcon, TrashIcon } from '@heroicons/vue/24/outline'
 
-const props = defineProps<{ id: string | number }>()
+// `only` = modo embebido: muestra UNA sola función (sin header ni tabs), para reusar
+// esta página como panel dentro de los menús separados del tutor (selector + panel).
+const props = defineProps<{ id: string | number; only?: string }>()
+const embedded = computed(() => !!props.only)
 const T = API.TUTORING_API
 const SS = API.SCHOOL_SERVICES_API
 
@@ -346,7 +349,7 @@ const studentSearch = ref(''), studentResults = ref<any[]>([])
 const syncingRoster = ref(false)
 
 // ── Tabs ──────────────────────────────────────────────────────────────────
-const activeTab = ref('tutorados')
+const activeTab = ref(props.only ?? 'tutorados')
 const tabs = computed(() => {
     const t: { key: string; label: string }[] = []
     // El PAT es un formato GRUPAL (grupo + conteo H/M/Total + hito pat_initial de 1er sem);
@@ -583,5 +586,7 @@ async function syncRoster() {
     finally { syncingRoster.value = false }
 }
 
+// Recarga si cambia la asignación seleccionada (modo embebido con selector).
+watch(() => props.id, () => { activeTab.value = props.only ?? activeTab.value; load() })
 onMounted(load)
 </script>

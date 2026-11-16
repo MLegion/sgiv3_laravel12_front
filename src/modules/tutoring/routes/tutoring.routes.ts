@@ -8,8 +8,30 @@ export default [
     {
         path: 'tutoring/my-tutees',
         name: 'tutoring.my-tutees',
-        component: () => import('@/modules/tutoring/pages/MyTuteesPage.vue'),
+        component: () => import('@/modules/tutoring/pages/MisTutoriasFunctionPage.vue'),
         meta: { title: 'Mis Tutorados' },
+        props: { only: 'tutorados', title: 'Mis Tutorados' },
+    },
+    {
+        path: 'tutoring/my-sessions',
+        name: 'tutoring.my-sessions',
+        component: () => import('@/modules/tutoring/pages/MisTutoriasFunctionPage.vue'),
+        meta: { title: 'Sesiones de tutoría' },
+        props: { only: 'sesiones', title: 'Sesiones de tutoría' },
+    },
+    {
+        path: 'tutoring/my-pat',
+        name: 'tutoring.my-pat',
+        component: () => import('@/modules/tutoring/pages/MisTutoriasFunctionPage.vue'),
+        meta: { title: 'Plan de Acción Tutorial' },
+        props: { only: 'plan', title: 'Plan de Acción Tutorial', grupalOnly: true },
+    },
+    {
+        path: 'tutoring/my-evaluation',
+        name: 'tutoring.my-evaluation',
+        component: () => import('@/modules/tutoring/pages/MisTutoriasFunctionPage.vue'),
+        meta: { title: 'Evaluación de desempeño' },
+        props: { only: 'evaluacion', title: 'Evaluación de desempeño', grupalOnly: true },
     },
     {
         path: 'tutoring/assignments',
