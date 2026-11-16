@@ -68,6 +68,10 @@
                 Fecha de cada hito del seguimiento por periodo. <b>Abre</b> = antes de esa fecha el tutor no puede
                 entregar; <b>Límite</b> = después el plazo vence. Deja vacío para no restringir por fecha.
             </p>
+            <p class="text-[11px] text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                El hito <b>“PAT inicial”</b> define la <b>ventana de entrega del Plan de Acción Tutorial</b>: el tutor
+                sólo puede capturar/editar el PAT entre esas fechas. Configúrala para que los tutores entreguen a tiempo.
+            </p>
             <div class="grid sm:grid-cols-4 gap-3 items-end">
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Periodo</label>
@@ -82,8 +86,11 @@
                     <th class="px-3 py-1">Hito</th><th class="px-3 py-1">Abre</th><th class="px-3 py-1">Límite</th>
                 </tr></thead>
                 <tbody>
-                    <tr v-for="s in sched.stages" :key="s.stage" class="border-b last:border-0">
-                        <td class="px-3 py-2 text-slate-600">{{ s.label }}</td>
+                    <tr v-for="s in sched.stages" :key="s.stage" class="border-b last:border-0" :class="s.stage === 'pat_initial' ? 'bg-amber-50/60' : ''">
+                        <td class="px-3 py-2 text-slate-600">
+                            {{ s.label }}
+                            <span v-if="s.stage === 'pat_initial'" class="ml-1 text-[10px] font-bold text-amber-700">· entrega del PAT</span>
+                        </td>
                         <td class="px-3 py-1"><input v-model="s.opens_at" type="date" class="rounded-lg border-slate-300 text-sm" /></td>
                         <td class="px-3 py-1"><input v-model="s.due_date" type="date" class="rounded-lg border-slate-300 text-sm" /></td>
                     </tr>

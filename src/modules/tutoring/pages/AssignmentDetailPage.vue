@@ -53,6 +53,15 @@
                         <div><span class="text-slate-400">Grupo:</span> <b>{{ a.group_name ?? '—' }}</b></div>
                         <div><span class="text-slate-400">Alumnos:</span> H={{ patCounts.hombres }} · M={{ patCounts.mujeres }} · <b>Total={{ patCounts.total }}</b></div>
                     </div>
+                    <!-- Ventana de entrega del PAT (hito pat_initial del Calendario de hitos) -->
+                    <div class="rounded-lg border p-2.5 text-[11px]"
+                         :class="patOpen ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'">
+                        <template v-if="patWin && patWin.configured">
+                            <b>Entrega del PAT:</b> {{ fmtDate(patWin.opens_at) }} → {{ fmtDate(patWin.due_date) }}.
+                            <span class="font-semibold">{{ patOpen ? '● Abierta — puedes capturar/editar el PAT.' : '○ Cerrada — fuera de las fechas de entrega del PAT.' }}</span>
+                        </template>
+                        <template v-else>Sin ventana de entrega configurada por la coordinación — captura libre. (Se define en el Calendario de hitos, hito “PAT inicial”.)</template>
+                    </div>
                     <p v-if="patView === 'planeacion'" class="text-[11px] text-amber-600">Planeación: captura por renglón la <b>problemática</b>, la <b>descripción de actividades</b> y el <b>objetivo</b>. Los resultados se registran en <b>Seguimiento</b>, al aplicar cada actividad.</p>
                     <p v-else class="text-[11px] text-slate-500">Seguimiento: lleva a cabo cada actividad planeada y registra sus <b>resultados obtenidos</b> conforme avanzas.</p>
                 </div>
@@ -69,18 +78,19 @@
                             </tr></thead>
                             <tbody>
                                 <tr v-for="(r, i) in patRows" :key="i" class="border-b last:border-0 align-top">
-                                    <td class="px-3 py-2"><textarea v-model="r.problematica" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
-                                    <td class="py-2 pr-2"><textarea v-model="r.descripcion" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
-                                    <td class="py-2 pr-2"><textarea v-model="r.objetivo" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
-                                    <td class="pr-2 text-right"><button @click="removePatRow(i)" title="Quitar fila" class="p-1 text-red-500 hover:bg-red-50 rounded"><TrashIcon class="w-4 h-4" /></button></td>
+                                    <td class="px-3 py-2"><textarea v-model="r.problematica" rows="4" :disabled="!patOpen" class="w-full rounded border-slate-300 text-sm disabled:bg-slate-50"></textarea></td>
+                                    <td class="py-2 pr-2"><textarea v-model="r.descripcion" rows="4" :disabled="!patOpen" class="w-full rounded border-slate-300 text-sm disabled:bg-slate-50"></textarea></td>
+                                    <td class="py-2 pr-2"><textarea v-model="r.objetivo" rows="4" :disabled="!patOpen" class="w-full rounded border-slate-300 text-sm disabled:bg-slate-50"></textarea></td>
+                                    <td class="pr-2 text-right"><button v-if="patOpen" @click="removePatRow(i)" title="Quitar fila" class="p-1 text-red-500 hover:bg-red-50 rounded"><TrashIcon class="w-4 h-4" /></button></td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                     <div class="flex items-center justify-between">
-                        <button @click="addPatRow" class="px-3 py-1.5 rounded-lg border text-sm font-semibold text-slate-600 hover:bg-slate-50">+ Agregar actividad</button>
-                        <button @click="savePlan" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar PAT</button>
+                        <button @click="addPatRow" :disabled="!patOpen" class="px-3 py-1.5 rounded-lg border text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-40">+ Agregar actividad</button>
+                        <button @click="savePlan" :disabled="!patOpen" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold disabled:opacity-50">Guardar PAT</button>
                     </div>
+                    <p v-if="!patOpen" class="text-[11px] text-amber-600 text-right">Fuera de la ventana de entrega del PAT: la planeación está en solo lectura.</p>
                 </template>
 
                 <!-- SEGUIMIENTO: llevar a cabo cada actividad y registrar resultados -->
@@ -481,6 +491,9 @@ const patGenerating = ref(false)
 const patView = ref<'planeacion' | 'seguimiento'>('planeacion')
 // ¿Hay al menos una actividad con contenido planeado?
 const hasPlan = computed(() => patRows.value.some(r => (r.problematica || r.descripcion || r.objetivo).trim()))
+// Ventana de entrega del PAT (hito pat_initial); sin configurar = abierta.
+const patWin = computed<any>(() => (a.value as any)?.pat_window ?? null)
+const patOpen = computed(() => patWin.value?.is_open ?? true)
 function loadPat(raw: string | null) {
     try {
         const p = raw ? JSON.parse(raw) : null
