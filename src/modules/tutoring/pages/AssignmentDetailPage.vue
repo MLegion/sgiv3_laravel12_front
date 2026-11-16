@@ -40,13 +40,17 @@
                             {{ patGenerating ? 'Generando…' : 'Formato oficial' }}
                         </button>
                     </div>
-                    <p class="text-[11px] text-amber-600">El PAT se elabora una vez conformado el grupo y realizadas las encuestas/cédulas del diagnóstico.</p>
+                    <p class="text-[11px] text-amber-600">El PAT se elabora una vez conformado el grupo y realizadas las encuestas/cédulas del diagnóstico. Los <b>Resultados obtenidos</b> se registran al término de cada actividad (al cierre), no al crear el plan.</p>
                     <div class="grid sm:grid-cols-4 gap-2 text-xs">
                         <div><span class="text-slate-400">Periodo:</span> <b>{{ a.period_name }}</b></div>
                         <div><span class="text-slate-400">Tutor:</span> <b>{{ a.tutor_name }}</b></div>
                         <div><span class="text-slate-400">Grupo:</span> <b>{{ a.group_name ?? '—' }}</b></div>
                         <div><span class="text-slate-400">Alumnos:</span> H={{ patCounts.hombres }} · M={{ patCounts.mujeres }} · <b>Total={{ patCounts.total }}</b></div>
                     </div>
+                    <label class="flex items-center gap-2 text-xs text-slate-600 pt-1">
+                        <input type="checkbox" v-model="resultsMode" />
+                        Registrar <b>resultados obtenidos</b> (habilitar al término de las actividades)
+                    </label>
                 </div>
 
                 <div class="rounded-xl border bg-white overflow-x-auto">
@@ -55,7 +59,7 @@
                             <th class="px-3 py-2 w-1/4">Problemática identificada</th>
                             <th class="w-1/4">Descripción de las actividades</th>
                             <th class="w-1/4">Objetivo</th>
-                            <th class="w-1/4">Resultados obtenidos</th>
+                            <th class="w-1/4">Resultados obtenidos <span class="normal-case font-normal text-slate-300">(al cierre)</span></th>
                             <th class="w-10"></th>
                         </tr></thead>
                         <tbody>
@@ -63,7 +67,7 @@
                                 <td class="px-3 py-2"><textarea v-model="r.problematica" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
                                 <td class="py-2 pr-2"><textarea v-model="r.descripcion" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
                                 <td class="py-2 pr-2"><textarea v-model="r.objetivo" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
-                                <td class="py-2 pr-2"><textarea v-model="r.resultados" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
+                                <td class="py-2 pr-2"><textarea v-model="r.resultados" rows="4" :disabled="!resultsMode" :placeholder="resultsMode ? '' : 'Se captura al término de la actividad'" class="w-full rounded border-slate-300 text-sm disabled:bg-slate-50 disabled:text-slate-400"></textarea></td>
                                 <td class="pr-2 text-right"><button @click="removePatRow(i)" title="Quitar fila" class="p-1 text-red-500 hover:bg-red-50 rounded"><TrashIcon class="w-4 h-4" /></button></td>
                             </tr>
                         </tbody>
@@ -440,6 +444,8 @@ type PatRow = { problematica: string; descripcion: string; objetivo: string; res
 const emptyPatRow = (): PatRow => ({ problematica: '', descripcion: '', objetivo: '', resultados: '' })
 const patRows = ref<PatRow[]>([emptyPatRow()])
 const patGenerating = ref(false)
+// 'Resultados obtenidos' se capturan al cierre (tras aplicar las actividades), no al crear el PAT.
+const resultsMode = ref(false)
 function loadPat(raw: string | null) {
     try {
         const p = raw ? JSON.parse(raw) : null
