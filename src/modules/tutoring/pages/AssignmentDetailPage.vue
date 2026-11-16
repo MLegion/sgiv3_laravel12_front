@@ -33,50 +33,83 @@
             <!-- Plan de Acción Tutorial (PAT) -->
             <div v-if="activeTab === 'plan'" class="space-y-3">
                 <div class="rounded-xl border bg-white p-4 space-y-2">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
                         <h2 class="text-sm font-bold text-slate-700 uppercase">Plan de Acción Tutorial (PAT)</h2>
-                        <button @click="downloadPat" :disabled="patGenerating"
-                            class="px-3 py-1 rounded-lg border text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-40">
-                            {{ patGenerating ? 'Generando…' : 'Formato oficial' }}
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <!-- Sub-vista: planear vs llevar a cabo -->
+                            <div class="inline-flex rounded-lg border border-slate-200 overflow-hidden text-xs font-semibold">
+                                <button @click="patView = 'planeacion'" :class="patView === 'planeacion' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'" class="px-3 py-1.5">Planeación</button>
+                                <button @click="patView = 'seguimiento'" :class="patView === 'seguimiento' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'" class="px-3 py-1.5">Seguimiento</button>
+                            </div>
+                            <button @click="downloadPat" :disabled="patGenerating"
+                                class="px-3 py-1.5 rounded-lg border text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-40">
+                                {{ patGenerating ? 'Generando…' : 'Formato oficial' }}
+                            </button>
+                        </div>
                     </div>
-                    <p class="text-[11px] text-amber-600">El PAT se elabora una vez conformado el grupo y realizadas las encuestas/cédulas del diagnóstico. Los <b>Resultados obtenidos</b> se registran al término de cada actividad (al cierre), no al crear el plan.</p>
                     <div class="grid sm:grid-cols-4 gap-2 text-xs">
                         <div><span class="text-slate-400">Periodo:</span> <b>{{ a.period_name }}</b></div>
                         <div><span class="text-slate-400">Tutor:</span> <b>{{ a.tutor_name }}</b></div>
                         <div><span class="text-slate-400">Grupo:</span> <b>{{ a.group_name ?? '—' }}</b></div>
                         <div><span class="text-slate-400">Alumnos:</span> H={{ patCounts.hombres }} · M={{ patCounts.mujeres }} · <b>Total={{ patCounts.total }}</b></div>
                     </div>
-                    <label class="flex items-center gap-2 text-xs text-slate-600 pt-1">
-                        <input type="checkbox" v-model="resultsMode" />
-                        Registrar <b>resultados obtenidos</b> (habilitar al término de las actividades)
-                    </label>
+                    <p v-if="patView === 'planeacion'" class="text-[11px] text-amber-600">Planeación: captura por renglón la <b>problemática</b>, la <b>descripción de actividades</b> y el <b>objetivo</b>. Los resultados se registran en <b>Seguimiento</b>, al aplicar cada actividad.</p>
+                    <p v-else class="text-[11px] text-slate-500">Seguimiento: lleva a cabo cada actividad planeada y registra sus <b>resultados obtenidos</b> conforme avanzas.</p>
                 </div>
 
-                <div class="rounded-xl border bg-white overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                            <th class="px-3 py-2 w-1/4">Problemática identificada</th>
-                            <th class="w-1/4">Descripción de las actividades</th>
-                            <th class="w-1/4">Objetivo</th>
-                            <th class="w-1/4">Resultados obtenidos <span class="normal-case font-normal text-slate-300">(al cierre)</span></th>
-                            <th class="w-10"></th>
-                        </tr></thead>
-                        <tbody>
-                            <tr v-for="(r, i) in patRows" :key="i" class="border-b last:border-0 align-top">
-                                <td class="px-3 py-2"><textarea v-model="r.problematica" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
-                                <td class="py-2 pr-2"><textarea v-model="r.descripcion" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
-                                <td class="py-2 pr-2"><textarea v-model="r.objetivo" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
-                                <td class="py-2 pr-2"><textarea v-model="r.resultados" rows="4" :disabled="!resultsMode" :placeholder="resultsMode ? '' : 'Se captura al término de la actividad'" class="w-full rounded border-slate-300 text-sm disabled:bg-slate-50 disabled:text-slate-400"></textarea></td>
-                                <td class="pr-2 text-right"><button @click="removePatRow(i)" title="Quitar fila" class="p-1 text-red-500 hover:bg-red-50 rounded"><TrashIcon class="w-4 h-4" /></button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="flex items-center justify-between">
-                    <button @click="addPatRow" class="px-3 py-1.5 rounded-lg border text-sm font-semibold text-slate-600 hover:bg-slate-50">+ Agregar fila</button>
-                    <button @click="savePlan" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar PAT</button>
-                </div>
+                <!-- PLANEACIÓN: define problemática / descripción / objetivo -->
+                <template v-if="patView === 'planeacion'">
+                    <div class="rounded-xl border bg-white overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
+                                <th class="px-3 py-2 w-1/3">Problemática identificada</th>
+                                <th class="w-1/3">Descripción de las actividades</th>
+                                <th class="w-1/3">Objetivo</th>
+                                <th class="w-10"></th>
+                            </tr></thead>
+                            <tbody>
+                                <tr v-for="(r, i) in patRows" :key="i" class="border-b last:border-0 align-top">
+                                    <td class="px-3 py-2"><textarea v-model="r.problematica" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
+                                    <td class="py-2 pr-2"><textarea v-model="r.descripcion" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
+                                    <td class="py-2 pr-2"><textarea v-model="r.objetivo" rows="4" class="w-full rounded border-slate-300 text-sm"></textarea></td>
+                                    <td class="pr-2 text-right"><button @click="removePatRow(i)" title="Quitar fila" class="p-1 text-red-500 hover:bg-red-50 rounded"><TrashIcon class="w-4 h-4" /></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <button @click="addPatRow" class="px-3 py-1.5 rounded-lg border text-sm font-semibold text-slate-600 hover:bg-slate-50">+ Agregar actividad</button>
+                        <button @click="savePlan" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar PAT</button>
+                    </div>
+                </template>
+
+                <!-- SEGUIMIENTO: llevar a cabo cada actividad y registrar resultados -->
+                <template v-else>
+                    <div v-if="!hasPlan" class="rounded-xl border bg-white p-6 text-center text-sm text-slate-400">
+                        Aún no hay actividades planeadas. Captura primero el PAT en <b>Planeación</b>.
+                    </div>
+                    <div v-else class="space-y-3">
+                        <div v-for="(r, i) in patRows" :key="i" class="rounded-xl border bg-white p-4 space-y-3">
+                            <div class="flex items-center gap-2">
+                                <span class="shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">{{ i + 1 }}</span>
+                                <span class="text-xs font-bold uppercase text-slate-500">Actividad {{ i + 1 }}</span>
+                                <span class="ml-auto text-[11px] px-2 py-0.5 rounded-full font-bold" :class="r.resultados?.trim() ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'">{{ r.resultados?.trim() ? 'Con resultados' : 'Pendiente' }}</span>
+                            </div>
+                            <div class="grid sm:grid-cols-3 gap-3 text-sm">
+                                <div><p class="text-[10px] uppercase font-semibold text-slate-400 mb-1">Problemática</p><p class="text-slate-700 whitespace-pre-line">{{ r.problematica || '—' }}</p></div>
+                                <div><p class="text-[10px] uppercase font-semibold text-slate-400 mb-1">Actividades</p><p class="text-slate-700 whitespace-pre-line">{{ r.descripcion || '—' }}</p></div>
+                                <div><p class="text-[10px] uppercase font-semibold text-slate-400 mb-1">Objetivo</p><p class="text-slate-700 whitespace-pre-line">{{ r.objetivo || '—' }}</p></div>
+                            </div>
+                            <div>
+                                <p class="text-[10px] uppercase font-semibold text-slate-400 mb-1">Resultados obtenidos</p>
+                                <textarea v-model="r.resultados" rows="3" placeholder="Registra los resultados tras aplicar esta actividad…" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button @click="savePlan" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold">Guardar resultados</button>
+                        </div>
+                    </div>
+                </template>
             </div>
 
             <!-- Tutorados -->
@@ -444,8 +477,10 @@ type PatRow = { problematica: string; descripcion: string; objetivo: string; res
 const emptyPatRow = (): PatRow => ({ problematica: '', descripcion: '', objetivo: '', resultados: '' })
 const patRows = ref<PatRow[]>([emptyPatRow()])
 const patGenerating = ref(false)
-// 'Resultados obtenidos' se capturan al cierre (tras aplicar las actividades), no al crear el PAT.
-const resultsMode = ref(false)
+// Sub-vista del PAT: 'planeacion' (define actividades) / 'seguimiento' (llevar a cabo + resultados).
+const patView = ref<'planeacion' | 'seguimiento'>('planeacion')
+// ¿Hay al menos una actividad con contenido planeado?
+const hasPlan = computed(() => patRows.value.some(r => (r.problematica || r.descripcion || r.objetivo).trim()))
 function loadPat(raw: string | null) {
     try {
         const p = raw ? JSON.parse(raw) : null
