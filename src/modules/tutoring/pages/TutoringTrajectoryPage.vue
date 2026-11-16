@@ -4,12 +4,8 @@
             <h1 class="text-xl font-semibold text-slate-800">Seguimiento de la trayectoria académica</h1>
             <div class="flex items-center gap-2">
                 <button @click="$router.back()" class="px-3 py-2 rounded-lg border border-slate-300 text-slate-600 text-sm hover:bg-slate-50">← Volver</button>
-                <button v-if="midocenciaActive" @click="extract" :disabled="extracting || !subjects.length"
-                    class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium disabled:opacity-50 flex items-center gap-1.5">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    {{ extracting ? 'Extrayendo…' : 'Extraer de Mi Docencia' }}
-                </button>
-                <button @click="save" :disabled="saving || !dirty || !subjects.length"
+                <span v-if="syncing" class="text-xs text-indigo-500 flex items-center gap-1">Sincronizando con Mi Docencia…</span>
+                <button v-if="editable" @click="save" :disabled="saving || !dirty || !subjects.length"
                     class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium disabled:opacity-50 flex items-center gap-1.5">
                     {{ saving ? 'Guardando…' : 'Guardar' }}
                 </button>
@@ -37,10 +33,12 @@
         </div>
 
         <template v-else>
-            <p class="text-xs mb-2" :class="midocenciaActive ? 'text-slate-400' : 'text-amber-600'">
-                <template v-if="midocenciaActive">
-                    Puedes <b>Extraer de Mi Docencia</b> las calificaciones que capturan los docentes (por unidad y final) y
-                    ajustarlas; o escribirlas directamente. Recuerda <b>Guardar</b>.
+            <p class="text-xs mb-2" :class="locked ? 'text-rose-600' : (midocenciaActive ? 'text-slate-400' : 'text-amber-600')">
+                <template v-if="locked">
+                    La trayectoria ya fue <b>entregada</b>: quedó bloqueada. Pide a la coordinación regresarla a borrador para editarla.
+                </template>
+                <template v-else-if="midocenciaActive">
+                    Las calificaciones se <b>sincronizan automáticamente con Mi Docencia</b> al entrar (por unidad y final). Vista de solo lectura.
                 </template>
                 <template v-else>
                     Mi Docencia no está activo en este plantel: captura aquí las calificaciones por unidad y la final de cada
@@ -76,15 +74,16 @@
                                     class="px-0.5 py-0.5 text-center border-l border-slate-100">
                                     <input :value="cell(s.teacher_assignment_id, st.student_id, u)"
                                         @input="setCell(s.teacher_assignment_id, st.student_id, u, $event)"
-                                        inputmode="decimal"
-                                        class="w-10 text-center tabular-nums rounded border-slate-200 focus:border-teal-400 focus:ring-teal-300 text-xs px-0.5 py-0.5" />
+                                        :readonly="!editable" inputmode="decimal"
+                                        class="w-10 text-center tabular-nums rounded text-xs px-0.5 py-0.5"
+                                        :class="editable ? 'border-slate-200 focus:border-teal-400 focus:ring-teal-300' : 'border-transparent bg-transparent'" />
                                 </td>
                                 <td class="px-0.5 py-0.5 text-center border-l border-slate-300 bg-slate-50/70">
                                     <input :value="cell(s.teacher_assignment_id, st.student_id, 0)"
                                         @input="setCell(s.teacher_assignment_id, st.student_id, 0, $event)"
-                                        inputmode="decimal"
-                                        class="w-11 text-center tabular-nums font-semibold rounded border-slate-200 focus:border-teal-400 focus:ring-teal-300 text-xs px-0.5 py-0.5"
-                                        :class="finalClass(s.teacher_assignment_id, st.student_id)" />
+                                        :readonly="!editable" inputmode="decimal"
+                                        class="w-11 text-center tabular-nums font-semibold rounded text-xs px-0.5 py-0.5"
+                                        :class="[finalClass(s.teacher_assignment_id, st.student_id), editable ? 'border-slate-200 focus:border-teal-400 focus:ring-teal-300' : 'border-transparent bg-transparent']" />
                                 </td>
                             </template>
                         </tr>
@@ -96,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
@@ -113,9 +112,11 @@ interface Student { student_id: number; num_control: string; nombre: string }
 const loading = ref(false)
 const generating = ref(false)
 const saving = ref(false)
-const extracting = ref(false)
+const syncing = ref(false)
 const dirty = ref(false)
 const midocenciaActive = ref(false)
+const locked = ref(false)
+const editable = computed(() => !midocenciaActive.value && !locked.value)
 const subjects = ref<Subject[]>([])
 const students = ref<Student[]>([])
 // Mapa editable de celdas: `${ta}:${sid}:${un}` → texto. un=0 es la final.
@@ -165,13 +166,25 @@ function fillGrades(units: any, finals: any) {
 }
 function fmt(g: number): string { return Number.isInteger(g) ? String(g) : Number(g).toFixed(1) }
 
-async function load() {
+async function load(autosync = true) {
     loading.value = true
     try {
         const { data } = await api.get(T.assignments.trayectoria(props.id))
         subjects.value = data.subjects ?? []
         students.value = data.students ?? []
         midocenciaActive.value = !!data.midocencia_active
+        locked.value = !!data.locked
+
+        // Con Mi Docencia activo: sincroniza SOLO al entrar (fija lo de los docentes) y recarga.
+        if (autosync && midocenciaActive.value && !locked.value && subjects.value.length && students.value.length) {
+            syncing.value = true
+            try {
+                await api.post(T.assignments.trayectoriaExtract(props.id))
+                return await load(false)
+            } catch { /* si falla la sync, se muestra lo que haya */ }
+            finally { syncing.value = false }
+        }
+
         fillGrades(data.units ?? {}, data.finals ?? {})
         dirty.value = false
         head.tutor = data.header?.tutor ?? ''
@@ -212,17 +225,6 @@ async function save() {
         toast.success('Trayectoria guardada.')
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo guardar la trayectoria.') }
     finally { saving.value = false }
-}
-
-async function extract() {
-    if (!confirm('Esto reemplazará las calificaciones fijadas con las de Mi Docencia. ¿Continuar?')) return
-    extracting.value = true
-    try {
-        await api.post(T.assignments.trayectoriaExtract(props.id))
-        await load()
-        toast.success('Calificaciones extraídas de Mi Docencia.')
-    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo extraer de Mi Docencia.') }
-    finally { extracting.value = false }
 }
 
 /**
