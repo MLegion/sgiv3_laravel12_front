@@ -348,12 +348,15 @@ const syncingRoster = ref(false)
 // ── Tabs ──────────────────────────────────────────────────────────────────
 const activeTab = ref('tutorados')
 const tabs = computed(() => {
-    const t = [
-        { key: 'plan', label: 'Plan (PAT)' },
+    const t: { key: string; label: string }[] = []
+    // El PAT es un formato GRUPAL (grupo + conteo H/M/Total + hito pat_initial de 1er sem);
+    // no aplica a la tutoría individual, así que la pestaña sólo se muestra en grupal.
+    if (a.value?.scope === 'grupal') t.push({ key: 'plan', label: 'Plan (PAT)' })
+    t.push(
         { key: 'tutorados', label: 'Tutorados' },
         { key: 'sesiones', label: 'Sesiones' },
         { key: 'canalizaciones', label: 'Canalizaciones' },
-    ]
+    )
     if (a.value?.scope === 'grupal' && ev.value?.applicable) t.push({ key: 'evaluacion', label: 'Evaluación de desempeño' })
     return t
 })
