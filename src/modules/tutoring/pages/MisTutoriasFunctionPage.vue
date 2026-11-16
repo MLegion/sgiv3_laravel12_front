@@ -15,13 +15,14 @@
         <div v-else-if="!options.length" class="rounded-lg border bg-amber-50 border-amber-200 px-4 py-6 text-sm text-amber-800">
             {{ grupalOnly ? 'No tienes asignaciones de tutoría GRUPAL activas.' : 'No tienes asignaciones de tutoría activas.' }}
         </div>
-        <!-- Reusa la página de detalle en modo embebido (una sola función, sin tabs ni header). -->
-        <AssignmentDetailPage v-else-if="selectedId" :id="selectedId" :only="only" :key="selectedId" />
+        <!-- Reusa la página de detalle en modo embebido (una sola función, sin tabs ni header).
+             El key incluye `only`: al cambiar de menú (misma ruta-componente) se re-monta con la función correcta. -->
+        <AssignmentDetailPage v-else-if="selectedId" :id="selectedId" :only="only" :key="`${selectedId}:${only}`" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import AssignmentDetailPage from '@/modules/tutoring/pages/AssignmentDetailPage.vue'
@@ -40,6 +41,12 @@ const options = computed(() => assignments.value
         label: (a.scope === 'grupal' ? 'Grupo ' + (a.group_name ?? '') : 'Tutoría individual')
             + ' · ' + (a.career_name ?? 'Sin carrera') + ' · ' + a.period_name,
     })))
+
+// El componente se reutiliza entre las rutas de "Mis Tutorías"; al cambiar de menú
+// (cambia only/grupalOnly) revalida la selección contra las opciones aplicables.
+watch(options, (opts) => {
+    if (!opts.find(o => o.id === selectedId.value)) selectedId.value = opts[0]?.id ?? null
+})
 
 onMounted(async () => {
     try {

@@ -588,5 +588,7 @@ async function syncRoster() {
 
 // Recarga si cambia la asignación seleccionada (modo embebido con selector).
 watch(() => props.id, () => { activeTab.value = props.only ?? activeTab.value; load() })
+// Si cambia la función embebida (navegación entre menús que reusan esta página).
+watch(() => props.only, (v) => { if (v) activeTab.value = v })
 onMounted(load)
 </script>
