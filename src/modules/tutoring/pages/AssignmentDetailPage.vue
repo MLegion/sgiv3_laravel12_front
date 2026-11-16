@@ -53,14 +53,21 @@
                         <div><span class="text-slate-400">Grupo:</span> <b>{{ a.group_name ?? '—' }}</b></div>
                         <div><span class="text-slate-400">Alumnos:</span> H={{ patCounts.hombres }} · M={{ patCounts.mujeres }} · <b>Total={{ patCounts.total }}</b></div>
                     </div>
-                    <!-- Ventana de entrega del PAT (hito pat_initial del Calendario de hitos) -->
-                    <div class="rounded-lg border p-2.5 text-[11px]"
+                    <!-- Ventana de entrega del PAT (hito pat_initial + plazo otorgado) -->
+                    <div class="rounded-lg border p-2.5 text-[11px] flex items-start justify-between gap-3"
                          :class="patOpen ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'">
-                        <template v-if="patWin && patWin.configured">
-                            <b>Entrega del PAT:</b> {{ fmtDate(patWin.opens_at) }} → {{ fmtDate(patWin.due_date) }}.
-                            <span class="font-semibold">{{ patOpen ? '● Abierta — puedes capturar/editar el PAT.' : '○ Cerrada — fuera de las fechas de entrega del PAT.' }}</span>
-                        </template>
-                        <template v-else>Sin ventana de entrega configurada por la coordinación — captura libre. (Se define en el Calendario de hitos, hito “PAT inicial”.)</template>
+                        <div>
+                            <template v-if="patWin && patWin.configured">
+                                <b>Entrega del PAT:</b> {{ fmtDate(patWin.opens_at) }} → {{ fmtDate(patWin.due_date) }}.
+                                <span class="font-semibold">{{ patOpen ? '● Abierta — puedes capturar/editar el PAT.' : '○ Cerrada — fuera de las fechas de entrega del PAT.' }}</span>
+                            </template>
+                            <template v-else>Sin ventana de entrega configurada por la coordinación — captura libre. (Se define en el Calendario de hitos, hito “PAT inicial”.)</template>
+                            <div v-if="patWin && patWin.extended_until" class="font-semibold mt-0.5">⏳ Plazo otorgado hasta {{ fmtDate(patWin.extended_until) }}.</div>
+                            <div v-else-if="patWin && patWin.ext_status === 'requested'" class="font-semibold mt-0.5">⏳ Extensión solicitada — en espera de la coordinación.</div>
+                            <div v-else-if="patWin && patWin.ext_status === 'rejected'" class="font-semibold mt-0.5 text-rose-600">Tu solicitud de extensión fue rechazada.</div>
+                        </div>
+                        <button v-if="!patOpen && patWin && patWin.ext_status !== 'requested'" @click="requestPatExt"
+                            class="shrink-0 px-3 py-1.5 rounded-lg bg-amber-600 text-white text-[11px] font-semibold hover:bg-amber-700">Solicitar extensión</button>
                     </div>
                     <p v-if="patView === 'planeacion'" class="text-[11px] text-amber-600">Planeación: captura por renglón la <b>problemática</b>, la <b>descripción de actividades</b> y el <b>objetivo</b>. Los resultados se registran en <b>Seguimiento</b>, al aplicar cada actividad.</p>
                     <p v-else class="text-[11px] text-slate-500">Seguimiento: lleva a cabo cada actividad planeada y registra sus <b>resultados obtenidos</b> conforme avanzas.</p>
@@ -536,6 +543,11 @@ function patReportContext() {
         total: patCounts.value.total,
         filas: patRows.value.map(r => ({ ...r })),
     }
+}
+async function requestPatExt() {
+    const reason = prompt('Motivo de la solicitud de extensión (opcional):') ?? ''
+    try { await api.post(T.assignments.patExtensionRequest(props.id), { reason: reason || undefined }); await load(); flash('Solicitud de extensión enviada a la coordinación.') }
+    catch (e: any) { flash(e?.response?.data?.message ?? 'No se pudo solicitar la extensión.', true) }
 }
 async function downloadPat() {
     patGenerating.value = true

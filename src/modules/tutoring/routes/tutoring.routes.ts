@@ -40,6 +40,12 @@ export default [
         meta: { title: 'Asignaciones de Tutoría' },
     },
     {
+        path: 'tutoring/pat-extensions',
+        name: 'tutoring.pat-extensions',
+        component: () => import('@/modules/tutoring/pages/PatExtensionsPage.vue'),
+        meta: { title: 'Plazos de PAT' },
+    },
+    {
         path: 'tutoring/assignments/:id',
         name: 'tutoring.assignment-detail',
         component: () => import('@/modules/tutoring/pages/AssignmentDetailPage.vue'),

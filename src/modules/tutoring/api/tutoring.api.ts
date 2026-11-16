@@ -24,6 +24,9 @@ const tutoringApi: ApiModule = {
             reassign:      (id: string | number) => apiUrl(`/tutoring/assignments/${id}/reassign`),
             syncRoster:    (id: string | number) => apiUrl(`/tutoring/assignments/${id}/sync-roster`),
             studentAvatar: (studentId: string | number) => apiUrl(`/tutoring/students/${studentId}/avatar`),
+            patExtensionRequest: (id: string | number) => apiUrl(`/tutoring/assignments/${id}/pat-extension/request`),
+            patExtensionGrant:   (id: string | number) => apiUrl(`/tutoring/assignments/${id}/pat-extension/grant`),
+            patExtensionReject:  (id: string | number) => apiUrl(`/tutoring/assignments/${id}/pat-extension/reject`),
             addTutee:      (id: string | number) => apiUrl(`/tutoring/assignments/${id}/tutees`),
             removeTutee:   (id: string | number, tuteeId: string | number) => apiUrl(`/tutoring/assignments/${id}/tutees/${tuteeId}`),
             evaluation:        (id: string | number) => apiUrl(`/tutoring/assignments/${id}/evaluation`),
@@ -88,6 +91,7 @@ const tutoringApi: ApiModule = {
             personnel:    apiUrl('/tutoring/determination/personnel'),
             personnelById: (id: string | number) => apiUrl(`/tutoring/determination/personnel/${id}`),
             followupSchedule: apiUrl('/tutoring/determination/followup-schedule'),
+            patExtensions:    apiUrl('/tutoring/pat-extensions'),
         },
 
         // ── Concentrado / indicadores (Cap. 15, T-B) ──
