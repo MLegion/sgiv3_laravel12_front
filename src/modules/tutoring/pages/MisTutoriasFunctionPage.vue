@@ -15,9 +15,12 @@
         <div v-else-if="!options.length" class="rounded-lg border bg-amber-50 border-amber-200 px-4 py-6 text-sm text-amber-800">
             {{ grupalOnly ? 'No tienes asignaciones de tutoría GRUPAL activas.' : 'No tienes asignaciones de tutoría activas.' }}
         </div>
-        <!-- Reusa la página de detalle en modo embebido (una sola función, sin tabs ni header).
-             El key incluye `only`: al cambiar de menú (misma ruta-componente) se re-monta con la función correcta. -->
-        <AssignmentDetailPage v-else-if="selectedId" :id="selectedId" :only="only" :key="`${selectedId}:${only}`" />
+        <!-- Reusa las páginas en modo embebido (una sola función, sin header/back).
+             El key incluye `only`: al cambiar de menú (misma ruta-componente) se re-monta. -->
+        <template v-else-if="selectedId">
+            <AssignmentFollowupsPage v-if="only === 'seguimientos'" :id="selectedId" :embedded="true" :key="`f:${selectedId}`" />
+            <AssignmentDetailPage v-else :id="selectedId" :only="only" :key="`${selectedId}:${only}`" />
+        </template>
     </div>
 </template>
 
@@ -26,6 +29,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import AssignmentDetailPage from '@/modules/tutoring/pages/AssignmentDetailPage.vue'
+import AssignmentFollowupsPage from '@/modules/tutoring/pages/AssignmentFollowupsPage.vue'
 
 const props = defineProps<{ only: string; title: string; grupalOnly?: boolean }>()
 const T = API.TUTORING_API

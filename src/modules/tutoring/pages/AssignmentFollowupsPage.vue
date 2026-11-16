@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-5">
-        <div class="flex items-center justify-between">
+        <div v-if="!embedded" class="flex items-center justify-between">
             <div>
                 <h1 class="text-xl font-semibold text-slate-800 uppercase">Seguimientos del PAT</h1>
                 <p class="text-xs text-slate-400" v-if="data">{{ data.assignment.tutor_name }} · {{ data.assignment.scope === 'grupal' ? 'Grupal' : 'Individual' }} · {{ data.assignment.period_name }}</p>
@@ -51,12 +51,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, h, defineComponent } from 'vue'
+import { ref, reactive, onMounted, watch, h, defineComponent } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { computed } from 'vue'
 
-const props = defineProps<{ id: string | number }>()
+const props = defineProps<{ id: string | number; embedded?: boolean }>()
+const embedded = computed(() => !!props.embedded)
 const T = API.TUTORING_API
 const toast = useToast()
 
@@ -100,5 +102,6 @@ async function doSubmit() {
     finally { busy.value = false }
 }
 
+watch(() => props.id, load)
 onMounted(load)
 </script>

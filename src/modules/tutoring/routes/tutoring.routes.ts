@@ -34,6 +34,13 @@ export default [
         props: { only: 'evaluacion', title: 'Evaluación de desempeño', grupalOnly: true },
     },
     {
+        path: 'tutoring/my-followups',
+        name: 'tutoring.my-followups',
+        component: () => import('@/modules/tutoring/pages/MisTutoriasFunctionPage.vue'),
+        meta: { title: 'Seguimientos del PAT' },
+        props: { only: 'seguimientos', title: 'Seguimientos del PAT' },
+    },
+    {
         path: 'tutoring/assignments',
         name: 'tutoring.assignments',
         component: () => import('@/modules/tutoring/pages/AssignmentsPage.vue'),
