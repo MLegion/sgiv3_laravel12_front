@@ -4,6 +4,15 @@
             <h1 class="text-xl font-semibold text-slate-800">Seguimiento de la trayectoria académica</h1>
             <div class="flex items-center gap-2">
                 <button @click="$router.back()" class="px-3 py-2 rounded-lg border border-slate-300 text-slate-600 text-sm hover:bg-slate-50">← Volver</button>
+                <button v-if="midocenciaActive" @click="extract" :disabled="extracting || !subjects.length"
+                    class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium disabled:opacity-50 flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    {{ extracting ? 'Extrayendo…' : 'Extraer de Mi Docencia' }}
+                </button>
+                <button @click="save" :disabled="saving || !dirty || !subjects.length"
+                    class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium disabled:opacity-50 flex items-center gap-1.5">
+                    {{ saving ? 'Guardando…' : 'Guardar' }}
+                </button>
                 <button @click="downloadOficial" :disabled="generating || !subjects.length"
                     class="px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium disabled:opacity-50 flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6M9 17h3"/></svg>
@@ -11,7 +20,7 @@
                 </button>
             </div>
         </div>
-        <p class="text-sm text-slate-500 mb-4">
+        <p class="text-sm text-slate-500 mb-2">
             <span v-if="head.carrera"><b>Carrera:</b> {{ head.carrera }} · </span>
             <span v-if="head.grupo"><b>Grupo:</b> {{ head.grupo }} · </span>
             <span v-if="head.semestre"><b>Semestre:</b> {{ head.semestre }} · </span>
@@ -28,8 +37,15 @@
         </div>
 
         <template v-else>
-            <p class="text-xs text-slate-400 mb-2">
-                Las calificaciones las capturan los docentes en Mi Docencia (por unidad y final). Vista de solo lectura.
+            <p class="text-xs mb-2" :class="midocenciaActive ? 'text-slate-400' : 'text-amber-600'">
+                <template v-if="midocenciaActive">
+                    Puedes <b>Extraer de Mi Docencia</b> las calificaciones que capturan los docentes (por unidad y final) y
+                    ajustarlas; o escribirlas directamente. Recuerda <b>Guardar</b>.
+                </template>
+                <template v-else>
+                    Mi Docencia no está activo en este plantel: captura aquí las calificaciones por unidad y la final de cada
+                    tutorado y presiona <b>Guardar</b>.
+                </template>
             </p>
             <div class="overflow-x-auto rounded-xl border border-slate-200">
                 <table class="text-xs border-collapse">
@@ -57,16 +73,18 @@
                             <td class="px-2 py-1 sticky left-[86px] bg-white border-r border-slate-200 whitespace-nowrap">{{ st.nombre }}</td>
                             <template v-for="s in subjects" :key="st.student_id + '-' + s.teacher_assignment_id">
                                 <td v-for="u in s.units_count" :key="st.student_id + '-' + s.teacher_assignment_id + '-' + u"
-                                    class="px-1.5 py-1 text-center border-l border-slate-100 tabular-nums">
-                                    {{ unitGrade(s.teacher_assignment_id, st.student_id, u) }}
+                                    class="px-0.5 py-0.5 text-center border-l border-slate-100">
+                                    <input :value="cell(s.teacher_assignment_id, st.student_id, u)"
+                                        @input="setCell(s.teacher_assignment_id, st.student_id, u, $event)"
+                                        inputmode="decimal"
+                                        class="w-10 text-center tabular-nums rounded border-slate-200 focus:border-teal-400 focus:ring-teal-300 text-xs px-0.5 py-0.5" />
                                 </td>
-                                <td class="px-1.5 py-1 text-center border-l border-slate-300 bg-slate-50/70">
-                                    <span v-if="final(s.teacher_assignment_id, st.student_id)"
-                                        class="font-semibold tabular-nums"
-                                        :class="final(s.teacher_assignment_id, st.student_id)!.passed ? 'text-emerald-600' : 'text-rose-600'">
-                                        {{ final(s.teacher_assignment_id, st.student_id)!.grade }}
-                                    </span>
-                                    <span v-else class="text-slate-300">—</span>
+                                <td class="px-0.5 py-0.5 text-center border-l border-slate-300 bg-slate-50/70">
+                                    <input :value="cell(s.teacher_assignment_id, st.student_id, 0)"
+                                        @input="setCell(s.teacher_assignment_id, st.student_id, 0, $event)"
+                                        inputmode="decimal"
+                                        class="w-11 text-center tabular-nums font-semibold rounded border-slate-200 focus:border-teal-400 focus:ring-teal-300 text-xs px-0.5 py-0.5"
+                                        :class="finalClass(s.teacher_assignment_id, st.student_id)" />
                                 </td>
                             </template>
                         </tr>
@@ -91,17 +109,33 @@ const reportGen = useReportGenerator()
 
 interface Subject { teacher_assignment_id: number; subject_id: number; materia: string; official_code?: string | null; docente?: string | null; units_count: number; target_semester?: number | null }
 interface Student { student_id: number; num_control: string; nombre: string }
-interface UnitCell { grade: number | null; opportunity: number }
-interface FinalCell { grade: number; passed: boolean; opportunity: number }
 
 const loading = ref(false)
 const generating = ref(false)
+const saving = ref(false)
+const extracting = ref(false)
+const dirty = ref(false)
+const midocenciaActive = ref(false)
 const subjects = ref<Subject[]>([])
 const students = ref<Student[]>([])
-const units = ref<Record<number, Record<number, Record<number, UnitCell>>>>({})
-const finals = ref<Record<number, Record<number, FinalCell>>>({})
+// Mapa editable de celdas: `${ta}:${sid}:${un}` → texto. un=0 es la final.
+const grades = reactive<Record<string, string>>({})
 const head = reactive<{ tutor: string; carrera: string; grupo: string; periodo: string; semestre: number | null }>(
     { tutor: '', carrera: '', grupo: '', periodo: '', semestre: null })
+
+function keyOf(ta: number, sid: number, un: number) { return `${ta}:${sid}:${un}` }
+function cell(ta: number, sid: number, un: number): string { return grades[keyOf(ta, sid, un)] ?? '' }
+function setCell(ta: number, sid: number, un: number, e: Event) {
+    grades[keyOf(ta, sid, un)] = (e.target as HTMLInputElement).value
+    dirty.value = true
+}
+function finalClass(ta: number, sid: number): string {
+    const v = grades[keyOf(ta, sid, 0)]
+    if (v === undefined || v === '') return 'text-slate-600'
+    const n = Number(v)
+    if (Number.isNaN(n)) return 'text-slate-600'
+    return n >= 70 ? 'text-emerald-600' : 'text-rose-600'
+}
 
 // 1→I, 2→II… (hasta cubrir el nº de unidades de cualquier materia).
 function roman(n: number): string {
@@ -110,14 +144,26 @@ function roman(n: number): string {
     for (const [v, s] of map) while (x >= v) { r += s; x -= v }
     return r || '·'
 }
-function unitGrade(ta: number, sid: number, u: number): string {
-    const c = units.value[ta]?.[sid]?.[u]
-    if (!c || c.grade == null) return ''
-    return Number.isInteger(c.grade) ? String(c.grade) : c.grade.toFixed(1)
+
+/** Vuelca units/finals del backend al mapa editable. */
+function fillGrades(units: any, finals: any) {
+    for (const k of Object.keys(grades)) delete grades[k]
+    for (const ta of Object.keys(units ?? {})) {
+        for (const sid of Object.keys(units[ta])) {
+            for (const un of Object.keys(units[ta][sid])) {
+                const g = units[ta][sid][un]?.grade
+                if (g != null) grades[keyOf(Number(ta), Number(sid), Number(un))] = fmt(g)
+            }
+        }
+    }
+    for (const ta of Object.keys(finals ?? {})) {
+        for (const sid of Object.keys(finals[ta])) {
+            const g = finals[ta][sid]?.grade
+            if (g != null) grades[keyOf(Number(ta), Number(sid), 0)] = fmt(g)
+        }
+    }
 }
-function final(ta: number, sid: number): FinalCell | null {
-    return finals.value[ta]?.[sid] ?? null
-}
+function fmt(g: number): string { return Number.isInteger(g) ? String(g) : Number(g).toFixed(1) }
 
 async function load() {
     loading.value = true
@@ -125,8 +171,9 @@ async function load() {
         const { data } = await api.get(T.assignments.trayectoria(props.id))
         subjects.value = data.subjects ?? []
         students.value = data.students ?? []
-        units.value = data.units ?? {}
-        finals.value = data.finals ?? {}
+        midocenciaActive.value = !!data.midocencia_active
+        fillGrades(data.units ?? {}, data.finals ?? {})
+        dirty.value = false
         head.tutor = data.header?.tutor ?? ''
         head.carrera = data.header?.carrera ?? ''
         head.grupo = data.header?.grupo ?? ''
@@ -134,6 +181,48 @@ async function load() {
         head.semestre = data.header?.semestre ?? null
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo cargar la trayectoria.') }
     finally { loading.value = false }
+}
+
+/** Arma el payload de TODAS las celdas de la matriz (vacías → null para borrarlas). */
+function buildPayload() {
+    const rows: { student_id: number; teacher_assignment_id: number; unit_number: number; grade: number | null }[] = []
+    for (const s of subjects.value) {
+        for (const st of students.value) {
+            for (let u = 1; u <= s.units_count; u++) {
+                const v = grades[keyOf(s.teacher_assignment_id, st.student_id, u)]
+                rows.push({ student_id: st.student_id, teacher_assignment_id: s.teacher_assignment_id, unit_number: u, grade: toNum(v) })
+            }
+            const f = grades[keyOf(s.teacher_assignment_id, st.student_id, 0)]
+            rows.push({ student_id: st.student_id, teacher_assignment_id: s.teacher_assignment_id, unit_number: 0, grade: toNum(f) })
+        }
+    }
+    return rows
+}
+function toNum(v: string | undefined): number | null {
+    if (v === undefined || v === '') return null
+    const n = Number(v)
+    return Number.isNaN(n) ? null : n
+}
+
+async function save() {
+    saving.value = true
+    try {
+        await api.post(T.assignments.trayectoria(props.id), { grades: buildPayload() })
+        dirty.value = false
+        toast.success('Trayectoria guardada.')
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo guardar la trayectoria.') }
+    finally { saving.value = false }
+}
+
+async function extract() {
+    if (!confirm('Esto reemplazará las calificaciones fijadas con las de Mi Docencia. ¿Continuar?')) return
+    extracting.value = true
+    try {
+        await api.post(T.assignments.trayectoriaExtract(props.id))
+        await load()
+        toast.success('Calificaciones extraídas de Mi Docencia.')
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo extraer de Mi Docencia.') }
+    finally { extracting.value = false }
 }
 
 /**
@@ -155,11 +244,12 @@ function buildReportContext(): Record<string, any> {
         num_control: st.num_control,
         nombre: st.nombre,
         materias: subjects.value.map(s => {
-            const f = final(s.teacher_assignment_id, st.student_id)
+            const f = grades[keyOf(s.teacher_assignment_id, st.student_id, 0)]
+            const fn = toNum(f)
             return {
-                unidades: Array.from({ length: s.units_count }, (_, i) => ({ v: unitGrade(s.teacher_assignment_id, st.student_id, i + 1) })),
-                final: f ? String(f.grade) : '',
-                acredita: f ? (f.passed ? 'SÍ' : 'NO') : '',
+                unidades: Array.from({ length: s.units_count }, (_, i) => ({ v: grades[keyOf(s.teacher_assignment_id, st.student_id, i + 1)] ?? '' })),
+                final: fn != null ? String(fn) : '',
+                acredita: fn != null ? (fn >= 70 ? 'SÍ' : 'NO') : '',
             }
         }),
     }))
@@ -169,9 +259,10 @@ function buildReportContext(): Record<string, any> {
     }
 }
 
-/** Descarga el formato oficial (DOCX) del reporteador, alimentado por este endpoint. */
+/** Descarga el formato oficial (DOCX) del reporteador. */
 async function downloadOficial() {
     if (!subjects.value.length) return
+    if (dirty.value && !confirm('Tienes cambios sin guardar; el formato usará lo que ves. ¿Continuar sin guardar?')) return
     generating.value = true
     try {
         await reportGen.downloadFromContext({
