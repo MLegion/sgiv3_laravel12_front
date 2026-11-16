@@ -266,22 +266,40 @@
             </div>
         </div>
 
-        <!-- Modal canalizar -->
-        <div v-if="showRefer" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showRefer = false">
-            <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">Canalizar a {{ referTutee?.student_name }}</h2>
-                <select v-model="rf.referral_area_id" class="w-full rounded-lg border-slate-300 text-sm"><option :value="null">— Área —</option><option v-for="ar in areas" :key="ar.id" :value="ar.id">{{ ar.name }}</option></select>
-                <textarea v-model="rf.reason" rows="3" placeholder="Motivo" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+        <!-- Drawer canalizar -->
+        <div v-if="showRefer" class="fixed inset-0 bg-black/40 flex justify-end z-50" @click.self="showRefer = false">
+            <div class="bg-white w-full max-w-md h-full overflow-y-auto p-6 space-y-4 shadow-xl">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800">Canalizar tutorado</h2>
+                        <p class="text-xs text-slate-400">{{ referTutee?.student_name }}</p>
+                    </div>
+                    <button @click="showRefer = false" class="text-slate-400 hover:text-slate-600">✕</button>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Área de canalización</label>
+                    <select v-model="rf.referral_area_id" class="w-full rounded-lg border-slate-300 text-sm"><option :value="null">— Área —</option><option v-for="ar in areas" :key="ar.id" :value="ar.id">{{ ar.name }}</option></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Motivo</label>
+                    <textarea v-model="rf.reason" rows="4" placeholder="Describe el motivo de la canalización…" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+                </div>
                 <p v-if="modalMsg" class="text-sm text-red-600">{{ modalMsg }}</p>
-                <div class="flex justify-end gap-2"><button @click="showRefer = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button><button @click="saveRefer" :disabled="!rf.referral_area_id || !rf.reason" class="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold disabled:opacity-50">Canalizar</button></div>
+                <div class="flex justify-end gap-2 pt-2"><button @click="showRefer = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button><button @click="saveRefer" :disabled="!rf.referral_area_id || !rf.reason" class="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold disabled:opacity-50">Canalizar</button></div>
             </div>
         </div>
 
-        <!-- Modal cédula -->
-        <div v-if="showCedula" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showCedula = false">
-            <div class="bg-white rounded-xl p-5 w-full max-w-lg space-y-3 max-h-[85vh] overflow-y-auto">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">Cédula de {{ cedulaTutee?.student_name }}</h2>
-                <div v-if="!cedula.fields.length" class="text-sm text-slate-400">No hay instrumento configurado.</div>
+        <!-- Drawer cédula -->
+        <div v-if="showCedula" class="fixed inset-0 bg-black/40 flex justify-end z-50" @click.self="showCedula = false">
+            <div class="bg-white w-full max-w-xl h-full overflow-y-auto p-6 space-y-4 shadow-xl">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800">Cédula del tutorado</h2>
+                        <p class="text-xs text-slate-400">{{ cedulaTutee?.student_name }}</p>
+                    </div>
+                    <button @click="showCedula = false" class="text-slate-400 hover:text-slate-600">✕</button>
+                </div>
+                <div v-if="!cedula.fields.length" class="rounded-lg border bg-slate-50 p-4 text-sm text-slate-400">No hay instrumento de cédula configurado.</div>
                 <label v-for="f in cedula.fields" :key="f.code" class="block">
                     <span class="text-xs font-semibold text-slate-500">{{ f.label }}<span v-if="f.is_risk_flag" class="ml-1 text-amber-500">⚠</span></span>
                     <textarea v-if="f.type === 'textarea'" v-model="cAnswers[f.code]" rows="2" class="mt-1 w-full rounded-lg border-slate-300 text-sm"></textarea>
@@ -289,7 +307,7 @@
                     <select v-else-if="f.type === 'select'" v-model="cAnswers[f.code]" class="mt-1 w-full rounded-lg border-slate-300 text-sm"><option value="">—</option><option v-for="o in (f.options || [])" :key="o" :value="o">{{ o }}</option></select>
                     <input v-else :type="f.type === 'number' ? 'number' : 'text'" v-model="cAnswers[f.code]" class="mt-1 w-full rounded-lg border-slate-300 text-sm" />
                 </label>
-                <div class="flex justify-end gap-2"><button @click="showCedula = false" class="px-4 py-2 rounded-lg border text-sm">Cerrar</button><button v-if="cedula.fields.length" @click="saveCedula" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar</button></div>
+                <div class="flex justify-end gap-2 pt-2 sticky bottom-0 bg-white"><button @click="showCedula = false" class="px-4 py-2 rounded-lg border text-sm">Cerrar</button><button v-if="cedula.fields.length" @click="saveCedula" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar</button></div>
             </div>
         </div>
 
