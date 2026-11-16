@@ -134,6 +134,9 @@
                     </button>
                 </div>
                 <DataTable :columns="tuteeCols" :rows="tuteesTbl.rows" :pagination="tuteesTbl.pagination" hide-search empty-text="Sin tutorados." @change="tuteesTbl.onChange">
+                    <template #cell-avatar="{ row }">
+                        <UserAvatar :url="T.assignments.studentAvatar(row.student_id)" :name="row.student_name" size="sm" shape="circle" />
+                    </template>
                     <template #cell-num_control="{ row }"><span class="font-mono text-xs text-slate-500">{{ row.num_control }}</span></template>
                     <template #cell-student_name="{ row }"><span class="font-semibold text-slate-700">{{ row.student_name }}</span></template>
                     <template #cell-campus_mod="{ row }">
@@ -322,6 +325,7 @@ import { useReportGenerator } from '@/modules/reports/composables/useReportGener
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { ClipboardDocumentListIcon, ArrowRightCircleIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import UserAvatar from '@/app/components/ui/UserAvatar.vue'
 
 // `only` = modo embebido: muestra UNA sola función (sin header ni tabs), para reusar
 // esta página como panel dentro de los menús separados del tutor (selector + panel).
@@ -379,6 +383,7 @@ const referralsTbl = makePaged(() => referrals.value)
 const evTbl = makePaged(() => ev.value?.tutees ?? [])
 
 const tuteeCols: DataTableColumn[] = [
+    { key: 'avatar', label: '', width: '48px', align: 'center' },
     { key: 'num_control', label: 'Nº control', field: 'num_control' },
     { key: 'student_name', label: 'Tutorado', field: 'student_name' },
     { key: 'campus_mod', label: 'Campus / Modalidad' },

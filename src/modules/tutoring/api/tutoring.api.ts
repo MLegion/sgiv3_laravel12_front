@@ -23,6 +23,7 @@ const tutoringApi: ApiModule = {
             close:         (id: string | number) => apiUrl(`/tutoring/assignments/${id}/close`),
             reassign:      (id: string | number) => apiUrl(`/tutoring/assignments/${id}/reassign`),
             syncRoster:    (id: string | number) => apiUrl(`/tutoring/assignments/${id}/sync-roster`),
+            studentAvatar: (studentId: string | number) => apiUrl(`/tutoring/students/${studentId}/avatar`),
             addTutee:      (id: string | number) => apiUrl(`/tutoring/assignments/${id}/tutees`),
             removeTutee:   (id: string | number, tuteeId: string | number) => apiUrl(`/tutoring/assignments/${id}/tutees/${tuteeId}`),
             evaluation:        (id: string | number) => apiUrl(`/tutoring/assignments/${id}/evaluation`),
