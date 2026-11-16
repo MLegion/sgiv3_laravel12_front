@@ -41,6 +41,13 @@ export default [
         props: { only: 'seguimientos', title: 'Seguimientos del PAT' },
     },
     {
+        path: 'tutoring/my-formats',
+        name: 'tutoring.my-formats',
+        component: () => import('@/modules/tutoring/pages/MisTutoriasFunctionPage.vue'),
+        meta: { title: 'Entrega de formatos' },
+        props: { only: 'formatos', title: 'Entrega de formatos' },
+    },
+    {
         path: 'tutoring/assignments',
         name: 'tutoring.assignments',
         component: () => import('@/modules/tutoring/pages/AssignmentsPage.vue'),

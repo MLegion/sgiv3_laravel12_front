@@ -192,6 +192,11 @@
                 </DataTable>
             </div>
 
+            <!-- Entrega de formatos -->
+            <div v-else-if="activeTab === 'formatos'">
+                <FormatDeliveriesPanel :assignment-id="a.id" />
+            </div>
+
             <!-- Evaluación de desempeño al término (T-C, sólo grupal) -->
             <div v-else-if="activeTab === 'evaluacion' && ev && ev.applicable" class="space-y-3">
                 <div class="flex items-center justify-between">
@@ -351,6 +356,7 @@ import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { ClipboardDocumentListIcon, ArrowRightCircleIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import UserAvatar from '@/app/components/ui/UserAvatar.vue'
+import FormatDeliveriesPanel from '@/modules/tutoring/components/FormatDeliveriesPanel.vue'
 
 // `only` = modo embebido: muestra UNA sola función (sin header ni tabs), para reusar
 // esta página como panel dentro de los menús separados del tutor (selector + panel).
@@ -390,6 +396,7 @@ const tabs = computed(() => {
         { key: 'canalizaciones', label: 'Canalizaciones' },
     )
     if (a.value?.scope === 'grupal' && ev.value?.applicable) t.push({ key: 'evaluacion', label: 'Evaluación de desempeño' })
+    t.push({ key: 'formatos', label: 'Entrega de formatos' })
     return t
 })
 

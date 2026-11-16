@@ -19,6 +19,7 @@
              El key incluye `only`: al cambiar de menú (misma ruta-componente) se re-monta. -->
         <template v-else-if="selectedId">
             <AssignmentFollowupsPage v-if="only === 'seguimientos'" :id="selectedId" :embedded="true" :key="`f:${selectedId}`" />
+            <FormatDeliveriesPanel v-else-if="only === 'formatos'" :assignment-id="selectedId" :key="`fmt:${selectedId}`" />
             <AssignmentDetailPage v-else :id="selectedId" :only="only" :key="`${selectedId}:${only}`" />
         </template>
     </div>
@@ -30,6 +31,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import AssignmentDetailPage from '@/modules/tutoring/pages/AssignmentDetailPage.vue'
 import AssignmentFollowupsPage from '@/modules/tutoring/pages/AssignmentFollowupsPage.vue'
+import FormatDeliveriesPanel from '@/modules/tutoring/components/FormatDeliveriesPanel.vue'
 
 const props = defineProps<{ only: string; title: string; grupalOnly?: boolean }>()
 const T = API.TUTORING_API
