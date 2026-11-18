@@ -125,9 +125,18 @@ const onExport = (type: DataTableExportType) => {
             </div>
         </div>
 
-        <!-- Tabla con Scrollbar Mejorado -->
-        <div class="overflow-x-auto w-full custom-scrollbar">
+        <!-- Tabla con Scrollbar Mejorado. La región es enfocable (tabindex="0")
+             para que el scroll horizontal sea alcanzable con el teclado, y lleva
+             nombre accesible (aria-label) para que los lectores de pantalla la
+             anuncien. -->
+        <div
+            class="overflow-x-auto w-full custom-scrollbar focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"
+            tabindex="0"
+            role="region"
+            :aria-label="caption || 'Tabla de datos'"
+        >
             <table class="min-w-full border-collapse text-left text-sm">
+                <caption class="sr-only">{{ caption || 'Tabla de datos' }}</caption>
                 <thead>
                 <tr class="bg-slate-50/50 border-b border-slate-200">
                     <th

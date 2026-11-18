@@ -80,7 +80,7 @@ import { computed, nextTick, ref, watch } from 'vue'
  * Slots: default (cuerpo), header (opcional, reemplaza el título), footer (acciones).
  */
 
-type Size = 'sm' | 'md' | 'lg' | 'xl'
+type Size = 'sm' | 'md' | 'lg' | 'xl' | '2xl'
 
 const props = withDefaults(defineProps<{
     modelValue: boolean
@@ -111,6 +111,7 @@ const sizeClass = computed(() => {
         case 'sm': return 'max-w-sm'
         case 'lg': return 'max-w-2xl'
         case 'xl': return 'max-w-4xl'
+        case '2xl': return 'max-w-6xl'
         default:   return 'max-w-md'
     }
 })

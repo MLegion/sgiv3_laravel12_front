@@ -7,6 +7,9 @@
         <!-- Host global de confirmaciones (useConfirm) -->
         <ConfirmHost />
 
+        <!-- Host global de captura de un dato (usePrompt) -->
+        <PromptHost />
+
         <!-- Banner de Impersonación (solo visible en modo simulación) -->
         <ImpersonationBanner />
 
@@ -85,6 +88,7 @@ import Breadcrumbs from '@/app/components/Breadcrumbs.vue';
 import ImpersonationBanner from '@/app/components/ImpersonationBanner.vue';
 import ToastHost from '@/app/components/ui/ToastHost.vue';
 import ConfirmHost from '@/app/components/ui/modal/ConfirmHost.vue';
+import PromptHost from '@/app/components/ui/modal/PromptHost.vue';
 import { useLayoutStore } from '@/app/stores/layout.store';
 import { useBrandingStore } from '@/modules/auth/stores/branding.store';
 

@@ -161,6 +161,15 @@ export interface DataTableProps<T = any> {
      * propio buscador (p. ej. búsqueda global server-side multi-campo).
      */
     hideSearch?: boolean
+
+    /**
+     * Nombre accesible de la tabla. Se usa como `<caption>` (oculto visualmente)
+     * y como nombre de la región enfocable que envuelve el scroll horizontal, de
+     * modo que los lectores de pantalla anuncien de qué tabla se trata y los
+     * usuarios de teclado puedan alcanzar el scroll. Si se omite, la región usa
+     * un nombre genérico ("Tabla de datos").
+     */
+    caption?: string
 }
 
 /**
