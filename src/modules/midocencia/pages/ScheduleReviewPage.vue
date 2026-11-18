@@ -108,6 +108,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { usePrompt } from '@/app/composables/usePrompt'
 import DescargaReviewModal from '@/modules/midocencia/components/DescargaReviewModal.vue'
 import type { DistributionRequest } from '@/modules/midocencia/types/distribution.type'
 
@@ -118,6 +119,7 @@ interface Locked { typeId: number; shortName: string | null; color: string | nul
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const { prompt } = usePrompt()
 const A = API.MIDOCENCIA_API.approval
 const id = Number(route.params.id)
 
@@ -344,11 +346,11 @@ async function reject() {
 }
 
 async function reopen() {
-    const motivo = window.prompt('Motivo para reabrir el horario (se regresará al docente para reajuste):')
-    if (!motivo || !motivo.trim()) return
+    const motivo = await prompt({ title: 'Reabrir horario', label: 'Motivo para reabrir el horario (se regresará al docente para reajuste)', inputType: 'textarea', required: true, confirmText: 'Reabrir' })
+    if (!motivo) return
     busy.value = true
     try {
-        await api.post(A.scheduleReopen(id), { reason: motivo.trim() })
+        await api.post(A.scheduleReopen(id), { reason: motivo })
         toast.success('Horario reabierto; regresó al docente para reajuste.')
         goBack()
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo reabrir el horario.') }

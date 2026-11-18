@@ -208,13 +208,8 @@
 
         <!-- Modales idénticos a Especialidad pero apuntando a OptionalGroup API -->
         <!-- ... (Modal de Vinculación y Desvinculación simplificados para brevedad pero funcionales) ... -->
-        <div v-if="showAddModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform animate-in zoom-in-95">
-                <div class="p-6 border-b bg-slate-50 flex items-center justify-between">
-                    <h3 class="font-black text-[11px] text-slate-800 uppercase tracking-widest">Añadir Materia al Grupo</h3>
-                    <button @click="showAddModal = false" class="text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
-                </div>
-                <div class="p-8 space-y-6">
+        <BaseModal v-model="showAddModal" title="Añadir Materia al Grupo" size="md">
+            <div class="space-y-6">
                     <FormRemoteSelect
                         label="Seleccionar Asignatura"
                         v-model="selectedSubjectId"
@@ -227,32 +222,30 @@
                     <div v-if="modalLinkError" class="p-3 bg-red-50 text-red-700 text-[10px] font-black rounded-xl border border-red-100 uppercase tracking-tight">
                         {{ modalLinkError }}
                     </div>
-                    <div class="flex gap-3">
-                        <button @click="showAddModal = false" class="flex-1 py-3 text-[11px] font-black text-slate-400 uppercase tracking-widest border-2 border-slate-100 rounded-xl">Cancelar</button>
-                        <button @click="linkSubject" :disabled="!selectedSubjectId || linking" class="flex-1 py-3 text-[11px] font-black text-white bg-indigo-600 rounded-xl uppercase tracking-widest shadow-lg shadow-indigo-100 disabled:bg-slate-200">
-                            {{ linking ? 'VINCULANDO...' : 'CONFIRMAR' }}
-                        </button>
-                    </div>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="showAddModal = false" class="flex-1 py-3 text-[11px] font-black text-slate-400 uppercase tracking-widest border-2 border-slate-100 rounded-xl">Cancelar</button>
+                <button @click="linkSubject" :disabled="!selectedSubjectId || linking" class="flex-1 py-3 text-[11px] font-black text-white bg-indigo-600 rounded-xl uppercase tracking-widest shadow-lg shadow-indigo-100 disabled:bg-slate-200">
+                    {{ linking ? 'VINCULANDO...' : 'CONFIRMAR' }}
+                </button>
+            </template>
+        </BaseModal>
 
         <!-- Modal Confirmación Desvincular -->
-        <div v-if="showUnlinkModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 text-center">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-8 animate-in zoom-in-95">
-                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-50 mb-4 text-red-500">
+        <BaseModal v-model="showUnlinkModal" title="¿Remover Materia?" size="sm">
+            <div class="text-center space-y-4">
+                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-50 text-red-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                 </div>
-                <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight">¿Remover Materia?</h3>
-                <p class="text-[11px] text-slate-500 mt-2 uppercase font-medium leading-relaxed">
+                <p class="text-[11px] text-slate-500 uppercase font-medium leading-relaxed">
                     La materia "{{ subjectToUnlink?.name }}" dejará de formar parte de este grupo optativo.
                 </p>
-                <div class="flex gap-3 mt-8">
-                    <button @click="showUnlinkModal = false" class="flex-1 py-3 text-[11px] font-black text-slate-400 uppercase tracking-widest border-2 border-slate-100 rounded-xl">No, Cancelar</button>
-                    <button @click="confirmUnlink" class="flex-1 py-3 text-[11px] font-black text-white bg-red-600 rounded-xl uppercase tracking-widest shadow-lg shadow-red-100">Sí, Remover</button>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="showUnlinkModal = false" class="flex-1 py-3 text-[11px] font-black text-slate-400 uppercase tracking-widest border-2 border-slate-100 rounded-xl">No, Cancelar</button>
+                <button @click="confirmUnlink" class="flex-1 py-3 text-[11px] font-black text-white bg-red-600 rounded-xl uppercase tracking-widest shadow-lg shadow-red-100">Sí, Remover</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -261,6 +254,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'

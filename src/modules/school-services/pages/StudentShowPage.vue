@@ -108,11 +108,8 @@
                 </div>
 
                 <!-- Modal contacto -->
-                <div v-if="contactModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-5">
-                        <h2 class="text-base font-semibold text-slate-800 uppercase">
-                            {{ editingContact?.id ? 'Editar Contacto' : 'Nuevo Contacto' }}
-                        </h2>
+                <BaseModal v-model="contactModal" :title="editingContact?.id ? 'Editar Contacto' : 'Nuevo Contacto'" size="lg">
+                    <div class="space-y-5">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <FormInput label="NOMBRE(S)"       v-model="contactForm.name"          uppercase required />
                             <FormInput label="PRIMER APELLIDO" v-model="contactForm.first_surname"  uppercase required />
@@ -126,16 +123,16 @@
                             </div>
                         </div>
                         <p v-if="contactError" class="text-xs text-red-600">{{ contactError }}</p>
-                        <div class="flex justify-end gap-2 pt-2">
+                    </div>
+                    <template #footer>
                             <button class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="contactModal = false">Cancelar</button>
                             <button
                                 class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                                 :disabled="savingContact"
                                 @click="saveContact"
                             >{{ savingContact ? 'Guardando...' : 'Guardar' }}</button>
-                        </div>
-                    </div>
-                </div>
+                    </template>
+                </BaseModal>
             </div>
 
             <!-- Tab: Afiliaciones -->
@@ -195,9 +192,8 @@
                 </div>
 
                 <!-- Modal nueva afiliacion -->
-                <div v-if="affiliationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-5">
-                        <h2 class="text-base font-semibold text-slate-800 uppercase">Nueva Afiliacion</h2>
+                <BaseModal v-model="affiliationModal" title="Nueva Afiliacion" size="lg">
+                    <div class="space-y-5">
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">PLAN DE ESTUDIO</label>
@@ -262,16 +258,16 @@
                             <FormInput label="SEMESTRE ACTUAL" v-model="affiliationForm.current_period_number" type="number" required />
                         </div>
                         <p v-if="affiliationError" class="text-xs text-red-600">{{ affiliationError }}</p>
-                        <div class="flex justify-end gap-2 pt-2">
+                    </div>
+                    <template #footer>
                             <button class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="affiliationModal = false">Cancelar</button>
                             <button
                                 class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                                 :disabled="savingAffiliation"
                                 @click="saveAffiliation"
                             >{{ savingAffiliation ? 'Guardando...' : 'Guardar' }}</button>
-                        </div>
-                    </div>
-                </div>
+                    </template>
+                </BaseModal>
             </div>
 
             <!-- Tab: Kardex -->
@@ -344,12 +340,8 @@
                 </div>
 
                 <!-- Modal crear/editar calificacion -->
-                <div v-if="gradeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto">
-                        <h2 class="text-base font-semibold text-slate-800 uppercase">
-                            {{ editingGrade?.id ? 'Editar Calificacion' : 'Nueva Calificacion' }}
-                        </h2>
-
+                <BaseModal v-model="gradeModal" :title="editingGrade?.id ? 'Editar Calificacion' : 'Nueva Calificacion'" size="lg">
+                    <div class="space-y-5">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">MATERIA</label>
@@ -410,22 +402,20 @@
                         </div>
 
                         <p v-if="gradeError" class="text-xs text-red-600">{{ gradeError }}</p>
-
-                        <div class="flex justify-end gap-2 pt-2">
+                    </div>
+                    <template #footer>
                             <button class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="gradeModal = false">Cancelar</button>
                             <button
                                 class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                                 :disabled="savingGrade"
                                 @click="saveGrade"
                             >{{ savingGrade ? 'Guardando...' : 'Guardar' }}</button>
-                        </div>
-                    </div>
-                </div>
+                    </template>
+                </BaseModal>
 
                 <!-- Modal historial de auditoría -->
-                <div v-if="auditModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-                        <h2 class="text-base font-semibold text-slate-800 uppercase">Historial de Cambios</h2>
+                <BaseModal v-model="auditModal" title="Historial de Cambios" size="lg">
+                    <div class="space-y-4">
                         <div v-if="loadingAudits" class="text-sm text-slate-400 text-center py-4">Cargando...</div>
                         <div v-else-if="audits.length === 0" class="text-sm text-slate-400 text-center py-4">Sin cambios registrados.</div>
                         <div v-else class="space-y-2">
@@ -442,11 +432,11 @@
                                 <div class="text-slate-400">Por: {{ a.changedByUserName ?? `User #${a.changedByUserId}` }}</div>
                             </div>
                         </div>
-                        <div class="flex justify-end pt-2">
-                            <button class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="auditModal = false">Cerrar</button>
-                        </div>
                     </div>
-                </div>
+                    <template #footer>
+                            <button class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="auditModal = false">Cerrar</button>
+                    </template>
+                </BaseModal>
             </div>
 
         </template>
@@ -464,6 +454,7 @@ import { API } from '@/shared/api'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import ReadField from '@/modules/admissions/pages/portal/ReadField.vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 
 const route  = useRoute()
 const router = useRouter()

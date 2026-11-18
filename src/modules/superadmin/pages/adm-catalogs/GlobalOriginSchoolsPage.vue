@@ -68,12 +68,8 @@
         </DataTable>
 
         <!-- Modal crear/editar -->
-        <Teleport to="body">
-            <Transition enter-active-class="transition-opacity duration-150" leave-active-class="transition-opacity duration-150" enter-from-class="opacity-0" leave-to-class="opacity-0">
-                <div v-if="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
-                    <div class="absolute inset-0 bg-black/40" @click="closeModal" />
-                    <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 space-y-4">
-                        <h2 class="text-sm font-bold uppercase tracking-widest text-slate-700">{{ editing ? 'Editar escuela' : 'Nueva escuela' }}</h2>
+        <BaseModal v-model="modalOpen" :title="editing ? 'Editar escuela' : 'Nueva escuela'" size="lg">
+            <div class="space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="sm:col-span-2">
                                 <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre</label>
@@ -111,38 +107,29 @@
                                 <input v-model="form.email" type="email" maxlength="255" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                             </div>
                         </div>
-                        <p v-if="formError" class="text-xs text-red-600">{{ formError }}</p>
-                        <div class="flex justify-end gap-2 pt-2">
-                            <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="closeModal">CANCELAR</button>
-                            <button class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition" :disabled="submitting" @click="submitForm">{{ submitting ? 'GUARDANDO...' : 'GUARDAR' }}</button>
-                        </div>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
+                <p v-if="formError" class="text-xs text-red-600">{{ formError }}</p>
+            </div>
+            <template #footer>
+                <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="closeModal">CANCELAR</button>
+                <button class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition" :disabled="submitting" @click="submitForm">{{ submitting ? 'GUARDANDO...' : 'GUARDAR' }}</button>
+            </template>
+        </BaseModal>
 
         <!-- Modal eliminar -->
-        <Teleport to="body">
-            <Transition enter-active-class="transition-opacity duration-150" leave-active-class="transition-opacity duration-150" enter-from-class="opacity-0" leave-to-class="opacity-0">
-                <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center">
-                    <div class="absolute inset-0 bg-black/40" @click="deleteTarget = null" />
-                    <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
-                        <h2 class="text-sm font-bold uppercase tracking-widest text-slate-700">Eliminar escuela</h2>
-                        <p class="text-sm text-slate-600">¿Eliminar <span class="font-semibold">{{ deleteTarget.name }}</span>? Esta acción no se puede deshacer.</p>
-                        <div class="flex justify-end gap-2">
-                            <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="deleteTarget = null">CANCELAR</button>
-                            <button class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition" :disabled="deleting" @click="doDelete">{{ deleting ? 'ELIMINANDO...' : 'ELIMINAR' }}</button>
-                        </div>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
+        <BaseModal v-model="deleteModalOpen" title="Eliminar escuela" size="sm">
+            <p v-if="deleteTarget" class="text-sm text-slate-600">¿Eliminar <span class="font-semibold">{{ deleteTarget.name }}</span>? Esta acción no se puede deshacer.</p>
+            <template #footer>
+                <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="deleteTarget = null">CANCELAR</button>
+                <button class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition" :disabled="deleting" @click="doDelete">{{ deleting ? 'ELIMINANDO...' : 'ELIMINAR' }}</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { PlusIcon } from '@heroicons/vue/24/outline'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
@@ -253,6 +240,10 @@ async function submitForm() {
 }
 
 const deleteTarget = ref<any | null>(null)
+const deleteModalOpen = computed({
+    get: () => deleteTarget.value !== null,
+    set: (v: boolean) => { if (!v) deleteTarget.value = null },
+})
 const deleting = ref(false)
 function confirmDelete(row: any) { deleteTarget.value = row }
 async function doDelete() {

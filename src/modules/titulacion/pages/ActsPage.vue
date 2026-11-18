@@ -39,9 +39,8 @@
             </table>
         </div>
 
-        <div v-if="concludeAct" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="concludeAct = null">
-            <div class="bg-white rounded-xl p-5 w-full max-w-sm space-y-3">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">Concluir acto</h2>
+        <BaseModal :model-value="!!concludeAct" @update:model-value="concludeAct = null" title="Concluir acto" size="sm">
+            <div v-if="concludeAct" class="space-y-3">
                 <p class="text-sm text-slate-500">{{ concludeAct.student_name }} · {{ concludeAct.date }}</p>
                 <label class="block"><span class="text-xs font-semibold text-slate-500">Resultado</span>
                     <select v-model="concludeForm.outcome" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
@@ -49,12 +48,12 @@
                     </select></label>
                 <label class="block"><span class="text-xs font-semibold text-slate-500">Notas (opcional)</span>
                     <textarea v-model="concludeForm.notes" rows="2" class="mt-1 w-full rounded-lg border-slate-300 text-sm"></textarea></label>
-                <div class="flex justify-end gap-2">
-                    <button @click="concludeAct = null" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
-                    <button @click="doConclude" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold">Guardar</button>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="concludeAct = null" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
+                <button @click="doConclude" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold">Guardar</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -64,6 +63,10 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { TitulacionAct } from '@/modules/titulacion/types/titulacion.type'
 import { actStatusLabel, actStatusClass, outcomeLabel } from '@/modules/titulacion/pages/status'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import { useConfirm } from '@/app/composables/useConfirm'
+
+const { confirm } = useConfirm()
 
 const T = API.TITULACION_API
 const rows = ref<TitulacionAct[]>([])
@@ -86,7 +89,7 @@ async function doConclude() {
     concludeAct.value = null; await fetchList()
 }
 async function cancel(a: TitulacionAct) {
-    if (!confirm('¿Cancelar este acto? Se avisará al jurado y al alumno.')) return
+    if (!await confirm({ title: 'Cancelar acto', message: '¿Cancelar este acto? Se avisará al jurado y al alumno.', confirmText: 'Cancelar acto', variant: 'warning' })) return
     await api.post(T.acts.cancel(a.id)); await fetchList()
 }
 

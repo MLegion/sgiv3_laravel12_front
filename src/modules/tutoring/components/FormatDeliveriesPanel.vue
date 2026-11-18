@@ -37,10 +37,12 @@ import { ref, onMounted, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useConfirm } from '@/app/composables/useConfirm'
 
 const props = defineProps<{ assignmentId: number | string }>()
 const T = API.TUTORING_API
 const toast = useToast()
+const { confirm } = useConfirm()
 
 const loading = ref(true)
 const busy = ref(false)
@@ -74,7 +76,7 @@ async function act(fn: () => Promise<void>, ok: string) {
     try { await fn(); await load(); toast.success(ok) } catch (e: any) { toast.error(e?.response?.data?.message ?? 'Operación no permitida.') } finally { busy.value = false }
 }
 async function submit(f: any) {
-    if (!confirm(`¿Entregar "${f.label}"? Quedará bloqueado para edición.`)) return
+    if (!await confirm({ title: 'Entregar formato', message: `¿Entregar "${f.label}"? Quedará bloqueado para edición.`, confirmText: 'Entregar', variant: 'warning' })) return
     await act(() => api.post(T.assignments.formatSubmit(props.assignmentId, f.code)).then(() => {}), 'Formato entregado.')
 }
 async function review(f: any) { await act(() => api.post(T.assignments.formatReview(props.assignmentId, f.code)).then(() => {}), 'Formato revisado.') }

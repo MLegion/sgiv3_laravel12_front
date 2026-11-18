@@ -1,23 +1,22 @@
 <template>
-    <Teleport to="body">
-        <Transition enter-active-class="transition-opacity duration-150" leave-active-class="transition-opacity duration-150" enter-from-class="opacity-0" leave-to-class="opacity-0">
-            <div v-if="open" class="fixed inset-0 z-[60] flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/40" @click="emit('cancel')" />
-                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <h2 class="text-sm font-bold uppercase tracking-widest text-slate-700">
-                                Conflictos detectados
-                            </h2>
-                            <p class="text-xs text-slate-500 mt-1">
-                                El examen ocupa esta aula+horario. Revisa los conflictos antes de continuar.
-                            </p>
-                        </div>
-                        <span class="text-xs text-slate-400">
-                            {{ formatRange(date, startTime, endTime) }}
-                        </span>
-                    </div>
+    <BaseModal :model-value="open" size="xl" @update:model-value="emit('cancel')">
+        <template #header>
+            <div class="flex items-start justify-between gap-4 w-full">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-widest text-slate-700">
+                        Conflictos detectados
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">
+                        El examen ocupa esta aula+horario. Revisa los conflictos antes de continuar.
+                    </p>
+                </div>
+                <span class="text-xs text-slate-400">
+                    {{ formatRange(date, startTime, endTime) }}
+                </span>
+            </div>
+        </template>
 
+        <div class="space-y-4">
                     <!-- BLOQUEANTE: otra sesión de examen -->
                     <div v-if="report.otherExams?.length" class="border border-red-200 bg-red-50 rounded-lg p-3 space-y-2">
                         <p class="text-xs font-semibold text-red-700 uppercase">⛔ Otra sesión de examen ya ocupa este aula+horario</p>
@@ -119,27 +118,26 @@
                     </div>
 
                     <p v-if="formError" class="text-xs text-red-600">{{ formError }}</p>
+        </div>
 
-                    <div class="flex justify-end gap-2 pt-2 border-t">
-                        <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="emit('cancel')">
-                            CANCELAR
-                        </button>
-                        <button
-                            class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition"
-                            :disabled="hasBlockingConflicts || submitting"
-                            @click="confirm"
-                        >
-                            {{ submitting ? 'GUARDANDO...' : 'CONFIRMAR Y CONTINUAR' }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </Transition>
-    </Teleport>
+        <template #footer>
+            <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="emit('cancel')">
+                CANCELAR
+            </button>
+            <button
+                class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition"
+                :disabled="hasBlockingConflicts || submitting"
+                @click="confirm"
+            >
+                {{ submitting ? 'GUARDANDO...' : 'CONFIRMAR Y CONTINUAR' }}
+            </button>
+        </template>
+    </BaseModal>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import type { ExamConflictReport, PartialOverrideInput } from '@/modules/admissions/types/exam-session.type'
 
 const props = defineProps<{

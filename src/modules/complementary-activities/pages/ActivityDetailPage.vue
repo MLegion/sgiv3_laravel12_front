@@ -267,13 +267,8 @@
         </div><!-- /Horario -->
 
         <!-- Modal ASIGNAR HORARIO -->
-        <div v-if="assign.show" class="fixed inset-0 bg-black/30 flex items-center justify-center z-30 p-4" @click.self="assign.show = false">
-            <div class="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden">
-                <div class="flex items-center justify-between px-5 py-3 bg-emerald-50">
-                    <h2 class="text-sm font-bold uppercase text-emerald-700">Asignar horario</h2>
-                    <button @click="assign.show = false" class="text-slate-400 hover:text-slate-600">✕</button>
-                </div>
-                <div class="p-5 space-y-3">
+        <BaseModal v-model="assign.show" title="Asignar horario" size="md">
+                <div class="space-y-3">
                     <dl class="text-[11px] text-slate-500 space-y-0.5">
                         <div><span class="uppercase font-semibold">Actividad:</span> {{ activity.name }}</div>
                         <div v-if="activity.instructor_name"><span class="uppercase font-semibold">Instructor:</span> {{ activity.instructor_name }}</div>
@@ -311,18 +306,15 @@
                         <ul class="text-[11px] text-rose-600 list-disc list-inside"><li v-for="(e,i) in assign.errors" :key="i">{{ e }}</li></ul>
                     </div>
                 </div>
-                <div class="flex justify-end gap-2 px-5 py-3 border-t">
-                    <button @click="assign.show = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
-                    <button @click="saveAssign" :disabled="assign.saving" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar</button>
-                </div>
-            </div>
-        </div>
+            <template #footer>
+                <button @click="assign.show = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
+                <button @click="saveAssign" :disabled="assign.saving" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar</button>
+            </template>
+        </BaseModal>
 
         <!-- Modal ELIMINAR BLOQUE -->
-        <div v-if="del.show" class="fixed inset-0 bg-black/30 flex items-center justify-center z-30 p-4" @click.self="del.show = false">
-            <div class="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden">
-                <div class="px-5 py-3 bg-rose-50"><h2 class="text-sm font-bold uppercase text-rose-600">⚠ Eliminar bloque</h2></div>
-                <div class="p-5 space-y-3">
+        <BaseModal v-model="del.show" title="⚠ Eliminar bloque" size="md">
+                <div class="space-y-3">
                     <dl class="text-[11px] text-slate-500 space-y-0.5 rounded-lg border p-3">
                         <div><span class="uppercase font-semibold">Actividad:</span> {{ activity.name }}</div>
                         <div v-if="del.block"><span class="uppercase font-semibold">Aula:</span> {{ del.block.place_name ?? activity.place_name ?? '—' }}</div>
@@ -330,12 +322,11 @@
                     </dl>
                     <p class="text-sm text-slate-600">¿Deseas eliminar este bloque del horario?</p>
                 </div>
-                <div class="flex justify-end gap-2 px-5 py-3 border-t">
-                    <button @click="del.show = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
-                    <button @click="doDelete" :disabled="del.saving" class="px-4 py-2 rounded-lg bg-rose-600 text-white text-sm font-semibold disabled:opacity-50">Eliminar</button>
-                </div>
-            </div>
-        </div>
+            <template #footer>
+                <button @click="del.show = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
+                <button @click="doDelete" :disabled="del.saving" class="px-4 py-2 rounded-lg bg-rose-600 text-white text-sm font-semibold disabled:opacity-50">Eliminar</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -345,13 +336,16 @@ import { useRoute } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useConfirm } from '@/app/composables/useConfirm'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import WeekScheduleGrid from '@/modules/schedules/components/WeekScheduleGrid.vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 
 const props = defineProps<{ id: string | number }>()
 const route = useRoute()
 const AC = API.AC_API
 const toast = useToast()
+const { confirm } = useConfirm()
 
 const activity = ref<any>(null)
 const attendees = ref<any[]>([])
@@ -611,7 +605,7 @@ async function addStudent(s: any, force = false) {
         // Avisa los incumplimientos y permite forzar (override del encargado).
         if (e?.response?.status === 422 && d?.can_force && Array.isArray(d.violations)) {
             const reasons = d.violations.map((v: any) => '• ' + v.message).join('\n')
-            if (confirm(`El alumno no cumple:\n${reasons}\n\n¿Inscribir de todos modos?`)) {
+            if (await confirm({ title: 'Inscribir', message: `El alumno no cumple:\n${reasons}\n\n¿Inscribir de todos modos?`, confirmText: 'Inscribir', variant: 'warning' })) {
                 await addStudent(s, true)
             }
             return

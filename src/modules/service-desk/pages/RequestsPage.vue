@@ -41,8 +41,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { usePrompt } from '@/app/composables/usePrompt'
 import type { DeskRequest } from '@/modules/service-desk/types/service-desk.type'
 
+const { prompt } = usePrompt()
 const D = API.SERVICE_DESK_API
 const rows = ref<DeskRequest[]>([])
 const filters = reactive({ status: 'requested' })
@@ -56,7 +58,8 @@ async function fetchList() {
 }
 async function issue(id: number) { await api.post(D.issueRequest(id)); await fetchList() }
 async function reject(id: number) {
-    const reason = prompt('Motivo del rechazo (opcional):') ?? ''
+    const reason = await prompt({ title: 'Rechazar solicitud', label: 'Motivo del rechazo (opcional)', inputType: 'textarea', confirmText: 'Rechazar' })
+    if (reason === null) return
     await api.post(D.rejectRequest(id), { reason: reason || null }); await fetchList()
 }
 

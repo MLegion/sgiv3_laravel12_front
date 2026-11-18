@@ -344,11 +344,8 @@
         </div>
 
         <!-- Modal de confirmación -->
-        <Transition enter-active-class="transition-opacity duration-150" enter-from-class="opacity-0">
-            <div v-if="showConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
-                    <h2 class="text-base font-bold text-slate-800 uppercase tracking-wide">Confirmar Admisión</h2>
-
+        <BaseModal v-model="showConfirm" title="Confirmar Admisión" size="md">
+            <div class="space-y-4">
                     <div class="space-y-2 text-sm text-slate-600">
                         <p>Estás a punto de cambiar el estado a <span class="font-bold text-green-700">ADMITIDO</span> a:</p>
                         <div class="flex gap-4">
@@ -387,26 +384,25 @@
                     </div>
 
                     <p v-if="confirmError" class="text-xs text-red-600 font-medium">{{ confirmError }}</p>
-
-                    <div class="flex gap-2 justify-end pt-2">
-                        <button
-                            class="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
-                            :disabled="confirming"
-                            @click="showConfirm = false"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            class="px-5 py-2 text-sm rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50 transition"
-                            :disabled="confirming || otherMissingNote"
-                            @click="doAdmitBulk"
-                        >
-                            {{ confirming ? 'Procesando...' : 'Confirmar' }}
-                        </button>
-                    </div>
-                </div>
             </div>
-        </Transition>
+
+            <template #footer>
+                <button
+                    class="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
+                    :disabled="confirming"
+                    @click="showConfirm = false"
+                >
+                    Cancelar
+                </button>
+                <button
+                    class="px-5 py-2 text-sm rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50 transition"
+                    :disabled="confirming || otherMissingNote"
+                    @click="doAdmitBulk"
+                >
+                    {{ confirming ? 'Procesando...' : 'Confirmar' }}
+                </button>
+            </template>
+        </BaseModal>
 
         <!-- Toast de éxito -->
         <Transition enter-active-class="transition-all duration-300" enter-from-class="opacity-0 translate-y-4">
@@ -427,6 +423,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 

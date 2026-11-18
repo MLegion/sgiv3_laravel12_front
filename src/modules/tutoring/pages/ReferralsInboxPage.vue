@@ -33,8 +33,12 @@
 import { ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { usePrompt } from '@/app/composables/usePrompt'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { REFERRAL_STATUS_LABELS, type TutoringReferral } from '@/modules/tutoring/types/tutoring.type'
 
+const { prompt } = usePrompt()
+const { confirm } = useConfirm()
 const T = API.TUTORING_API
 const rows = ref<TutoringReferral[]>([])
 const status = ref('')
@@ -46,8 +50,8 @@ function flash(t: string, e = false) { msg.value = t; msgError.value = e; setTim
 async function load() { rows.value = (await api.get(T.referrals.inbox, { params: { status: status.value || undefined } })).data ?? [] }
 async function act(fn: () => Promise<any>, ok: string) { try { await fn(); await load(); flash(ok) } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
 async function take(id: number) { await act(() => api.post(T.referrals.take(id), {}), 'Canalización tomada.') }
-async function attend(id: number) { const response = prompt('Seguimiento / respuesta:'); if (!response) return; await act(() => api.post(T.referrals.attend(id), { response }), 'Canalización atendida.') }
-async function doClose(id: number) { if (!confirm('¿Cerrar la canalización?')) return; await act(() => api.post(T.referrals.close(id), {}), 'Canalización cerrada.') }
+async function attend(id: number) { const response = await prompt({ title: 'Atender canalización', label: 'Seguimiento / respuesta', inputType: 'textarea', required: true, confirmText: 'Atender' }); if (!response) return; await act(() => api.post(T.referrals.attend(id), { response }), 'Canalización atendida.') }
+async function doClose(id: number) { if (!await confirm({ title: 'Cerrar canalización', message: '¿Cerrar la canalización?', confirmText: 'Cerrar', variant: 'warning' })) return; await act(() => api.post(T.referrals.close(id), {}), 'Canalización cerrada.') }
 
 onMounted(load)
 </script>

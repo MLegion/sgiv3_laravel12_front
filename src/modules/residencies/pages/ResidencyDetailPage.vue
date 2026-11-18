@@ -183,21 +183,17 @@
         </template>
 
         <!-- Modal de motivo (rechazo) -->
-        <Teleport to="body">
-            <div v-if="reason.open" class="fixed inset-0 z-50 flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/40" @click="reason.open = false" />
-                <div class="relative bg-white rounded-xl shadow-lg w-full max-w-md p-6 space-y-4 z-10">
-                    <h3 class="text-sm font-semibold text-slate-800">Motivo del rechazo</h3>
-                    <textarea v-model="reason.text" rows="3" class="border rounded-md w-full px-3 py-2 text-sm"
-                        placeholder="Explica por qué se rechaza…"></textarea>
-                    <p v-if="reason.error" class="text-xs text-red-600">{{ reason.error }}</p>
-                    <div class="flex justify-end gap-2">
-                        <button type="button" class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="reason.open = false">Cancelar</button>
-                        <button type="button" class="px-4 py-2 text-sm rounded-lg text-white bg-red-600 hover:bg-red-700" @click="submitReason">Rechazar</button>
-                    </div>
-                </div>
+        <BaseModal v-model="reason.open" title="Motivo del rechazo" size="md">
+            <div class="space-y-4">
+                <textarea v-model="reason.text" rows="3" class="border rounded-md w-full px-3 py-2 text-sm"
+                    placeholder="Explica por qué se rechaza…"></textarea>
+                <p v-if="reason.error" class="text-xs text-red-600">{{ reason.error }}</p>
             </div>
-        </Teleport>
+            <template #footer>
+                <button type="button" class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="reason.open = false">Cancelar</button>
+                <button type="button" class="px-4 py-2 text-sm rounded-lg text-white bg-red-600 hover:bg-red-700" @click="submitReason">Rechazar</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -208,6 +204,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import ResidencyEvaluationCard from '@/modules/residencies/components/ResidencyEvaluationCard.vue'
 import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
 import type { Residency, ResidencyDocumentChecklistItem, ApprovalStatus, ProjectOption, ResidencyAdvisorType } from '@/modules/residencies/types/residency.type'

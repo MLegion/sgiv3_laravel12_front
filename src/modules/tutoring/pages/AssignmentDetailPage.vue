@@ -177,7 +177,7 @@
                     <button @click="openSession" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold">+ Registrar sesión</button>
                 </div>
                 <DataTable :columns="sessionCols" :rows="sessionsTbl.rows" :pagination="sessionsTbl.pagination" hide-search empty-text="Sin sesiones." @change="sessionsTbl.onChange">
-                    <template #cell-type="{ row }" class="capitalize">{{ row.type }}</template>
+                    <template #cell-type="{ row }"><span class="capitalize">{{ row.type }}</span></template>
                     <template #cell-asist="{ row }">{{ row.type === 'grupal' ? row.attendance_count : '—' }}</template>
                 </DataTable>
             </div>
@@ -272,49 +272,37 @@
         </div>
 
         <!-- Drawer canalizar -->
-        <div v-if="showRefer" class="fixed inset-0 bg-black/40 flex justify-end z-50" @click.self="showRefer = false">
-            <div class="bg-white w-full max-w-md h-full overflow-y-auto p-6 space-y-4 shadow-xl">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <h2 class="text-base font-bold text-slate-800">Canalizar tutorado</h2>
-                        <p class="text-xs text-slate-400">{{ referTutee?.student_name }}</p>
-                    </div>
-                    <button @click="showRefer = false" class="text-slate-400 hover:text-slate-600">✕</button>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Área de canalización</label>
-                    <select v-model="rf.referral_area_id" class="w-full rounded-lg border-slate-300 text-sm"><option :value="null">— Área —</option><option v-for="ar in areas" :key="ar.id" :value="ar.id">{{ ar.name }}</option></select>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Motivo</label>
-                    <textarea v-model="rf.reason" rows="4" placeholder="Describe el motivo de la canalización…" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
-                </div>
-                <p v-if="modalMsg" class="text-sm text-red-600">{{ modalMsg }}</p>
-                <div class="flex justify-end gap-2 pt-2"><button @click="showRefer = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button><button @click="saveRefer" :disabled="!rf.referral_area_id || !rf.reason" class="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold disabled:opacity-50">Canalizar</button></div>
+        <BaseDrawer v-model="showRefer" title="Canalizar tutorado" :subtitle="referTutee?.student_name" size="md">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Área de canalización</label>
+                <select v-model="rf.referral_area_id" class="w-full rounded-lg border-slate-300 text-sm"><option :value="null">— Área —</option><option v-for="ar in areas" :key="ar.id" :value="ar.id">{{ ar.name }}</option></select>
             </div>
-        </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Motivo</label>
+                <textarea v-model="rf.reason" rows="4" placeholder="Describe el motivo de la canalización…" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+            </div>
+            <p v-if="modalMsg" class="text-sm text-red-600">{{ modalMsg }}</p>
+            <template #footer>
+                <button @click="showRefer = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
+                <button @click="saveRefer" :disabled="!rf.referral_area_id || !rf.reason" class="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold disabled:opacity-50">Canalizar</button>
+            </template>
+        </BaseDrawer>
 
         <!-- Drawer cédula -->
-        <div v-if="showCedula" class="fixed inset-0 bg-black/40 flex justify-end z-50" @click.self="showCedula = false">
-            <div class="bg-white w-full max-w-xl h-full overflow-y-auto p-6 space-y-4 shadow-xl">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <h2 class="text-base font-bold text-slate-800">Cédula del tutorado</h2>
-                        <p class="text-xs text-slate-400">{{ cedulaTutee?.student_name }}</p>
-                    </div>
-                    <button @click="showCedula = false" class="text-slate-400 hover:text-slate-600">✕</button>
-                </div>
-                <div v-if="!cedula.fields.length" class="rounded-lg border bg-slate-50 p-4 text-sm text-slate-400">No hay instrumento de cédula configurado.</div>
-                <label v-for="f in cedula.fields" :key="f.code" class="block">
-                    <span class="text-xs font-semibold text-slate-500">{{ f.label }}<span v-if="f.is_risk_flag" class="ml-1 text-amber-500">⚠</span></span>
-                    <textarea v-if="f.type === 'textarea'" v-model="cAnswers[f.code]" rows="2" class="mt-1 w-full rounded-lg border-slate-300 text-sm"></textarea>
-                    <select v-else-if="f.type === 'boolean'" v-model="cAnswers[f.code]" class="mt-1 w-full rounded-lg border-slate-300 text-sm"><option value="">—</option><option value="si">Sí</option><option value="no">No</option></select>
-                    <select v-else-if="f.type === 'select'" v-model="cAnswers[f.code]" class="mt-1 w-full rounded-lg border-slate-300 text-sm"><option value="">—</option><option v-for="o in (f.options || [])" :key="o" :value="o">{{ o }}</option></select>
-                    <input v-else :type="f.type === 'number' ? 'number' : 'text'" v-model="cAnswers[f.code]" class="mt-1 w-full rounded-lg border-slate-300 text-sm" />
-                </label>
-                <div class="flex justify-end gap-2 pt-2 sticky bottom-0 bg-white"><button @click="showCedula = false" class="px-4 py-2 rounded-lg border text-sm">Cerrar</button><button v-if="cedula.fields.length" @click="saveCedula" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar</button></div>
-            </div>
-        </div>
+        <BaseDrawer v-model="showCedula" title="Cédula del tutorado" :subtitle="cedulaTutee?.student_name" size="xl">
+            <div v-if="!cedula.fields.length" class="rounded-lg border bg-slate-50 p-4 text-sm text-slate-400">No hay instrumento de cédula configurado.</div>
+            <label v-for="f in cedula.fields" :key="f.code" class="block">
+                <span class="text-xs font-semibold text-slate-500">{{ f.label }}<span v-if="f.is_risk_flag" class="ml-1 text-amber-500">⚠</span></span>
+                <textarea v-if="f.type === 'textarea'" v-model="cAnswers[f.code]" rows="2" class="mt-1 w-full rounded-lg border-slate-300 text-sm"></textarea>
+                <select v-else-if="f.type === 'boolean'" v-model="cAnswers[f.code]" class="mt-1 w-full rounded-lg border-slate-300 text-sm"><option value="">—</option><option value="si">Sí</option><option value="no">No</option></select>
+                <select v-else-if="f.type === 'select'" v-model="cAnswers[f.code]" class="mt-1 w-full rounded-lg border-slate-300 text-sm"><option value="">—</option><option v-for="o in (f.options || [])" :key="o" :value="o">{{ o }}</option></select>
+                <input v-else :type="f.type === 'number' ? 'number' : 'text'" v-model="cAnswers[f.code]" class="mt-1 w-full rounded-lg border-slate-300 text-sm" />
+            </label>
+            <template #footer>
+                <button @click="showCedula = false" class="px-4 py-2 rounded-lg border text-sm">Cerrar</button>
+                <button v-if="cedula.fields.length" @click="saveCedula" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar</button>
+            </template>
+        </BaseDrawer>
 
         <!-- Modal reasignar tutor -->
         <div v-if="showReassign" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showReassign = false">
@@ -356,6 +344,9 @@ import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { ClipboardDocumentListIcon, ArrowRightCircleIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import UserAvatar from '@/app/components/ui/UserAvatar.vue'
+import BaseDrawer from '@/app/components/ui/modal/BaseDrawer.vue'
+import { usePrompt } from '@/app/composables/usePrompt'
+import { useConfirm } from '@/app/composables/useConfirm'
 import FormatDeliveriesPanel from '@/modules/tutoring/components/FormatDeliveriesPanel.vue'
 
 // `only` = modo embebido: muestra UNA sola función (sin header ni tabs), para reusar
@@ -364,6 +355,8 @@ const props = defineProps<{ id: string | number; only?: string }>()
 const embedded = computed(() => !!props.only)
 const T = API.TUTORING_API
 const SS = API.SCHOOL_SERVICES_API
+const { prompt } = usePrompt()
+const { confirm } = useConfirm()
 
 const loading = ref(true), msg = ref(''), msgError = ref(false), modalMsg = ref('')
 const a = ref<TutoringAssignment | null>(null)
@@ -478,12 +471,12 @@ async function saveEval(submit: boolean) {
     catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) }
 }
 async function validateEval() {
-    if (!confirm('¿Validar la evaluación y asentar los créditos? (Insuficiente no acredita)')) return
+    if (!await confirm({ title: 'Validar evaluación', message: '¿Validar la evaluación y asentar los créditos? (Insuficiente no acredita)', confirmText: 'Validar', variant: 'warning' })) return
     try { const { data } = await api.post(T.assignments.evaluationValidate(props.id), {}); await loadEval(); flash(`Validada: ${data.accredited} acreditados, ${data.denied} no acreditados.`) }
     catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) }
 }
 async function revertEval() {
-    if (!confirm('¿Revertir la validación? Se revocan los créditos asentados.')) return
+    if (!await confirm({ title: 'Revertir validación', message: '¿Revertir la validación? Se revocan los créditos asentados.', confirmText: 'Revertir', variant: 'danger' })) return
     try { await api.post(T.assignments.evaluationRevert(props.id), {}); await loadEval(); flash('Validación revertida.') }
     catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) }
 }
@@ -570,7 +563,8 @@ function patReportContext() {
     }
 }
 async function requestPatExt() {
-    const reason = prompt('Motivo de la solicitud de extensión (opcional):') ?? ''
+    const reason = await prompt({ title: 'Solicitar extensión', label: 'Motivo de la solicitud (opcional)', inputType: 'textarea', confirmText: 'Solicitar' })
+    if (reason === null) return
     try { await api.post(T.assignments.patExtensionRequest(props.id), { reason: reason || undefined }); await load(); flash('Solicitud de extensión enviada a la coordinación.') }
     catch (e: any) { flash(e?.response?.data?.message ?? 'No se pudo solicitar la extensión.', true) }
 }
@@ -580,7 +574,7 @@ async function downloadPat() {
     catch (e: any) { flash(e?.response?.data?.message ?? 'No se pudo generar el formato (¿plantilla cargada?).', true) }
     finally { patGenerating.value = false }
 }
-async function close() { if (!confirm('¿Cerrar la asignación?')) return; try { await api.post(T.assignments.close(props.id), {}); await load(); flash('Asignación cerrada.') } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
+async function close() { if (!await confirm({ title: 'Cerrar asignación', message: '¿Cerrar la asignación?', confirmText: 'Cerrar', variant: 'warning' })) return; try { await api.post(T.assignments.close(props.id), {}); await load(); flash('Asignación cerrada.') } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
 async function doReassign() {
     try {
         await api.post(T.assignments.reassign(props.id), { tutor_user_id: Number(reassign.tutor), reason: reassign.reason || null })
@@ -617,7 +611,7 @@ async function saveCedula() {
 let timer: any
 function searchStudents() { clearTimeout(timer); timer = setTimeout(async () => { if (studentSearch.value.trim().length < 2) { studentResults.value = []; return } studentResults.value = (await api.get(SS.students.list, { params: { search: studentSearch.value, per_page: 10 } })).data?.data ?? [] }, 300) }
 async function addTutee(studentId: number) { try { await api.post(T.assignments.addTutee(props.id), { student_id: studentId }); showAddTutee.value = false; studentSearch.value = ''; studentResults.value = []; await load() } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
-async function removeTutee(tuteeId: number) { if (!confirm('¿Quitar tutorado?')) return; await api.delete(T.assignments.removeTutee(props.id, tuteeId)); await load() }
+async function removeTutee(tuteeId: number) { if (!await confirm({ title: 'Quitar tutorado', message: '¿Quitar tutorado?', confirmText: 'Quitar', variant: 'danger' })) return; await api.delete(T.assignments.removeTutee(props.id, tuteeId)); await load() }
 async function syncRoster() {
     syncingRoster.value = true
     try {

@@ -44,10 +44,9 @@
         </div>
 
         <!-- Detalle -->
-        <div v-if="detail" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="detail = null">
-            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-auto p-5 space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-slate-800">{{ teacherName(detail.teacherId) }}</h3>
+        <BaseModal v-if="detail" v-model="detailOpen" :title="teacherName(detail.teacherId)" size="lg">
+            <div class="space-y-4">
+                <div class="flex items-center justify-end">
                     <span class="px-2 py-0.5 rounded text-xs font-semibold" :class="sc(detail.scheduleStatus)">{{ sl(detail.scheduleStatus) }}</span>
                 </div>
                 <div v-if="blocks.length" class="border rounded-lg divide-y">
@@ -65,22 +64,23 @@
                         <button class="px-3 py-1.5 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50" :disabled="busy" @click="approve">Aprobar horario</button>
                     </div>
                 </div>
-                <div class="flex justify-end gap-2">
-                    <button class="px-3 py-1.5 text-sm rounded-lg bg-slate-700 text-white hover:bg-slate-800 disabled:opacity-50" :disabled="oficioBusy" @click="oficio">{{ oficioBusy ? 'Generando…' : 'Descargar oficio' }}</button>
-                    <button class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 hover:bg-slate-50" @click="detail = null">Cerrar</button>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button class="px-3 py-1.5 text-sm rounded-lg bg-slate-700 text-white hover:bg-slate-800 disabled:opacity-50" :disabled="oficioBusy" @click="oficio">{{ oficioBusy ? 'Generando…' : 'Descargar oficio' }}</button>
+                <button class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 hover:bg-slate-50" @click="detail = null">Cerrar</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import type { DistributionRequest } from '@/modules/midocencia/types/distribution.type'
 
 const toast = useToast()
@@ -94,6 +94,7 @@ const loading = ref(false)
 const busy = ref(false)
 const oficioBusy = ref(false)
 const detail = ref<DistributionRequest | null>(null)
+const detailOpen = computed({ get: () => detail.value !== null, set: (v: boolean) => { if (!v) detail.value = null } })
 const blocks = ref<Array<{ id: number; dayOfWeek: number | null; startTime: string; endTime: string; placeId: number | null }>>([])
 const reason = ref('')
 const teacherNames = ref<Record<number, string>>({})

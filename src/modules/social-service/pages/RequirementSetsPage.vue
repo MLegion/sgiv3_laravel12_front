@@ -61,20 +61,19 @@
         </div>
 
         <!-- Modal nueva versión -->
-        <div v-if="showNew" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showNew = false">
-            <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">Nueva versión</h2>
+        <BaseModal v-model="showNew" title="Nueva versión" size="md">
+            <div class="space-y-3">
                 <input v-model="newForm.name" placeholder="Nombre de la versión" class="w-full rounded-lg border-slate-300 text-sm" />
                 <label class="block">
                     <span class="text-xs font-semibold text-slate-500">Vigente desde</span>
                     <input v-model="newForm.effective_from" type="date" class="mt-1 w-full rounded-lg border-slate-300 text-sm" />
                 </label>
-                <div class="flex justify-end gap-2">
-                    <button @click="showNew = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
-                    <button @click="create" :disabled="!newForm.name || saving" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold disabled:opacity-50">Crear</button>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="showNew = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
+                <button @click="create" :disabled="!newForm.name || saving" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold disabled:opacity-50">Crear</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -83,7 +82,12 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { RequirementSetSummary } from '@/modules/social-service/types/social-service.type'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import { usePrompt } from '@/app/composables/usePrompt'
+import { useConfirm } from '@/app/composables/useConfirm'
 
+const { prompt } = usePrompt()
+const { confirm } = useConfirm()
 const S = API.SOCIAL_SERVICE_API
 
 const sets = ref<RequirementSetSummary[]>([])
@@ -133,10 +137,10 @@ async function saveItems() {
 
 async function publish(id: number) { await act(() => api.post(S.requirementSets.publish(id), {}), 'Versión publicada.') }
 async function archive(id: number) { await act(() => api.post(S.requirementSets.archive(id), {}), 'Versión archivada.') }
-async function destroy(id: number) { if (confirm('¿Eliminar esta versión en borrador?')) await act(() => api.delete(S.requirementSets.destroy(id)), 'Versión eliminada.') }
+async function destroy(id: number) { if (await confirm({ title: 'Eliminar versión', message: '¿Eliminar esta versión en borrador?', confirmText: 'Eliminar', variant: 'danger' })) await act(() => api.delete(S.requirementSets.destroy(id)), 'Versión eliminada.') }
 
 async function clone(id: number) {
-    const name = prompt('Nombre de la nueva versión (copia):')
+    const name = await prompt({ title: 'Clonar versión', label: 'Nombre de la nueva versión (copia)', inputType: 'text', required: true, confirmText: 'Clonar' })
     if (!name) return
     await act(() => api.post(S.requirementSets.clone(id), { name }), 'Versión clonada.')
 }

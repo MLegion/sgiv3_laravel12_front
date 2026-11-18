@@ -28,18 +28,20 @@
             </table>
         </div>
 
-        <div v-if="showModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showModal = false">
-            <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">{{ form.id ? 'Editar' : 'Nueva' }} área</h2>
+        <BaseModal v-model="showModal" :title="(form.id ? 'Editar' : 'Nueva') + ' área'" size="md">
+            <div class="space-y-3">
                 <input v-model="form.name" placeholder="Nombre" class="w-full rounded-lg border-slate-300 text-sm" />
                 <textarea v-model="form.description" rows="2" placeholder="Descripción" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
                 <label class="block"><span class="text-xs font-semibold text-slate-500">Rol receptor (código, opcional)</span>
                     <input v-model="form.handler_role_code" placeholder="p. ej. TUTORING_REFERRAL_HANDLER" class="mt-1 w-full rounded-lg border-slate-300 text-sm" /></label>
                 <label v-if="form.id" class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" v-model="form.is_active" /> Activa</label>
                 <p v-if="modalMsg" class="text-sm text-red-600">{{ modalMsg }}</p>
-                <div class="flex justify-end gap-2"><button @click="showModal = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button><button @click="save" :disabled="!form.name" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold disabled:opacity-50">Guardar</button></div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="showModal = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
+                <button @click="save" :disabled="!form.name" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold disabled:opacity-50">Guardar</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -48,8 +50,11 @@ import { ref, reactive, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { ReferralArea } from '@/modules/tutoring/types/tutoring.type'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import { useConfirm } from '@/app/composables/useConfirm'
 
 const T = API.TUTORING_API
+const { confirm } = useConfirm()
 const areas = ref<ReferralArea[]>([])
 const showModal = ref(false), msg = ref(''), msgError = ref(false), modalMsg = ref('')
 const form = reactive<{ id: number | null; name: string; description: string; handler_role_code: string; is_active: boolean; sort_order: number }>({ id: null, name: '', description: '', handler_role_code: '', is_active: true, sort_order: 0 })
@@ -64,7 +69,7 @@ async function save() {
     try { if (form.id) await api.put(T.referralAreas.update(form.id), payload); else await api.post(T.referralAreas.create, payload); showModal.value = false; await fetchAreas(); flash('Área guardada.') }
     catch (e: any) { modalMsg.value = e?.response?.data?.message ?? 'Error' }
 }
-async function destroy(id: number) { if (!confirm('¿Eliminar área?')) return; try { await api.delete(T.referralAreas.delete(id)); await fetchAreas(); flash('Área eliminada.') } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
+async function destroy(id: number) { if (!await confirm({ title: 'Eliminar área', message: '¿Eliminar área?', confirmText: 'Eliminar', variant: 'danger' })) return; try { await api.delete(T.referralAreas.delete(id)); await fetchAreas(); flash('Área eliminada.') } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
 
 onMounted(fetchAreas)
 </script>

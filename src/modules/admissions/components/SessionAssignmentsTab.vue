@@ -15,51 +15,44 @@
         </div>
 
         <!-- Picker modal -->
-        <Teleport to="body">
-            <Transition enter-active-class="transition-opacity duration-150" leave-active-class="transition-opacity duration-150" enter-from-class="opacity-0" leave-to-class="opacity-0">
-                <div v-if="showPicker" class="fixed inset-0 z-50 flex items-center justify-center">
-                    <div class="absolute inset-0 bg-black/40" @click="showPicker = false" />
-                    <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 space-y-3">
-                        <h3 class="text-sm font-bold uppercase tracking-widest text-slate-700">Asignar aspirante</h3>
+        <BaseModal v-model="showPicker" title="Asignar aspirante" size="lg">
+            <div class="space-y-3">
+                <input
+                    v-model="searchTerm"
+                    type="text"
+                    placeholder="Buscar por nombre, folio, CURP..."
+                    class="field-sm"
+                    @input="onSearch"
+                />
 
-                        <input
-                            v-model="searchTerm"
-                            type="text"
-                            placeholder="Buscar por nombre, folio, CURP..."
-                            class="field-sm"
-                            @input="onSearch"
-                        />
-
-                        <ul v-if="applicantResults.length > 0" class="max-h-64 overflow-y-auto border border-slate-200 rounded-md text-xs">
-                            <li
-                                v-for="a in applicantResults"
-                                :key="a.id"
-                                class="px-3 py-2 hover:bg-blue-50 cursor-pointer flex items-center justify-between"
-                                @click="assignApplicant(a)"
-                            >
-                                <div>
-                                    <div class="font-medium text-slate-800">
-                                        {{ a.firstSurname }} {{ a.secondSurname || '' }} {{ a.names }}
-                                    </div>
-                                    <div class="text-[10px] text-slate-500">
-                                        Folio {{ a.preApplicationFolio || '—' }}
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                        <p v-else-if="searched" class="text-xs text-slate-500 italic">Sin resultados.</p>
-
-                        <p v-if="error" class="text-xs text-red-600">{{ error }}</p>
-
-                        <div class="flex justify-end pt-1">
-                            <button class="px-3 py-1.5 text-xs rounded-lg border hover:bg-slate-50" @click="showPicker = false">
-                                CERRAR
-                            </button>
+                <ul v-if="applicantResults.length > 0" class="max-h-64 overflow-y-auto border border-slate-200 rounded-md text-xs">
+                    <li
+                        v-for="a in applicantResults"
+                        :key="a.id"
+                        class="px-3 py-2 hover:bg-blue-50 cursor-pointer flex items-center justify-between"
+                        @click="assignApplicant(a)"
+                    >
+                        <div>
+                            <div class="font-medium text-slate-800">
+                                {{ a.firstSurname }} {{ a.secondSurname || '' }} {{ a.names }}
+                            </div>
+                            <div class="text-[10px] text-slate-500">
+                                Folio {{ a.preApplicationFolio || '—' }}
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
+                    </li>
+                </ul>
+                <p v-else-if="searched" class="text-xs text-slate-500 italic">Sin resultados.</p>
+
+                <p v-if="error" class="text-xs text-red-600">{{ error }}</p>
+            </div>
+
+            <template #footer>
+                <button class="px-3 py-1.5 text-xs rounded-lg border hover:bg-slate-50" @click="showPicker = false">
+                    CERRAR
+                </button>
+            </template>
+        </BaseModal>
 
         <!-- Lista -->
         <div v-if="loading" class="text-xs text-slate-400 italic">Cargando...</div>
@@ -116,6 +109,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useConfirm } from '@/app/composables/useConfirm'
 import { PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { ExamSession } from '@/modules/admissions/types/exam-session.type'

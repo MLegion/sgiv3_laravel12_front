@@ -13,6 +13,7 @@ import {
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { PeriodTypeEnum } from '@/shared/enums/period-type.enum'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import SubjectCard from '@/modules/superadmin/pages/studyplans/editor/SubjectCard.vue'
 
@@ -255,16 +256,9 @@ onMounted(fetchData)
             </div>
         </div>
 
-        <div v-if="showMoveModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-200">
-                <div class="p-6 border-b bg-slate-50/50 flex justify-between items-center">
-                    <div>
-                        <h3 class="font-black uppercase text-xs tracking-widest text-slate-800">Reubicar Materia</h3>
-                        <p class="text-[9px] text-indigo-500 font-bold uppercase mt-1">{{ itemToMove?.subject?.name }}</p>
-                    </div>
-                    <button @click="showMoveModal = false" class="text-slate-400 hover:text-red-500 transition-colors"><XMarkIcon class="w-5 h-5"/></button>
-                </div>
-                <div class="p-8 space-y-6">
+        <BaseModal v-model="showMoveModal" title="Reubicar Materia" size="md">
+            <div class="space-y-6">
+                    <p class="text-[9px] text-indigo-500 font-bold uppercase">{{ itemToMove?.subject?.name }}</p>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Periodo</label>
@@ -283,20 +277,16 @@ onMounted(fetchData)
                         <XMarkIcon class="w-5 h-5 text-amber-500 rotate-45 shrink-0" />
                         <p class="text-[10px] text-amber-800 font-bold uppercase leading-tight">Espacio ocupado por: {{ getItemAt(moveForm.period, moveForm.level)?.subject?.name }}. Libera el espacio primero.</p>
                     </div>
-                    <button @click="handleMoveConfirm" :disabled="submitting || (getItemAt(moveForm.period, moveForm.level) && getItemAt(moveForm.period, moveForm.level).id !== itemToMove?.id)" class="w-full py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 active:scale-95 disabled:opacity-50">
-                        {{ submitting ? 'Procesando...' : 'Confirmar Cambio' }}
-                    </button>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="handleMoveConfirm" :disabled="submitting || (getItemAt(moveForm.period, moveForm.level) && getItemAt(moveForm.period, moveForm.level).id !== itemToMove?.id)" class="w-full py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 active:scale-95 disabled:opacity-50">
+                    {{ submitting ? 'Procesando...' : 'Confirmar Cambio' }}
+                </button>
+            </template>
+        </BaseModal>
 
-        <div v-if="showModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md border border-slate-100 overflow-hidden">
-                <div class="p-6 border-b bg-slate-50/50 flex justify-between items-center text-slate-800 font-black uppercase text-xs">
-                    <span>Añadir a {{ targetCell.period }}° {{ labelPeriod }} (Fila {{ targetCell.level }})</span>
-                    <button @click="showModal = false"><XMarkIcon class="w-5 h-5"/></button>
-                </div>
-                <div class="p-8 space-y-6">
+        <BaseModal v-model="showModal" :title="`Añadir a ${targetCell.period}° ${labelPeriod} (Fila ${targetCell.level})`" size="md">
+            <div class="space-y-6">
                     <FormRemoteSelect
                         label="Buscar Materia"
                         v-model="newSubjectForm.subjectId"
@@ -307,24 +297,24 @@ onMounted(fetchData)
                         placeholder="Nombre de la materia..."
                         required
                     />
-                    <button @click="handleAddSubject" :disabled="submitting || !newSubjectForm.subjectId" class="w-full py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase shadow-xl active:scale-95 disabled:opacity-50">
-                        {{ submitting ? 'Guardando...' : 'Asignar Materia' }}
-                    </button>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="handleAddSubject" :disabled="submitting || !newSubjectForm.subjectId" class="w-full py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase shadow-xl active:scale-95 disabled:opacity-50">
+                    {{ submitting ? 'Guardando...' : 'Asignar Materia' }}
+                </button>
+            </template>
+        </BaseModal>
 
-        <div v-if="showDeleteConfirm" class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-            <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
+        <BaseModal v-model="showDeleteConfirm" title="¿Eliminar materia?" size="sm">
+            <div class="text-center">
                 <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6"><XMarkIcon class="w-8 h-8" /></div>
-                <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight mb-2">¿Eliminar materia?</h3>
-                <p class="text-xs text-slate-500 mb-8 uppercase font-bold tracking-wide leading-relaxed">Se quitará de la especialidad: <br> <span class="text-slate-900">{{ itemToDelete?.subject?.name }}</span></p>
-                <div class="flex gap-3">
-                    <button @click="showDeleteConfirm = false" class="flex-1 py-4 text-[10px] font-black uppercase text-slate-400 hover:bg-slate-50 rounded-2xl transition-colors">Cancelar</button>
-                    <button @click="handleRemoveConfirm" :disabled="submitting" class="flex-1 py-4 bg-red-500 text-white text-[10px] font-black uppercase rounded-2xl shadow-lg active:scale-95 disabled:opacity-50">Confirmar</button>
-                </div>
+                <p class="text-xs text-slate-500 uppercase font-bold tracking-wide leading-relaxed">Se quitará de la especialidad: <br> <span class="text-slate-900">{{ itemToDelete?.subject?.name }}</span></p>
             </div>
-        </div>
+            <template #footer>
+                <button @click="showDeleteConfirm = false" class="flex-1 py-4 text-[10px] font-black uppercase text-slate-400 hover:bg-slate-50 rounded-2xl transition-colors">Cancelar</button>
+                <button @click="handleRemoveConfirm" :disabled="submitting" class="flex-1 py-4 bg-red-500 text-white text-[10px] font-black uppercase rounded-2xl shadow-lg active:scale-95 disabled:opacity-50">Confirmar</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 

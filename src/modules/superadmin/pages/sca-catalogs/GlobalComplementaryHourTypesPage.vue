@@ -42,15 +42,8 @@
         </DataTable>
 
         <!-- Form Modal -->
-        <Teleport to="body">
-            <Transition enter-active-class="transition-opacity duration-150" leave-active-class="transition-opacity duration-150" enter-from-class="opacity-0" leave-to-class="opacity-0">
-                <div v-if="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
-                    <div class="absolute inset-0 bg-black/40" @click="closeModal" />
-                    <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 p-6 space-y-4">
-                        <h2 class="text-sm font-bold uppercase tracking-widest text-slate-700">
-                            {{ editing ? 'Editar Tipo Global' : 'Nuevo Tipo Global' }}
-                        </h2>
-
+        <BaseModal v-model="modalOpen" :title="editing ? 'Editar Tipo Global' : 'Nuevo Tipo Global'" size="lg">
+            <div class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre</label>
@@ -92,45 +85,36 @@
                             </div>
                         </div>
 
-                        <p v-if="formError" class="text-xs text-red-600">{{ formError }}</p>
+                <p v-if="formError" class="text-xs text-red-600">{{ formError }}</p>
+            </div>
 
-                        <div class="flex justify-end gap-2 pt-2">
-                            <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="closeModal">CANCELAR</button>
-                            <button class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition" :disabled="submitting" @click="submitForm">
-                                {{ submitting ? 'GUARDANDO...' : 'GUARDAR' }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
+            <template #footer>
+                <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="closeModal">CANCELAR</button>
+                <button class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition" :disabled="submitting" @click="submitForm">
+                    {{ submitting ? 'GUARDANDO...' : 'GUARDAR' }}
+                </button>
+            </template>
+        </BaseModal>
 
         <!-- Delete Confirm Modal -->
-        <Teleport to="body">
-            <Transition enter-active-class="transition-opacity duration-150" leave-active-class="transition-opacity duration-150" enter-from-class="opacity-0" leave-to-class="opacity-0">
-                <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center">
-                    <div class="absolute inset-0 bg-black/40" @click="deleteTarget = null" />
-                    <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
-                        <h2 class="text-sm font-bold uppercase tracking-widest text-slate-700">Eliminar</h2>
-                        <p class="text-sm text-slate-600">
-                            ¿Eliminar <span class="font-semibold">{{ deleteTarget.name }}</span>?
-                        </p>
-                        <div class="flex justify-end gap-2">
-                            <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="deleteTarget = null">CANCELAR</button>
-                            <button class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition" :disabled="deleting" @click="doDelete">
-                                {{ deleting ? 'ELIMINANDO...' : 'ELIMINAR' }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
+        <BaseModal v-model="deleteModalOpen" title="Eliminar" size="sm">
+            <p v-if="deleteTarget" class="text-sm text-slate-600">
+                ¿Eliminar <span class="font-semibold">{{ deleteTarget.name }}</span>?
+            </p>
+            <template #footer>
+                <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="deleteTarget = null">CANCELAR</button>
+                <button class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition" :disabled="deleting" @click="doDelete">
+                    {{ deleting ? 'ELIMINANDO...' : 'ELIMINAR' }}
+                </button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { PlusIcon, PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
@@ -216,6 +200,10 @@ async function submitForm() {
 }
 
 const deleteTarget = ref<ComplementaryHourType | null>(null)
+const deleteModalOpen = computed({
+    get: () => deleteTarget.value !== null,
+    set: (v: boolean) => { if (!v) deleteTarget.value = null },
+})
 const deleting = ref(false)
 
 function confirmDelete(row: ComplementaryHourType) {

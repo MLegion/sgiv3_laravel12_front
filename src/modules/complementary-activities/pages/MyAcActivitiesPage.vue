@@ -46,9 +46,11 @@ import { ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useConfirm } from '@/app/composables/useConfirm'
 
 const AC = API.AC_API
 const toast = useToast()
+const { confirm } = useConfirm()
 const items = ref<any[]>([])
 const loading = ref(true)
 const busy = ref(false)
@@ -79,7 +81,7 @@ async function enroll(a: any) {
     } finally { busy.value = false }
 }
 async function drop(a: any) {
-    if (!confirm(`¿Darte de baja de "${a.name}"?`)) return
+    if (!await confirm({ title: 'Darse de baja', message: `¿Darte de baja de "${a.name}"?`, confirmText: 'Darme de baja', variant: 'danger' })) return
     busy.value = true
     try { await api.post(AC.selfDrop(a.id), {}); toast.success('Baja realizada.'); await load() }
     catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo dar de baja.') }

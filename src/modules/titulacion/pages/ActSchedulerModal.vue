@@ -1,11 +1,6 @@
 <template>
-    <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="$emit('close')">
-        <div class="bg-white rounded-xl w-full max-w-5xl max-h-[92vh] overflow-auto p-5 space-y-4">
-            <div class="flex items-center justify-between">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">Programar acto — calendario del aula</h2>
-                <button @click="$emit('close')" class="text-slate-400 hover:text-slate-600 text-lg leading-none">&times;</button>
-            </div>
-
+    <BaseModal v-model="open" title="Programar acto — calendario del aula" size="xl" @close="$emit('close')">
+        <div class="space-y-4">
             <!-- Controles -->
             <div class="flex flex-wrap items-center gap-3">
                 <select v-model.number="placeId" @change="loadWeek" class="rounded-lg border-slate-300 text-sm">
@@ -92,17 +87,22 @@
                 </div>
             </div>
         </div>
-    </div>
+    </BaseModal>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import type { TitulacionRoom, RoomWeekOccupancy, OccupancyDay } from '@/modules/titulacion/types/titulacion.type'
 
 const props = defineProps<{ recordId: number | string; collegeAcademicPeriodId: number | null }>()
 const emit = defineEmits<{ (e: 'close'): void; (e: 'scheduled'): void }>()
+
+// El componente se monta sólo cuando está abierto (v-if en el padre). `open`
+// arranca en true; al cerrarse BaseModal emite 'close' para que el padre lo desmonte.
+const open = ref(true)
 const T = API.TITULACION_API
 
 const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']

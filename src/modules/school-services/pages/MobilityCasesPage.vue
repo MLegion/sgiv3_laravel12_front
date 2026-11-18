@@ -237,6 +237,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useConfirm } from '@/app/composables/useConfirm'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import InstitutionPicker from '@/modules/school-services/components/InstitutionPicker.vue'
@@ -248,6 +249,7 @@ const glossary = PROCESS_GLOSSARY
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const { confirm } = useConfirm()
 const tabs = [{ key: 'mine', label: 'Todos' }, { key: 'incoming', label: 'Entrantes' }]
 const tab = ref(route.query.tab === 'incoming' ? 'incoming' : 'mine')
 
@@ -280,7 +282,7 @@ const externalValid = computed(() => {
 })
 
 async function removeCase(r: any) {
-    if (!confirm(`¿Eliminar el expediente #${r.id}? Esta acción borra el caso y su evidencia.`)) return
+    if (!await confirm({ title: 'Eliminar expediente', message: `¿Eliminar el expediente #${r.id}? Esta acción borra el caso y su evidencia.`, confirmText: 'Eliminar', variant: 'danger' })) return
     try {
         await api.delete(API.SCHOOL_SERVICES_API.mobility.delete(r.id))
         toast.success('Expediente eliminado')

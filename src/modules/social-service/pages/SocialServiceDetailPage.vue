@@ -126,9 +126,13 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { STATUS_LABELS, type SocialServiceRecord, type SocialServiceReport, type DependencyOption, type DocumentChecklistItem } from '@/modules/social-service/types/social-service.type'
+import { usePrompt } from '@/app/composables/usePrompt'
+import { useConfirm } from '@/app/composables/useConfirm'
 
 const props = defineProps<{ id: string | number }>()
 const S = API.SOCIAL_SERVICE_API
+const { prompt } = usePrompt()
+const { confirm } = useConfirm()
 
 const loading = ref(true)
 const saving = ref(false)
@@ -201,11 +205,11 @@ async function activate() { await act(() => api.post(S.records.activate(props.id
 async function sendRelease() { await act(() => api.post(S.records.sendRelease(props.id), {}), 'Expediente enviado a liberación.') }
 async function release() { await act(() => api.post(S.records.release(props.id), {}), 'Servicio social liberado y acreditado.') }
 async function drop() {
-    if (!confirm('¿Dar de baja este servicio social?')) return
+    if (!await confirm({ title: 'Dar de baja', message: '¿Dar de baja este servicio social?', confirmText: 'Dar de baja', variant: 'danger' })) return
     await act(() => api.delete(S.records.drop(props.id)), 'Dado de baja.')
 }
 async function grantException() {
-    const until = prompt('Excepción vigente hasta (AAAA-MM-DD):')
+    const until = await prompt({ title: 'Otorgar excepción', label: 'Vigente hasta', inputType: 'date', required: true, confirmText: 'Otorgar' })
     if (!until) return
     await act(() => api.post(S.records.grantException(props.id), { info_until: until, grade_until: until }), 'Excepción otorgada.')
 }
@@ -213,7 +217,7 @@ async function revokeException() { await act(() => api.delete(S.records.revokeEx
 
 async function review(reportId: number, status: 'approved' | 'rejected') {
     let reason: string | null = null
-    if (status === 'rejected') { reason = prompt('Motivo del rechazo:') ; if (reason === null) return }
+    if (status === 'rejected') { reason = await prompt({ title: 'Rechazar reporte', label: 'Motivo del rechazo', inputType: 'textarea', required: true, confirmText: 'Rechazar' }); if (reason === null) return }
     await act(() => api.post(S.reports.review(reportId), { status, reason }), status === 'approved' ? 'Reporte aprobado.' : 'Reporte rechazado.')
 }
 
@@ -224,7 +228,7 @@ async function viewDoc(id: number) {
 
 async function reviewDoc(id: number, status: 'approved' | 'rejected') {
     let reason: string | null = null
-    if (status === 'rejected') { reason = prompt('Motivo del rechazo:'); if (reason === null) return }
+    if (status === 'rejected') { reason = await prompt({ title: 'Rechazar documento', label: 'Motivo del rechazo', inputType: 'textarea', required: true, confirmText: 'Rechazar' }); if (reason === null) return }
     await act(() => status === 'approved' ? api.post(S.documents.approve(id), { reason }) : api.post(S.documents.reject(id), { reason }), status === 'approved' ? 'Documento aprobado.' : 'Documento rechazado.')
 }
 

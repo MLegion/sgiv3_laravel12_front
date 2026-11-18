@@ -174,30 +174,25 @@
         </template>
 
         <!-- Drawer lateral: vista previa del oficio en PDF -->
-        <Transition name="oficio-fade">
-            <div v-if="oficioOpen" class="fixed inset-0 z-[120] bg-black/40" @click="closeOficio"></div>
-        </Transition>
-        <Transition name="oficio-slide">
-            <div v-if="oficioOpen" class="fixed right-0 top-0 h-full w-full max-w-3xl z-[121] bg-white shadow-2xl flex flex-col" @click.stop>
-                <header class="border-b px-4 py-3 flex items-center justify-between gap-2 shrink-0">
-                    <h2 class="text-sm font-semibold text-slate-800">Oficio de función académica</h2>
-                    <div class="flex items-center gap-2">
-                        <button class="px-3 py-1.5 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 inline-flex items-center gap-1" :disabled="!oficioUrl" @click="printOficioNow">🖨 Imprimir</button>
-                        <button class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-40 inline-flex items-center gap-1" :disabled="!oficioUrl" @click="downloadOficioFile">⬇ Descargar</button>
-                        <button class="px-2 py-1.5 text-slate-400 hover:text-slate-700" title="Cerrar" @click="closeOficio">✕</button>
-                    </div>
-                </header>
-                <div class="flex-1 min-h-0 bg-slate-100">
-                    <iframe v-if="oficioUrl" ref="oficioFrame" :src="oficioUrl" class="w-full h-full border-0" title="Oficio de función académica"></iframe>
-                    <div v-else-if="oficioError" class="h-full flex items-center justify-center p-6 text-center text-red-600 text-sm">{{ oficioError }}</div>
-                    <!-- Skeleton de carga mientras se genera el PDF -->
-                    <div v-else class="h-full flex flex-col items-center justify-center gap-3 text-slate-400">
-                        <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                        <p class="text-sm">Generando oficio…</p>
-                    </div>
+        <BaseDrawer v-model="oficioOpen" size="xl" aria-label="Oficio de función académica" hide-close @close="closeOficio">
+            <template #header>
+                <h2 class="text-sm font-semibold text-slate-800">Oficio de función académica</h2>
+                <div class="flex items-center gap-2">
+                    <button class="px-3 py-1.5 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 inline-flex items-center gap-1" :disabled="!oficioUrl" @click="printOficioNow">🖨 Imprimir</button>
+                    <button class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-40 inline-flex items-center gap-1" :disabled="!oficioUrl" @click="downloadOficioFile">⬇ Descargar</button>
+                    <button class="px-2 py-1.5 text-slate-400 hover:text-slate-700" title="Cerrar" @click="closeOficio">✕</button>
+                </div>
+            </template>
+            <div class="h-full min-h-0 bg-slate-100 -mx-6 -my-4">
+                <iframe v-if="oficioUrl" ref="oficioFrame" :src="oficioUrl" class="w-full h-full border-0" title="Oficio de función académica"></iframe>
+                <div v-else-if="oficioError" class="h-full flex items-center justify-center p-6 text-center text-red-600 text-sm">{{ oficioError }}</div>
+                <!-- Skeleton de carga mientras se genera el PDF -->
+                <div v-else class="h-full flex flex-col items-center justify-center gap-3 text-slate-400">
+                    <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-sm">Generando oficio…</p>
                 </div>
             </div>
-        </Transition>
+        </BaseDrawer>
     </div>
 </template>
 
@@ -208,6 +203,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
+import BaseDrawer from '@/app/components/ui/modal/BaseDrawer.vue'
 import type { Budget, DistributionRequest, LockedRow } from '@/modules/midocencia/types/distribution.type'
 import type { RubricTree, RubricCriterion, RubricRubro, RubricEvidence, RubricProduct } from '@/modules/midocencia/types/rubric.type'
 
@@ -526,11 +522,3 @@ async function retract() {
     finally { busy.value = false }
 }
 </script>
-
-<style scoped>
-/* Overlay: fade. Panel: slide desde la derecha. */
-.oficio-fade-enter-active, .oficio-fade-leave-active { transition: opacity .2s ease; }
-.oficio-fade-enter-from, .oficio-fade-leave-to { opacity: 0; }
-.oficio-slide-enter-active, .oficio-slide-leave-active { transition: transform .28s cubic-bezier(.4, 0, .2, 1); }
-.oficio-slide-enter-from, .oficio-slide-leave-to { transform: translateX(100%); }
-</style>

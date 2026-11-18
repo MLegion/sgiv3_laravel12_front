@@ -53,14 +53,16 @@
             <p v-else class="text-xs text-slate-400">La versión global es de solo lectura. Clónala para personalizarla.</p>
         </div>
 
-        <div v-if="showNew" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showNew = false">
-            <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">Nueva versión</h2>
+        <BaseModal v-model="showNew" title="Nueva versión" size="md">
+            <div class="space-y-3">
                 <input v-model="nf.name" placeholder="Nombre" class="w-full rounded-lg border-slate-300 text-sm" />
                 <label class="block"><span class="text-xs font-semibold text-slate-500">Vigente desde</span><input v-model="nf.effective_from" type="date" class="mt-1 w-full rounded-lg border-slate-300 text-sm" /></label>
-                <div class="flex justify-end gap-2"><button @click="showNew = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button><button @click="create" :disabled="!nf.name" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold disabled:opacity-50">Crear</button></div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="showNew = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
+                <button @click="create" :disabled="!nf.name" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold disabled:opacity-50">Crear</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -69,8 +71,13 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { CedulaSetSummary } from '@/modules/tutoring/types/tutoring.type'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import { usePrompt } from '@/app/composables/usePrompt'
+import { useConfirm } from '@/app/composables/useConfirm'
 
 const T = API.TUTORING_API
+const { prompt } = usePrompt()
+const { confirm } = useConfirm()
 const sets = ref<CedulaSetSummary[]>([])
 const editing = ref<any | null>(null)
 const showNew = ref(false), msg = ref(''), msgError = ref(false)
@@ -88,8 +95,8 @@ async function edit(id: number) { const { data } = await api.get(T.cedulaSets.by
 async function saveFields() { try { await api.put(T.cedulaSets.saveFields(editing.value.id), { fields: editing.value.fields }); await edit(editing.value.id); await fetchSets(); flash('Campos guardados.') } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
 async function publish(id: number) { await act(() => api.post(T.cedulaSets.publish(id), {}), 'Publicada.') }
 async function archive(id: number) { await act(() => api.post(T.cedulaSets.archive(id), {}), 'Archivada.') }
-async function destroy(id: number) { if (confirm('¿Eliminar borrador?')) await act(() => api.delete(T.cedulaSets.destroy(id)), 'Eliminada.') }
-async function clone(id: number) { const name = prompt('Nombre de la copia:'); if (!name) return; await act(() => api.post(T.cedulaSets.clone(id), { name }), 'Clonada.') }
+async function destroy(id: number) { if (await confirm({ title: 'Eliminar borrador', message: '¿Eliminar borrador?', confirmText: 'Eliminar', variant: 'danger' })) await act(() => api.delete(T.cedulaSets.destroy(id)), 'Eliminada.') }
+async function clone(id: number) { const name = await prompt({ title: 'Clonar cédula', label: 'Nombre de la copia', required: true, confirmText: 'Clonar' }); if (!name) return; await act(() => api.post(T.cedulaSets.clone(id), { name }), 'Clonada.') }
 async function act(fn: () => Promise<any>, ok: string) { try { await fn(); editing.value = null; await fetchSets(); flash(ok) } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) } }
 
 onMounted(fetchSets)

@@ -1,20 +1,11 @@
 <template>
-    <div v-if="open" class="fixed inset-0 z-[120] flex items-center justify-center p-4" @keydown.esc="close">
-        <div class="absolute inset-0 bg-black/40" @click="close"></div>
-
-        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-5xl max-h-[88vh] flex flex-col overflow-hidden">
-            <!-- Encabezado -->
-            <div class="flex items-center justify-between px-5 py-3.5 border-b bg-slate-50">
-                <div>
-                    <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Buscar estudiante</h2>
-                    <p class="text-[11px] text-slate-400">Filtra y selecciona al estudiante para la constancia.</p>
-                </div>
-                <button class="text-slate-400 hover:text-slate-600" @click="close" aria-label="Cerrar">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                    </svg>
-                </button>
+    <BaseModal :model-value="open" size="2xl" @update:model-value="close">
+        <template #header>
+            <div>
+                <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Buscar estudiante</h2>
+                <p class="text-[11px] text-slate-400">Filtra y selecciona al estudiante para la constancia.</p>
             </div>
+        </template>
 
             <!-- Filtros -->
             <div class="px-5 py-3 border-b bg-white">
@@ -100,14 +91,14 @@
                     <button class="px-2.5 py-1 rounded border bg-white disabled:opacity-40" :disabled="page >= lastPage" @click="changePage(page + 1)">›</button>
                 </div>
             </div>
-        </div>
-    </div>
+    </BaseModal>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref, computed, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ (e: 'close'): void; (e: 'select', student: any): void }>()

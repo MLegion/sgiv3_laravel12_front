@@ -1,30 +1,19 @@
 <template>
-    <Teleport to="body">
-        <div
-            v-if="modelValue"
-            class="fixed inset-0 z-50 flex items-center justify-center"
-        >
-            <div class="absolute inset-0 bg-black/50" @click="close" />
+    <BaseModal v-model="modelValueProxy" size="xl">
+        <template #header>
+            <div>
+                <h3 class="text-base font-semibold text-slate-800">
+                    Inscribir a materias del semestre
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">
+                    <span v-if="preview?.group" class="font-medium">{{ preview.group.name }}</span>
+                    <span v-else>Cargando…</span>
+                </p>
+            </div>
+        </template>
 
-            <div class="relative bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col z-10">
-                <!-- Header -->
-                <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between gap-4">
-                    <div>
-                        <h3 class="text-base font-semibold text-slate-800">
-                            Inscribir a materias del semestre
-                        </h3>
-                        <p class="text-xs text-slate-500 mt-0.5">
-                            <span v-if="preview?.group" class="font-medium">{{ preview.group.name }}</span>
-                            <span v-else>Cargando…</span>
-                        </p>
-                    </div>
-                    <button class="text-slate-400 hover:text-slate-600" @click="close">
-                        <XMarkIcon class="w-5 h-5" />
-                    </button>
-                </div>
-
-                <!-- Body -->
-                <div class="flex-1 overflow-y-auto px-5 py-4">
+        <!-- Body -->
+        <div>
                     <div v-if="loadingPreview" class="text-center py-12 text-slate-400 text-sm">
                         <ArrowPathIcon class="w-6 h-6 mx-auto animate-spin mb-2" />
                         Generando preview…
@@ -138,10 +127,9 @@
                             <p class="text-sm font-bold text-rose-700">{{ errorMsg }}</p>
                         </div>
                     </template>
-                </div>
+        </div>
 
-                <!-- Footer -->
-                <div class="px-5 py-3 border-t border-slate-200 flex justify-between items-center gap-3">
+        <template #footer>
                     <button
                         class="px-3 py-2 text-sm border border-slate-300 rounded-lg hover:bg-slate-100"
                         :disabled="confirming"
@@ -157,20 +145,19 @@
                     >
                         {{ confirming ? 'Inscribiendo…' : `Confirmar inscripción (${preview.students.length})` }}
                     </button>
-                </div>
-            </div>
-        </div>
-    </Teleport>
+        </template>
+    </BaseModal>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import {
-    XMarkIcon, ArrowPathIcon, CheckCircleIcon,
+    ArrowPathIcon, CheckCircleIcon,
     ExclamationTriangleIcon, BookOpenIcon,
 } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 
 interface Blocker { type: string; message: string; data?: any }
 interface SubjectRow {
@@ -203,6 +190,11 @@ const emit = defineEmits<{
     (e: 'update:modelValue', v: boolean): void
     (e: 'enrolled', result: Result): void
 }>()
+
+const modelValueProxy = computed({
+    get: () => props.modelValue,
+    set: (v: boolean) => emit('update:modelValue', v),
+})
 
 const loadingPreview = ref(false)
 const confirming     = ref(false)

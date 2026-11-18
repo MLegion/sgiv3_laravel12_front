@@ -1,15 +1,6 @@
 <template>
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="$emit('close')">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[88vh] overflow-auto">
-            <!-- Cabecera -->
-            <div class="flex items-center justify-between border-b px-5 py-3 sticky top-0 bg-white z-10">
-                <h3 class="text-base font-semibold text-slate-800 inline-flex items-center gap-2">
-                    <span>☑</span> Revisión de distribución
-                </h3>
-                <button class="text-slate-400 hover:text-slate-700" @click="$emit('close')">✕</button>
-            </div>
-
-            <div class="p-5 space-y-4">
+    <BaseModal :model-value="true" title="☑ Revisión de distribución" size="lg" @update:model-value="$emit('close')">
+            <div class="space-y-4">
                 <!-- Docente + resumen -->
                 <div class="flex items-start justify-between gap-3 border rounded-lg px-4 py-3 bg-slate-50">
                     <div>
@@ -74,8 +65,7 @@
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div class="flex flex-wrap justify-end gap-2 border-t px-5 py-3 sticky bottom-0 bg-white">
+            <template #footer>
                 <button v-if="request.status === 'approved' && request.scheduleStatus !== 'approved'"
                     class="px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 disabled:opacity-50"
                     :disabled="busy" @click="reopen">↺ Reabrir distribución</button>
@@ -86,8 +76,7 @@
                     class="px-3 py-1.5 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
                     :disabled="busy || !folio.trim()" @click="showSign = true">✔ Aprobar y firmar</button>
                 <button class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 hover:bg-slate-50" @click="$emit('close')">Cerrar</button>
-            </div>
-        </div>
+            </template>
 
         <!-- Aprobar el oficio EXIGE firmarlo (MFA/contraseña): si no firma, no se aprueba. -->
         <SignDocumentModal
@@ -97,7 +86,7 @@
             label="Oficio de función académica"
             @signed="onSigned"
         />
-    </div>
+    </BaseModal>
 </template>
 
 <script setup lang="ts">
@@ -105,7 +94,9 @@ import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { usePrompt } from '@/app/composables/usePrompt'
 import SignDocumentModal from '@/modules/signatures/modals/SignDocumentModal.vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import type { DistributionRequest } from '@/modules/midocencia/types/distribution.type'
 
@@ -113,6 +104,7 @@ const props = defineProps<{ request: DistributionRequest; teacherName: string }>
 const emit = defineEmits<{ (e: 'close'): void; (e: 'changed'): void }>()
 
 const toast = useToast()
+const { prompt } = usePrompt()
 const A = API.MIDOCENCIA_API.approval
 const { generateFromContext, convertToPdf } = useReportGenerator()
 
@@ -204,11 +196,11 @@ async function reject() {
 }
 
 async function reopen() {
-    const motivo = window.prompt('Motivo para reabrir la distribución (se regresará a borrador):')
-    if (!motivo || !motivo.trim()) return
+    const motivo = await prompt({ title: 'Reabrir distribución', label: 'Motivo para reabrir la distribución (se regresará a borrador)', inputType: 'textarea', required: true, confirmText: 'Reabrir' })
+    if (!motivo) return
     busy.value = true
     try {
-        await api.post(A.reopen(props.request.id), { reason: motivo.trim() })
+        await api.post(A.reopen(props.request.id), { reason: motivo })
         toast.success('Distribución reabierta (regresó a borrador).')
         emit('changed')
     } catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo reabrir.') }

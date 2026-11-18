@@ -126,11 +126,13 @@
 import { ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import { useConfirm } from '@/app/composables/useConfirm'
 import type { GraduateWave, WaveInvitation, WaveStatistics } from '@/modules/graduate-tracking/types/graduate-tracking.type'
 import { statusLabel, statusClass, invStatusLabel, invStatusClass } from '@/modules/graduate-tracking/pages/status'
 
 const props = defineProps<{ id: string | number }>()
 const G = API.GRADUATE_TRACKING_API
+const { confirm } = useConfirm()
 
 const wave = ref<GraduateWave | null>(null)
 const survey = ref<{ exists: boolean; has_prior: boolean; status: string | null } | null>(null)
@@ -186,7 +188,7 @@ async function previewSurvey() {
     finally { busy.value = false }
 }
 async function remove() {
-    if (!confirm('¿Eliminar esta oleada en borrador?')) return
+    if (!await confirm({ title: 'Eliminar oleada', message: '¿Eliminar esta oleada en borrador?', confirmText: 'Eliminar', variant: 'danger' })) return
     await api.delete(G.waves.destroy(props.id))
     window.history.back()
 }

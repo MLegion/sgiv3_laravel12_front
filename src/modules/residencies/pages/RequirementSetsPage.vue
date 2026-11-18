@@ -30,17 +30,13 @@
         </ul>
 
         <!-- Editor / detalle -->
-        <Teleport to="body">
-            <div v-if="detail" class="fixed inset-0 z-50 flex justify-end">
-                <div class="absolute inset-0 bg-black/40" @click="detail = null" />
-                <div class="relative bg-white w-full max-w-2xl h-full overflow-y-auto p-6 space-y-5 z-10">
-                    <div class="flex items-start justify-between">
-                        <h2 class="text-base font-bold text-slate-800">{{ detail.name }}
-                            <span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold align-middle" :class="statusClass(detail.status)">{{ statusLabel(detail.status) }}</span>
-                        </h2>
-                        <button type="button" class="text-slate-400 hover:text-slate-700" @click="detail = null">✕</button>
-                    </div>
-
+        <BaseDrawer v-if="detail" :model-value="!!detail" size="lg" :aria-label="detail.name" @update:model-value="detail = null">
+            <template #header>
+                <h2 class="text-base font-bold text-slate-800">{{ detail.name }}
+                    <span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold align-middle" :class="statusClass(detail.status)">{{ statusLabel(detail.status) }}</span>
+                </h2>
+            </template>
+            <div class="space-y-5">
                     <p v-if="!detail.editable" class="text-xs bg-amber-50 text-amber-700 rounded-md px-3 py-2">
                         {{ detail.isGlobal ? 'Versión global (referencia): no editable desde el colegio. Clónala para tener una versión propia.' : 'Versión publicada: no editable. Clónala para hacer cambios.' }}
                     </p>
@@ -119,29 +115,24 @@
                     <div v-else-if="detail.status === 'published' && !detail.isGlobal" class="border-t pt-4">
                         <button type="button" class="text-sm px-3 py-2 border border-red-200 text-red-600 rounded-md hover:bg-red-50" @click="archive">Archivar versión</button>
                     </div>
-                </div>
             </div>
-        </Teleport>
+        </BaseDrawer>
 
         <!-- Modal crear/clonar -->
-        <Teleport to="body">
-            <div v-if="form.open" class="fixed inset-0 z-50 flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/40" @click="form.open = false" />
-                <div class="relative bg-white rounded-xl shadow-lg w-full max-w-md p-6 space-y-4 z-10">
-                    <h3 class="text-sm font-semibold text-slate-800">{{ form.cloneFrom ? `Clonar "${form.cloneFrom}"` : 'Nueva versión de requisitos' }}</h3>
-                    <input v-model="form.name" placeholder="Nombre (p. ej. REQUISITOS GENERACIÓN 2026)" class="border rounded-md w-full px-3 py-2 text-sm uppercase placeholder:normal-case" />
-                    <label class="block text-sm">
-                        <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Vigente desde</span>
-                        <input v-model="form.effectiveFrom" type="date" class="border rounded-md w-full px-3 py-2 text-sm" />
-                    </label>
-                    <p v-if="form.error" class="text-xs text-red-600">{{ form.error }}</p>
-                    <div class="flex justify-end gap-2">
-                        <button type="button" class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="form.open = false">Cancelar</button>
-                        <button type="button" :disabled="form.saving" class="px-4 py-2 text-sm rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50" @click="submitForm">{{ form.cloneFrom ? 'Clonar' : 'Crear' }}</button>
-                    </div>
-                </div>
+        <BaseModal v-model="form.open" :title="form.cloneFrom ? `Clonar «${form.cloneFrom}»` : 'Nueva versión de requisitos'" size="md">
+            <div class="space-y-4">
+                <input v-model="form.name" placeholder="Nombre (p. ej. REQUISITOS GENERACIÓN 2026)" class="border rounded-md w-full px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                <label class="block text-sm">
+                    <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Vigente desde</span>
+                    <input v-model="form.effectiveFrom" type="date" class="border rounded-md w-full px-3 py-2 text-sm" />
+                </label>
+                <p v-if="form.error" class="text-xs text-red-600">{{ form.error }}</p>
             </div>
-        </Teleport>
+            <template #footer>
+                <button type="button" class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="form.open = false">Cancelar</button>
+                <button type="button" :disabled="form.saving" class="px-4 py-2 text-sm rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50" @click="submitForm">{{ form.cloneFrom ? 'Clonar' : 'Crear' }}</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -150,6 +141,8 @@ import { ref, reactive } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useConfirm } from '@/app/composables/useConfirm'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import BaseDrawer from '@/app/components/ui/modal/BaseDrawer.vue'
 import type { RequirementSetRow, RequirementSetDetail } from '@/modules/residencies/types/residency.type'
 
 const R = API.RESIDENCIES_API

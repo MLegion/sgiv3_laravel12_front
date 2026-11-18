@@ -72,21 +72,17 @@
         </section>
 
         <!-- Modal puesto -->
-        <Teleport to="body">
-            <div v-if="form.open" class="fixed inset-0 z-50 flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/40" @click="form.open = false" />
-                <div class="relative bg-white rounded-xl shadow-lg w-full max-w-md p-6 space-y-4 z-10">
-                    <h3 class="text-sm font-semibold text-slate-800">{{ form.id ? 'Editar puesto' : 'Nuevo puesto' }}</h3>
-                    <input v-model="form.name" placeholder="Nombre del puesto" class="border rounded-md w-full px-3 py-2 text-sm uppercase placeholder:normal-case" />
-                    <label class="flex items-center gap-2 text-sm text-slate-700"><input v-model="form.is_active" type="checkbox" /> Activo</label>
-                    <p v-if="form.error" class="text-xs text-red-600">{{ form.error }}</p>
-                    <div class="flex justify-end gap-2">
-                        <button type="button" class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="form.open = false">Cancelar</button>
-                        <button type="button" :disabled="!form.name || form.saving" class="px-4 py-2 text-sm rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50" @click="savePosition">Guardar</button>
-                    </div>
-                </div>
+        <BaseModal v-model="form.open" :title="form.id ? 'Editar puesto' : 'Nuevo puesto'" size="md">
+            <div class="space-y-4">
+                <input v-model="form.name" placeholder="Nombre del puesto" class="border rounded-md w-full px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                <label class="flex items-center gap-2 text-sm text-slate-700"><input v-model="form.is_active" type="checkbox" /> Activo</label>
+                <p v-if="form.error" class="text-xs text-red-600">{{ form.error }}</p>
             </div>
-        </Teleport>
+            <template #footer>
+                <button type="button" class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="form.open = false">Cancelar</button>
+                <button type="button" :disabled="!form.name || form.saving" class="px-4 py-2 text-sm rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50" @click="savePosition">Guardar</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -95,6 +91,7 @@ import { ref, reactive } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import type { ExternalJobPosition, PersonnelSettings } from '@/modules/residencies/types/residency.type'
 
 const R = API.RESIDENCIES_API

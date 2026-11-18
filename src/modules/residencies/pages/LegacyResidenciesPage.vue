@@ -91,19 +91,13 @@
         </div>
 
         <!-- Drawer detalle (panel ancho: datos + visor PDF embebido) -->
-        <Teleport to="body">
-            <div v-if="detail" class="fixed inset-0 z-[90] flex justify-end">
-                <div class="absolute inset-0 bg-black/40" @click="closeDetail" />
-                <div class="relative bg-white w-full max-w-6xl h-full z-10 flex flex-col">
-                    <!-- Encabezado -->
-                    <div class="flex items-start justify-between px-6 py-4 border-b shrink-0">
-                        <div>
-                            <h2 class="text-base font-bold text-slate-800">{{ detail.studentName ?? '—' }}</h2>
-                            <p class="text-xs text-slate-400 font-mono">{{ detail.numControl ?? '—' }} · {{ detail.source }} #{{ detail.externalId }}</p>
-                        </div>
-                        <button type="button" class="text-slate-400 hover:text-slate-700 text-lg leading-none" @click="closeDetail">✕</button>
-                    </div>
-
+        <BaseDrawer
+            v-if="detail"
+            :model-value="!!detail"
+            size="2xl"
+            :title="detail.studentName ?? '—'"
+            :subtitle="`${detail.numControl ?? '—'} · ${detail.source} #${detail.externalId}`"
+            @update:model-value="closeDetail">
                     <!-- Cuerpo en dos columnas -->
                     <div class="flex-1 flex min-h-0">
                         <!-- Columna izquierda: datos + lista de documentos -->
@@ -170,9 +164,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </Teleport>
+        </BaseDrawer>
     </div>
 </template>
 
@@ -182,6 +174,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { LegacyResidencyRow, LegacyResidencyDetail, LegacyFilterOption } from '@/modules/residencies/types/residency.type'
 import UserAvatar from '@/app/components/ui/UserAvatar.vue'
+import BaseDrawer from '@/app/components/ui/modal/BaseDrawer.vue'
 
 const R = API.RESIDENCIES_API
 

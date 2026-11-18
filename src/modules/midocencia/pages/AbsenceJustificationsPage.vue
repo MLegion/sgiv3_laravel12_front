@@ -142,14 +142,10 @@
         </DataTable>
 
         <!-- Modal de búsqueda avanzada: DataTable paginado + filtros -->
-        <div v-if="searchOpen" class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" @click.self="searchOpen = false">
-            <div class="bg-white rounded-xl w-full max-w-4xl max-h-[88vh] flex flex-col overflow-hidden">
-                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-                    <h3 class="text-sm font-semibold text-slate-700">Buscar alumno</h3>
-                    <button @click="searchOpen = false" class="text-slate-400 hover:text-slate-600">✕</button>
-                </div>
+        <BaseModal v-model="searchOpen" title="Buscar alumno" size="xl">
+            <div class="space-y-3">
                 <!-- Filtros -->
-                <div class="px-4 py-3 grid grid-cols-1 sm:grid-cols-3 gap-3 border-b border-slate-100 bg-slate-50/50">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-slate-600">Carrera</label>
                         <select v-model="mfCareer" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
@@ -172,54 +168,45 @@
                         </select>
                     </div>
                 </div>
-                <div class="flex-1 overflow-auto p-4">
-                    <DataTable
-                        :columns="modalColumns"
-                        :rows="modalRows"
-                        :loading="modalLoading"
-                        :pagination="modalPagination"
-                        search-placeholder="Buscar por nombre o número de control…"
-                        @change="modalOnChange"
-                    >
-                        <template #cell-num_control="{ row }"><span class="font-mono text-xs">{{ row.num_control }}</span></template>
-                        <template #cell-accion="{ row }">
-                            <button @click="selectFromModal(row)" class="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-medium">Seleccionar</button>
-                        </template>
-                    </DataTable>
-                </div>
+                <DataTable
+                    :columns="modalColumns"
+                    :rows="modalRows"
+                    :loading="modalLoading"
+                    :pagination="modalPagination"
+                    search-placeholder="Buscar por nombre o número de control…"
+                    @change="modalOnChange"
+                >
+                    <template #cell-num_control="{ row }"><span class="font-mono text-xs">{{ row.num_control }}</span></template>
+                    <template #cell-accion="{ row }">
+                        <button @click="selectFromModal(row)" class="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-medium">Seleccionar</button>
+                    </template>
+                </DataTable>
             </div>
-        </div>
+        </BaseModal>
 
         <!-- Drawer de detalle (motivo + evidencia) -->
-        <div v-if="drawer.open" class="fixed inset-0 z-50 flex">
-            <div class="flex-1 bg-black/40" @click="closeDrawer"></div>
-            <div class="w-full max-w-2xl bg-white h-full flex flex-col shadow-xl">
-                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-                    <h3 class="text-sm font-semibold text-slate-700">{{ drawer.detail ? 'Detalle del justificante' : 'Evidencia' }}</h3>
-                    <button @click="closeDrawer" class="text-slate-400 hover:text-slate-600">✕</button>
+        <BaseDrawer v-model="drawer.open" :title="drawer.detail ? 'Detalle del justificante' : 'Evidencia'" size="lg" @close="closeDrawer">
+            <!-- Motivo / tipo (solo en modo detalle) -->
+            <div v-if="drawer.detail" class="space-y-2">
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded-full text-xs" :class="drawer.detail.type === 'medical' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'">
+                        {{ drawer.detail.type === 'medical' ? 'Médico' : 'Personal' }}
+                    </span>
+                    <span class="text-xs text-slate-500">{{ fmt(drawer.detail.starts_at) }} → {{ fmt(drawer.detail.ends_at) }}</span>
                 </div>
-                <!-- Motivo / tipo (solo en modo detalle) -->
-                <div v-if="drawer.detail" class="px-4 py-3 border-b border-slate-100 bg-slate-50/60 space-y-2">
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded-full text-xs" :class="drawer.detail.type === 'medical' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'">
-                            {{ drawer.detail.type === 'medical' ? 'Médico' : 'Personal' }}
-                        </span>
-                        <span class="text-xs text-slate-500">{{ fmt(drawer.detail.starts_at) }} → {{ fmt(drawer.detail.ends_at) }}</span>
-                    </div>
-                    <div>
-                        <p class="text-xs font-medium text-slate-500">Motivo</p>
-                        <p class="text-sm text-slate-800 whitespace-pre-line max-h-40 overflow-auto">{{ drawer.detail.reason }}</p>
-                    </div>
-                </div>
-                <div class="flex-1 overflow-auto bg-slate-50 flex items-center justify-center">
-                    <p v-if="drawer.loading" class="text-sm text-slate-500">Cargando…</p>
-                    <img v-else-if="drawer.kind === 'image'" :src="drawer.url!" class="max-w-full max-h-full object-contain" />
-                    <iframe v-else-if="drawer.kind === 'pdf'" :src="drawer.url!" class="w-full h-full" />
-                    <p v-else-if="drawer.detail" class="text-sm text-slate-400">Sin evidencia adjunta.</p>
-                    <p v-else class="text-sm text-slate-500">No se pudo mostrar.</p>
+                <div>
+                    <p class="text-xs font-medium text-slate-500">Motivo</p>
+                    <p class="text-sm text-slate-800 whitespace-pre-line max-h-40 overflow-auto">{{ drawer.detail.reason }}</p>
                 </div>
             </div>
-        </div>
+            <div class="flex-1 overflow-auto bg-slate-50 flex items-center justify-center -mx-6 -mb-4 mt-4">
+                <p v-if="drawer.loading" class="text-sm text-slate-500">Cargando…</p>
+                <img v-else-if="drawer.kind === 'image'" :src="drawer.url!" class="max-w-full max-h-full object-contain" />
+                <iframe v-else-if="drawer.kind === 'pdf'" :src="drawer.url!" class="w-full h-full" />
+                <p v-else-if="drawer.detail" class="text-sm text-slate-400">Sin evidencia adjunta.</p>
+                <p v-else class="text-sm text-slate-500">No se pudo mostrar.</p>
+            </div>
+        </BaseDrawer>
     </div>
 </template>
 
@@ -228,12 +215,16 @@ import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useConfirm } from '@/app/composables/useConfirm'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import BaseDrawer from '@/app/components/ui/modal/BaseDrawer.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn, DataTableChangeEvent } from '@/app/components/ui/datatable/types'
 
 const toast = useToast()
+const { confirm } = useConfirm()
 const J = API.MIDOCENCIA_API.justifications
 
 interface Student { student_id: number; num_control: string; nombre: string }
@@ -383,7 +374,7 @@ async function save() {
 }
 
 async function remove(id: number) {
-    if (!confirm('¿Eliminar este justificante?')) return
+    if (!await confirm({ title: 'Eliminar justificante', message: '¿Eliminar este justificante?', confirmText: 'Eliminar', variant: 'danger' })) return
     try { await api.delete(J.remove(id)); await load() }
     catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo eliminar.') }
 }

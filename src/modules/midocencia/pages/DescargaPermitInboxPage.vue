@@ -47,6 +47,8 @@ import { ref, reactive, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { usePrompt } from '@/app/composables/usePrompt'
+import { useConfirm } from '@/app/composables/useConfirm'
 
 interface Grant {
     id: number; career: string; reason: string | null; status: string; active: boolean
@@ -56,6 +58,8 @@ interface Grant {
 
 const P = API.MIDOCENCIA_API.descargaPermits
 const toast = useToast()
+const { prompt } = usePrompt()
+const { confirm } = useConfirm()
 
 const loading = ref(true)
 const busy = ref(false)
@@ -86,7 +90,8 @@ async function approve(g: Grant) {
 }
 
 async function reject(g: Grant) {
-    const note = window.prompt('Motivo del rechazo (opcional):') ?? null
+    const note = await prompt({ title: 'Rechazar solicitud', label: 'Motivo del rechazo (opcional)', inputType: 'textarea', confirmText: 'Rechazar' })
+    if (note === null) return
     busy.value = true
     try {
         await api.post(P.reject(g.id), { note })
@@ -98,7 +103,7 @@ async function reject(g: Grant) {
 }
 
 async function revoke(g: Grant) {
-    if (!window.confirm(`¿Revocar el permiso de ${g.career}?`)) return
+    if (!await confirm({ title: 'Revocar permiso', message: `¿Revocar el permiso de ${g.career}?`, confirmText: 'Revocar', variant: 'danger' })) return
     busy.value = true
     try {
         await api.post(P.revoke(g.id), {})

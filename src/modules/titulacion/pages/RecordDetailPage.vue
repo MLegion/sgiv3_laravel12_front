@@ -97,6 +97,11 @@ import { API } from '@/shared/api'
 import type { TitulacionRecord, TitulacionOption, EligibleResidency } from '@/modules/titulacion/types/titulacion.type'
 import { statusLabel, statusClass, actStatusLabel, actStatusClass, outcomeLabel } from '@/modules/titulacion/pages/status'
 import ActSchedulerModal from '@/modules/titulacion/pages/ActSchedulerModal.vue'
+import { useConfirm } from '@/app/composables/useConfirm'
+import { useToast } from '@/app/composables/useToast'
+
+const { confirm } = useConfirm()
+const t = useToast()
 
 const props = defineProps<{ id: string | number }>()
 const T = API.TITULACION_API
@@ -136,16 +141,16 @@ async function save() {
             english_b1_at: edit.english_b1 ? (edit.english_b1_at || null) : null, no_adeudos: edit.no_adeudos,
         })
         await fetch()
-    } catch (e: any) { alert(e?.response?.data?.message ?? 'No se pudo guardar.') }
+    } catch (e: any) { t.error(e?.response?.data?.message ?? 'No se pudo guardar.') }
     finally { saving.value = false }
 }
 async function drop() {
-    if (!confirm('¿Dar de baja este expediente?')) return
+    if (!await confirm({ title: 'Dar de baja', message: '¿Dar de baja este expediente?', confirmText: 'Dar de baja', variant: 'danger' })) return
     await api.post(T.records.drop(props.id)); await fetch()
 }
 async function assignJury() {
     try { await api.post(T.records.jury(props.id), { user_id: juryForm.user_id, role: juryForm.role }); juryForm.user_id = null; await fetch() }
-    catch (e: any) { alert(e?.response?.data?.message ?? 'No se pudo asignar.') }
+    catch (e: any) { t.error(e?.response?.data?.message ?? 'No se pudo asignar.') }
 }
 async function removeJury(juryId: number) {
     await api.delete(T.records.removeJury(props.id, juryId)); await fetch()

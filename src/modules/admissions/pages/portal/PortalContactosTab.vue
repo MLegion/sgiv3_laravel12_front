@@ -39,13 +39,8 @@
         </ul>
 
         <!-- Modal Contacto -->
-        <Teleport to="body">
-            <div v-if="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/40" @click="modalOpen = false" />
-                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 space-y-4">
-                    <h2 class="text-sm font-bold uppercase tracking-widest text-slate-700">
-                        {{ editingContact ? 'Editar Contacto' : 'Nuevo Contacto' }}
-                    </h2>
+        <BaseModal v-model="modalOpen" :title="editingContact ? 'Editar Contacto' : 'Nuevo Contacto'" size="md">
+            <div class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre *</label>
@@ -85,34 +80,27 @@
                         </div>
                     </div>
                     <p v-if="cError" class="text-xs text-red-600">{{ cError }}</p>
-                    <div class="flex justify-end gap-2 pt-2">
-                        <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50" @click="modalOpen = false">CANCELAR</button>
-                        <button class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50" :disabled="saving" @click="save">
-                            {{ saving ? 'GUARDANDO...' : 'GUARDAR' }}
-                        </button>
-                    </div>
-                </div>
             </div>
-        </Teleport>
+            <template #footer>
+                <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50" @click="modalOpen = false">CANCELAR</button>
+                <button class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50" :disabled="saving" @click="save">
+                    {{ saving ? 'GUARDANDO...' : 'GUARDAR' }}
+                </button>
+            </template>
+        </BaseModal>
 
         <!-- Modal Eliminar -->
-        <Teleport to="body">
-            <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/40" @click="deleteTarget = null" />
-                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
-                    <h2 class="text-sm font-bold uppercase tracking-widest text-slate-700">Eliminar Contacto</h2>
-                    <p class="text-sm text-slate-600">
-                        ¿Eliminar el contacto <span class="font-semibold">{{ deleteTarget.name }} {{ deleteTarget.firstSurname }}</span>?
-                    </p>
-                    <div class="flex justify-end gap-2">
-                        <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50" @click="deleteTarget = null">CANCELAR</button>
-                        <button class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50" :disabled="deleting" @click="doDelete">
-                            {{ deleting ? 'ELIMINANDO...' : 'ELIMINAR' }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
+        <BaseModal :model-value="!!deleteTarget" title="Eliminar Contacto" size="sm" @update:model-value="deleteTarget = null">
+            <p v-if="deleteTarget" class="text-sm text-slate-600">
+                ¿Eliminar el contacto <span class="font-semibold">{{ deleteTarget.name }} {{ deleteTarget.firstSurname }}</span>?
+            </p>
+            <template #footer>
+                <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50" @click="deleteTarget = null">CANCELAR</button>
+                <button class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50" :disabled="deleting" @click="doDelete">
+                    {{ deleting ? 'ELIMINANDO...' : 'ELIMINAR' }}
+                </button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -120,6 +108,7 @@
 import { ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 
 defineProps<{ editing: boolean }>()
 

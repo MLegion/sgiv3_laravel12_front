@@ -47,10 +47,8 @@
         </div>
 
         <!-- Modal alta -->
-        <div v-if="showNew" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showNew = false">
-            <div class="bg-white rounded-xl p-5 w-full max-w-lg space-y-3">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">Registrar expediente</h2>
-
+        <BaseModal v-model="showNew" title="Registrar expediente" size="lg">
+            <div class="space-y-3">
                 <label class="block"><span class="text-xs font-semibold text-slate-500">Buscar alumno (nombre o núm. control)</span>
                     <input v-model="studentQuery" @input="searchStudents" placeholder="Escribe para buscar…" class="mt-1 w-full rounded-lg border-slate-300 text-sm" />
                 </label>
@@ -95,12 +93,12 @@
                     <input v-model="form.project_title" class="mt-1 w-full rounded-lg border-slate-300 text-sm" /></label>
 
                 <p v-if="modalMsg" class="text-sm text-red-600">{{ modalMsg }}</p>
-                <div class="flex justify-end gap-2">
-                    <button @click="showNew = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
-                    <button @click="create" :disabled="!canCreate || saving" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold disabled:opacity-50">Registrar</button>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="showNew = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
+                <button @click="create" :disabled="!canCreate || saving" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold disabled:opacity-50">Registrar</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -111,6 +109,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { TitulacionRecord, TitulacionOption, EligibleResidency } from '@/modules/titulacion/types/titulacion.type'
 import { statusLabel, statusClass } from '@/modules/titulacion/pages/status'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 
 const T = API.TITULACION_API
 const SS = API.SCHOOL_SERVICES_API

@@ -66,24 +66,23 @@
         </DataTable>
 
         <!-- Modal de flujo (enviar / aprobar / rechazar) -->
-        <div v-if="action.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30" @click.self="action.open = false">
-            <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-4 space-y-3">
-                <h3 class="font-semibold text-slate-800">{{ actionTitle }}</h3>
+        <BaseModal v-model="action.open" :title="actionTitle" size="md">
+            <div class="space-y-3">
                 <p class="text-sm text-slate-600">{{ actionMessage }}</p>
                 <div v-if="action.mode === 'reject'">
                     <label class="block text-xs text-slate-500 mb-1">Motivo del rechazo</label>
                     <textarea v-model="action.notes" rows="3" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm" placeholder="Explica por qué se rechaza…"></textarea>
                 </div>
                 <p v-if="action.error" class="text-sm text-red-600">{{ action.error }}</p>
-                <div class="flex justify-end gap-2 pt-1">
-                    <button type="button" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50" @click="action.open = false">Cancelar</button>
-                    <button type="button" class="px-3 py-1.5 text-sm rounded-lg text-white disabled:opacity-50" :class="confirmBtnClass"
-                        :disabled="action.busy || (action.mode === 'reject' && !action.notes.trim())" @click="confirmAction">
-                        {{ action.busy ? 'Procesando…' : confirmLabel }}
-                    </button>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button type="button" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50" @click="action.open = false">Cancelar</button>
+                <button type="button" class="px-3 py-1.5 text-sm rounded-lg text-white disabled:opacity-50" :class="confirmBtnClass"
+                    :disabled="action.busy || (action.mode === 'reject' && !action.notes.trim())" @click="confirmAction">
+                    {{ action.busy ? 'Procesando…' : confirmLabel }}
+                </button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -92,6 +91,7 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { PlusIcon, PencilSquareIcon, DocumentTextIcon, PaperAirplaneIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { API } from '@/shared/api'

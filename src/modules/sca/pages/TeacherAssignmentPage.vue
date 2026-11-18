@@ -1098,7 +1098,7 @@ async function selectTeacher(teacher: any) {
         searchModal.open = false
         rowState.value.delete(searchModal.rowKey)
         await fetchPackages(true)
-    } catch (e: any) { alert(e?.response?.data?.message ?? 'Error al agregar solicitud') }
+    } catch (e: any) { showToast(e?.response?.data?.message ?? 'Error al agregar solicitud', 'error') }
 }
 
 /* ── Modal Auxiliares (docente auxiliar / soporte) ──────────────── */

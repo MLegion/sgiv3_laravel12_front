@@ -97,11 +97,13 @@ import { ref } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useConfirm } from '@/app/composables/useConfirm'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 
 interface Bucket { id: number; name: string; sortOrder: number; status: boolean }
 
 const toast = useToast()
+const { confirm } = useConfirm()
 const O = API.MIDOCENCIA_API.otros
 
 const periodId = ref<number | null>(null)
@@ -148,7 +150,7 @@ async function save(b: Bucket) {
 }
 
 async function remove(b: Bucket) {
-    if (!confirm(`¿Eliminar la categoría "${b.name}"? Los archivos ya subidos quedan sin categoría.`)) return
+    if (!await confirm({ title: 'Eliminar categoría', message: `¿Eliminar la categoría "${b.name}"? Los archivos ya subidos quedan sin categoría.`, confirmText: 'Eliminar', variant: 'danger' })) return
     busy.value = true
     try { await api.delete(O.bucket(b.id)); await load() }
     catch (e: any) { toast.error(e?.response?.data?.message ?? 'No se pudo eliminar.') }

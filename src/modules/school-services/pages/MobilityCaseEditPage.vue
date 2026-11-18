@@ -286,6 +286,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useConfirm } from '@/app/composables/useConfirm'
+import { usePrompt } from '@/app/composables/usePrompt'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import ReportGenerateButton from '@/modules/reports/components/ReportGenerateButton.vue'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
@@ -296,6 +297,7 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 const { confirm } = useConfirm()
+const { prompt } = usePrompt()
 const id = Number(route.params.id)
 
 const c = ref<any>(null)
@@ -434,7 +436,7 @@ async function removeCase() {
 const approve = () => run(() => api.post(API.SCHOOL_SERVICES_API.mobility.approve(id), { dictamen_number: dictamen.value || null, resolution_date: resolutionDate.value || null }), 'Dictamen aprobado')
 
 async function reject() {
-    const reason = window.prompt('Motivo del rechazo:')
+    const reason = await prompt({ title: 'Rechazar dictamen', label: 'Motivo del rechazo', inputType: 'textarea', required: true })
     if (!reason) return
     await run(() => api.post(API.SCHOOL_SERVICES_API.mobility.reject(id), { reason }))
 }

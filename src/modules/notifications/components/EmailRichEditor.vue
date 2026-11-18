@@ -110,6 +110,7 @@ import Underline from '@tiptap/extension-underline'
 import { TextStyle, Color } from '@tiptap/extension-text-style'
 import TextAlign from '@tiptap/extension-text-align'
 import Placeholder from '@tiptap/extension-placeholder'
+import { usePrompt } from '@/app/composables/usePrompt'
 
 const props = defineProps<{
     modelValue: string
@@ -118,6 +119,7 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ (e: 'update:modelValue', val: string): void }>()
 
+const { prompt } = usePrompt()
 const varsOpen = ref(false)
 const varsRoot = ref<HTMLElement>()
 
@@ -164,10 +166,10 @@ function setColor(value: string) {
     editor.value?.chain().focus().setColor(value).run()
 }
 
-function promptLink() {
+async function promptLink() {
     if (!editor.value) return
     const previous = (editor.value.getAttributes('link').href as string) || ''
-    const url = window.prompt('URL del enlace (vacío para quitar):', previous)
+    const url = await prompt({ title: 'Enlace', label: 'URL del enlace (vacío para quitar)', inputType: 'url', placeholder: 'https://…', initialValue: previous })
     if (url === null) return
     if (url === '') {
         editor.value.chain().focus().unsetLink().run()

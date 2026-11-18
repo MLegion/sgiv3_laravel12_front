@@ -241,9 +241,11 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useConfirm } from '@/app/composables/useConfirm'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 
 const toast = useToast()
+const { confirm } = useConfirm()
 const CFG = API.SCHOOL_SERVICES_API.mobility.config
 const tabs = [
     { key: 'normativas', label: 'Normativas' },
@@ -364,7 +366,7 @@ async function saveSigner() {
     } finally { savingSg.value = false }
 }
 async function deleteSigner(id: number) {
-    if (!confirm('¿Eliminar este firmante?')) return
+    if (!await confirm({ title: 'Eliminar firmante', message: '¿Eliminar este firmante?', confirmText: 'Eliminar', variant: 'danger' })) return
     try {
         await api.delete(CFG.signerById(id))
         toast.success('Firmante eliminado')

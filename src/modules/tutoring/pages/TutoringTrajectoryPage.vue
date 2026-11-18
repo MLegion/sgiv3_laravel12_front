@@ -99,10 +99,12 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useConfirm } from '@/app/composables/useConfirm'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 
 const props = defineProps<{ id: string | number }>()
 const toast = useToast()
+const { confirm } = useConfirm()
 const T = API.TUTORING_API
 const reportGen = useReportGenerator()
 
@@ -264,7 +266,7 @@ function buildReportContext(): Record<string, any> {
 /** Descarga el formato oficial (DOCX) del reporteador. */
 async function downloadOficial() {
     if (!subjects.value.length) return
-    if (dirty.value && !confirm('Tienes cambios sin guardar; el formato usará lo que ves. ¿Continuar sin guardar?')) return
+    if (dirty.value && !await confirm({ title: 'Continuar sin guardar', message: 'Tienes cambios sin guardar; el formato usará lo que ves. ¿Continuar sin guardar?', confirmText: 'Continuar', variant: 'warning' })) return
     generating.value = true
     try {
         await reportGen.downloadFromContext({

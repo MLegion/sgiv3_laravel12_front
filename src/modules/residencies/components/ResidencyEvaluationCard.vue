@@ -66,23 +66,19 @@
         </template>
 
         <!-- Confirmación -->
-        <Teleport to="body">
-            <div v-if="confirmModal" class="fixed inset-0 z-50 flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/40" @click="confirmModal = false" />
-                <div class="relative bg-white rounded-xl shadow-lg w-full max-w-md p-6 space-y-3 z-10">
-                    <h3 class="text-sm font-semibold text-slate-800">Confirmar calificación final</h3>
-                    <p class="text-sm text-slate-600">
-                        Se asentará <strong>{{ evaluation?.final }}</strong>
-                        ({{ evaluation?.passed ? 'APROBADO' : 'REPROBADO' }}) en el kardex del residente.
-                        Esta acción no se puede deshacer.
-                    </p>
-                    <div class="flex justify-end gap-2">
-                        <button type="button" class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="confirmModal = false">Cancelar</button>
-                        <button type="button" class="px-4 py-2 text-sm rounded-lg text-white bg-emerald-600 hover:bg-emerald-700" @click="confirm">Confirmar</button>
-                    </div>
-                </div>
+        <BaseModal v-model="confirmModal" title="Confirmar calificación final" size="md">
+            <div class="space-y-3">
+                <p class="text-sm text-slate-600">
+                    Se asentará <strong>{{ evaluation?.final }}</strong>
+                    ({{ evaluation?.passed ? 'APROBADO' : 'REPROBADO' }}) en el kardex del residente.
+                    Esta acción no se puede deshacer.
+                </p>
             </div>
-        </Teleport>
+            <template #footer>
+                <button type="button" class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="confirmModal = false">Cancelar</button>
+                <button type="button" class="px-4 py-2 text-sm rounded-lg text-white bg-emerald-600 hover:bg-emerald-700" @click="confirm">Confirmar</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -90,6 +86,7 @@
 import { ref, computed } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import type { ResidencyEvaluation } from '@/modules/residencies/types/residency.type'
 
 const props = defineProps<{ residencyId: number | string; canConfirm?: boolean; gradeOpen?: boolean }>()

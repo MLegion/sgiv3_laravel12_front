@@ -76,9 +76,8 @@
         </section>
 
         <!-- Modal ventana general de inscripción (por periodo) -->
-        <div v-if="showWindow" class="fixed inset-0 bg-black/30 flex items-center justify-center z-20 p-4" @click.self="showWindow = false">
-            <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-5 space-y-3">
-                <h2 class="text-sm font-bold uppercase text-slate-500">Ventana general de inscripción</h2>
+        <BaseModal v-model="showWindow" title="Ventana general de inscripción" size="md">
+            <div class="space-y-3">
                 <p class="text-[11px] text-slate-500">Periodo: <strong>{{ selectedPeriodName }}</strong></p>
                 <p class="text-[11px] text-slate-400">Aplica a TODAS las actividades de ESTE periodo (el seleccionado arriba). Una actividad puede fijar su propia ventana que pisa ésta.</p>
                 <div class="grid grid-cols-2 gap-3">
@@ -96,17 +95,16 @@
                         <p class="text-[10px] text-slate-400 mt-0.5">0 = sin límite. (SGIv2 usaba 3.)</p>
                     </div>
                 </div>
-                <div class="flex justify-end gap-2 pt-1">
-                    <button @click="showWindow = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
-                    <button @click="saveWindow" :disabled="busy" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar</button>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="showWindow = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
+                <button @click="saveWindow" :disabled="busy" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar</button>
+            </template>
+        </BaseModal>
 
         <!-- Modal ventana general de cierre / determinación de resultados -->
-        <div v-if="showResultWindow" class="fixed inset-0 bg-black/30 flex items-center justify-center z-20 p-4" @click.self="showResultWindow = false">
-            <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-5 space-y-3">
-                <h2 class="text-sm font-bold uppercase text-slate-500">Ventana general de cierre (resultados)</h2>
+        <BaseModal v-model="showResultWindow" title="Ventana general de cierre (resultados)" size="md">
+            <div class="space-y-3">
                 <p class="text-[11px] text-slate-500">Periodo: <strong>{{ selectedPeriodName }}</strong></p>
                 <p class="text-[11px] text-slate-400">Tiempo en que el instructor/encargado puede marcar acreditó/no acreditó. Aplica a TODAS las actividades de este periodo; una actividad puede fijar su propia ventana que pisa ésta. Vacío = sin límite de tiempo.</p>
                 <div class="grid grid-cols-2 gap-3">
@@ -119,17 +117,15 @@
                         <input v-model="resultWindowForm.closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
                     </div>
                 </div>
-                <div class="flex justify-end gap-2 pt-1">
-                    <button @click="showResultWindow = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
-                    <button @click="saveResultWindow" :disabled="busy" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar</button>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="showResultWindow = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
+                <button @click="saveResultWindow" :disabled="busy" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar</button>
+            </template>
+        </BaseModal>
 
         <!-- Modal alta -->
-        <div v-if="showCreate" class="fixed inset-0 bg-black/30 flex items-center justify-center z-20 p-4" @click.self="showCreate = false">
-            <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-5 space-y-3">
-                <h2 class="text-sm font-bold uppercase text-slate-500">Nueva actividad</h2>
+        <BaseModal v-model="showCreate" title="Nueva actividad" size="lg">
                 <div class="grid sm:grid-cols-2 gap-3">
                     <div :class="types.length === 1 ? 'sm:col-span-2' : ''">
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Tipo</label>
@@ -210,18 +206,16 @@
                         <input v-model="form.credits" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
                     </div>
                 </div>
-                <div class="flex justify-end gap-2 pt-1">
-                    <button @click="showCreate = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
-                    <button @click="create" :disabled="busy || !form.type || (form.type === 'group_tutoring' ? !form.group_id : !form.name)"
-                        class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Crear</button>
-                </div>
-            </div>
-        </div>
+            <template #footer>
+                <button @click="showCreate = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
+                <button @click="create" :disabled="busy || !form.type || (form.type === 'group_tutoring' ? !form.group_id : !form.name)"
+                    class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Crear</button>
+            </template>
+        </BaseModal>
 
         <!-- Sub-modal: agregar al catálogo del plantel -->
-        <div v-if="showCatalogAdd" class="fixed inset-0 bg-black/40 flex items-center justify-center z-30 p-4" @click.self="showCatalogAdd = false">
-            <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-5 space-y-3">
-                <h2 class="text-sm font-bold uppercase text-slate-500">Agregar al catálogo ({{ typeLabel(form.type) }})</h2>
+        <BaseModal v-model="showCatalogAdd" :title="`Agregar al catálogo (${typeLabel(form.type)})`" size="sm">
+            <div class="space-y-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre</label>
                     <input v-model="catalogAdd.name" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Taller de ajedrez" />
@@ -231,12 +225,12 @@
                     <input v-model.number="catalogAdd.default_credits" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <p class="text-[10px] text-slate-400">Se guarda en el catálogo de este plantel (no global). Si ya existe, se reutiliza.</p>
-                <div class="flex justify-end gap-2 pt-1">
-                    <button @click="showCatalogAdd = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
-                    <button @click="saveCatalogAdd" :disabled="busy || !catalogAdd.name" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Agregar</button>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="showCatalogAdd = false" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
+                <button @click="saveCatalogAdd" :disabled="busy || !catalogAdd.name" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Agregar</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
@@ -246,13 +240,16 @@ import { EyeIcon, ArchiveBoxArrowDownIcon, ArrowUturnLeftIcon, TrashIcon } from 
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { useConfirm } from '@/app/composables/useConfirm'
 import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 
 const AC = API.AC_API
 const toast = useToast()
+const { confirm } = useConfirm()
 
 const periods = ref<any[]>([])
 const types = ref<any[]>([])
@@ -422,7 +419,7 @@ async function create() {
 }
 // Archivar (reabrible) / Reabrir / Eliminar (solo sin alumnos registrados).
 async function archive(a: any) {
-    if (!confirm(`¿Archivar la actividad "${a.name}"? Podrás reabrirla después.`)) return
+    if (!await confirm({ title: 'Archivar actividad', message: `¿Archivar la actividad "${a.name}"? Podrás reabrirla después.`, confirmText: 'Archivar', variant: 'warning' })) return
     await act(async () => {
         await api.post(AC.close(a.id), {})
         toast.success('Actividad archivada.')
@@ -437,7 +434,7 @@ async function reopen(a: any) {
     })
 }
 async function remove(a: any) {
-    if (!confirm(`¿Eliminar la actividad "${a.name}"? Esta acción no se puede deshacer.`)) return
+    if (!await confirm({ title: 'Eliminar actividad', message: `¿Eliminar la actividad "${a.name}"? Esta acción no se puede deshacer.`, confirmText: 'Eliminar', variant: 'danger' })) return
     await act(async () => {
         await api.delete(AC.destroy(a.id))
         toast.success('Actividad eliminada.')

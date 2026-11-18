@@ -34,9 +34,8 @@
             </table>
         </section>
 
-        <div v-if="validating" class="fixed inset-0 bg-black/30 flex items-center justify-center z-20 p-4" @click.self="validating = null">
-            <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-5 space-y-3">
-                <h2 class="text-sm font-bold uppercase text-slate-500">Validar constancia</h2>
+        <BaseModal v-if="validating" v-model="validatingOpen" title="Validar constancia" size="md">
+            <div class="space-y-3">
                 <p class="text-sm text-slate-600">{{ validating.student_name }} · {{ validating.course_name }}</p>
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Créditos a otorgar</label>
@@ -46,27 +45,31 @@
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Nota (opcional)</label>
                     <input v-model="note" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
-                <div class="flex justify-end gap-2 pt-1">
-                    <button @click="validating = null" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
-                    <button @click="doValidate" :disabled="busy || !credits" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Validar</button>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="validating = null" class="px-4 py-2 rounded-lg border text-sm text-slate-500">Cancelar</button>
+                <button @click="doValidate" :disabled="busy || !credits" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Validar</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import { usePrompt } from '@/app/composables/usePrompt'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 
 const AC = API.AC_API
 const toast = useToast()
+const { prompt } = usePrompt()
 const rows = ref<any[]>([])
 const status = ref('submitted')
 const busy = ref(false)
 const validating = ref<any>(null)
+const validatingOpen = computed({ get: () => validating.value !== null, set: (v: boolean) => { if (!v) validating.value = null } })
 const credits = ref<number | null>(null)
 const note = ref('')
 
@@ -90,7 +93,8 @@ async function doValidate() {
     finally { busy.value = false }
 }
 async function reject(c: any) {
-    const n = prompt('Motivo del rechazo (opcional):') ?? ''
+    const n = await prompt({ title: 'Rechazar constancia', label: 'Motivo del rechazo (opcional)', inputType: 'textarea' })
+    if (n === null) return
     try {
         await api.post(AC.moocReject(c.id), { note: n || null })
         toast.success('Constancia rechazada.')

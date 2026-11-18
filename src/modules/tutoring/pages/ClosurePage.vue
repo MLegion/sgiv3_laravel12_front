@@ -45,15 +45,8 @@
         </div>
 
         <!-- Drawer de detalle -->
-        <div v-if="drawer.open" class="fixed inset-0 bg-black/40 flex justify-end z-40" @click.self="drawer.open = false">
-            <div class="bg-white w-full max-w-2xl h-full overflow-y-auto p-6 space-y-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-base font-bold text-slate-800">{{ drawer.row?.tutor_name }}</h2>
-                        <p class="text-xs text-slate-400">{{ drawer.row?.period_name }}</p>
-                    </div>
-                    <button @click="drawer.open = false" class="text-slate-400 hover:text-slate-600">✕</button>
-                </div>
+        <BaseDrawer v-model="drawer.open" :title="drawer.row?.tutor_name" :subtitle="drawer.row?.period_name" size="xl">
+            <div class="space-y-6">
 
                 <!-- Cumplimiento del tutor -->
                 <section class="rounded-xl border p-4 space-y-3">
@@ -104,15 +97,11 @@
                     </table>
                 </section>
             </div>
-        </div>
+        </BaseDrawer>
 
         <!-- Panel de firmantes de una constancia -->
-        <div v-if="constancia.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="constancia.open = false">
-            <div class="bg-white rounded-xl p-5 w-full max-w-lg space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-bold text-slate-700 uppercase">{{ constancia.label }}</h3>
-                    <button @click="constancia.open = false" class="text-slate-400 hover:text-slate-600">✕</button>
-                </div>
+        <BaseModal v-model="constancia.open" :title="constancia.label" size="lg">
+            <div class="space-y-4">
                 <p v-if="!constancia.reportId" class="text-sm text-amber-600">No hay un reporte/plantilla configurado para esta constancia en el plantel.</p>
                 <div v-else class="space-y-2">
                     <div v-for="s in constancia.signers" :key="s.slot" class="flex items-center justify-between rounded-lg border px-3 py-2">
@@ -131,7 +120,7 @@
                     </p>
                 </div>
             </div>
-        </div>
+        </BaseModal>
 
         <SignDocumentModal
             v-model="sign.open"
@@ -149,6 +138,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import SignDocumentModal from '@/modules/signatures/modals/SignDocumentModal.vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import BaseDrawer from '@/app/components/ui/modal/BaseDrawer.vue'
 
 const T = API.TUTORING_API
 const toast = useToast()

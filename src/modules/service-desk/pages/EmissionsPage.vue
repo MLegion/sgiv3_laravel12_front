@@ -39,32 +39,39 @@
         </div>
 
         <!-- Modal firmar -->
-        <div v-if="signId" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="signId = null">
-            <div class="bg-white rounded-xl p-5 w-full max-w-sm space-y-3">
-                <h2 class="text-sm font-bold text-slate-700 uppercase">Firmar documento</h2>
+        <BaseModal v-model="signModalOpen" title="Firmar documento" size="sm">
+            <div class="space-y-3">
                 <p class="text-xs text-slate-500">Ingresa el código de tu app de autenticación (MFA) para firmar electrónicamente.</p>
                 <input v-model="totp" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos" class="w-full rounded-lg border-slate-300 text-sm tracking-widest text-center" />
                 <p v-if="signMsg" class="text-sm text-red-600">{{ signMsg }}</p>
-                <div class="flex justify-end gap-2">
-                    <button @click="signId = null" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
-                    <button @click="doSign" :disabled="signing || totp.length < 6" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold disabled:opacity-50">Firmar</button>
-                </div>
             </div>
-        </div>
+            <template #footer>
+                <button @click="signId = null" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
+                <button @click="doSign" :disabled="signing || totp.length < 6" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold disabled:opacity-50">Firmar</button>
+            </template>
+        </BaseModal>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { computed, ref, reactive, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { Emission } from '@/modules/service-desk/types/service-desk.type'
 import { openDocument } from '@/modules/service-desk/pages/openDocument'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import { useConfirm } from '@/app/composables/useConfirm'
+
+const { confirm } = useConfirm()
 
 const D = API.SERVICE_DESK_API
 const rows = ref<Emission[]>([])
 const filters = reactive({ status: '' })
 const signId = ref<number | null>(null)
+const signModalOpen = computed({
+    get: () => signId.value !== null,
+    set: (v: boolean) => { if (!v) signId.value = null },
+})
 const totp = ref(''), signing = ref(false), signMsg = ref('')
 
 function statusLabel(s: string) { return ({ issued: 'Emitido', delivered: 'Entregado', cancelled: 'Cancelado' } as Record<string,string>)[s] ?? s }
@@ -76,7 +83,7 @@ async function fetchList() {
 }
 async function open(id: number) { await openDocument(id) }
 async function act(id: number, kind: 'deliver' | 'cancel') {
-    if (kind === 'cancel' && !confirm('¿Cancelar esta emisión?')) return
+    if (kind === 'cancel' && !await confirm({ title: 'Cancelar emisión', message: '¿Cancelar esta emisión?', confirmText: 'Cancelar emisión', variant: 'warning' })) return
     await api.post(kind === 'deliver' ? D.deliver(id) : D.cancel(id))
     await fetchList()
 }

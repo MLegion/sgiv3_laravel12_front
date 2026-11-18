@@ -27,53 +27,45 @@
         </Teleport>
 
         <!-- Modal: parámetros antes de ejecutar -->
-        <Teleport to="body">
-            <div v-if="paramsModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40" @click.self="closeParamsModal">
-                <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
-                    <div class="px-5 py-3 bg-blue-50 border-b border-blue-200 flex items-center justify-between">
-                        <h3 class="text-sm font-black uppercase text-blue-800">Parámetros del reporte</h3>
-                        <button class="text-slate-400 hover:text-slate-600 text-xl leading-none" @click="closeParamsModal">×</button>
-                    </div>
-                    <div class="p-5 space-y-3">
-                        <p class="text-[11px] text-slate-500">
-                            Completa los valores para ejecutar los DAOs vinculados.
-                            Los parámetros de tipo <strong>session</strong> y <strong>fixed</strong> se resuelven automáticamente.
-                        </p>
-                        <div v-if="reportRequestParams.length === 0" class="p-4 text-center text-[11px] text-slate-400 italic border border-dashed border-slate-200 rounded">
-                            No hay parámetros que completar.
-                        </div>
-                        <div v-else class="space-y-2">
-                            <div v-for="p in reportRequestParams" :key="'rp-' + p.name" class="flex items-center gap-2">
-                                <label class="text-[11px] font-mono font-bold text-slate-700 w-36 truncate flex items-center gap-1">
-                                    :{{ p.name }}
-                                    <span v-if="p.is_required" class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    :value="reportParamValues[p.name] ?? ''"
-                                    :type="inputTypeForDataType(p.data_type)"
-                                    :placeholder="p.data_type"
-                                    class="flex-1 px-2 py-1 text-xs border rounded font-mono"
-                                    @input="reportParamValues[p.name] = ($event.target as HTMLInputElement).value"
-                                />
-                                <span class="text-[9px] uppercase font-bold text-slate-400 w-14 text-right">{{ p.data_type }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="px-5 py-3 bg-slate-50 border-t flex justify-end gap-2">
-                        <button class="px-4 py-2 text-xs font-bold rounded-lg border hover:bg-white uppercase" @click="closeParamsModal">
-                            CANCELAR
-                        </button>
-                        <button
-                            class="px-4 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 uppercase disabled:opacity-50"
-                            :disabled="exporting"
-                            @click="runPendingExport"
-                        >
-                            {{ exporting ? 'EJECUTANDO...' : ('▶ ' + pendingExportButtonLabel) }}
-                        </button>
+        <BaseModal :model-value="paramsModalOpen" @update:model-value="closeParamsModal" title="Parámetros del reporte" size="md">
+            <div class="space-y-3">
+                <p class="text-[11px] text-slate-500">
+                    Completa los valores para ejecutar los DAOs vinculados.
+                    Los parámetros de tipo <strong>session</strong> y <strong>fixed</strong> se resuelven automáticamente.
+                </p>
+                <div v-if="reportRequestParams.length === 0" class="p-4 text-center text-[11px] text-slate-400 italic border border-dashed border-slate-200 rounded">
+                    No hay parámetros que completar.
+                </div>
+                <div v-else class="space-y-2">
+                    <div v-for="p in reportRequestParams" :key="'rp-' + p.name" class="flex items-center gap-2">
+                        <label class="text-[11px] font-mono font-bold text-slate-700 w-36 truncate flex items-center gap-1">
+                            :{{ p.name }}
+                            <span v-if="p.is_required" class="text-red-500">*</span>
+                        </label>
+                        <input
+                            :value="reportParamValues[p.name] ?? ''"
+                            :type="inputTypeForDataType(p.data_type)"
+                            :placeholder="p.data_type"
+                            class="flex-1 px-2 py-1 text-xs border rounded font-mono"
+                            @input="reportParamValues[p.name] = ($event.target as HTMLInputElement).value"
+                        />
+                        <span class="text-[9px] uppercase font-bold text-slate-400 w-14 text-right">{{ p.data_type }}</span>
                     </div>
                 </div>
             </div>
-        </Teleport>
+            <template #footer>
+                <button class="px-4 py-2 text-xs font-bold rounded-lg border hover:bg-white uppercase" @click="closeParamsModal">
+                    CANCELAR
+                </button>
+                <button
+                    class="px-4 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 uppercase disabled:opacity-50"
+                    :disabled="exporting"
+                    @click="runPendingExport"
+                >
+                    {{ exporting ? 'EJECUTANDO...' : ('▶ ' + pendingExportButtonLabel) }}
+                </button>
+            </template>
+        </BaseModal>
 
         <!-- Barra superior -->
         <div class="flex items-center justify-between gap-2 flex-wrap">
@@ -190,6 +182,7 @@ import { useConfirm } from '@/app/composables/useConfirm'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
 import ReportTemplatePanel from '@/modules/reports/components/ReportTemplatePanel.vue'

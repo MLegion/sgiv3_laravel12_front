@@ -118,16 +118,8 @@
         </DataTable>
 
         <!-- Modal Crear / Editar / Reagendar -->
-        <Teleport to="body">
-            <Transition enter-active-class="transition-opacity duration-150" leave-active-class="transition-opacity duration-150" enter-from-class="opacity-0" leave-to-class="opacity-0">
-                <div v-if="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
-                    <div class="absolute inset-0 bg-black/40" @click="closeModal" />
-                    <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 space-y-4">
-                        <h2 class="text-sm font-bold uppercase tracking-widest text-slate-700">
-                            {{ modalTitle }}
-                        </h2>
-
-                        <div class="space-y-3">
+        <BaseModal v-model="modalOpen" :title="modalTitle" size="lg">
+            <div class="space-y-3">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Aula</label>
                                 <FormRemoteSelect
@@ -179,50 +171,39 @@
                                 <textarea v-model="form.notes" rows="2" maxlength="1000" class="field"></textarea>
                             </div>
 
-                            <p v-if="formError" class="text-xs text-red-600">{{ formError }}</p>
-                        </div>
+                <p v-if="formError" class="text-xs text-red-600">{{ formError }}</p>
+            </div>
 
-                        <div class="flex justify-end gap-2 pt-2">
-                            <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="closeModal">CANCELAR</button>
-                            <button
-                                class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition"
-                                :disabled="submitting"
-                                @click="onSubmit"
-                            >
-                                {{ submitting ? 'GUARDANDO...' : 'GUARDAR' }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
+            <template #footer>
+                <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="closeModal">CANCELAR</button>
+                <button
+                    class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition"
+                    :disabled="submitting"
+                    @click="onSubmit"
+                >
+                    {{ submitting ? 'GUARDANDO...' : 'GUARDAR' }}
+                </button>
+            </template>
+        </BaseModal>
 
         <!-- Modal Confirmar Eliminar -->
-        <Teleport to="body">
-            <Transition enter-active-class="transition-opacity duration-150" leave-active-class="transition-opacity duration-150" enter-from-class="opacity-0" leave-to-class="opacity-0">
-                <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center">
-                    <div class="absolute inset-0 bg-black/40" @click="deleteTarget = null" />
-                    <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
-                        <h2 class="text-sm font-bold uppercase tracking-widest text-slate-700">Eliminar sesión</h2>
-                        <p class="text-sm text-slate-600">
-                            ¿Eliminar la sesión del <strong>{{ formatDate(deleteTarget.date) }}</strong>
-                            en <strong>{{ deleteTarget.place?.name }}</strong>?
-                            Se quitarán todas las asignaciones de aspirantes y cuidadores. No se puede deshacer.
-                        </p>
-                        <div class="flex justify-end gap-2">
-                            <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="deleteTarget = null">CANCELAR</button>
-                            <button
-                                class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition"
-                                :disabled="deleting"
-                                @click="doDelete"
-                            >
-                                {{ deleting ? 'ELIMINANDO...' : 'ELIMINAR' }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
+        <BaseModal :model-value="!!deleteTarget" title="Eliminar sesión" size="sm" @update:model-value="deleteTarget = null">
+            <p v-if="deleteTarget" class="text-sm text-slate-600">
+                ¿Eliminar la sesión del <strong>{{ formatDate(deleteTarget.date) }}</strong>
+                en <strong>{{ deleteTarget.place?.name }}</strong>?
+                Se quitarán todas las asignaciones de aspirantes y cuidadores. No se puede deshacer.
+            </p>
+            <template #footer>
+                <button class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50 transition" @click="deleteTarget = null">CANCELAR</button>
+                <button
+                    class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition"
+                    :disabled="deleting"
+                    @click="doDelete"
+                >
+                    {{ deleting ? 'ELIMINANDO...' : 'ELIMINAR' }}
+                </button>
+            </template>
+        </BaseModal>
 
         <!-- Modal Conflictos -->
         <ExamConflictsModal
@@ -249,6 +230,7 @@ import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ExamConflictsModal from '@/modules/admissions/components/ExamConflictsModal.vue'
+import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import type {
     ExamSession,
     ExamConflictReport,
