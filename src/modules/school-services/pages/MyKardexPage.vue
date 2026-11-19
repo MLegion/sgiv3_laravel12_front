@@ -33,7 +33,8 @@
             </div>
 
             <div v-else class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Mi Kardex"><table class="w-full text-sm">
+                    <caption class="sr-only">Mi Kardex</caption>
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-28">Código</th>

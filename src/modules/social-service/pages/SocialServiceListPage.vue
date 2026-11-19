@@ -23,10 +23,12 @@
         </div>
 
         <div class="rounded-xl border bg-white overflow-hidden">
+            <div role="region" aria-label="Prestadores de Servicio Social" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Prestadores de Servicio Social</caption>
                 <thead>
                     <tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                        <th class="px-4 py-2">Prestador</th><th>Carrera</th><th>Dependencia</th><th>Horas</th><th>Estado</th>
+                        <th scope="col" class="px-4 py-2">Prestador</th><th scope="col">Carrera</th><th scope="col">Dependencia</th><th scope="col">Horas</th><th scope="col">Estado</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -43,6 +45,7 @@
                     <tr v-if="!rows.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin prestadores.</td></tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Modal de alta -->

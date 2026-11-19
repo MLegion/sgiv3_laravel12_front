@@ -19,7 +19,8 @@
         </div>
 
         <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+            <div role="region" aria-label="Modalidad de examen por modalidad" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                <caption class="sr-only">Modalidad de examen por modalidad</caption>
                 <thead class="bg-slate-50 border-b">
                     <tr>
                         <th scope="col" class="text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider px-4 py-3">Modalidad</th>

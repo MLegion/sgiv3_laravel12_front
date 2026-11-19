@@ -30,8 +30,9 @@
                     </span>
                 </button>
 
-                <div v-show="activePeriods.includes(p)" class="border-t overflow-x-auto">
+                <div v-show="activePeriods.includes(p)" tabindex="0" role="region" :aria-label="`Materias del ${p}° ${labelPeriod}`" class="border-t overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                     <table class="w-full text-left border-collapse min-w-[400px]">
+                        <caption class="sr-only">{{ `Materias del ${p}° ${labelPeriod}` }}</caption>
                         <thead class="bg-slate-50/50 text-[10px] text-slate-400 uppercase font-black border-b">
                         <tr>
                             <th scope="col" class="p-3">Materia</th>

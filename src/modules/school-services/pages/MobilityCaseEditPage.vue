@@ -48,12 +48,13 @@
                     <div class="px-3 py-2 bg-slate-50 text-sm text-slate-600">
                         {{ cert.student?.name }} · N.C. {{ cert.student?.num_control }} · {{ cert.grades.length }} materias
                     </div>
-                    <table class="w-full text-sm">
+                    <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Certificado parcial de estudios"><table class="w-full text-sm">
+                        <caption class="sr-only">Certificado parcial de estudios</caption>
                         <thead class="bg-slate-50 text-slate-500"><tr>
-                            <th class="text-left px-3 py-2 font-medium">Clave</th>
-                            <th class="text-left px-3 py-2 font-medium">Materia</th>
-                            <th class="text-left px-3 py-2 font-medium">Cal.</th>
-                            <th class="text-left px-3 py-2 font-medium">Tipo</th>
+                            <th scope="col" class="text-left px-3 py-2 font-medium">Clave</th>
+                            <th scope="col" class="text-left px-3 py-2 font-medium">Materia</th>
+                            <th scope="col" class="text-left px-3 py-2 font-medium">Cal.</th>
+                            <th scope="col" class="text-left px-3 py-2 font-medium">Tipo</th>
                         </tr></thead>
                         <tbody>
                             <tr v-for="(g, i) in cert.grades" :key="i" class="border-t border-slate-100">
@@ -63,7 +64,7 @@
                                 <td class="px-3 py-1.5 text-slate-500 text-xs">{{ g.approval || '—' }}</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
                 <p v-else class="text-sm text-slate-400">Cargando certificado…</p>
             </div>
@@ -91,14 +92,15 @@
                 </div>
 
                 <div class="overflow-hidden rounded-lg border border-slate-100">
-                    <table class="w-full text-sm">
+                    <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Dictamen de convalidación"><table class="w-full text-sm">
+                        <caption class="sr-only">Dictamen de convalidación</caption>
                         <thead class="bg-slate-50 text-slate-500">
                             <tr>
-                                <th class="text-left px-3 py-2 font-medium">Materia origen</th>
-                                <th class="text-left px-3 py-2 font-medium">Cal.</th>
-                                <th class="text-left px-3 py-2 font-medium">Materia destino</th>
-                                <th class="text-left px-3 py-2 font-medium">Reconocida</th>
-                                <th class="text-left px-3 py-2 font-medium">Decisión</th>
+                                <th scope="col" class="text-left px-3 py-2 font-medium">Materia origen</th>
+                                <th scope="col" class="text-left px-3 py-2 font-medium">Cal.</th>
+                                <th scope="col" class="text-left px-3 py-2 font-medium">Materia destino</th>
+                                <th scope="col" class="text-left px-3 py-2 font-medium">Reconocida</th>
+                                <th scope="col" class="text-left px-3 py-2 font-medium">Decisión</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -139,7 +141,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
 
                 <div v-if="canEdit && items.length" class="flex items-center justify-end gap-3">

@@ -181,7 +181,8 @@
                 <div ref="listRef" tabindex="0" role="listbox" aria-label="Estudiantes pendientes"
                     @keydown="onListKeydown"
                     class="max-h-[560px] overflow-y-auto outline-none focus:ring-2 focus:ring-indigo-300 rounded">
-                    <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                    <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Estudiantes pendientes"><table class="w-full text-sm">
+                        <caption class="sr-only">Estudiantes pendientes</caption>
                         <thead class="bg-slate-50 text-slate-500 sticky top-0">
                             <tr>
                                 <th scope="col" class="px-3 py-2 text-left w-8">

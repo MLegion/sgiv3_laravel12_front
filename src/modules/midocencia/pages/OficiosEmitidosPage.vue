@@ -39,14 +39,16 @@
         <div v-else-if="periodId" class="bg-white border rounded-xl shadow-sm p-4">
             <div v-if="loading" class="py-8 text-center text-slate-400">Cargando…</div>
             <div v-else-if="!filtered.length" class="py-8 text-center text-slate-400">No hay oficios que mostrar.</div>
-            <table v-else class="w-full text-sm">
+            <div v-else role="region" aria-label="Oficios emitidos" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
+            <table class="w-full text-sm">
+                <caption class="sr-only">Oficios emitidos</caption>
                 <thead>
                     <tr class="text-left text-xs font-semibold uppercase text-slate-500 border-b">
-                        <th class="py-2 pr-3">Docente</th>
-                        <th class="py-2 pr-3 w-32">Folio</th>
-                        <th class="py-2 pr-3 w-20">Horas</th>
-                        <th class="py-2 pr-3 w-32">Aprobado</th>
-                        <th class="py-2 w-28"></th>
+                        <th scope="col" class="py-2 pr-3">Docente</th>
+                        <th scope="col" class="py-2 pr-3 w-32">Folio</th>
+                        <th scope="col" class="py-2 pr-3 w-20">Horas</th>
+                        <th scope="col" class="py-2 pr-3 w-32">Aprobado</th>
+                        <th scope="col" class="py-2 w-28"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -68,6 +70,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </template>

@@ -44,9 +44,11 @@
         <section class="rounded-xl border bg-white p-4">
             <h2 class="text-sm font-bold uppercase text-slate-500 mb-2">Mis constancias</h2>
             <p v-if="!rows.length" class="text-sm text-slate-400">Aún no has declarado cursos.</p>
-            <table v-else class="w-full text-sm">
+            <div v-else role="region" aria-label="Mis constancias" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
+            <table class="w-full text-sm">
+                <caption class="sr-only">Mis constancias</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                    <th class="px-3 py-1">Curso</th><th>Plataforma</th><th>Créditos</th><th>Estado</th>
+                    <th scope="col" class="px-3 py-1">Curso</th><th scope="col">Plataforma</th><th scope="col">Créditos</th><th scope="col">Estado</th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="c in rows" :key="c.id" class="border-b last:border-0">
@@ -57,6 +59,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         </section>
     </div>
 </template>

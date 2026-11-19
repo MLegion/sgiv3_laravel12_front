@@ -623,8 +623,9 @@
                         </span>
                     </div>
 
-                    <div class="overflow-x-auto max-h-[calc(100vh-380px)]">
+                    <div role="region" aria-label="Horario completo" tabindex="0" class="overflow-x-auto max-h-[calc(100vh-380px)] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                         <table class="w-full text-xs border-collapse">
+                            <caption class="sr-only">Horario completo</caption>
                             <thead class="sticky top-0 z-10">
                                 <tr class="bg-slate-100 border-b-2 border-slate-300">
                                     <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">

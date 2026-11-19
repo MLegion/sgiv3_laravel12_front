@@ -47,7 +47,8 @@
                     </div>
                 </div>
 
-                <div class="overflow-x-auto w-full"><table class="w-full text-xs">
+                <div role="region" aria-label="Clases afectadas por examen" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-xs">
+                    <caption class="sr-only">Clases afectadas por examen</caption>
                     <thead class="bg-slate-50">
                         <tr class="text-slate-600">
                             <th scope="col" class="px-3 py-2 text-left">Materia</th>

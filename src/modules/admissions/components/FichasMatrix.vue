@@ -79,8 +79,9 @@
         </div>
 
         <!-- TABLA -->
-        <div v-if="tableOrChart === 'table'" class="overflow-x-auto">
+        <div v-if="tableOrChart === 'table'" role="region" aria-label="Concentrado de fichas" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-xs border-collapse">
+                <caption class="sr-only">Concentrado de fichas</caption>
                 <thead>
                     <tr>
                         <th scope="col" rowspan="2" class="border border-slate-300 bg-slate-100 px-2 py-1 text-left">#</th>

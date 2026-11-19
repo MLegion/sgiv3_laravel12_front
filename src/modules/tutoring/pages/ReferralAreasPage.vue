@@ -7,8 +7,10 @@
         <p v-if="msg" class="text-sm px-4 py-2.5 rounded-lg" :class="msgError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'">{{ msg }}</p>
 
         <div class="rounded-xl border bg-white overflow-hidden">
+            <div role="region" aria-label="Áreas de canalización" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b"><th class="px-4 py-2">Área</th><th>Rol receptor</th><th>Ámbito</th><th>Activa</th><th></th></tr></thead>
+                <caption class="sr-only">Áreas de canalización</caption>
+                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b"><th scope="col" class="px-4 py-2">Área</th><th scope="col">Rol receptor</th><th scope="col">Ámbito</th><th scope="col">Activa</th><th scope="col"></th></tr></thead>
                 <tbody>
                     <tr v-for="ar in areas" :key="ar.id" class="border-b last:border-0">
                         <td class="px-4 py-2"><p class="font-semibold text-slate-700">{{ ar.name }}</p><p class="text-xs text-slate-400">{{ ar.description }}</p></td>
@@ -26,6 +28,7 @@
                     <tr v-if="!areas.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin áreas.</td></tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <BaseModal v-model="showModal" :title="(form.id ? 'Editar' : 'Nueva') + ' área'" size="md">

@@ -145,14 +145,15 @@ onMounted(loadCaps)
 
         <!-- Tabla -->
         <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Concentrado general"><table class="w-full text-sm">
+                <caption class="sr-only">Concentrado general</caption>
                 <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                     <tr>
-                        <th class="text-left px-3 py-2 w-10">#</th>
-                        <th class="text-left px-3 py-2">DOCENTE</th>
-                        <th v-for="a in AREAS" :key="a" class="text-center px-2 py-2 w-12">{{ a.toUpperCase() }}</th>
-                        <th class="text-center px-2 py-2 w-16">PROM</th>
-                        <th class="text-left px-3 py-2 w-28">NIVEL</th>
+                        <th scope="col" class="text-left px-3 py-2 w-10">#</th>
+                        <th scope="col" class="text-left px-3 py-2">DOCENTE</th>
+                        <th scope="col" v-for="a in AREAS" :key="a" class="text-center px-2 py-2 w-12">{{ a.toUpperCase() }}</th>
+                        <th scope="col" class="text-center px-2 py-2 w-16">PROM</th>
+                        <th scope="col" class="text-left px-3 py-2 w-28">NIVEL</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">

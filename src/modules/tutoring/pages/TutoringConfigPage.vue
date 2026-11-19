@@ -81,9 +81,11 @@
                     </select>
                 </div>
             </div>
-            <table v-if="sched.period_id && sched.stages.length" class="w-full text-sm">
+            <div v-if="sched.period_id && sched.stages.length" role="region" aria-label="Calendario de hitos del PAT" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
+            <table class="w-full text-sm">
+                <caption class="sr-only">Calendario de hitos del PAT</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                    <th class="px-3 py-1">Hito</th><th class="px-3 py-1">Abre</th><th class="px-3 py-1">Límite</th>
+                    <th scope="col" class="px-3 py-1">Hito</th><th scope="col" class="px-3 py-1">Abre</th><th scope="col" class="px-3 py-1">Límite</th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="s in sched.stages" :key="s.stage" class="border-b last:border-0" :class="s.stage === 'pat_initial' ? 'bg-amber-50/60' : ''">
@@ -96,6 +98,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
             <button v-if="sched.period_id" @click="saveSchedule" :disabled="busy"
                 class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar calendario</button>
         </section>

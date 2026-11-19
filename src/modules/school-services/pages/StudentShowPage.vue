@@ -151,7 +151,8 @@
                 <div v-else-if="affiliations.length === 0" class="text-sm text-slate-400 py-6 text-center">Sin afiliaciones registradas.</div>
 
                 <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                    <div class="overflow-x-auto w-full"><table class="min-w-full text-sm">
+                    <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Afiliaciones"><table class="min-w-full text-sm">
+                        <caption class="sr-only">Afiliaciones</caption>
                         <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
                             <tr>
                                 <th scope="col" class="px-4 py-3 text-left">Carrera / Plan</th>
@@ -285,8 +286,9 @@
                 <div v-if="loadingGrades" class="text-sm text-slate-400 py-6 text-center">Cargando...</div>
                 <div v-else-if="grades.length === 0" class="text-sm text-slate-400 py-6 text-center">Sin calificaciones registradas.</div>
 
-                <div v-else class="bg-white border rounded-xl shadow-sm overflow-x-auto">
+                <div v-else class="bg-white border rounded-xl shadow-sm overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Kardex de calificaciones">
                     <table class="min-w-full text-sm">
+                        <caption class="sr-only">Kardex de calificaciones</caption>
                         <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
                             <tr>
                                 <th scope="col" class="px-3 py-3 text-left">Materia</th>

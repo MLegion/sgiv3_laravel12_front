@@ -32,9 +32,11 @@
 
             <!-- Miembros -->
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
+                <div role="region" aria-label="Padrón de Ciencias Básicas" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                 <table class="w-full text-sm">
+                    <caption class="sr-only">Padrón de Ciencias Básicas</caption>
                     <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                        <tr><th class="text-left px-4 py-2">Docente</th><th class="px-4 py-2">Jefatura</th><th class="px-4 py-2"></th></tr>
+                        <tr><th scope="col" class="text-left px-4 py-2">Docente</th><th scope="col" class="px-4 py-2">Jefatura</th><th scope="col" class="px-4 py-2"></th></tr>
                     </thead>
                     <tbody class="divide-y">
                         <tr v-for="m in members" :key="m.teacherId">
@@ -49,6 +51,7 @@
                         <tr v-if="members.length === 0"><td colspan="3" class="px-4 py-4 text-center text-slate-400">Sin docentes en este ámbito.</td></tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </template>
     </div>

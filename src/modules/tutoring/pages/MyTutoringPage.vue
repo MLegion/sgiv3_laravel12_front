@@ -37,25 +37,31 @@
             <!-- Sesiones -->
             <div class="rounded-xl border bg-white p-5 space-y-2">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Sesiones</h2>
+                <div role="region" aria-label="Sesiones" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                 <table class="w-full text-sm">
-                    <thead><tr class="text-left text-[10px] uppercase text-slate-400 border-b"><th class="py-2">Fecha</th><th>Tipo</th><th>Tema</th></tr></thead>
+                    <caption class="sr-only">Sesiones</caption>
+                    <thead><tr class="text-left text-[10px] uppercase text-slate-400 border-b"><th scope="col" class="py-2">Fecha</th><th scope="col">Tipo</th><th scope="col">Tema</th></tr></thead>
                     <tbody>
                         <tr v-for="s in sessions" :key="s.id" class="border-b last:border-0"><td class="py-2">{{ s.session_date }}</td><td>{{ s.type }}</td><td>{{ s.topic }}</td></tr>
                         <tr v-if="!sessions.length"><td colspan="3" class="py-3 text-center text-slate-400">Sin sesiones.</td></tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- Canalizaciones -->
             <div class="rounded-xl border bg-white p-5 space-y-2">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Mis canalizaciones</h2>
+                <div role="region" aria-label="Canalizaciones" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                 <table class="w-full text-sm">
-                    <thead><tr class="text-left text-[10px] uppercase text-slate-400 border-b"><th class="py-2">Área</th><th>Motivo</th><th>Estado</th></tr></thead>
+                    <caption class="sr-only">Canalizaciones</caption>
+                    <thead><tr class="text-left text-[10px] uppercase text-slate-400 border-b"><th scope="col" class="py-2">Área</th><th scope="col">Motivo</th><th scope="col">Estado</th></tr></thead>
                     <tbody>
                         <tr v-for="r in referrals" :key="r.id" class="border-b last:border-0"><td class="py-2">{{ r.area_name }}</td><td class="text-slate-500">{{ r.reason }}</td><td><span class="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100">{{ REFERRAL_STATUS_LABELS[r.status] }}</span></td></tr>
                         <tr v-if="!referrals.length"><td colspan="3" class="py-3 text-center text-slate-400">Sin canalizaciones.</td></tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </template>
     </div>

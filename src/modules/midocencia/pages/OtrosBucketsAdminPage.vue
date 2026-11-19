@@ -35,13 +35,15 @@
 
         <template v-else>
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
+                <div role="region" aria-label="Categorías de Otros" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                 <table class="w-full text-sm">
+                    <caption class="sr-only">Categorías de Otros</caption>
                     <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
                         <tr>
-                            <th class="text-left px-4 py-2 w-16">Orden</th>
-                            <th class="text-left px-4 py-2">Categoría</th>
-                            <th class="text-center px-4 py-2 w-24">Activa</th>
-                            <th class="px-4 py-2 w-24"></th>
+                            <th scope="col" class="text-left px-4 py-2 w-16">Orden</th>
+                            <th scope="col" class="text-left px-4 py-2">Categoría</th>
+                            <th scope="col" class="text-center px-4 py-2 w-24">Activa</th>
+                            <th scope="col" class="px-4 py-2 w-24"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -72,6 +74,7 @@
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- Alta -->

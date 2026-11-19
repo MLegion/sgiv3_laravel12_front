@@ -74,18 +74,19 @@ IJKL345678HDFZZZ02,QUI301,ORD1,3,0,,,0</pre>
                         </span>
                     </div>
                 </div>
-                <div class="max-h-72 overflow-auto">
+                <div class="max-h-72 overflow-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Vista previa de calificaciones">
                     <table class="w-full text-xs">
+                        <caption class="sr-only">Vista previa de calificaciones</caption>
                         <thead class="bg-slate-100 text-slate-500 sticky top-0">
                             <tr>
-                                <th class="text-left px-2 py-1.5 font-medium">#</th>
-                                <th class="text-left px-2 py-1.5 font-medium">Identificador</th>
-                                <th class="text-left px-2 py-1.5 font-medium">Materia</th>
-                                <th class="text-left px-2 py-1.5 font-medium">Tipo</th>
-                                <th class="text-left px-2 py-1.5 font-medium">Sem.</th>
-                                <th class="text-left px-2 py-1.5 font-medium">G1/G2/G3</th>
-                                <th class="text-left px-2 py-1.5 font-medium">Acr.</th>
-                                <th class="text-left px-2 py-1.5 font-medium">Validación</th>
+                                <th scope="col" class="text-left px-2 py-1.5 font-medium">#</th>
+                                <th scope="col" class="text-left px-2 py-1.5 font-medium">Identificador</th>
+                                <th scope="col" class="text-left px-2 py-1.5 font-medium">Materia</th>
+                                <th scope="col" class="text-left px-2 py-1.5 font-medium">Tipo</th>
+                                <th scope="col" class="text-left px-2 py-1.5 font-medium">Sem.</th>
+                                <th scope="col" class="text-left px-2 py-1.5 font-medium">G1/G2/G3</th>
+                                <th scope="col" class="text-left px-2 py-1.5 font-medium">Acr.</th>
+                                <th scope="col" class="text-left px-2 py-1.5 font-medium">Validación</th>
                             </tr>
                         </thead>
                         <tbody>

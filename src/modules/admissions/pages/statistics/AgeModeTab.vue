@@ -25,7 +25,8 @@
                         <Doughnut :data="sexChartData" :options="sexChartOptions" />
                     </div>
                     <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm self-start">
-                        <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                        <div role="region" aria-label="Distribución por sexo" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                            <caption class="sr-only">Distribución por sexo</caption>
                             <thead class="bg-slate-100 border-b border-slate-200">
                                 <tr>
                                     <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Sexo</th>
@@ -54,7 +55,8 @@
                         <Doughnut :data="modeChartData" :options="modeChartOptions" />
                     </div>
                     <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm self-start">
-                        <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                        <div role="region" aria-label="Modalidad de examen elegida" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                            <caption class="sr-only">Modalidad de examen elegida</caption>
                             <thead class="bg-slate-100 border-b border-slate-200">
                                 <tr>
                                     <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Modalidad</th>

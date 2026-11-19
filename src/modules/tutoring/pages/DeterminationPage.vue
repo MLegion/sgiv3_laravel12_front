@@ -27,9 +27,11 @@
             <button @click="fetchProposals" class="text-xs text-slate-400 hover:text-slate-600">Actualizar</button>
         </div>
         <div class="rounded-xl border bg-white overflow-hidden">
+            <div role="region" aria-label="Propuestas registradas" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Propuestas registradas</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Alumno</th><th>Motivo</th><th>Origen</th><th>Estado</th><th>Tutor</th><th></th>
+                    <th scope="col" class="px-4 py-2">Alumno</th><th scope="col">Motivo</th><th scope="col">Origen</th><th scope="col">Estado</th><th scope="col">Tutor</th><th scope="col"></th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="p in proposals" :key="p.id" class="border-b last:border-0">
@@ -52,6 +54,7 @@
                     <tr v-if="!proposals.length"><td colspan="6" class="px-4 py-6 text-center text-slate-400">Sin propuestas.</td></tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Modal: BUSCADOR de candidatos (filtros + datatable) -->

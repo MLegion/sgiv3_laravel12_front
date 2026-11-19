@@ -133,8 +133,9 @@
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto">
+                    <div tabindex="0" role="region" aria-label="Materias en el Grupo" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                         <table class="w-full text-left border-collapse">
+                            <caption class="sr-only">Materias en el Grupo</caption>
                             <thead>
                             <tr class="bg-slate-50/80 text-[10px] uppercase text-slate-400 font-black border-b border-slate-100">
                                 <th scope="col" class="px-6 py-4">Clave</th>

@@ -140,7 +140,8 @@ onMounted(load)
                 <div class="px-4 py-3 border-b bg-slate-50">
                     <h3 class="text-sm font-bold text-slate-700 uppercase">Desglose por área</h3>
                 </div>
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Desglose por área"><table class="w-full text-sm">
+                    <caption class="sr-only">Desglose por área</caption>
                     <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                         <tr>
                             <th scope="col" class="text-left px-4 py-2 w-16">ÁREA</th>
@@ -179,7 +180,8 @@ onMounted(load)
                 <div class="px-4 py-3 border-b bg-slate-50">
                     <h3 class="text-sm font-bold text-slate-700 uppercase">Materias evaluadas</h3>
                 </div>
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias evaluadas"><table class="w-full text-sm">
+                    <caption class="sr-only">Materias evaluadas</caption>
                     <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                         <tr>
                             <th scope="col" class="text-left  px-4 py-2">MATERIA</th>

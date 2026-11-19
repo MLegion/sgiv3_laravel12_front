@@ -23,7 +23,8 @@
                     <span class="ml-1 text-[10px] uppercase">{{ rows.length === 1 ? 'alumno' : 'alumnos' }}</span>
                 </span>
             </div>
-            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Alumnos inscritos"><table class="w-full text-sm">
+                <caption class="sr-only">Alumnos inscritos</caption>
                 <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                     <tr>
                         <th scope="col" class="text-left px-4 py-2 w-12">#</th>

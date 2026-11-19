@@ -15,10 +15,11 @@
             </label>
         </div>
 
-        <div class="rounded-xl border bg-white overflow-x-auto">
+        <div class="rounded-xl border bg-white overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Plazos de PAT">
             <table class="w-full text-sm">
+                <caption class="sr-only">Plazos de PAT</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Tutor</th><th>Grupo</th><th>Carrera</th><th>PAT</th><th>Extensión</th><th class="text-right pr-4">Acciones</th>
+                    <th scope="col" class="px-4 py-2">Tutor</th><th scope="col">Grupo</th><th scope="col">Carrera</th><th scope="col">PAT</th><th scope="col">Extensión</th><th scope="col" class="text-right pr-4">Acciones</th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="r in visibleRows" :key="r.assignment_id" class="border-b last:border-0 align-top">

@@ -148,7 +148,8 @@
 
             <!-- Tabla ranking (con resultado) -->
             <div v-if="tab === 'ranking'" class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div role="region" aria-label="Cuadro de resultados" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                    <caption class="sr-only">Cuadro de resultados</caption>
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
@@ -222,7 +223,8 @@
 
             <!-- Tabla pendientes (sin score) -->
             <div v-else class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div role="region" aria-label="Aspirantes pendientes de evaluar" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                    <caption class="sr-only">Aspirantes pendientes de evaluar</caption>
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>

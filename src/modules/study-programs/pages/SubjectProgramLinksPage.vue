@@ -28,8 +28,9 @@
             </span>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-xl overflow-x-auto">
+        <div class="bg-white border border-slate-200 rounded-xl overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Enlaces de programas de estudio">
             <table class="w-full text-sm">
+                <caption class="sr-only">Enlaces de programas de estudio</caption>
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
                     <tr>
                         <th scope="col" class="text-left px-3 py-2">Clave</th>

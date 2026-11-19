@@ -11,9 +11,11 @@
 
         <section class="rounded-xl border bg-white p-4">
             <p v-if="!rows.length" class="text-sm text-slate-400">Sin constancias en este estado.</p>
-            <table v-else class="w-full text-sm">
+            <div v-else role="region" aria-label="Constancias MOOC por validar" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
+            <table class="w-full text-sm">
+                <caption class="sr-only">Constancias MOOC por validar</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                    <th class="px-3 py-1">Alumno</th><th>Curso</th><th>Plataforma</th><th>Horas</th><th>Constancia</th><th></th>
+                    <th scope="col" class="px-3 py-1">Alumno</th><th scope="col">Curso</th><th scope="col">Plataforma</th><th scope="col">Horas</th><th scope="col">Constancia</th><th scope="col"></th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="c in rows" :key="c.id" class="border-b last:border-0">
@@ -32,6 +34,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         </section>
 
         <BaseModal v-if="validating" v-model="validatingOpen" title="Validar constancia" size="md">

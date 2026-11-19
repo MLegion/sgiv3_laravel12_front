@@ -7,8 +7,10 @@
         <p v-if="msg" class="text-sm px-4 py-2.5 rounded-lg" :class="msgError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'">{{ msg }}</p>
 
         <div class="rounded-xl border bg-white overflow-hidden">
+            <div role="region" aria-label="Versiones de cédula" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b"><th class="px-4 py-2">Versión</th><th>Ámbito</th><th>Vigente</th><th>Campos</th><th>Estado</th><th></th></tr></thead>
+                <caption class="sr-only">Versiones de cédula</caption>
+                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b"><th scope="col" class="px-4 py-2">Versión</th><th scope="col">Ámbito</th><th scope="col">Vigente</th><th scope="col">Campos</th><th scope="col">Estado</th><th scope="col"></th></tr></thead>
                 <tbody>
                     <tr v-for="s in sets" :key="s.id" class="border-b last:border-0">
                         <td class="px-4 py-2 font-semibold text-slate-700">{{ s.name }}</td>
@@ -27,6 +29,7 @@
                     <tr v-if="!sets.length"><td colspan="6" class="px-4 py-6 text-center text-slate-400">Sin versiones.</td></tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <div v-if="editing" class="rounded-xl border bg-white p-5 space-y-3">

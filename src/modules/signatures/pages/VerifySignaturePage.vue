@@ -67,10 +67,11 @@
 
                         <div v-for="t in snapshotTables" :key="t.key" class="mt-4">
                             <p class="text-xs font-semibold text-slate-500 mb-1">{{ humanize(t.key) }}</p>
-                            <div class="overflow-x-auto rounded-lg border border-slate-100">
+                            <div class="overflow-x-auto rounded-lg border border-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" :aria-label="humanize(t.key)">
                                 <table class="w-full text-[11px]">
+                                    <caption class="sr-only">{{ humanize(t.key) }}</caption>
                                     <thead class="bg-slate-50 text-slate-500">
-                                        <tr><th v-for="c in t.cols" :key="c" class="px-2 py-1 text-left font-medium">{{ humanize(c) }}</th></tr>
+                                        <tr><th scope="col" v-for="c in t.cols" :key="c" class="px-2 py-1 text-left font-medium">{{ humanize(c) }}</th></tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="(row, i) in t.rows" :key="i" class="border-t border-slate-100">

@@ -83,10 +83,12 @@
                     <span class="text-xs text-slate-400" v-if="record.normativa">{{ record.normativa.report_count }} reportes previstos</span>
                 </div>
 
+                <div role="region" aria-label="Reportes de avance" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                 <table class="w-full text-sm">
+                    <caption class="sr-only">Reportes de avance</caption>
                     <thead>
                         <tr class="text-left text-[10px] uppercase text-slate-400 border-b">
-                            <th class="py-2">#</th><th>Periodo</th><th>Horas</th><th>Estado</th>
+                            <th scope="col" class="py-2">#</th><th scope="col">Periodo</th><th scope="col">Horas</th><th scope="col">Estado</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -102,6 +104,7 @@
                         <tr v-if="!reports.length"><td colspan="4" class="py-3 text-center text-slate-400">Sin reportes.</td></tr>
                     </tbody>
                 </table>
+                </div>
 
                 <!-- Nuevo reporte -->
                 <div v-if="canEdit" class="border-t pt-4 grid sm:grid-cols-5 gap-3 items-end">

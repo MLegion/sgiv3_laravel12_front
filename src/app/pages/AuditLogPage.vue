@@ -47,17 +47,18 @@
 
         <!-- Tabla -->
         <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Bitácora de auditoría">
                 <table class="w-full text-sm">
+                    <caption class="sr-only">Bitácora de auditoría</caption>
                     <thead class="bg-slate-50 text-slate-500 text-left text-xs uppercase tracking-wide">
                         <tr>
-                            <th class="px-4 py-3">Fecha</th>
-                            <th v-if="collegeScoped" class="px-4 py-3">Colegio</th>
-                            <th class="px-4 py-3">Acción</th>
-                            <th class="px-4 py-3">Actor</th>
-                            <th class="px-4 py-3">Estado</th>
-                            <th class="px-4 py-3">IP</th>
-                            <th class="px-4 py-3">Detalle</th>
+                            <th scope="col" class="px-4 py-3">Fecha</th>
+                            <th scope="col" v-if="collegeScoped" class="px-4 py-3">Colegio</th>
+                            <th scope="col" class="px-4 py-3">Acción</th>
+                            <th scope="col" class="px-4 py-3">Actor</th>
+                            <th scope="col" class="px-4 py-3">Estado</th>
+                            <th scope="col" class="px-4 py-3">IP</th>
+                            <th scope="col" class="px-4 py-3">Detalle</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">

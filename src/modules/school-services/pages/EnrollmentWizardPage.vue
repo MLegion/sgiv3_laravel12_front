@@ -68,7 +68,8 @@
             </div>
 
             <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Aspirantes admitidos"><table class="w-full text-sm">
+                    <caption class="sr-only">Aspirantes admitidos</caption>
                     <thead class="bg-slate-50 text-xs text-slate-500 uppercase">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left w-12">
@@ -171,7 +172,8 @@
             </div>
 
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Configuración de aspirantes"><table class="w-full text-sm">
+                    <caption class="sr-only">Configuración de aspirantes</caption>
                     <thead class="bg-slate-50 text-xs text-slate-500 uppercase">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left">Aspirante</th>
@@ -248,7 +250,8 @@
                     <div class="px-4 py-3 border-b bg-emerald-50">
                         <p class="text-xs font-bold text-emerald-700 uppercase">Listos para inscribir</p>
                     </div>
-                    <div class="overflow-x-auto w-full"><table class="w-full text-xs">
+                    <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Aspirantes listos para inscribir"><table class="w-full text-xs">
+                        <caption class="sr-only">Aspirantes listos para inscribir</caption>
                         <thead class="text-slate-500">
                             <tr>
                                 <th scope="col" class="px-4 py-2 text-left">Aspirante</th>
@@ -274,7 +277,8 @@
                     <div class="px-4 py-3 border-b bg-rose-50">
                         <p class="text-xs font-bold text-rose-700 uppercase">No se pueden inscribir — corrige antes de continuar</p>
                     </div>
-                    <div class="overflow-x-auto w-full"><table class="w-full text-xs">
+                    <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Aspirantes con problemas"><table class="w-full text-xs">
+                        <caption class="sr-only">Aspirantes con problemas</caption>
                         <thead class="text-slate-500">
                             <tr>
                                 <th scope="col" class="px-4 py-2 text-left">Aspirante</th>
@@ -325,7 +329,8 @@
             </div>
 
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Aspirantes inscritos"><table class="w-full text-sm">
+                    <caption class="sr-only">Aspirantes inscritos</caption>
                     <thead class="bg-slate-50 text-xs text-slate-500 uppercase">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left">Aspirante</th>

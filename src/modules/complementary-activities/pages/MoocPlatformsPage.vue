@@ -8,9 +8,11 @@
 
         <section class="rounded-xl border bg-white p-4">
             <p v-if="!rows.length" class="text-sm text-slate-400">Sin plataformas. Crea la primera.</p>
-            <table v-else class="w-full text-sm">
+            <div v-else role="region" aria-label="Plataformas MOOC" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
+            <table class="w-full text-sm">
+                <caption class="sr-only">Plataformas MOOC</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                    <th class="px-3 py-1">Plataforma</th><th>URL</th><th>Ámbito</th><th>Activa</th><th></th>
+                    <th scope="col" class="px-3 py-1">Plataforma</th><th scope="col">URL</th><th scope="col">Ámbito</th><th scope="col">Activa</th><th scope="col"></th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="p in rows" :key="p.id" class="border-b last:border-0">
@@ -22,6 +24,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         </section>
 
         <div v-if="showForm" class="fixed inset-0 bg-black/30 flex items-center justify-center z-20 p-4" @click.self="showForm = false">

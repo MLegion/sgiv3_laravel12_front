@@ -45,13 +45,14 @@
                     tutorado y presiona <b>Guardar</b>.
                 </template>
             </p>
-            <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <div role="region" aria-label="Trayectoria académica" tabindex="0" class="overflow-x-auto rounded-xl border border-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                 <table class="text-xs border-collapse">
+                    <caption class="sr-only">Trayectoria académica</caption>
                     <thead class="bg-slate-50 text-slate-600">
                         <tr>
-                            <th rowspan="2" class="px-2 py-2 text-left sticky left-0 bg-slate-50 border-r border-slate-200 z-10">No. Control</th>
-                            <th rowspan="2" class="px-2 py-2 text-left sticky left-[86px] bg-slate-50 border-r border-slate-200 z-10 min-w-[200px]">Alumno</th>
-                            <th v-for="s in subjects" :key="s.teacher_assignment_id" :colspan="s.units_count + 1"
+                            <th scope="col" rowspan="2" class="px-2 py-2 text-left sticky left-0 bg-slate-50 border-r border-slate-200 z-10">No. Control</th>
+                            <th scope="col" rowspan="2" class="px-2 py-2 text-left sticky left-[86px] bg-slate-50 border-r border-slate-200 z-10 min-w-[200px]">Alumno</th>
+                            <th scope="col" v-for="s in subjects" :key="s.teacher_assignment_id" :colspan="s.units_count + 1"
                                 class="px-2 py-1 text-center border-l border-slate-300">
                                 <div class="font-semibold truncate max-w-[220px] mx-auto">{{ s.materia }}</div>
                                 <div class="font-normal text-[10px] text-slate-400 truncate max-w-[220px] mx-auto">{{ s.docente || 'Sin docente' }}</div>
@@ -59,9 +60,9 @@
                         </tr>
                         <tr>
                             <template v-for="s in subjects" :key="'u' + s.teacher_assignment_id">
-                                <th v-for="u in s.units_count" :key="s.teacher_assignment_id + '-' + u"
+                                <th scope="col" v-for="u in s.units_count" :key="s.teacher_assignment_id + '-' + u"
                                     class="px-1.5 py-1 text-center font-medium border-l border-slate-200 w-10">{{ roman(u) }}</th>
-                                <th class="px-1.5 py-1 text-center font-semibold border-l border-slate-300 bg-slate-100 w-12">FIN</th>
+                                <th scope="col" class="px-1.5 py-1 text-center font-semibold border-l border-slate-300 bg-slate-100 w-12">FIN</th>
                             </template>
                         </tr>
                     </thead>

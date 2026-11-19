@@ -265,7 +265,8 @@
                     </span>
                 </div>
             </div>
-            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias propuestas"><table class="w-full text-sm">
+                <caption class="sr-only">Materias propuestas</caption>
                 <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                     <tr>
                         <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
@@ -376,7 +377,8 @@
                 <strong>2 especiales</strong>: por normativa TecNM sólo se inscriben esos cursos especiales. Agregar otras requerirá excepción.
             </div>
 
-            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias aperturadas"><table class="w-full text-sm">
+                <caption class="sr-only">Materias aperturadas</caption>
                 <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                     <tr>
                         <th scope="col" class="px-4 py-2 text-left">MATERIA</th>

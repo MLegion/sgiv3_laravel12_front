@@ -45,7 +45,8 @@
                 Sin resultados.
             </div>
 
-            <div v-else class="overflow-x-auto w-full"><table class="w-full text-sm">
+            <div v-else tabindex="0" role="region" aria-label="Administradores del college" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                <caption class="sr-only">Administradores del college</caption>
                 <thead class="bg-gray-50 text-xs uppercase text-gray-600">
                     <tr>
                         <th scope="col" class="px-4 py-2 text-left">Empleado</th>

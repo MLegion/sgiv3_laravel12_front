@@ -4,9 +4,10 @@
         <p class="text-sm text-slate-500">Marca qué aulas se usan para actos de recepción profesional.</p>
 
         <div class="rounded-xl border bg-white overflow-hidden">
-            <table class="w-full text-sm">
+            <div role="region" aria-label="Aulas de Titulación" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                <caption class="sr-only">Aulas de Titulación</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Aula</th><th>Edificio</th><th>Capacidad</th><th>Titulación</th>
+                    <th scope="col" class="px-4 py-2">Aula</th><th scope="col">Edificio</th><th scope="col">Capacidad</th><th scope="col">Titulación</th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="r in rows" :key="r.id" class="border-b last:border-0">
@@ -17,7 +18,7 @@
                     </tr>
                     <tr v-if="!rows.length"><td colspan="4" class="px-4 py-6 text-center text-slate-400">Sin aulas.</td></tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </div>
 </template>

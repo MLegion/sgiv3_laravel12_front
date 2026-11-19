@@ -133,7 +133,8 @@
 
                         <!-- ── Lista de ventanas ── -->
                         <div v-if="loadingAvailabilities" class="p-4 text-sm text-slate-400 text-center">Cargando…</div>
-                        <div v-else-if="availabilities.length" class="overflow-x-auto w-full"><table class="w-full text-xs">
+                        <div v-else-if="availabilities.length" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Ventanas de disponibilidad"><table class="w-full text-xs">
+                            <caption class="sr-only">Ventanas de disponibilidad</caption>
                             <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
                                 <tr>
                                     <th scope="col" class="px-3 py-2 text-left">Modalidad</th>

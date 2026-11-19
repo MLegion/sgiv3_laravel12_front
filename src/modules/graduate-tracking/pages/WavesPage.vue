@@ -14,9 +14,11 @@
         </div>
 
         <div class="rounded-xl border bg-white overflow-hidden">
+            <div role="region" aria-label="Oleadas de seguimiento de egresados" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Oleadas de seguimiento de egresados</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Oleada</th><th>Carrera</th><th>Invitadas</th><th>Enviadas</th><th>Respondidas</th><th>Estado</th>
+                    <th scope="col" class="px-4 py-2">Oleada</th><th scope="col">Carrera</th><th scope="col">Invitadas</th><th scope="col">Enviadas</th><th scope="col">Respondidas</th><th scope="col">Estado</th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="w in rows" :key="w.id" @click="goDetail(w.id)" class="border-b last:border-0 hover:bg-slate-50 cursor-pointer">
@@ -30,6 +32,7 @@
                     <tr v-if="!rows.length"><td colspan="6" class="px-4 py-6 text-center text-slate-400">Sin oleadas.</td></tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Modal nueva oleada -->

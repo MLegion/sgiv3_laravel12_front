@@ -20,10 +20,12 @@
 
         <!-- Tabla de asignaciones -->
         <div class="rounded-xl border bg-white overflow-hidden">
+            <div role="region" aria-label="Asignaciones para cierre" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Asignaciones para cierre</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Tutor</th><th>Periodo</th><th>PAT</th><th>Sesiones</th><th>Hitos</th>
-                    <th>Sugerido</th><th>Cumplimiento</th><th>Tutorados</th><th></th>
+                    <th scope="col" class="px-4 py-2">Tutor</th><th scope="col">Periodo</th><th scope="col">PAT</th><th scope="col">Sesiones</th><th scope="col">Hitos</th>
+                    <th scope="col">Sugerido</th><th scope="col">Cumplimiento</th><th scope="col">Tutorados</th><th scope="col"></th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="r in rows" :key="r.id" class="border-b last:border-0 hover:bg-slate-50">
@@ -42,6 +44,7 @@
                     <tr v-if="!rows.length"><td colspan="9" class="px-4 py-6 text-center text-slate-400">Sin asignaciones en el periodo.</td></tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Drawer de detalle -->
@@ -73,9 +76,11 @@
                 <!-- Tutorados -->
                 <section class="rounded-xl border overflow-hidden">
                     <h3 class="text-xs font-bold uppercase text-slate-500 px-4 pt-3">Constancias de tutorados</h3>
+                    <div role="region" aria-label="Constancias de tutorados" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                     <table class="w-full text-sm mt-2">
+                        <caption class="sr-only">Constancias de tutorados</caption>
                         <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                            <th class="px-4 py-2">Alumno</th><th>Asist.</th><th>Sugerido</th><th>Cumpl.</th><th></th>
+                            <th scope="col" class="px-4 py-2">Alumno</th><th scope="col">Asist.</th><th scope="col">Sugerido</th><th scope="col">Cumpl.</th><th scope="col"></th>
                         </tr></thead>
                         <tbody>
                             <tr v-for="t in detail.tutees" :key="t.id" class="border-b last:border-0">
@@ -95,6 +100,7 @@
                             <tr v-if="!detail.tutees.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin tutorados.</td></tr>
                         </tbody>
                     </table>
+                    </div>
                 </section>
             </div>
         </BaseDrawer>

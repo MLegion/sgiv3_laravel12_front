@@ -21,7 +21,8 @@
         </div>
 
         <div v-else class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+            <div role="region" aria-label="Constancias de cuidadores" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                <caption class="sr-only">Constancias de cuidadores</caption>
                 <thead class="bg-slate-100 text-slate-600 text-xs">
                     <tr>
                         <th scope="col" class="text-left px-3 py-2">Empleado</th>

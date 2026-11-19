@@ -40,7 +40,8 @@
         <!-- Jurado -->
         <div class="rounded-xl border bg-white p-5 space-y-3">
             <h2 class="text-sm font-bold text-slate-700 uppercase">Jurado / sínodo</h2>
-            <table class="w-full text-sm">
+            <div role="region" aria-label="Jurado / sínodo" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                <caption class="sr-only">Jurado / sínodo</caption>
                 <tbody>
                     <tr v-for="j in rec.jury" :key="j.id" class="border-b last:border-0">
                         <td class="py-2 font-semibold text-slate-700">{{ j.user_name }}</td>
@@ -49,7 +50,7 @@
                     </tr>
                     <tr v-if="!rec.jury?.length"><td colspan="3" class="py-3 text-center text-slate-400">Sin jurado asignado.</td></tr>
                 </tbody>
-            </table>
+            </table></div>
             <div class="grid sm:grid-cols-3 gap-2 pt-2">
                 <input v-model.number="juryForm.user_id" type="number" placeholder="ID usuario docente" class="rounded-lg border-slate-300 text-sm" />
                 <select v-model="juryForm.role" class="rounded-lg border-slate-300 text-sm">
@@ -66,7 +67,8 @@
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Actos de recepción profesional</h2>
                 <button @click="openSchedule" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold">+ Programar acto</button>
             </div>
-            <table class="w-full text-sm">
+            <div role="region" aria-label="Actos de recepción profesional" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                <caption class="sr-only">Actos de recepción profesional</caption>
                 <tbody>
                     <tr v-for="a in rec.acts" :key="a.id" class="border-b last:border-0">
                         <td class="py-2">{{ a.date }} · {{ a.start_time?.slice(0,5) }}–{{ a.end_time?.slice(0,5) }}</td>
@@ -76,7 +78,7 @@
                     </tr>
                     <tr v-if="!rec.acts?.length"><td colspan="4" class="py-3 text-center text-slate-400">Sin actos programados.</td></tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <!-- Modal programar acto (calendario semanal del aula) -->

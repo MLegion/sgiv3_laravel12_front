@@ -194,7 +194,8 @@ onMounted(load)
                 <div class="border-b px-4 py-3 bg-slate-50">
                     <h3 class="text-sm font-bold text-slate-700 uppercase">Materias evaluadas</h3>
                 </div>
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias evaluadas"><table class="w-full text-sm">
+                    <caption class="sr-only">Materias evaluadas</caption>
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
                             <th scope="col" class="text-left px-4 py-2">MATERIA</th>
@@ -221,7 +222,8 @@ onMounted(load)
         <!-- (c/d) Tabla: materias con su estado + acción ─────────────────── -->
         <div v-else-if="uiState === 'has_pending'" class="space-y-2">
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias por evaluar"><table class="w-full text-sm">
+                    <caption class="sr-only">Materias por evaluar</caption>
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
                             <th scope="col" class="text-left px-4 py-2 w-36">Estado</th>

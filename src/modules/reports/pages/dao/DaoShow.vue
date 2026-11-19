@@ -56,8 +56,9 @@
             <!-- ═════ Parámetros declarados ═════ -->
             <div v-if="daoParameters.length > 0" class="bg-white border rounded-xl shadow-sm p-6 space-y-3">
                 <h2 class="text-sm font-semibold text-slate-700 uppercase">Parámetros declarados ({{ daoParameters.length }})</h2>
-                <div class="overflow-x-auto">
+                <div role="region" aria-label="Parámetros declarados" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                     <table class="w-full text-xs border-collapse">
+                        <caption class="sr-only">Parámetros declarados</caption>
                         <thead>
                             <tr class="bg-slate-100 border-b-2 border-slate-300">
                                 <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Nombre</th>

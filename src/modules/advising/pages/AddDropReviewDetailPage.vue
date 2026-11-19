@@ -42,7 +42,8 @@
                         <span class="inline-flex items-center gap-1 text-emerald-600"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-200"></span>Alta</span>
                     </div>
                 </div>
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Carga del alumno"><table class="w-full text-sm">
+                    <caption class="sr-only">Carga del alumno</caption>
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
                             <th scope="col" class="px-4 py-2 text-left w-28">ESTADO</th>
@@ -75,7 +76,8 @@
             <!-- Historial de movimientos (altas y bajas de la solicitud) -->
             <div v-if="movements.length" class="bg-white border rounded-xl shadow-sm">
                 <div class="border-b px-4 py-3"><h3 class="text-sm font-bold text-slate-700 uppercase">Historial de movimientos</h3></div>
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Historial de movimientos"><table class="w-full text-sm">
+                    <caption class="sr-only">Historial de movimientos</caption>
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
                             <th scope="col" class="px-4 py-2 text-left w-28">MOVIMIENTO</th>

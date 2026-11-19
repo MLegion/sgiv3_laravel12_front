@@ -42,7 +42,8 @@
                 No hay mensajes capturados.
             </div>
 
-            <div v-else class="overflow-x-auto w-full"><table class="w-full text-sm">
+            <div v-else class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Mensajes capturados"><table class="w-full text-sm">
+                <caption class="sr-only">Mensajes capturados</caption>
                 <thead class="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wide">
                     <tr>
                         <th scope="col" class="px-3 py-2 text-left">Fecha</th>

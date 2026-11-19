@@ -59,14 +59,15 @@
                             <h3 class="text-[11px] font-bold text-slate-500 uppercase">Documentos ({{ detail.items.length }})</h3>
                             <button v-if="detail.editable" type="button" class="text-xs px-2 py-1 border rounded-md hover:bg-slate-50" @click="addItem">+ Documento</button>
                         </div>
-                        <table class="min-w-full text-sm border rounded-lg overflow-hidden">
+                        <div role="region" aria-label="Documentos" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="min-w-full text-sm border rounded-lg overflow-hidden">
+                            <caption class="sr-only">Documentos</caption>
                             <thead class="bg-slate-50 text-[10px] uppercase text-slate-500">
                                 <tr>
-                                    <th class="text-left px-2 py-1.5">Código</th>
-                                    <th class="text-left px-2 py-1.5">Nombre</th>
-                                    <th class="text-left px-2 py-1.5">Tipo</th>
-                                    <th class="text-center px-2 py-1.5">Oblig.</th>
-                                    <th v-if="detail.editable" class="px-2 py-1.5"></th>
+                                    <th scope="col" class="text-left px-2 py-1.5">Código</th>
+                                    <th scope="col" class="text-left px-2 py-1.5">Nombre</th>
+                                    <th scope="col" class="text-left px-2 py-1.5">Tipo</th>
+                                    <th scope="col" class="text-center px-2 py-1.5">Oblig.</th>
+                                    <th scope="col" v-if="detail.editable" class="px-2 py-1.5"></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y">
@@ -91,7 +92,7 @@
                                 </tr>
                                 <tr v-if="!detail.items.length"><td :colspan="detail.editable ? 5 : 4" class="px-2 py-3 text-center text-xs text-slate-400 italic">Sin documentos.</td></tr>
                             </tbody>
-                        </table>
+                        </table></div>
                         <!-- Claves de reporte disponibles (para los documentos "lo genera el sistema") -->
                         <datalist id="residency-report-codes">
                             <option v-for="r in reportCodes" :key="r.code" :value="r.code">{{ r.name }}</option>

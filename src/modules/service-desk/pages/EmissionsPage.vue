@@ -12,9 +12,11 @@
         </div>
 
         <div class="rounded-xl border bg-white overflow-hidden">
+            <div role="region" aria-label="Emisiones de ventanilla" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Emisiones de ventanilla</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Folio</th><th>Estudiante</th><th>Documento</th><th>Firma</th><th>Estado</th><th></th>
+                    <th scope="col" class="px-4 py-2">Folio</th><th scope="col">Estudiante</th><th scope="col">Documento</th><th scope="col">Firma</th><th scope="col">Estado</th><th scope="col"></th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="e in rows" :key="e.id" class="border-b last:border-0 hover:bg-slate-50">
@@ -36,6 +38,7 @@
                     <tr v-if="!rows.length"><td colspan="6" class="px-4 py-6 text-center text-slate-400">Sin emisiones.</td></tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Modal firmar -->

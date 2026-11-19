@@ -8,10 +8,12 @@
         <p v-if="msg" class="text-sm px-4 py-2.5 rounded-lg" :class="msgError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'">{{ msg }}</p>
 
         <div class="rounded-xl border bg-white overflow-hidden">
+            <div role="region" aria-label="Requisitos de Documentos" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Requisitos de Documentos</caption>
                 <thead>
                     <tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                        <th class="px-4 py-2">Versión</th><th>Ámbito</th><th>Vigente desde</th><th>Docs</th><th>Estado</th><th></th>
+                        <th scope="col" class="px-4 py-2">Versión</th><th scope="col">Ámbito</th><th scope="col">Vigente desde</th><th scope="col">Docs</th><th scope="col">Estado</th><th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -32,6 +34,7 @@
                     <tr v-if="!sets.length"><td colspan="6" class="px-4 py-6 text-center text-slate-400">Sin versiones.</td></tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Editor de versión -->

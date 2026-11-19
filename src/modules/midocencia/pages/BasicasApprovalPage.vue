@@ -29,9 +29,11 @@
         <div v-else-if="rows.length === 0" class="text-center py-8 text-slate-400">Sin horarios para este filtro.</div>
 
         <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
+            <div role="region" aria-label="Horarios de básicas por aprobar" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Horarios de básicas por aprobar</caption>
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                    <tr><th class="text-left px-4 py-2">Docente</th><th class="px-4 py-2">Horario</th><th class="px-4 py-2"></th></tr>
+                    <tr><th scope="col" class="text-left px-4 py-2">Docente</th><th scope="col" class="px-4 py-2">Horario</th><th scope="col" class="px-4 py-2"></th></tr>
                 </thead>
                 <tbody class="divide-y">
                     <tr v-for="r in rows" :key="r.id" class="hover:bg-slate-50">
@@ -41,6 +43,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Detalle -->

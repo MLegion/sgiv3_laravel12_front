@@ -560,8 +560,9 @@
 
                     <!-- Tabla de resultados -->
                     <div v-if="previewResult && previewResult.data.length > 0" class="border border-slate-200 rounded overflow-hidden">
-                        <div class="overflow-auto max-h-96">
+                        <div role="region" aria-label="Resultado de la consulta" tabindex="0" class="overflow-auto max-h-96 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                             <table class="w-full text-xs border-collapse">
+                                <caption class="sr-only">Resultado de la consulta</caption>
                                 <thead class="sticky top-0">
                                     <tr class="bg-slate-100 border-b-2 border-slate-300">
                                         <th scope="col"

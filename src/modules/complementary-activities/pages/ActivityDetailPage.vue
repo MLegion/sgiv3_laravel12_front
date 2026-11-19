@@ -200,9 +200,11 @@
                 registrado quién lo asignó. Al cerrar la actividad, lo que quede sin determinar se marca “no acreditó” por cierre.
             </p>
 
-            <table v-if="attendees.length" class="w-full text-sm">
+            <div v-if="attendees.length" role="region" aria-label="Lista de alumnos" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
+            <table class="w-full text-sm">
+                <caption class="sr-only">Lista de alumnos</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                    <th class="px-3 py-1">Control</th><th>Alumno</th><th>Resultado</th><th></th>
+                    <th scope="col" class="px-3 py-1">Control</th><th scope="col">Alumno</th><th scope="col">Resultado</th><th scope="col"></th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="s in attendees" :key="s.id" class="border-b last:border-0">
@@ -236,6 +238,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
             <p v-else class="text-sm text-slate-400">Sin alumnos en la lista.</p>
         </section>
 

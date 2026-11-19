@@ -74,13 +74,14 @@
                 <button @click="lockSuggestion = []" class="text-xs text-slate-500 hover:underline ml-auto">Omitir</button>
             </div>
 
-            <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <div role="region" aria-label="Calificaciones por unidad" tabindex="0" class="overflow-x-auto rounded-xl border border-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                 <table class="min-w-full text-sm">
+                    <caption class="sr-only">Calificaciones por unidad</caption>
                     <thead class="bg-slate-50 text-slate-600">
                         <tr>
-                            <th class="px-3 py-2 text-left sticky left-0 bg-slate-50">No. Control</th>
-                            <th class="px-3 py-2 text-left">Alumno</th>
-                            <th v-for="u in unitCols" :key="u" class="px-2 py-2 text-center w-28">
+                            <th scope="col" class="px-3 py-2 text-left sticky left-0 bg-slate-50">No. Control</th>
+                            <th scope="col" class="px-3 py-2 text-left">Alumno</th>
+                            <th scope="col" v-for="u in unitCols" :key="u" class="px-2 py-2 text-center w-28">
                                 <div class="flex items-center justify-center gap-1">
                                     <span>U{{ u }}</span>
                                     <button @click="toggleLock(u)" :title="isLocked(u) ? 'Desbloquear unidad' : 'Bloquear unidad'"
@@ -91,7 +92,7 @@
                                 </div>
                                 <span class="font-normal text-slate-400 text-[10px]">calif / op.</span>
                             </th>
-                            <th class="px-3 py-2 text-center w-32 bg-slate-100 text-slate-700" title="Promedio de las unidades (sin decimal) y opción de aprobación. Se calcula al tener todas las unidades.">
+                            <th scope="col" class="px-3 py-2 text-center w-32 bg-slate-100 text-slate-700" title="Promedio de las unidades (sin decimal) y opción de aprobación. Se calcula al tener todas las unidades.">
                                 <div class="flex items-center justify-center gap-1">
                                     <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                                     <span>Final</span>

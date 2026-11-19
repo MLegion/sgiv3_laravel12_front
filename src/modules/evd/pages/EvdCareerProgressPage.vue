@@ -269,7 +269,8 @@ onMounted(async () => {
                     <div v-else-if="(students[g.teacher_assignment_id] ?? []).length === 0" class="text-xs text-slate-500 italic">
                         Sin estudiantes en esta materia.
                     </div>
-                    <div v-else class="overflow-x-auto w-full"><table class="w-full text-sm">
+                    <div v-else class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Estudiantes del grupo"><table class="w-full text-sm">
+                        <caption class="sr-only">Estudiantes del grupo</caption>
                         <thead class="text-[10px] uppercase tracking-wider text-slate-400 border-b">
                             <tr>
                                 <th scope="col" class="text-left py-1.5 w-28">N° Control</th>

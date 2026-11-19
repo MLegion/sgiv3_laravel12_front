@@ -35,7 +35,8 @@
                 Sin documentos registrados para este aspirante.
             </div>
 
-            <div v-else class="overflow-x-auto w-full"><table class="w-full text-sm">
+            <div v-else role="region" aria-label="Documentos del aspirante" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                <caption class="sr-only">Documentos del aspirante</caption>
                 <thead class="bg-slate-50 border-b">
                     <tr>
                         <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">TIPO DE DOCUMENTO</th>

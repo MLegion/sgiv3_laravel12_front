@@ -29,9 +29,11 @@
         </div>
 
         <div class="rounded-xl border bg-white overflow-hidden">
+            <div role="region" aria-label="Asignaciones de tutoría" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Asignaciones de tutoría</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Tutor</th><th>Ámbito</th><th>Carrera</th><th>Periodo</th><th>Tutorados</th><th>Estado</th>
+                    <th scope="col" class="px-4 py-2">Tutor</th><th scope="col">Ámbito</th><th scope="col">Carrera</th><th scope="col">Periodo</th><th scope="col">Tutorados</th><th scope="col">Estado</th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="r in rows" :key="r.id" @click="goDetail(r.id)" class="border-b last:border-0 hover:bg-slate-50 cursor-pointer">
@@ -45,6 +47,7 @@
                     <tr v-if="!rows.length"><td colspan="6" class="px-4 py-6 text-center text-slate-400">Sin asignaciones.</td></tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <div v-if="showNew" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showNew = false">

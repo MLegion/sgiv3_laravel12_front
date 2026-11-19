@@ -10,9 +10,11 @@
 
         <!-- Línea de hitos -->
         <div class="rounded-xl border bg-white overflow-hidden">
+            <div role="region" aria-label="Seguimientos del PAT" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Seguimientos del PAT</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Hito</th><th>Estado</th><th>Entregado</th><th>Revisado</th><th></th>
+                    <th scope="col" class="px-4 py-2">Hito</th><th scope="col">Estado</th><th scope="col">Entregado</th><th scope="col">Revisado</th><th scope="col"></th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="s in (data?.stages ?? [])" :key="s.stage" class="border-b last:border-0 hover:bg-slate-50">
@@ -31,6 +33,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Modal entregar hito -->

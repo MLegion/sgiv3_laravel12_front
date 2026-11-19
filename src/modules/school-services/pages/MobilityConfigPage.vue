@@ -19,15 +19,16 @@
                 <button v-if="canEditGlobal" class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white" @click="openNormativa()">Nueva normativa</button>
             </div>
             <div class="rounded-xl border border-slate-200 overflow-hidden">
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Normativas"><table class="w-full text-sm">
+                    <caption class="sr-only">Normativas</caption>
                     <thead class="bg-slate-50 text-slate-500">
                         <tr>
-                            <th class="text-left px-4 py-2 font-medium">Código</th>
-                            <th class="text-left px-4 py-2 font-medium">Nombre</th>
-                            <th class="text-left px-4 py-2 font-medium">Emisor</th>
-                            <th class="text-left px-4 py-2 font-medium">Vigente desde</th>
-                            <th class="text-left px-4 py-2 font-medium">Activa</th>
-                            <th class="px-4 py-2"></th>
+                            <th scope="col" class="text-left px-4 py-2 font-medium">Código</th>
+                            <th scope="col" class="text-left px-4 py-2 font-medium">Nombre</th>
+                            <th scope="col" class="text-left px-4 py-2 font-medium">Emisor</th>
+                            <th scope="col" class="text-left px-4 py-2 font-medium">Vigente desde</th>
+                            <th scope="col" class="text-left px-4 py-2 font-medium">Activa</th>
+                            <th scope="col" class="px-4 py-2"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -41,7 +42,7 @@
                             <td class="px-4 py-2 text-right"><button v-if="canEditGlobal" class="text-blue-600 font-medium" @click="openNormativa(n)">Editar</button><span v-else class="text-slate-300">—</span></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
         </div>
 
@@ -80,13 +81,14 @@
                     Estás viendo el catálogo <b>global</b> en solo lectura. Para personalizar los requisitos de tu plantel, cambia el ámbito a <b>“Este plantel (override)”</b>. El global lo administra el superadministrador.
                 </p>
 
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Requisitos por trámite"><table class="w-full text-sm">
+                    <caption class="sr-only">Requisitos por trámite</caption>
                     <thead class="text-slate-400">
                         <tr>
-                            <th class="text-left py-1 font-medium">Tipo de documento</th>
-                            <th class="text-left py-1 font-medium">Normativa</th>
-                            <th class="text-center py-1 font-medium">Requerido</th>
-                            <th></th>
+                            <th scope="col" class="text-left py-1 font-medium">Tipo de documento</th>
+                            <th scope="col" class="text-left py-1 font-medium">Normativa</th>
+                            <th scope="col" class="text-center py-1 font-medium">Requerido</th>
+                            <th scope="col"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -108,7 +110,7 @@
                             <td class="py-1.5 text-right"><button v-if="!globalReadOnly" class="text-red-500 text-xs font-semibold" @click="req.items.splice(i, 1)">Quitar</button></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
 
                 <div v-if="!globalReadOnly" class="flex justify-end">
                     <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40" :disabled="publishing || !canPublish" @click="publishRequirements">
@@ -126,15 +128,16 @@
                     <span class="font-semibold text-slate-700">{{ rep.name }} <span class="font-mono text-xs text-slate-400">{{ rep.code }}</span></span>
                     <button class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700" @click="openSigner(rep.report_id)">+ Firmante</button>
                 </div>
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" :aria-label="`Firmantes de ${rep.name}`"><table class="w-full text-sm">
+                    <caption class="sr-only">Firmantes de {{ rep.name }}</caption>
                     <thead class="text-slate-400">
                         <tr>
-                            <th class="text-left px-4 py-1.5 font-medium">Slot</th>
-                            <th class="text-left px-4 py-1.5 font-medium">Rol</th>
-                            <th class="text-left px-4 py-1.5 font-medium">Contexto</th>
-                            <th class="text-left px-4 py-1.5 font-medium">Avala</th>
-                            <th class="text-center px-4 py-1.5 font-medium">Requerido</th>
-                            <th class="px-4 py-1.5"></th>
+                            <th scope="col" class="text-left px-4 py-1.5 font-medium">Slot</th>
+                            <th scope="col" class="text-left px-4 py-1.5 font-medium">Rol</th>
+                            <th scope="col" class="text-left px-4 py-1.5 font-medium">Contexto</th>
+                            <th scope="col" class="text-left px-4 py-1.5 font-medium">Avala</th>
+                            <th scope="col" class="text-center px-4 py-1.5 font-medium">Requerido</th>
+                            <th scope="col" class="px-4 py-1.5"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -151,7 +154,7 @@
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </div>
             <p v-if="!signerReports.length" class="text-sm text-slate-400">No hay reportes de movilidad para este plantel. Corre el seeder de reportes.</p>
         </div>

@@ -39,13 +39,15 @@
 
         <!-- Tabla -->
         <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
+            <div role="region" aria-label="Horas de plaza por docente" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Horas de plaza por docente</caption>
                 <thead>
                     <tr class="text-left text-[11px] uppercase text-slate-400 border-b">
-                        <th class="px-4 py-2 font-semibold">Docente</th>
-                        <th class="px-4 py-2 font-semibold text-right w-32">Frente a grupo</th>
-                        <th class="px-4 py-2 font-semibold w-40">Horas de plaza</th>
-                        <th class="px-4 py-2 font-semibold text-right w-40">Descarga</th>
+                        <th scope="col" class="px-4 py-2 font-semibold">Docente</th>
+                        <th scope="col" class="px-4 py-2 font-semibold text-right w-32">Frente a grupo</th>
+                        <th scope="col" class="px-4 py-2 font-semibold w-40">Horas de plaza</th>
+                        <th scope="col" class="px-4 py-2 font-semibold text-right w-40">Descarga</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">
@@ -78,6 +80,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </template>

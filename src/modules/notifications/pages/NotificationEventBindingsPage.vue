@@ -33,8 +33,9 @@
         <div v-if="loading" class="text-sm text-slate-400 italic">Cargando...</div>
 
         <div v-else-if="data" class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Disparadores de notificación">
                 <table class="w-full text-xs">
+                    <caption class="sr-only">Disparadores de notificación</caption>
                     <thead class="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wide">
                         <tr>
                             <th scope="col" class="px-3 py-2 text-left sticky left-0 bg-slate-50">Evento</th>

@@ -17,9 +17,10 @@
         </div>
 
         <div class="rounded-xl border bg-white overflow-hidden">
-            <table class="w-full text-sm">
+            <div role="region" aria-label="Actos de Titulación" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                <caption class="sr-only">Actos de Titulación</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Fecha / Hora</th><th>Alumno</th><th>Aula</th><th>Opción</th><th>Estado</th><th>Resultado</th><th></th>
+                    <th scope="col" class="px-4 py-2">Fecha / Hora</th><th scope="col">Alumno</th><th scope="col">Aula</th><th scope="col">Opción</th><th scope="col">Estado</th><th scope="col">Resultado</th><th scope="col"></th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="a in rows" :key="a.id" class="border-b last:border-0 hover:bg-slate-50">
@@ -36,7 +37,7 @@
                     </tr>
                     <tr v-if="!rows.length"><td colspan="7" class="px-4 py-6 text-center text-slate-400">Sin actos.</td></tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <BaseModal :model-value="!!concludeAct" @update:model-value="concludeAct = null" title="Concluir acto" size="sm">

@@ -37,15 +37,16 @@
             </div>
 
             <!-- Lista -->
-            <div class="flex-1 overflow-auto">
+            <div tabindex="0" role="region" aria-label="Estudiantes" class="flex-1 overflow-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                 <table class="min-w-full text-sm">
+                    <caption class="sr-only">Estudiantes</caption>
                     <thead class="bg-slate-50 border-b text-[10px] uppercase text-slate-400 font-semibold sticky top-0">
                         <tr>
-                            <th class="px-4 py-2 text-left">No. Control</th>
-                            <th class="px-4 py-2 text-left">Nombre</th>
-                            <th class="px-4 py-2 text-left">Carrera</th>
-                            <th class="px-4 py-2 text-left">Estatus</th>
-                            <th class="px-4 py-2"></th>
+                            <th scope="col" class="px-4 py-2 text-left">No. Control</th>
+                            <th scope="col" class="px-4 py-2 text-left">Nombre</th>
+                            <th scope="col" class="px-4 py-2 text-left">Carrera</th>
+                            <th scope="col" class="px-4 py-2 text-left">Estatus</th>
+                            <th scope="col" class="px-4 py-2"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">

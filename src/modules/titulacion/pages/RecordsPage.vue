@@ -26,9 +26,10 @@
         </div>
 
         <div class="rounded-xl border bg-white overflow-hidden">
-            <table class="w-full text-sm">
+            <div role="region" aria-label="Expedientes de Titulación" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                <caption class="sr-only">Expedientes de Titulación</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Alumno</th><th>Carrera</th><th>Opción</th><th>Periodo</th><th>Estado</th>
+                    <th scope="col" class="px-4 py-2">Alumno</th><th scope="col">Carrera</th><th scope="col">Opción</th><th scope="col">Periodo</th><th scope="col">Estado</th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="r in rows" :key="r.id" @click="goDetail(r.id)" class="border-b last:border-0 hover:bg-slate-50 cursor-pointer">
@@ -43,7 +44,7 @@
                     </tr>
                     <tr v-if="!rows.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin expedientes.</td></tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <!-- Modal alta -->

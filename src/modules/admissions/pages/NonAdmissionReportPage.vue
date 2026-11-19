@@ -85,7 +85,8 @@
                     <span class="text-[10px] text-slate-400 uppercase">los más recientes</span>
                 </div>
 
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div role="region" aria-label="Aspirantes no admitidos" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                    <caption class="sr-only">Aspirantes no admitidos</caption>
                     <thead>
                         <tr class="text-left text-[10px] text-slate-500 uppercase tracking-wider border-b">
                             <th scope="col" class="py-2 pr-2">#</th>

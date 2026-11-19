@@ -4,9 +4,10 @@
         <p class="text-sm text-slate-500">Actos de titulación donde participas como jurado.</p>
 
         <div class="rounded-xl border bg-white overflow-hidden">
-            <table class="w-full text-sm">
+            <div role="region" aria-label="Mis Actos (Sínodo)" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                <caption class="sr-only">Mis Actos (Sínodo)</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Fecha / Hora</th><th>Alumno</th><th>Aula</th><th>Mi rol</th><th>Estado</th>
+                    <th scope="col" class="px-4 py-2">Fecha / Hora</th><th scope="col">Alumno</th><th scope="col">Aula</th><th scope="col">Mi rol</th><th scope="col">Estado</th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="a in rows" :key="a.id" class="border-b last:border-0">
@@ -18,7 +19,7 @@
                     </tr>
                     <tr v-if="!rows.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">No tienes actos asignados.</td></tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </div>
 </template>

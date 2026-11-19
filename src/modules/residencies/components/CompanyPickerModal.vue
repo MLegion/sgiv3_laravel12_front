@@ -19,7 +19,8 @@
                 </div>
 
                 <div class="overflow-y-auto flex-1">
-                    <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                    <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Empresas"><table class="w-full text-sm">
+                        <caption class="sr-only">Empresas</caption>
                         <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500 sticky top-0">
                             <tr>
                                 <th scope="col" class="px-4 py-2 text-left">Nombre</th>

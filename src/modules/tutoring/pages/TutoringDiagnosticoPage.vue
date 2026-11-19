@@ -25,22 +25,23 @@
 
         <template v-else>
             <!-- Tabla consolidada -->
-            <div class="overflow-x-auto rounded-xl border border-slate-200 mb-6">
+            <div role="region" aria-label="Diagnóstico por grupo" tabindex="0" class="overflow-x-auto rounded-xl border border-slate-200 mb-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                 <table class="min-w-full text-xs">
+                    <caption class="sr-only">Diagnóstico por grupo</caption>
                     <thead class="bg-slate-50 text-slate-600">
                         <tr>
-                            <th class="px-2 py-2 text-left">No. Control</th>
-                            <th class="px-2 py-2 text-left">Estudiante</th>
-                            <th class="px-2 py-2 text-center">Sexo</th>
-                            <th class="px-2 py-2 text-center">Edad</th>
-                            <th class="px-2 py-2 text-center">Prom. bach.</th>
-                            <th class="px-2 py-2 text-center">Organización</th>
-                            <th class="px-2 py-2 text-center">Técnicas</th>
-                            <th class="px-2 py-2 text-center">Motivación</th>
-                            <th class="px-2 py-2 text-center">Habilidades (total)</th>
-                            <th class="px-2 py-2 text-center">Asertividad</th>
-                            <th class="px-2 py-2 text-center">Autoestima</th>
-                            <th class="px-2 py-2 text-center">Estilo</th>
+                            <th scope="col" class="px-2 py-2 text-left">No. Control</th>
+                            <th scope="col" class="px-2 py-2 text-left">Estudiante</th>
+                            <th scope="col" class="px-2 py-2 text-center">Sexo</th>
+                            <th scope="col" class="px-2 py-2 text-center">Edad</th>
+                            <th scope="col" class="px-2 py-2 text-center">Prom. bach.</th>
+                            <th scope="col" class="px-2 py-2 text-center">Organización</th>
+                            <th scope="col" class="px-2 py-2 text-center">Técnicas</th>
+                            <th scope="col" class="px-2 py-2 text-center">Motivación</th>
+                            <th scope="col" class="px-2 py-2 text-center">Habilidades (total)</th>
+                            <th scope="col" class="px-2 py-2 text-center">Asertividad</th>
+                            <th scope="col" class="px-2 py-2 text-center">Autoestima</th>
+                            <th scope="col" class="px-2 py-2 text-center">Estilo</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">

@@ -125,7 +125,8 @@ onMounted(loadCaps)
 
         <!-- Tabla -->
         <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Avance por grupos"><table class="w-full text-sm">
+                <caption class="sr-only">Avance por grupos</caption>
                 <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                     <tr>
                         <th scope="col" class="text-left  px-3 py-2">MATERIA</th>

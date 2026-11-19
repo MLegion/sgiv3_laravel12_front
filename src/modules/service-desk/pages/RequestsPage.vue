@@ -12,9 +12,11 @@
         </div>
 
         <div class="rounded-xl border bg-white overflow-hidden">
+            <div role="region" aria-label="Solicitudes de ventanilla" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Solicitudes de ventanilla</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Estudiante</th><th>Documento</th><th>Comentario</th><th>Estado</th><th></th>
+                    <th scope="col" class="px-4 py-2">Estudiante</th><th scope="col">Documento</th><th scope="col">Comentario</th><th scope="col">Estado</th><th scope="col"></th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="r in rows" :key="r.id" class="border-b last:border-0 hover:bg-slate-50">
@@ -33,6 +35,7 @@
                     <tr v-if="!rows.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin solicitudes.</td></tr>
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </template>

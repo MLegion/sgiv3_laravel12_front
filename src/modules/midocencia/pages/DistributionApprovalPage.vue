@@ -41,14 +41,16 @@
 
             <!-- Tabla -->
             <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
+                <div role="region" aria-label="Seguimiento de descargas" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                 <table class="w-full text-sm">
+                    <caption class="sr-only">Seguimiento de descargas</caption>
                     <thead class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wide">
                         <tr>
-                            <th class="text-left px-4 py-3">Docente</th>
-                            <th class="text-left px-4 py-3">Distribución</th>
-                            <th class="text-left px-4 py-3">Horario</th>
-                            <th class="text-left px-4 py-3">Oficio</th>
-                            <th class="px-4 py-3"></th>
+                            <th scope="col" class="text-left px-4 py-3">Docente</th>
+                            <th scope="col" class="text-left px-4 py-3">Distribución</th>
+                            <th scope="col" class="text-left px-4 py-3">Horario</th>
+                            <th scope="col" class="text-left px-4 py-3">Oficio</th>
+                            <th scope="col" class="px-4 py-3"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -73,6 +75,7 @@
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </template>
         <div v-else class="text-center py-8 text-slate-400">Selecciona un periodo para ver el seguimiento.</div>

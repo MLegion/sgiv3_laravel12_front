@@ -32,8 +32,9 @@
         </div>
 
         <!-- Tabla -->
-        <div class="bg-white border border-slate-200 rounded-xl overflow-x-auto">
+        <div tabindex="0" role="region" aria-label="Reporte de lista de alumnos" class="bg-white border border-slate-200 rounded-xl overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Reporte de lista de alumnos</caption>
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
                     <tr>
                         <th scope="col" class="text-left px-3 py-2">#</th>

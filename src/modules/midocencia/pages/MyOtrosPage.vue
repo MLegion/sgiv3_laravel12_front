@@ -30,9 +30,11 @@
 
             <!-- Archivos -->
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
+                <div role="region" aria-label="Archivos de evidencia" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                 <table class="w-full text-sm">
+                    <caption class="sr-only">Archivos de evidencia</caption>
                     <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                        <tr><th class="text-left px-4 py-2">Archivo</th><th class="text-left px-4 py-2">Categoría</th><th class="text-left px-4 py-2">Etiqueta</th><th class="px-4 py-2"></th></tr>
+                        <tr><th scope="col" class="text-left px-4 py-2">Archivo</th><th scope="col" class="text-left px-4 py-2">Categoría</th><th scope="col" class="text-left px-4 py-2">Etiqueta</th><th scope="col" class="px-4 py-2"></th></tr>
                     </thead>
                     <tbody class="divide-y">
                         <tr v-for="f in files" :key="f.id" class="hover:bg-slate-50">
@@ -44,6 +46,7 @@
                         <tr v-if="files.length === 0"><td colspan="4" class="px-4 py-4 text-center text-slate-400">Sin archivos.</td></tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </template>
     </div>

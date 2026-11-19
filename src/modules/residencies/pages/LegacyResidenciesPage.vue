@@ -29,7 +29,7 @@
         <div v-if="loading && !rows.length" class="rounded-xl border bg-white p-8 text-center text-sm text-slate-400">Cargando…</div>
         <div v-else-if="!rows.length" class="rounded-xl border bg-white p-8 text-center text-sm text-slate-400 italic">Sin registros.</div>
 
-        <div v-else class="overflow-x-auto rounded-xl border bg-white relative">
+        <div v-else class="overflow-x-auto rounded-xl border bg-white relative focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Histórico de Residencias">
             <!-- Overlay sutil durante recarga: mantiene la tabla visible (sin parpadeo) -->
             <div v-if="loading" class="absolute inset-0 z-10 flex items-start justify-center bg-white/60 pt-12">
                 <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
@@ -38,14 +38,15 @@
                 </div>
             </div>
             <table class="min-w-full text-sm transition-opacity duration-200" :class="{ 'opacity-50': loading }">
+                <caption class="sr-only">Histórico de Residencias</caption>
                 <thead class="bg-slate-50 text-[11px] uppercase text-slate-500">
                     <tr>
-                        <th class="text-left px-4 py-2">No. control</th>
-                        <th class="text-left px-4 py-2">Información</th>
-                        <th class="text-left px-4 py-2">Opción</th>
-                        <th class="text-center px-4 py-2">Estado</th>
-                        <th class="text-center px-4 py-2">Docs</th>
-                        <th class="px-4 py-2"></th>
+                        <th scope="col" class="text-left px-4 py-2">No. control</th>
+                        <th scope="col" class="text-left px-4 py-2">Información</th>
+                        <th scope="col" class="text-left px-4 py-2">Opción</th>
+                        <th scope="col" class="text-center px-4 py-2">Estado</th>
+                        <th scope="col" class="text-center px-4 py-2">Docs</th>
+                        <th scope="col" class="px-4 py-2"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">

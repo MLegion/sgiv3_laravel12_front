@@ -92,9 +92,10 @@
                 </button>
                 <span v-else class="text-[10px] font-bold text-emerald-600">✓ TODAS CREADAS</span>
             </div>
-            <table v-if="gt.groups.length" class="w-full text-sm">
+            <div v-if="gt.groups.length" role="region" aria-label="Tutoría grupal requerida" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                <caption class="sr-only">Tutoría grupal requerida</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                    <th class="px-3 py-1">Grupo</th><th>Semestre</th><th>Tutoría grupal</th><th></th>
+                    <th scope="col" class="px-3 py-1">Grupo</th><th scope="col">Semestre</th><th scope="col">Tutoría grupal</th><th scope="col"></th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="g in gt.groups" :key="g.group_id" class="border-b last:border-0">
@@ -110,7 +111,7 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <div v-if="loadingPackages && !packageItems.length" class="flex justify-center py-12">
@@ -124,7 +125,8 @@
             </div>
 
             <div ref="tableScrollRef" class="max-h-[65vh] overflow-y-auto">
-                <div class="overflow-x-auto w-full"><table class="w-full text-left">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Asignación Docente"><table class="w-full text-left">
+                    <caption class="sr-only">Asignación Docente</caption>
                     <thead class="sticky top-0 z-10">
                         <tr class="bg-slate-100 border-b text-[10px] font-black text-slate-500 uppercase">
                             <th scope="col" class="px-3 py-2.5 w-24">Clave</th>
@@ -547,8 +549,9 @@
                                 <h4 class="text-sm font-black uppercase tracking-wider text-blue-800">Materias solicitadas</h4>
                                 <span class="text-[10px] text-blue-600">{{ drawerRequested.length }}</span>
                             </div>
-                            <div class="overflow-x-auto">
+                            <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias solicitadas">
                                 <table v-if="drawerRequested.length" class="w-full text-xs">
+                                    <caption class="sr-only">Materias solicitadas</caption>
                                     <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
                                         <tr>
                                             <th scope="col" class="px-3 py-2 text-left">Materia</th>
@@ -585,8 +588,9 @@
                                     {{ drawerTotalHours }} hrs totales
                                 </span>
                             </div>
-                            <div class="overflow-x-auto">
+                            <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias asignadas">
                                 <table v-if="drawerAssigned.length" class="w-full text-xs">
+                                    <caption class="sr-only">Materias asignadas</caption>
                                     <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
                                         <tr>
                                             <th scope="col" class="px-3 py-2 text-left">Materia</th>

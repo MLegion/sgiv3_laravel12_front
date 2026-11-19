@@ -6,9 +6,11 @@
         </div>
 
         <div class="rounded-xl border bg-white overflow-hidden">
+            <div role="region" aria-label="Bandeja de documentos" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Bandeja de documentos</caption>
                 <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th class="px-4 py-2">Documento</th><th>Estado</th><th>Folio</th><th></th>
+                    <th scope="col" class="px-4 py-2">Documento</th><th scope="col">Estado</th><th scope="col">Folio</th><th scope="col"></th>
                 </tr></thead>
                 <tbody>
                     <tr v-for="r in rows" :key="r.id" class="border-b last:border-0">
@@ -22,6 +24,7 @@
                     <tr v-if="!rows.length"><td colspan="4" class="px-4 py-6 text-center text-slate-400">Aún no tienes solicitudes. Usa “+ Solicitar” para pedir un documento.</td></tr>
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </template>

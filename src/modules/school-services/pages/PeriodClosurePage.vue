@@ -102,7 +102,8 @@
                 <div v-if="data.actas.length === 0" class="px-3 py-4 text-sm text-slate-500 italic">
                     No hay asignaciones docentes con inscripciones para este periodo.
                 </div>
-                <div v-else class="overflow-x-auto w-full"><table class="w-full text-xs">
+                <div v-else class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Actas docentes"><table class="w-full text-xs">
+                    <caption class="sr-only">Actas docentes</caption>
                     <thead class="bg-slate-100 text-slate-600">
                         <tr>
                             <th scope="col" class="text-left px-3 py-2">Grupo</th>
@@ -198,7 +199,8 @@
                         </span>
                     </div>
 
-                    <div class="overflow-x-auto w-full"><table class="w-full text-xs">
+                    <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Reclasificación de estudiantes"><table class="w-full text-xs">
+                        <caption class="sr-only">Reclasificación de estudiantes</caption>
                         <thead class="bg-slate-100 text-slate-600">
                             <tr>
                                 <th scope="col" class="text-left px-3 py-2">Núm. control</th>

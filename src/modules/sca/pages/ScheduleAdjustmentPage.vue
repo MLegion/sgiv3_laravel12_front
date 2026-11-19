@@ -57,8 +57,9 @@
                         </span>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Sesiones Actuales">
                     <table class="w-full text-sm">
+                        <caption class="sr-only">Sesiones Actuales</caption>
                         <thead class="bg-slate-50 text-slate-500">
                             <tr>
                                 <th scope="col" class="px-4 py-2 text-left text-[10px] font-black uppercase tracking-widest">#</th>

@@ -62,7 +62,8 @@
                             <div class="px-4 py-2 border-b bg-slate-50">
                                 <p class="text-xs font-bold text-slate-600 uppercase">Materias del semestre</p>
                             </div>
-                            <div class="overflow-x-auto w-full"><table class="w-full text-xs">
+                            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias del semestre"><table class="w-full text-xs">
+                                <caption class="sr-only">Materias del semestre</caption>
                                 <thead class="text-slate-500">
                                     <tr>
                                         <th scope="col" class="px-3 py-2 text-left">Código</th>

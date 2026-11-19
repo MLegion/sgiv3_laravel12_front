@@ -6,10 +6,12 @@
         </div>
 
         <div class="rounded-xl border bg-white overflow-hidden">
+            <div role="region" aria-label="Banco de Programas de Servicio Social" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
+                <caption class="sr-only">Banco de Programas de Servicio Social</caption>
                 <thead>
                     <tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                        <th class="px-4 py-2">Programa</th><th>Dependencia</th><th>Carreras</th><th>Estado</th><th></th>
+                        <th scope="col" class="px-4 py-2">Programa</th><th scope="col">Dependencia</th><th scope="col">Carreras</th><th scope="col">Estado</th><th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -30,6 +32,7 @@
                     <tr v-if="!programs.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin programas.</td></tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Modal -->

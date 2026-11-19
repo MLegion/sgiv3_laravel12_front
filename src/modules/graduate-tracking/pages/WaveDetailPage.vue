@@ -55,9 +55,11 @@
                 </select>
             </div>
             <div class="rounded-xl border bg-white overflow-hidden">
+                <div role="region" aria-label="Seguimiento de invitaciones" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                 <table class="w-full text-sm">
+                    <caption class="sr-only">Seguimiento de invitaciones</caption>
                     <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                        <th class="px-4 py-2">Egresado</th><th>Generación</th><th>Carrera</th><th>Correo</th><th>Estado</th>
+                        <th scope="col" class="px-4 py-2">Egresado</th><th scope="col">Generación</th><th scope="col">Carrera</th><th scope="col">Correo</th><th scope="col">Estado</th>
                     </tr></thead>
                     <tbody>
                         <tr v-for="i in invitations" :key="i.id" class="border-b last:border-0">
@@ -70,6 +72,7 @@
                         <tr v-if="!invitations.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin invitaciones. Usa "Generar invitaciones".</td></tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
 

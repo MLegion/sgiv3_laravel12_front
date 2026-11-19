@@ -42,9 +42,11 @@
             <!-- Cumplimiento por tutor -->
             <div class="rounded-xl border bg-white overflow-hidden">
                 <h3 class="text-xs font-bold uppercase text-slate-500 px-4 pt-3">Cumplimiento por tutor</h3>
+                <div role="region" aria-label="Cumplimiento por tutor" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                 <table class="w-full text-sm mt-2">
+                    <caption class="sr-only">Cumplimiento por tutor</caption>
                     <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                        <th class="px-4 py-2">Tutor</th><th>Ámbito</th><th>Carrera</th><th>PAT</th><th>Tutorados</th><th>Sesiones</th><th>Seguim. (E/R)</th><th>Cumpl.</th>
+                        <th scope="col" class="px-4 py-2">Tutor</th><th scope="col">Ámbito</th><th scope="col">Carrera</th><th scope="col">PAT</th><th scope="col">Tutorados</th><th scope="col">Sesiones</th><th scope="col">Seguim. (E/R)</th><th scope="col">Cumpl.</th>
                     </tr></thead>
                     <tbody>
                         <tr v-for="r in d.tutor_compliance" :key="r.assignment_id" class="border-b last:border-0">
@@ -60,6 +62,7 @@
                         <tr v-if="!d.tutor_compliance.length"><td colspan="8" class="px-4 py-6 text-center text-slate-400">Sin asignaciones.</td></tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </template>
     </div>

@@ -17,7 +17,8 @@
         </div>
 
         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+            <div tabindex="0" role="region" aria-label="Instrumentaciones de la asignatura" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                <caption class="sr-only">Instrumentaciones de la asignatura</caption>
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
                     <tr>
                         <th scope="col" class="text-left px-4 py-2">#</th>

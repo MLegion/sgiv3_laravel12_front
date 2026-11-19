@@ -63,7 +63,8 @@
             </h2>
 
             <div v-if="loadingSessions" class="text-xs text-slate-400 italic">Cargando...</div>
-            <div v-else-if="sessions.length > 0" class="overflow-x-auto w-full"><table class="w-full text-xs border border-slate-200 rounded-md overflow-hidden">
+            <div v-else-if="sessions.length > 0" role="region" aria-label="Estado de sesiones del periodo" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-xs border border-slate-200 rounded-md overflow-hidden">
+                <caption class="sr-only">Estado de sesiones del periodo</caption>
                 <thead class="bg-slate-50">
                     <tr class="text-slate-600">
                         <th scope="col" class="px-2 py-1 text-left">#</th>

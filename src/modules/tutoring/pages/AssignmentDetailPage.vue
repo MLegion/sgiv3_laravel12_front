@@ -75,13 +75,14 @@
 
                 <!-- PLANEACIÓN: define problemática / descripción / objetivo -->
                 <template v-if="patView === 'planeacion'">
-                    <div class="rounded-xl border bg-white overflow-x-auto">
+                    <div class="rounded-xl border bg-white overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Planeación del PAT">
                         <table class="w-full text-sm">
+                            <caption class="sr-only">Planeación del PAT</caption>
                             <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                                <th class="px-3 py-2 w-1/3">Problemática identificada</th>
-                                <th class="w-1/3">Descripción de las actividades</th>
-                                <th class="w-1/3">Objetivo</th>
-                                <th class="w-10"></th>
+                                <th scope="col" class="px-3 py-2 w-1/3">Problemática identificada</th>
+                                <th scope="col" class="w-1/3">Descripción de las actividades</th>
+                                <th scope="col" class="w-1/3">Objetivo</th>
+                                <th scope="col" class="w-10"></th>
                             </tr></thead>
                             <tbody>
                                 <tr v-for="(r, i) in patRows" :key="i" class="border-b last:border-0 align-top">

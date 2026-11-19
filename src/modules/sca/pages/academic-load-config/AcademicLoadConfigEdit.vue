@@ -156,7 +156,8 @@
                         </div>
 
                         <div class="max-h-[500px] overflow-y-auto">
-                            <div class="overflow-x-auto w-full"><table class="w-full text-xs">
+                            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Fechas para Modalidad"><table class="w-full text-xs">
+                                <caption class="sr-only">Fechas para Modalidad</caption>
                                 <thead class="bg-slate-50 sticky top-0">
                                     <tr>
                                         <th scope="col" class="px-4 py-2 text-left text-[10px] font-black text-slate-400 uppercase w-16">SESIÓN</th>

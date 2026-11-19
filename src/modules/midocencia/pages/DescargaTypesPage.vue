@@ -25,13 +25,15 @@
                 No hay tipos de hora de descarga activos en este plantel.
             </div>
 
-            <table v-else class="w-full text-sm">
+            <div v-else role="region" aria-label="Tipos de descarga" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
+            <table class="w-full text-sm">
+                <caption class="sr-only">Tipos de descarga</caption>
                 <thead>
                     <tr class="text-left text-xs font-semibold uppercase text-slate-500 border-b">
-                        <th class="py-2 pr-3">Tipo de descarga</th>
-                        <th class="py-2 pr-3 w-56">Rubro</th>
-                        <th class="py-2 pr-3 w-72">Criterio (opcional)</th>
-                        <th class="py-2 w-10"></th>
+                        <th scope="col" class="py-2 pr-3">Tipo de descarga</th>
+                        <th scope="col" class="py-2 pr-3 w-56">Rubro</th>
+                        <th scope="col" class="py-2 pr-3 w-72">Criterio (opcional)</th>
+                        <th scope="col" class="py-2 w-10"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -68,6 +70,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </template>

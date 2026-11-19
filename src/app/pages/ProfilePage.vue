@@ -188,13 +188,15 @@
                                     >Ver formato</button>
                                 </div>
                             </div>
+                            <div role="region" :aria-label="`Solicitudes de materias · ${p.period}`" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                             <table class="min-w-full text-sm">
+                                <caption class="sr-only">{{ `Solicitudes de materias · ${p.period}` }}</caption>
                                 <thead class="text-[11px] uppercase text-slate-400">
                                     <tr>
-                                        <th class="text-left px-4 py-1.5">Materia</th>
-                                        <th class="text-left px-4 py-1.5">Carrera</th>
-                                        <th class="text-center px-4 py-1.5">Sem.</th>
-                                        <th class="text-center px-4 py-1.5">Grupos</th>
+                                        <th scope="col" class="text-left px-4 py-1.5">Materia</th>
+                                        <th scope="col" class="text-left px-4 py-1.5">Carrera</th>
+                                        <th scope="col" class="text-center px-4 py-1.5">Sem.</th>
+                                        <th scope="col" class="text-center px-4 py-1.5">Grupos</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
@@ -206,6 +208,7 @@
                                     </tr>
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                         <p v-if="!teacherHistory.periods.length" class="text-sm text-slate-400 italic">No tienes solicitudes de materias registradas.</p>
                     </div>

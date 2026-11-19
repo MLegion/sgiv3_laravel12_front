@@ -66,7 +66,8 @@
                 <div class="border-b px-4 py-3">
                     <h3 class="text-sm font-bold text-slate-700 uppercase">Materias inscritas</h3>
                 </div>
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias inscritas"><table class="w-full text-sm">
+                    <caption class="sr-only">Materias inscritas</caption>
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
                             <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
@@ -170,7 +171,8 @@
                         <span class="ml-1 text-[10px] uppercase">materias</span>
                     </div>
                 </div>
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Carga aprobada"><table class="w-full text-sm">
+                    <caption class="sr-only">Carga aprobada</caption>
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
                             <th scope="col" class="px-4 py-2 text-left">MATERIA</th>

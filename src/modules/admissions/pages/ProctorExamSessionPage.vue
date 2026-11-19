@@ -157,7 +157,8 @@
 
                 <!-- Desktop table -->
                 <div class="hidden sm:block">
-                    <div class="overflow-x-auto w-full"><table class="w-full text-xs">
+                    <div role="region" aria-label="Aspirantes de la sesión" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-xs">
+                        <caption class="sr-only">Aspirantes de la sesión</caption>
                         <thead class="bg-slate-50">
                             <tr class="text-slate-600">
                                 <th scope="col" class="px-2 py-1 text-left">Aspirante</th>

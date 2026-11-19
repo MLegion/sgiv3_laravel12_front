@@ -8,7 +8,8 @@
                 <h2 class="text-base font-semibold text-slate-800 mb-2">Top escuelas de procedencia</h2>
                 <div v-if="data.topSchools.length === 0" class="text-sm text-slate-400 italic">Sin datos.</div>
                 <div v-else class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                    <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                    <div role="region" aria-label="Top escuelas de procedencia" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                        <caption class="sr-only">Top escuelas de procedencia</caption>
                         <thead class="bg-slate-100 border-b border-slate-200">
                             <tr>
                                 <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
@@ -41,7 +42,8 @@
                 <h2 class="text-base font-semibold text-slate-800 mb-2">Top municipios de nacimiento</h2>
                 <div v-if="data.topMunicipalities.length === 0" class="text-sm text-slate-400 italic">Sin datos.</div>
                 <div v-else class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                    <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                    <div role="region" aria-label="Top municipios de nacimiento" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                        <caption class="sr-only">Top municipios de nacimiento</caption>
                         <thead class="bg-slate-100 border-b border-slate-200">
                             <tr>
                                 <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>

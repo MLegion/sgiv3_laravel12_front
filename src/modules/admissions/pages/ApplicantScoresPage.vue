@@ -265,7 +265,8 @@ EFGH789012MDFYYY01,72.0</pre>
                     </span>
                 </div>
                 <div class="max-h-60 overflow-y-auto">
-                    <table class="w-full text-xs">
+                    <div role="region" aria-label="Vista previa de resultados" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-xs">
+                        <caption class="sr-only">Vista previa de resultados</caption>
                         <thead class="bg-white sticky top-0 border-b border-slate-100">
                             <tr>
                                 <th scope="col" class="px-3 py-1.5 text-left font-semibold text-slate-500 uppercase">CURP</th>
@@ -283,7 +284,7 @@ EFGH789012MDFYYY01,72.0</pre>
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
                 <p v-if="csvPreview.length > 100" class="px-3 py-1.5 text-[11px] text-slate-400 italic border-t border-slate-100">Mostrando las primeras 100 filas de {{ csvPreview.length }}.</p>
             </div>
@@ -404,7 +405,8 @@ EFGH789012MDFYYY01,72.0</pre>
                 <div v-if="result.errors.length > 0">
                     <p class="text-xs font-semibold text-slate-600 uppercase mb-2">Detalle de errores</p>
                     <div class="border rounded-lg overflow-hidden text-xs">
-                        <div class="overflow-x-auto w-full"><table class="w-full">
+                        <div role="region" aria-label="Detalle de errores" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full">
+                            <caption class="sr-only">Detalle de errores</caption>
                             <thead class="bg-slate-100">
                                 <tr>
                                     <th scope="col" class="px-3 py-2 text-left font-semibold text-slate-600 uppercase">CURP</th>

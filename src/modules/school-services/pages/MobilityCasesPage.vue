@@ -36,15 +36,16 @@
         </div>
 
         <div class="rounded-xl border border-slate-200 overflow-hidden">
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Expedientes de movilidad"><table class="w-full text-sm">
+                <caption class="sr-only">Expedientes de movilidad</caption>
                 <thead class="bg-slate-50 text-slate-500">
                     <tr>
-                        <th class="text-left px-4 py-2 font-medium">#</th>
-                        <th class="text-left px-4 py-2 font-medium">Tipo de trámite</th>
-                        <th class="text-left px-4 py-2 font-medium">Origen → Destino</th>
-                        <th class="text-left px-4 py-2 font-medium">Dictamen</th>
-                        <th class="text-left px-4 py-2 font-medium">Estado</th>
-                        <th class="px-4 py-2"></th>
+                        <th scope="col" class="text-left px-4 py-2 font-medium">#</th>
+                        <th scope="col" class="text-left px-4 py-2 font-medium">Tipo de trámite</th>
+                        <th scope="col" class="text-left px-4 py-2 font-medium">Origen → Destino</th>
+                        <th scope="col" class="text-left px-4 py-2 font-medium">Dictamen</th>
+                        <th scope="col" class="text-left px-4 py-2 font-medium">Estado</th>
+                        <th scope="col" class="px-4 py-2"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,7 +65,7 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <BaseModal v-model="openTransfer" title="Traslado externo (entrante)" size="md">

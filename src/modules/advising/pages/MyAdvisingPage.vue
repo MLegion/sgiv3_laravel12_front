@@ -132,7 +132,8 @@
                         <span class="ml-1 text-[10px] uppercase">créditos</span>
                     </div>
                 </div>
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Carga aprobada"><table class="w-full text-sm">
+                    <caption class="sr-only">Carga aprobada</caption>
                     <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
                         <tr>
                             <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
@@ -553,7 +554,8 @@
             </div>
 
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <div class="overflow-x-auto w-full"><table class="min-w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias ofertadas"><table class="min-w-full text-sm">
+                    <caption class="sr-only">Materias ofertadas</caption>
                     <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
                         <tr>
                             <th scope="col" class="px-3 py-2 text-left">Clave</th>

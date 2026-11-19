@@ -120,8 +120,9 @@
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto">
+                    <div tabindex="0" role="region" aria-label="Materias Vinculadas" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
                         <table class="w-full text-left border-collapse">
+                            <caption class="sr-only">Materias Vinculadas</caption>
                             <thead>
                             <tr class="bg-slate-50 text-[10px] uppercase text-slate-400 font-black border-b">
                                 <th scope="col" class="px-4 py-4 w-24">Clave</th>

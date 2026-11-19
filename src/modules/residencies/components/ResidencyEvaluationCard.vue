@@ -15,7 +15,8 @@
                 Calificación enviada al kardex el {{ formatDate(evaluation.kardexSyncedAt) }}. Ya no es editable.
             </p>
 
-            <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Evaluación"><table class="w-full text-sm">
+                <caption class="sr-only">Evaluación</caption>
                 <thead>
                     <tr class="text-[10px] font-black text-slate-400 uppercase">
                         <th scope="col" class="text-left py-1">Componente</th>

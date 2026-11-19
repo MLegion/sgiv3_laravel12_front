@@ -99,7 +99,8 @@
             </div>
 
             <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <div class="overflow-x-auto w-full"><table class="w-full text-sm">
+                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Aspirantes admitidos"><table class="w-full text-sm">
+                    <caption class="sr-only">Aspirantes admitidos</caption>
                     <thead class="bg-slate-100 border-b border-slate-200">
                         <tr>
                             <th scope="col" class="w-10 px-3 py-3"></th>
@@ -188,7 +189,7 @@
         <!-- ── DRAWER DETALLE ────────────────────────────────────────────────── -->
         <Teleport to="body">
             <Transition enter-active-class="transition-opacity duration-200" enter-from-class="opacity-0" leave-active-class="transition-opacity duration-200" leave-to-class="opacity-0">
-                <div v-if="drawerItem" class="fixed inset-0 z-[100] flex" @click.self="drawerItem = null" @keydown.esc.window="drawerItem = null">
+                <div v-if="drawerItem" class="fixed inset-0 z-[100] flex" @click.self="drawerItem = null" @keydown.esc="drawerItem = null">
                     <div
                         class="ml-auto w-full max-w-lg h-full bg-white shadow-2xl flex flex-col overflow-hidden"
                         role="dialog"

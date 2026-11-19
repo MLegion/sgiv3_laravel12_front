@@ -226,7 +226,8 @@
                     <h3 class="text-sm font-semibold text-slate-700">Unidad {{ activeUnit.number }} — Atrás (evaluación)</h3>
 
                     <Field label="Indicadores de alcance">
-                            <div class="overflow-x-auto w-full"><table class="w-full text-xs border border-slate-200">
+                            <div tabindex="0" role="region" aria-label="Indicadores de alcance" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-xs border border-slate-200">
+                                <caption class="sr-only">Indicadores de alcance</caption>
                                 <thead class="bg-slate-50"><tr><th scope="col" class="border px-2 py-1 w-8"></th><th scope="col" class="border px-2 py-1 text-left">Indicador</th><th scope="col" class="border px-2 py-1 w-20">Valor</th></tr></thead>
                                 <tbody>
                                     <tr v-for="ind in activeUnit.indicadores" :key="ind.letter">
@@ -242,7 +243,8 @@
                         </Field>
 
                         <Field label="Matriz de evaluación">
-                            <div class="overflow-x-auto w-full"><table class="w-full text-xs border border-slate-200">
+                            <div tabindex="0" role="region" aria-label="Matriz de evaluación" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-xs border border-slate-200">
+                                <caption class="sr-only">Matriz de evaluación</caption>
                                 <thead class="bg-slate-50">
                                     <tr>
                                         <th scope="col" class="border px-2 py-1 text-left">Producto / Evidencia de aprendizaje</th>
@@ -366,7 +368,8 @@
                     </div>
 
                     <!-- Tabla horizontal como el formato oficial: una columna por semana -->
-                    <div v-else class="overflow-x-auto w-full"><table class="text-xs border-collapse">
+                    <div v-else tabindex="0" role="region" aria-label="Calendarización de evaluación por semanas" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="text-xs border-collapse">
+                        <caption class="sr-only">Calendarización de evaluación por semanas</caption>
                         <tbody>
                             <tr class="bg-slate-50">
                                 <th scope="row" class="border border-slate-300 px-2 py-1 text-left w-20">Semanas</th>
