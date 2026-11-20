@@ -49,7 +49,7 @@
         <!-- Invitaciones -->
         <div v-if="tab === 'invitations'" class="space-y-3">
             <div class="flex gap-3">
-                <select v-model="invFilter" @change="loadInvitations" class="rounded-lg border-slate-300 text-sm">
+                <select v-model="invFilter" @change="loadInvitations" aria-label="Filtrar invitaciones por estado" class="rounded-lg border-slate-300 text-sm">
                     <option value="">Todas</option><option value="pending">Pendientes</option>
                     <option value="sent">Enviadas</option><option value="responded">Respondidas</option>
                 </select>
@@ -102,7 +102,7 @@
 
             <div v-if="stats" class="flex items-center gap-2">
                 <span class="text-xs font-semibold text-slate-500">Ver respuestas de la generación:</span>
-                <select v-model="genFilter" @change="loadStats" class="rounded-lg border-slate-300 text-sm">
+                <select v-model="genFilter" @change="loadStats" aria-label="Ver respuestas de la generación" class="rounded-lg border-slate-300 text-sm">
                     <option value="">Todas</option>
                     <option v-for="g in stats.by_generation" :key="g.generation" :value="g.generation">{{ g.generation }}</option>
                 </select>

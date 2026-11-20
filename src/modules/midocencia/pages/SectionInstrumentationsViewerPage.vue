@@ -21,8 +21,8 @@
                 />
             </div>
             <div class="w-48">
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Estado</label>
-                <select v-model="status" class="w-full border rounded-lg px-3 py-2 text-sm" @change="load">
+                <label for="siv-status" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Estado</label>
+                <select id="siv-status" v-model="status" class="w-full border rounded-lg px-3 py-2 text-sm" @change="load">
                     <option value="">Todos</option>
                     <option value="draft">Borrador</option>
                     <option value="submitted">Enviada</option>
@@ -30,7 +30,7 @@
                     <option value="rejected">Rechazada</option>
                 </select>
             </div>
-            <input v-model="search" placeholder="Buscar docente o materia…" class="border rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px]" />
+            <input v-model="search" placeholder="Buscar docente o materia…" aria-label="Buscar docente o materia" class="border rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px]" />
         </div>
 
         <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>

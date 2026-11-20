@@ -1,8 +1,9 @@
 <template>
     <div class="h-full flex flex-col text-xs space-y-3">
         <div>
-            <label class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">Periodo</label>
+            <label for="period" class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">Periodo</label>
             <select
+                id="period"
                 v-model="choice"
                 class="w-full text-xs bg-white border border-slate-200 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400"
                 @change="emit('params', { period_id: choice })"

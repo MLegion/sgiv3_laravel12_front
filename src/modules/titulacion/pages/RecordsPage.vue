@@ -6,15 +6,15 @@
         </div>
 
         <div class="rounded-xl border bg-white p-4 grid sm:grid-cols-4 gap-3">
-            <select v-model="filters.period_id" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.period_id" aria-label="Periodo" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todos los periodos</option>
                 <option v-for="p in options.periods" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>
-            <select v-model="filters.career_id" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.career_id" aria-label="Carrera" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todas las carreras</option>
                 <option v-for="c in options.careers" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
-            <select v-model="filters.status" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.status" aria-label="Estado" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todos los estados</option>
                 <option value="registered">Registrado</option>
                 <option value="scheduled">Programado</option>

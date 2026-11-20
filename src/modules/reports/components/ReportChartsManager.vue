@@ -81,6 +81,7 @@ const values = rows.map(r => Number(r.puntaje));
 const png = helpers.barChart(labels, values, { yMax: 5, yTitle: 'PUNTAJE', xTitle: 'ASPECTOS' });
 return { images: { grafica: png }, fields: { total_aspectos: rows.length } };</pre>
             <textarea
+                aria-label="Script avanzado de gráfica"
                 :value="clientScript"
                 @input="emitScript(($event.target as HTMLTextAreaElement).value)"
                 rows="8"

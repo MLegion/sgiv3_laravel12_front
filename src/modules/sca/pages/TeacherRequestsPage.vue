@@ -41,16 +41,16 @@
         <!-- Filtros: Campus + Tipo Modalidad -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CAMPUS</label>
-                <select v-model="selectedCampusId" @change="onCampusOrTypeChange"
+                <label for="tr-campus" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CAMPUS</label>
+                <select id="tr-campus" v-model="selectedCampusId" @change="onCampusOrTypeChange"
                     class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                     <option :value="null">-- SELECCIONAR --</option>
                     <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">TIPO MODALIDAD</label>
-                <select v-model="selectedModalityTypeId" @change="onCampusOrTypeChange"
+                <label for="tr-modality-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">TIPO MODALIDAD</label>
+                <select id="tr-modality-type" v-model="selectedModalityTypeId" @change="onCampusOrTypeChange"
                     class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                     <option :value="null">-- SELECCIONAR --</option>
                     <option v-for="mt in modalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
@@ -173,7 +173,7 @@
                     <span class="text-xs text-slate-400">{{ availableItems.length }} disponibles</span>
                     <!-- Búsqueda -->
                     <div class="relative">
-                        <input type="text" v-model="searchQuery" placeholder="Buscar..."
+                        <input type="text" v-model="searchQuery" aria-label="Buscar materia" placeholder="Buscar..."
                             class="border rounded-lg pl-8 pr-3 py-1.5 text-xs w-48 focus:border-blue-500 outline-none" />
                         <svg class="w-4 h-4 text-slate-400 absolute left-2 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>

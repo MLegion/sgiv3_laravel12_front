@@ -20,10 +20,11 @@
 
                         <div v-if="requestParams.length" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div v-for="p in requestParams" :key="p.name">
-                                <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase">
+                                <label :for="`rpm-param-${p.name}`" class="block text-xs font-semibold text-slate-500 mb-1 uppercase">
                                     {{ p.name }}<span v-if="p.required" class="text-red-500"> *</span>
                                 </label>
                                 <input
+                                    :id="`rpm-param-${p.name}`"
                                     v-model="values[p.name]"
                                     :type="inputType(p.dataType)"
                                     class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"

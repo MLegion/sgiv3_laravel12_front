@@ -85,8 +85,8 @@
 
                 <!-- Formato -->
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">Formato de Grupo</label>
-                    <input v-model="modal.groupFormat"
+                    <label for="ccs-group-format" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">Formato de Grupo</label>
+                    <input id="ccs-group-format" v-model="modal.groupFormat"
                         placeholder="[D,numberPeriod][DD,carreraId]-[L,sec]"
                         class="w-full border-2 rounded-lg px-3 py-2 text-sm font-mono border-slate-200 focus:border-blue-500 outline-none" />
                 </div>

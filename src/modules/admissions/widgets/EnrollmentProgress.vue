@@ -2,10 +2,11 @@
     <!-- MODO SETTINGS -->
     <div v-if="view === 'settings'" class="h-full flex flex-col text-xs space-y-3 overflow-y-auto">
         <div>
-            <label class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
+            <label for="period-choice" class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
                 Periodo
             </label>
             <select
+                id="period-choice"
                 v-model="periodChoice"
                 class="w-full text-xs bg-white border border-slate-200 rounded px-2 py-1.5"
                 @change="emitParams"
@@ -32,10 +33,11 @@
         </div>
 
         <div v-if="(data?.availableCampuses?.length ?? 0) > 1">
-            <label class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
+            <label for="campus-choice" class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
                 Campus
             </label>
             <select
+                id="campus-choice"
                 v-model="campusChoice"
                 class="w-full text-xs bg-white border border-slate-200 rounded px-2 py-1.5"
                 @change="emitParams"
@@ -48,10 +50,11 @@
         </div>
 
         <div v-if="(data?.availableCareers?.length ?? 0) > 0">
-            <label class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
+            <label for="career-choice" class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
                 Carrera
             </label>
             <select
+                id="career-choice"
                 v-model="careerChoice"
                 class="w-full text-xs bg-white border border-slate-200 rounded px-2 py-1.5"
                 @change="emitParams"
@@ -64,10 +67,11 @@
         </div>
 
         <div v-if="(data?.availableModalityTypes?.length ?? 0) > 1">
-            <label class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
+            <label for="modality-type-choice" class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
                 Modalidad
             </label>
             <select
+                id="modality-type-choice"
                 v-model="modalityTypeChoice"
                 class="w-full text-xs bg-white border border-slate-200 rounded px-2 py-1.5"
                 @change="emitParams"

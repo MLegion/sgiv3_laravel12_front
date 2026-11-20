@@ -126,11 +126,12 @@
                                 :key="'in-' + p.name"
                                 class="flex items-center gap-2 p-2 border border-sky-200 rounded bg-sky-50/50"
                             >
-                                <label class="text-[11px] font-mono font-bold text-slate-700 w-36 truncate flex items-center gap-1">
+                                <label :for="`dao-show-param-${p.name}`" class="text-[11px] font-mono font-bold text-slate-700 w-36 truncate flex items-center gap-1">
                                     :{{ p.name }}
                                     <span v-if="p.is_required" class="text-red-500">*</span>
                                 </label>
                                 <input
+                                    :id="`dao-show-param-${p.name}`"
                                     :value="paramValues[p.name] ?? ''"
                                     :type="inputTypeForDataType(p.data_type)"
                                     :placeholder="p.default_value ?? p.data_type"
@@ -152,6 +153,7 @@
                         Pega u edita el JSON directamente. Útil para copiar/pegar entre reportes.
                     </p>
                     <textarea
+                        aria-label="Parámetros de prueba en JSON"
                         v-model="testParamsJson"
                         rows="6"
                         class="w-full px-3 py-2 text-sm font-mono rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"

@@ -66,23 +66,23 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre</label>
-                                <input v-model="form.name" type="text" maxlength="100" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                                <label for="cht-name" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre</label>
+                                <input id="cht-name" v-model="form.name" type="text" maxlength="100" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre Corto</label>
-                                <input v-model="form.shortName" type="text" maxlength="30" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                                <label for="cht-short-name" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre Corto</label>
+                                <input id="cht-short-name" v-model="form.shortName" type="text" maxlength="30" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Orden</label>
-                                <input v-model.number="form.sortOrder" type="number" min="0" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                                <label for="cht-sort-order" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Orden</label>
+                                <input id="cht-sort-order" v-model.number="form.sortOrder" type="number" min="0" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                             </div>
 
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Descripción</label>
-                                <textarea v-model="form.description" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                                <label for="cht-description" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Descripción</label>
+                                <textarea id="cht-description" v-model="form.description" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                             </div>
 
                             <div>

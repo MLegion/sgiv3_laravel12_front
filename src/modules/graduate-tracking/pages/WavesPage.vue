@@ -6,7 +6,7 @@
         </div>
 
         <div class="rounded-xl border bg-white p-4 flex gap-3">
-            <select v-model="filters.status" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.status" aria-label="Filtrar oleadas por estado" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todas</option>
                 <option value="draft">Borrador</option><option value="open">Abiertas</option><option value="closed">Cerradas</option>
             </select>

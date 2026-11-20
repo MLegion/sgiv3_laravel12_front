@@ -15,26 +15,26 @@
         <!-- Filtros -->
         <div class="bg-white border rounded-xl p-3 flex flex-wrap gap-3 items-end">
             <div class="flex flex-col">
-                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Estado</label>
-                <select v-model="filterState" class="border rounded-lg px-3 py-1.5 text-sm min-w-[180px] focus:outline-none focus:ring-2 focus:ring-blue-400" @change="onStateChange">
+                <label for="filter-state" class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Estado</label>
+                <select id="filter-state" v-model="filterState" class="border rounded-lg px-3 py-1.5 text-sm min-w-[180px] focus:outline-none focus:ring-2 focus:ring-blue-400" @change="onStateChange">
                     <option value="">Todos</option>
                     <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
                 </select>
             </div>
             <div class="flex flex-col">
-                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Municipio</label>
-                <select v-model="filterMunicipality" :disabled="!filterState || loadingMunis" class="border rounded-lg px-3 py-1.5 text-sm min-w-[180px] disabled:bg-slate-50 disabled:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400" @change="applyFilters">
+                <label for="filter-municipality" class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Municipio</label>
+                <select id="filter-municipality" v-model="filterMunicipality" :disabled="!filterState || loadingMunis" class="border rounded-lg px-3 py-1.5 text-sm min-w-[180px] disabled:bg-slate-50 disabled:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400" @change="applyFilters">
                     <option value="">{{ loadingMunis ? 'Cargando…' : 'Todos' }}</option>
                     <option v-for="m in municipalities" :key="m.id" :value="m.id">{{ m.name }}</option>
                 </select>
             </div>
             <div class="flex flex-col">
-                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Nivel</label>
-                <input v-model="filterLevel" type="text" placeholder="p. ej. tecnológico" class="border rounded-lg px-3 py-1.5 text-sm min-w-[160px] focus:outline-none focus:ring-2 focus:ring-blue-400" @keyup.enter="applyFilters" @change="applyFilters" />
+                <label for="filter-level" class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Nivel</label>
+                <input id="filter-level" v-model="filterLevel" type="text" placeholder="p. ej. tecnológico" class="border rounded-lg px-3 py-1.5 text-sm min-w-[160px] focus:outline-none focus:ring-2 focus:ring-blue-400" @keyup.enter="applyFilters" @change="applyFilters" />
             </div>
             <div class="flex flex-col">
-                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Estatus</label>
-                <select v-model="filterStatus" class="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" @change="applyFilters">
+                <label for="filter-status" class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Estatus</label>
+                <select id="filter-status" v-model="filterStatus" class="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" @change="applyFilters">
                     <option value="">Todos</option>
                     <option value="1">Activa</option>
                     <option value="0">Inactiva</option>
@@ -72,39 +72,39 @@
             <div class="space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="sm:col-span-2">
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre</label>
-                                <input v-model="form.name" type="text" maxlength="255" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                                <label for="school-name" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre</label>
+                                <input id="school-name" v-model="form.name" type="text" maxlength="255" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Siglas</label>
-                                <input v-model="form.short_name" type="text" maxlength="50" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                                <label for="school-short-name" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Siglas</label>
+                                <input id="school-short-name" v-model="form.short_name" type="text" maxlength="50" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">CCT</label>
-                                <input v-model="form.cct" type="text" maxlength="20" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                                <label for="school-cct" class="block text-xs font-semibold text-slate-600 uppercase mb-1">CCT</label>
+                                <input id="school-cct" v-model="form.cct" type="text" maxlength="20" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nivel</label>
-                                <input v-model="form.school_level" type="text" maxlength="50" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                                <label for="school-level" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nivel</label>
+                                <input id="school-level" v-model="form.school_level" type="text" maxlength="50" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estado</label>
-                                <select v-model.number="form.status" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                <label for="school-status" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estado</label>
+                                <select id="school-status" v-model.number="form.status" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
                                     <option :value="1">Activa</option>
                                     <option :value="0">Inactiva</option>
                                 </select>
                             </div>
                             <div class="sm:col-span-2">
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Domicilio</label>
-                                <input v-model="form.address" type="text" maxlength="255" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                                <label for="school-address" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Domicilio</label>
+                                <input id="school-address" v-model="form.address" type="text" maxlength="255" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teléfono</label>
-                                <input v-model="form.phone" type="text" maxlength="20" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                                <label for="school-phone" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teléfono</label>
+                                <input id="school-phone" v-model="form.phone" type="text" maxlength="20" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Correo</label>
-                                <input v-model="form.email" type="email" maxlength="255" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                                <label for="school-email" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Correo</label>
+                                <input id="school-email" v-model="form.email" type="email" maxlength="255" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                             </div>
                         </div>
                 <p v-if="formError" class="text-xs text-red-600">{{ formError }}</p>

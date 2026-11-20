@@ -4,8 +4,9 @@
             <h1 class="text-xl font-semibold text-slate-800 uppercase">{{ pageTitle }}</h1>
 
             <div class="flex items-center gap-2">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Estado</label>
+                <label for="advising-review-status-filter" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Estado</label>
                 <select
+                    id="advising-review-status-filter"
                     v-model="statusFilter"
                     class="border rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
                     @change="onStatusChange">

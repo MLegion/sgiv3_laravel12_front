@@ -21,16 +21,16 @@
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Nueva solicitud de apertura tardía</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
-                        <select v-model="form.campusId" @change="onFormCampusChange"
+                        <label for="lo-campus" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
+                        <select id="lo-campus" v-model="form.campusId" @change="onFormCampusChange"
                             class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                             <option :value="null">-- SELECCIONAR --</option>
                             <option v-for="c in filteredCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
-                        <select v-model="form.modalityTypeId" @change="onFormModalityTypeChange"
+                        <label for="lo-modality-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
+                        <select id="lo-modality-type" v-model="form.modalityTypeId" @change="onFormModalityTypeChange"
                             class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                             <option :value="null">-- SELECCIONAR --</option>
                             <option v-for="mt in filteredModalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
@@ -45,8 +45,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Motivo de la solicitud</label>
-                    <textarea v-model="form.reason" rows="3" :disabled="!canSolicitar"
+                    <label for="lo-reason" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Motivo de la solicitud</label>
+                    <textarea id="lo-reason" v-model="form.reason" rows="3" :disabled="!canSolicitar"
                         placeholder="Describa el motivo por el cual necesita apertura tardía (mínimo 10 caracteres)..."
                         class="w-full border-2 rounded-xl px-4 py-2.5 text-sm border-slate-200 focus:border-blue-500 outline-none resize-y disabled:bg-slate-50"></textarea>
                 </div>
@@ -131,14 +131,14 @@
             <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
                 <h3 class="text-base font-bold text-slate-800 uppercase">Aprobar solicitud</h3>
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Horas de vigencia</label>
-                    <input v-model.number="approveModal.hours" type="number" min="1" max="720"
+                    <label for="lo-approve-hours" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Horas de vigencia</label>
+                    <input id="lo-approve-hours" v-model.number="approveModal.hours" type="number" min="1" max="720"
                         class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none">
                     <p class="text-[11px] text-slate-400 mt-1">Después de este plazo el acceso se revoca automáticamente.</p>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Notas (opcional)</label>
-                    <textarea v-model="approveModal.notes" rows="3"
+                    <label for="lo-approve-notes" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Notas (opcional)</label>
+                    <textarea id="lo-approve-notes" v-model="approveModal.notes" rows="3"
                         placeholder="Indicaciones para el solicitante..."
                         class="w-full border-2 rounded-xl px-4 py-2.5 text-sm border-slate-200 focus:border-blue-500 outline-none resize-y"></textarea>
                 </div>
@@ -157,8 +157,8 @@
             <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
                 <h3 class="text-base font-bold text-slate-800 uppercase">Rechazar solicitud</h3>
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Motivo del rechazo (opcional)</label>
-                    <textarea v-model="rejectModal.notes" rows="4"
+                    <label for="lo-reject-notes" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Motivo del rechazo (opcional)</label>
+                    <textarea id="lo-reject-notes" v-model="rejectModal.notes" rows="4"
                         placeholder="Razón por la cual se rechaza..."
                         class="w-full border-2 rounded-xl px-4 py-2.5 text-sm border-slate-200 focus:border-red-500 outline-none resize-y"></textarea>
                 </div>

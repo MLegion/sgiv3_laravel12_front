@@ -42,8 +42,8 @@
 
                         <!-- text -->
                         <template v-else-if="ctl.type === 'text'">
-                            <label class="block text-xs font-semibold text-slate-600">{{ ctl.label }}</label>
-                            <input type="text" class="w-full rounded border border-slate-200 px-2 py-1.5 text-xs"
+                            <label :for="`tuner-${ctl.key}`" class="block text-xs font-semibold text-slate-600">{{ ctl.label }}</label>
+                            <input :id="`tuner-${ctl.key}`" type="text" class="w-full rounded border border-slate-200 px-2 py-1.5 text-xs"
                                 :value="config[ctl.key]" @input="setText(ctl.key, ($event.target as HTMLInputElement).value)" />
                         </template>
 

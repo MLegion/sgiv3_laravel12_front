@@ -5,6 +5,7 @@
                 <p class="text-[11px] uppercase tracking-wider text-slate-400">Instrumentación didáctica</p>
                 <input
                     v-model="header.title"
+                    aria-label="Título de la instrumentación"
                     :placeholder="defaultTitle || 'Título de la instrumentación'"
                     class="w-full bg-transparent text-xl font-semibold text-slate-800 border-0 border-b border-transparent hover:border-slate-200 focus:border-blue-400 focus:outline-none focus:ring-0 px-0 py-0.5"
                 />
@@ -69,16 +70,16 @@
                         <ReadField label="Horas T-P-Créditos" :value="satcaText" />
                     </div>
                     <div>
-                        <label class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">1. Caracterización de la asignatura</label>
-                        <textarea v-model="header.caracterizacion" rows="10" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></textarea>
+                        <label for="inst-caracterizacion" class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">1. Caracterización de la asignatura</label>
+                        <textarea id="inst-caracterizacion" v-model="header.caracterizacion" rows="10" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></textarea>
                     </div>
                 </div>
             </template>
 
             <!-- INTENCIÓN -->
             <template v-else-if="activeTab === 'intencion'">
-                <label class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">2. Intención didáctica</label>
-                <textarea v-model="header.intencion_didactica" rows="14" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></textarea>
+                <label for="inst-intencion-didactica" class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">2. Intención didáctica</label>
+                <textarea id="inst-intencion-didactica" v-model="header.intencion_didactica" rows="14" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></textarea>
             </template>
 
             <!-- COMPETENCIAS -->
@@ -449,7 +450,7 @@
                             <button type="button" class="text-xs text-blue-600" @click="header.fuentes.push({ reference: '', type: null })">+ Fuente</button>
                         </div>
                         <div v-for="(f, fi) in header.fuentes" :key="fi" class="flex gap-2 items-center">
-                            <input v-model="f.reference" class="flex-1 px-2 py-1 text-sm border border-slate-300 rounded" placeholder="Referencia bibliográfica" />
+                            <input v-model="f.reference" aria-label="Referencia bibliográfica" class="flex-1 px-2 py-1 text-sm border border-slate-300 rounded" placeholder="Referencia bibliográfica" />
                             <button type="button" class="text-red-400 hover:text-red-600 text-xs" @click="header.fuentes.splice(fi, 1)">✕</button>
                         </div>
                     </div>
@@ -473,7 +474,7 @@
                         </div>
                         <div v-else class="space-y-1">
                             <div class="flex gap-2 items-center">
-                                <input v-model="newApoyoName" class="flex-1 px-2 py-1 text-sm border border-slate-300 rounded" placeholder="Nombre del nuevo apoyo" @keyup.enter="addApoyoToCatalog" />
+                                <input v-model="newApoyoName" aria-label="Nombre del nuevo apoyo" class="flex-1 px-2 py-1 text-sm border border-slate-300 rounded" placeholder="Nombre del nuevo apoyo" @keyup.enter="addApoyoToCatalog" />
                                 <button type="button" class="text-xs text-blue-600 disabled:opacity-50" :disabled="addingApoyo" @click="addApoyoToCatalog">Agregar</button>
                                 <button type="button" class="text-xs text-slate-400 hover:text-slate-600" @click="showNewApoyo = false; newApoyoName = ''; newApoyoError = ''">Cancelar</button>
                             </div>

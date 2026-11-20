@@ -3,7 +3,7 @@
         <div class="space-y-4">
             <!-- Controles -->
             <div class="flex flex-wrap items-center gap-3">
-                <select v-model.number="placeId" @change="loadWeek" class="rounded-lg border-slate-300 text-sm">
+                <select v-model.number="placeId" @change="loadWeek" aria-label="Aula" class="rounded-lg border-slate-300 text-sm">
                     <option :value="null">— Selecciona aula —</option>
                     <option v-for="r in rooms" :key="r.id" :value="r.id">{{ r.name }} ({{ r.building_name }})</option>
                 </select>

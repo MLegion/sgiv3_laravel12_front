@@ -2,7 +2,7 @@
     <div class="space-y-6">
         <div class="flex items-center justify-between flex-wrap gap-2">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Constancias MOOC por validar</h1>
-            <select v-model="status" @change="load" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="status" @change="load" aria-label="Filtrar por estado" class="rounded-lg border-slate-300 text-sm">
                 <option value="submitted">Pendientes</option>
                 <option value="validated">Validadas</option>
                 <option value="rejected">Rechazadas</option>
@@ -41,12 +41,12 @@
             <div class="space-y-3">
                 <p class="text-sm text-slate-600">{{ validating.student_name }} · {{ validating.course_name }}</p>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Créditos a otorgar</label>
-                    <input v-model="credits" type="number" min="1" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="mooc-validate-credits" class="block text-xs font-semibold text-slate-500 mb-1">Créditos a otorgar</label>
+                    <input id="mooc-validate-credits" v-model="credits" type="number" min="1" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Nota (opcional)</label>
-                    <input v-model="note" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="mooc-validate-note" class="block text-xs font-semibold text-slate-500 mb-1">Nota (opcional)</label>
+                    <input id="mooc-validate-note" v-model="note" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
             </div>
             <template #footer>

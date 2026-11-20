@@ -5,6 +5,7 @@
             :value="modelValue"
             type="text"
             class="w-full border rounded-md px-2 py-1.5 pr-24 text-sm"
+            aria-label="Asunto del mensaje"
             :placeholder="placeholder || 'Asunto del mensaje...'"
             @input="onInput"
             @select="updateCaret"

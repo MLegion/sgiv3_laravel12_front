@@ -11,7 +11,7 @@
                 </label>
                 <p v-if="!docs.length" class="text-sm text-slate-400 col-span-full py-2">No hay documentos disponibles para solicitar.</p>
             </div>
-            <textarea v-model="notes" rows="2" placeholder="Motivo o comentario (opcional)" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+            <textarea v-model="notes" rows="2" placeholder="Motivo o comentario (opcional)" aria-label="Motivo o comentario" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
             <p v-if="msg" class="text-sm" :class="msgError ? 'text-red-600' : 'text-emerald-600'">{{ msg }}</p>
             <div class="flex justify-end items-center gap-3">
                 <router-link v-if="justSent" :to="{ name: 'service-desk.my-documents' }" class="text-sm font-semibold text-blue-600">Ver bandeja de documentos →</router-link>

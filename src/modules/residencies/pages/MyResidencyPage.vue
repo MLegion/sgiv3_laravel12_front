@@ -137,7 +137,7 @@
                     <div v-else-if="active === 'advisor'" class="space-y-4">
                         <h2 class="text-sm font-bold text-slate-700 uppercase">Asesor externo y titular</h2>
                         <div class="flex flex-wrap items-center gap-2">
-                            <select v-model.number="form.company_advisor_id" class="border rounded-md px-3 py-2 text-sm w-full sm:w-80">
+                            <select v-model.number="form.company_advisor_id" aria-label="Asesor externo" class="border rounded-md px-3 py-2 text-sm w-full sm:w-80">
                                 <option :value="null">— Selecciona personal aprobado —</option>
                                 <option v-for="a in advisors" :key="a.id" :value="a.id">{{ a.full_name }}<span v-if="a.current_position"> · {{ a.current_position.name }}</span></option>
                             </select>
@@ -150,8 +150,8 @@
 
                         <!-- Titular de la empresa (persona-en-puesto del mismo personal) -->
                         <div class="pt-1">
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Titular de la empresa</label>
-                            <select v-model.number="form.company_titular_id" :disabled="readOnly" class="border rounded-md px-3 py-2 text-sm w-full sm:w-80 disabled:bg-slate-50">
+                            <label for="company-titular" class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Titular de la empresa</label>
+                            <select id="company-titular" v-model.number="form.company_titular_id" :disabled="readOnly" class="border rounded-md px-3 py-2 text-sm w-full sm:w-80 disabled:bg-slate-50">
                                 <option :value="null">— Selecciona titular (persona con puesto) —</option>
                                 <option v-for="t in titularOptions" :key="t.assignmentId" :value="t.assignmentId">{{ t.label }}</option>
                             </select>
@@ -179,8 +179,8 @@
                     <div v-else-if="active === 'project'" class="space-y-3">
                         <h2 class="text-sm font-bold text-slate-700 uppercase">Proyecto</h2>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Modalidad</label>
-                            <select v-model="form.project_option" class="border rounded-md px-3 py-2 text-sm w-full sm:w-72">
+                            <label for="project-option" class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Modalidad</label>
+                            <select id="project-option" v-model="form.project_option" class="border rounded-md px-3 py-2 text-sm w-full sm:w-72">
                                 <option :value="null">— Selecciona —</option>
                                 <option value="worker">Trabajador (en mi empresa)</option>
                                 <option value="own">Propuesta propia</option>

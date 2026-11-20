@@ -11,15 +11,15 @@
             <!-- Subir -->
             <div class="bg-white border rounded-xl shadow-sm p-4 flex flex-wrap items-end gap-3">
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Categoría</label>
-                    <select v-model.number="bucketId" class="border rounded-lg px-3 py-2 text-sm">
+                    <label for="otros-bucket" class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Categoría</label>
+                    <select id="otros-bucket" v-model.number="bucketId" class="border rounded-lg px-3 py-2 text-sm">
                         <option :value="null">— sin categoría —</option>
                         <option v-for="b in buckets" :key="b.id" :value="b.id">{{ b.name }}</option>
                     </select>
                 </div>
                 <div class="flex-1 min-w-[160px]">
-                    <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Etiqueta (opcional)</label>
-                    <input v-model="label" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Descripción breve…" />
+                    <label for="otros-label" class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Etiqueta (opcional)</label>
+                    <input id="otros-label" v-model="label" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Descripción breve…" />
                 </div>
                 <label class="inline-flex items-center gap-2 text-sm cursor-pointer px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
                     :class="busy ? 'opacity-50 pointer-events-none' : ''">

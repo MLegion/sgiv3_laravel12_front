@@ -8,15 +8,15 @@
         <!-- Filtros -->
         <section class="rounded-xl border bg-white p-4 grid sm:grid-cols-4 gap-3 items-end">
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Periodo</label>
-                <select v-model="periodId" @change="onFilterChange" class="w-full rounded-lg border-slate-300 text-sm">
+                <label for="ac-filter-period" class="block text-xs font-semibold text-slate-500 mb-1">Periodo</label>
+                <select id="ac-filter-period" v-model="periodId" @change="onFilterChange" class="w-full rounded-lg border-slate-300 text-sm">
                     <option value="">Elegir…</option>
                     <option v-for="p in periods" :key="p.id" :value="p.id">{{ p.name }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Tipo</label>
-                <select v-model="typeFilter" @change="onFilterChange" class="w-full rounded-lg border-slate-300 text-sm">
+                <label for="ac-filter-type" class="block text-xs font-semibold text-slate-500 mb-1">Tipo</label>
+                <select id="ac-filter-type" v-model="typeFilter" @change="onFilterChange" class="w-full rounded-lg border-slate-300 text-sm">
                     <option value="">Todos</option>
                     <option v-for="t in types" :key="t.value" :value="t.value">{{ t.label }}</option>
                 </select>
@@ -82,16 +82,16 @@
                 <p class="text-[11px] text-slate-400">Aplica a TODAS las actividades de ESTE periodo (el seleccionado arriba). Una actividad puede fijar su propia ventana que pisa ésta.</p>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Abre</label>
-                        <input v-model="windowForm.opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                        <label for="ac-window-opens-at" class="block text-[10px] uppercase text-slate-400 mb-1">Abre</label>
+                        <input id="ac-window-opens-at" v-model="windowForm.opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
                     </div>
                     <div>
-                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Cierra</label>
-                        <input v-model="windowForm.closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                        <label for="ac-window-closes-at" class="block text-[10px] uppercase text-slate-400 mb-1">Cierra</label>
+                        <input id="ac-window-closes-at" v-model="windowForm.closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
                     </div>
                     <div class="col-span-2">
-                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Máx. actividades por alumno en el periodo</label>
-                        <input v-model.number="windowForm.max_per_period" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
+                        <label for="ac-window-max-per-period" class="block text-[10px] uppercase text-slate-400 mb-1">Máx. actividades por alumno en el periodo</label>
+                        <input id="ac-window-max-per-period" v-model.number="windowForm.max_per_period" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
                         <p class="text-[10px] text-slate-400 mt-0.5">0 = sin límite. (SGIv2 usaba 3.)</p>
                     </div>
                 </div>
@@ -109,12 +109,12 @@
                 <p class="text-[11px] text-slate-400">Tiempo en que el instructor/encargado puede marcar acreditó/no acreditó. Aplica a TODAS las actividades de este periodo; una actividad puede fijar su propia ventana que pisa ésta. Vacío = sin límite de tiempo.</p>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Abre</label>
-                        <input v-model="resultWindowForm.opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                        <label for="ac-result-window-opens-at" class="block text-[10px] uppercase text-slate-400 mb-1">Abre</label>
+                        <input id="ac-result-window-opens-at" v-model="resultWindowForm.opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
                     </div>
                     <div>
-                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Cierra</label>
-                        <input v-model="resultWindowForm.closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                        <label for="ac-result-window-closes-at" class="block text-[10px] uppercase text-slate-400 mb-1">Cierra</label>
+                        <input id="ac-result-window-closes-at" v-model="resultWindowForm.closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
                     </div>
                 </div>
             </div>
@@ -128,8 +128,8 @@
         <BaseModal v-model="showCreate" title="Nueva actividad" size="lg">
                 <div class="grid sm:grid-cols-2 gap-3">
                     <div :class="types.length === 1 ? 'sm:col-span-2' : ''">
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Tipo</label>
-                        <select v-model="form.type" @change="onTypeChange" class="w-full rounded-lg border-slate-300 text-sm">
+                        <label for="ac-create-type" class="block text-xs font-semibold text-slate-500 mb-1">Tipo</label>
+                        <select id="ac-create-type" v-model="form.type" @change="onTypeChange" class="w-full rounded-lg border-slate-300 text-sm">
                             <option value="">Elegir…</option>
                             <option v-for="t in types" :key="t.value" :value="t.value">{{ t.label }}</option>
                         </select>
@@ -198,12 +198,12 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Cupo (opcional)</label>
-                        <input v-model="form.capacity" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm" />
+                        <label for="ac-create-capacity" class="block text-xs font-semibold text-slate-500 mb-1">Cupo (opcional)</label>
+                        <input id="ac-create-capacity" v-model="form.capacity" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm" />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Créditos</label>
-                        <input v-model="form.credits" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
+                        <label for="ac-create-credits" class="block text-xs font-semibold text-slate-500 mb-1">Créditos</label>
+                        <input id="ac-create-credits" v-model="form.credits" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
                     </div>
                 </div>
             <template #footer>
@@ -217,12 +217,12 @@
         <BaseModal v-model="showCatalogAdd" :title="`Agregar al catálogo (${typeLabel(form.type)})`" size="sm">
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre</label>
-                    <input v-model="catalogAdd.name" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Taller de ajedrez" />
+                    <label for="ac-catalog-add-name" class="block text-xs font-semibold text-slate-500 mb-1">Nombre</label>
+                    <input id="ac-catalog-add-name" v-model="catalogAdd.name" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Taller de ajedrez" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Créditos sugeridos (opcional)</label>
-                    <input v-model.number="catalogAdd.default_credits" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="ac-catalog-add-credits" class="block text-xs font-semibold text-slate-500 mb-1">Créditos sugeridos (opcional)</label>
+                    <input id="ac-catalog-add-credits" v-model.number="catalogAdd.default_credits" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <p class="text-[10px] text-slate-400">Se guarda en el catálogo de este plantel (no global). Si ya existe, se reutiliza.</p>
             </div>

@@ -36,29 +36,29 @@
         <template v-if="editing">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div class="space-y-1 sm:col-span-2">
-                    <label class="text-xs font-medium text-slate-600">CAMPUS</label>
-                    <select v-model="selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label for="insc-campus" class="text-xs font-medium text-slate-600">CAMPUS</label>
+                    <select id="insc-campus" v-model="selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Seleccionar campus</option>
                         <option v-for="opt in campusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                     </select>
                 </div>
                 <div class="space-y-1 sm:col-span-2">
-                    <label class="text-xs font-medium text-slate-600">1ª OPCIÓN DE OFERTA</label>
-                    <select v-model="form.offer_option_1_id" :disabled="!selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
+                    <label for="insc-offer-1" class="text-xs font-medium text-slate-600">1ª OPCIÓN DE OFERTA</label>
+                    <select id="insc-offer-1" v-model="form.offer_option_1_id" :disabled="!selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
                         <option value="">{{ selectedCampusId ? 'Seleccionar' : 'Seleccione un campus primero' }}</option>
                         <option v-for="o in offerOptions1" :key="o.id" :value="o.id">{{ o.label }}</option>
                     </select>
                 </div>
                 <div class="space-y-1">
-                    <label class="text-xs font-medium text-slate-600">2ª OPCIÓN DE OFERTA</label>
-                    <select v-model="form.offer_option_2_id" :disabled="!selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
+                    <label for="insc-offer-2" class="text-xs font-medium text-slate-600">2ª OPCIÓN DE OFERTA</label>
+                    <select id="insc-offer-2" v-model="form.offer_option_2_id" :disabled="!selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
                         <option value="">Sin segunda opción</option>
                         <option v-for="o in offerOptions2" :key="o.id" :value="o.id">{{ o.label }}</option>
                     </select>
                 </div>
                 <div class="space-y-1">
-                    <label class="text-xs font-medium text-slate-600">3ª OPCIÓN DE OFERTA</label>
-                    <select v-model="form.offer_option_3_id" :disabled="!selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
+                    <label for="insc-offer-3" class="text-xs font-medium text-slate-600">3ª OPCIÓN DE OFERTA</label>
+                    <select id="insc-offer-3" v-model="form.offer_option_3_id" :disabled="!selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
                         <option value="">Sin tercera opción</option>
                         <option v-for="o in offerOptions3" :key="o.id" :value="o.id">{{ o.label }}</option>
                     </select>

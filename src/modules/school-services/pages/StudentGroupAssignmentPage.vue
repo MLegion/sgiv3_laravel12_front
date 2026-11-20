@@ -10,8 +10,8 @@
         <!-- Filtros de cohorte (nuevo ingreso = siempre semestre 1) -->
         <div class="bg-white rounded-xl border border-slate-200 p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
             <div>
-                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Periodo</label>
-                <select v-model="filters.collegeAcademicPeriodId" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                <label for="sga-period" class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Periodo</label>
+                <select id="sga-period" v-model="filters.collegeAcademicPeriodId" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
                     <option :value="null">-- Selecciona --</option>
                     <option v-for="p in periods" :key="p.id" :value="p.id">
                         {{ p.academicPeriod?.name || p.academic_period?.name || `Periodo ${p.id}` }}
@@ -19,15 +19,15 @@
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Plan de Estudio</label>
-                <select v-model="filters.studyPlanId" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                <label for="sga-study-plan" class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Plan de Estudio</label>
+                <select id="sga-study-plan" v-model="filters.studyPlanId" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
                     <option :value="null">-- Selecciona --</option>
                     <option v-for="sp in studyPlans" :key="sp.id" :value="sp.id">{{ sp.name }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Modalidad</label>
-                <select v-model="filters.modalityId" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                <label for="sga-modality" class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Modalidad</label>
+                <select id="sga-modality" v-model="filters.modalityId" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
                     <option :value="null">-- Selecciona --</option>
                     <option v-for="m in modalities" :key="m.id" :value="m.id">
                         {{ (m.campus?.name ?? '') + ' — ' + (m.modalityType?.name ?? '') }}
@@ -119,6 +119,7 @@
                 <input
                     v-model="searchTerm"
                     type="search"
+                    aria-label="Buscar estudiantes por número de control o nombre"
                     placeholder="Buscar por número de control o nombre…"
                     class="w-full border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm outline-none focus:border-indigo-400"
                 />

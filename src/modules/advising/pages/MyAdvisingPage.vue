@@ -384,8 +384,9 @@
             </div>
             <form v-else class="bg-white border rounded-xl shadow-sm p-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm" @submit.prevent="saveContactInfo">
                 <div class="md:col-span-2">
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Dirección (calle y número)</label>
+                    <label for="my-advising-address" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Dirección (calle y número)</label>
                     <input
+                        id="my-advising-address"
                         v-model="contact.address"
                         type="text"
                         maxlength="255"
@@ -397,9 +398,10 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Código Postal</label>
+                    <label for="my-advising-postal-code" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Código Postal</label>
                     <div class="flex gap-2">
                         <input
+                            id="my-advising-postal-code"
                             v-model="contact.postalCode"
                             type="text"
                             maxlength="5"
@@ -420,8 +422,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Colonia / Asentamiento</label>
+                    <label for="my-advising-geo-settlement" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Colonia / Asentamiento</label>
                     <select
+                        id="my-advising-geo-settlement"
                         v-model.number="contact.geoSettlementId"
                         class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                         :disabled="!canEdit || cpLookupSettlements.length === 0"
@@ -439,8 +442,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Teléfono de casa <span class="text-slate-300 normal-case">(opcional)</span></label>
+                    <label for="my-advising-home-phone" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Teléfono de casa <span class="text-slate-300 normal-case">(opcional)</span></label>
                     <input
+                        id="my-advising-home-phone"
                         v-model="contact.homePhone"
                         type="tel"
                         maxlength="20"
@@ -451,8 +455,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Celular</label>
+                    <label for="my-advising-mobile-phone" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Celular</label>
                     <input
+                        id="my-advising-mobile-phone"
                         v-model="contact.mobilePhone"
                         type="tel"
                         maxlength="20"
@@ -464,8 +469,9 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Correo electrónico</label>
+                    <label for="my-advising-email" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Correo electrónico</label>
                     <input
+                        id="my-advising-email"
                         :value="contact.email"
                         type="email"
                         readonly

@@ -192,6 +192,7 @@ onMounted(load)
             </label>
             <div class="flex-1 min-w-[200px]">
                 <input v-model="search" type="text" placeholder="Buscar periodo…"
+                       aria-label="Buscar periodo"
                        class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm" />
             </div>
         </div>
@@ -306,19 +307,19 @@ onMounted(load)
                         </p>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Cuestionario (slug)</label>
-                        <input v-model="aperturaForm.formSlug" type="text"
+                        <label for="evd-apertura-slug" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Cuestionario (slug)</label>
+                        <input id="evd-apertura-slug" v-model="aperturaForm.formSlug" type="text"
                                class="border border-slate-300 rounded px-2 py-1.5 text-sm font-mono" />
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Apertura</label>
-                            <input v-model="aperturaForm.startsAt" type="datetime-local"
+                            <label for="evd-apertura-starts" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Apertura</label>
+                            <input id="evd-apertura-starts" v-model="aperturaForm.startsAt" type="datetime-local"
                                    class="border border-slate-300 rounded px-2 py-1.5 text-sm" />
                         </div>
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Cierre</label>
-                            <input v-model="aperturaForm.endsAt" type="datetime-local"
+                            <label for="evd-apertura-ends" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Cierre</label>
+                            <input id="evd-apertura-ends" v-model="aperturaForm.endsAt" type="datetime-local"
                                    class="border border-slate-300 rounded px-2 py-1.5 text-sm" />
                         </div>
                     </div>

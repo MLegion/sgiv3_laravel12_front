@@ -26,7 +26,7 @@
                     <span class="text-xs font-medium px-2.5 py-1 rounded-full" :class="badgeClass(g)">{{ statusLabel(g) }}</span>
                     <div v-if="g.status === 'pending'" class="flex items-center gap-1">
                         <input v-model.number="hours[g.id]" type="number" min="1" max="720" placeholder="48"
-                               class="w-16 border rounded px-1.5 py-1 text-xs" title="Horas de vigencia" />
+                               class="w-16 border rounded px-1.5 py-1 text-xs" title="Horas de vigencia" aria-label="Horas de vigencia del permiso" />
                         <button class="text-xs bg-emerald-600 text-white px-2 py-1 rounded hover:bg-emerald-700 disabled:opacity-50"
                                 :disabled="busy" @click="approve(g)">Aprobar</button>
                         <button class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200 disabled:opacity-50"

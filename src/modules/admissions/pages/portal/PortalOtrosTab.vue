@@ -3,22 +3,22 @@
         <template v-if="editing">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div class="sm:col-span-2 space-y-1">
-                    <label class="text-xs font-medium text-slate-600">GRUPO INDÍGENA</label>
-                    <select v-model="form.indigenous_group_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label for="indigenous-group-id" class="text-xs font-medium text-slate-600">GRUPO INDÍGENA</label>
+                    <select id="indigenous-group-id" v-model="form.indigenous_group_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option :value="null">Ninguno</option>
                         <option v-for="g in indigenousGroups" :key="g.id" :value="g.id">{{ g.name }}</option>
                     </select>
                 </div>
                 <div class="sm:col-span-2 space-y-1">
-                    <label class="text-xs font-medium text-slate-600">LENGUA INDÍGENA</label>
-                    <select v-model="form.indigenous_language_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label for="indigenous-language-id" class="text-xs font-medium text-slate-600">LENGUA INDÍGENA</label>
+                    <select id="indigenous-language-id" v-model="form.indigenous_language_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option :value="null">Ninguna</option>
                         <option v-for="l in indigenousLanguages" :key="l.id" :value="l.id">{{ l.name }}</option>
                     </select>
                 </div>
                 <div class="sm:col-span-2 space-y-1">
-                    <label class="text-xs font-medium text-slate-600">¿PERTENECES A UN PUEBLO AFROMEXICANO?</label>
-                    <select v-model="form.is_afromexican" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label for="is-afromexican" class="text-xs font-medium text-slate-600">¿PERTENECES A UN PUEBLO AFROMEXICANO?</label>
+                    <select id="is-afromexican" v-model="form.is_afromexican" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option :value="null">Sin responder</option>
                         <option :value="true">Sí</option>
                         <option :value="false">No</option>
@@ -28,8 +28,8 @@
                 <FormInput label="AÑO DE EGRESO" v-model="form.graduation_year" type="number" min="1950" max="2099" />
                 <FormInput label="PROMEDIO (escala 100)" v-model="form.academic_average" type="number" step="0.01" min="0" max="100" />
                 <div class="space-y-1">
-                    <label class="text-xs font-medium text-slate-600">ÁREA ACADÉMICA</label>
-                    <select v-model="form.academic_area_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label for="academic-area-id" class="text-xs font-medium text-slate-600">ÁREA ACADÉMICA</label>
+                    <select id="academic-area-id" v-model="form.academic_area_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option :value="null">Ninguna</option>
                         <option v-for="a in academicAreas" :key="a.id" :value="a.id">{{ a.name }}</option>
                     </select>

@@ -151,6 +151,7 @@
                     @input="onIndivSearchInput"
                     type="text"
                     placeholder="Buscar aspirante..."
+                    aria-label="Buscar aspirante"
                     class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition"
                 />
             </div>
@@ -187,8 +188,9 @@
                 </div>
                 <div class="flex items-end gap-2">
                     <div class="flex-1">
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Calificación</label>
+                        <label for="indiv-score" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Calificación</label>
                         <input
+                            id="indiv-score"
                             v-model="indivScore"
                             type="number" min="0" max="999.99" step="0.01"
                             placeholder="Ej. 85.5"
@@ -328,6 +330,7 @@ EFGH789012MDFYYY01,72.0</pre>
                                 type="text"
                                 maxlength="18"
                                 placeholder="Ej. ABCD123456HDFYYY00"
+                                :aria-label="'CURP fila ' + (i + 1)"
                                 :class="['field field-upper w-full', isDuplicateCurp(row.curp) ? 'field-error' : '']"
                             />
                             <p v-if="isDuplicateCurp(row.curp)" class="mt-0.5 text-[11px] text-red-500 font-medium">
@@ -342,6 +345,7 @@ EFGH789012MDFYYY01,72.0</pre>
                             max="999.99"
                             step="0.01"
                             placeholder="Calif."
+                            :aria-label="'Calificación fila ' + (i + 1)"
                             class="field w-28"
                         />
                         </div>

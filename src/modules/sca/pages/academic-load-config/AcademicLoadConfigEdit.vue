@@ -269,8 +269,9 @@
                             Por favor proporciona una justificación.
                         </p>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">RAZÓN / JUSTIFICACIÓN</label>
+                            <label for="alc-exceptional-reason" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">RAZÓN / JUSTIFICACIÓN</label>
                             <textarea
+                                id="alc-exceptional-reason"
                                 v-model="reasonModal.reason"
                                 rows="4"
                                 class="w-full border-2 border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-orange-500"

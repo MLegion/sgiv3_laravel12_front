@@ -4,6 +4,7 @@
         <div class="flex flex-wrap items-center gap-0.5 px-2 py-1.5 bg-slate-50 border-b border-slate-200 text-slate-600 text-xs">
             <select
                 class="text-xs px-1.5 py-1 rounded border-0 bg-transparent hover:bg-slate-200 cursor-pointer"
+                aria-label="Estilo de bloque"
                 :value="currentBlock"
                 @change="setBlock(($event.target as HTMLSelectElement).value)"
             >

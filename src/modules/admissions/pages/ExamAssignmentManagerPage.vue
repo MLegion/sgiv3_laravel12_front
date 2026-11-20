@@ -26,8 +26,8 @@
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estrategia (desempate)</label>
-                    <select v-model="strategy" class="field">
+                    <label for="distribute-strategy" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estrategia (desempate)</label>
+                    <select id="distribute-strategy" v-model="strategy" class="field">
                         <option value="BY_LASTNAME">Por apellido (alfabético)</option>
                         <option value="BY_FOLIO">Por folio (preficha)</option>
                         <option value="BY_REGISTRATION_DATE">Por fecha de registro</option>

@@ -13,16 +13,18 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="space-y-1">
-                    <label class="text-xs font-medium text-slate-600">FECHA DE INICIO SUGERIDA</label>
+                    <label for="period-start-date" class="text-xs font-medium text-slate-600">FECHA DE INICIO SUGERIDA</label>
                     <input
+                        id="period-start-date"
                         type="date"
                         v-model="form.suggestedStartDate"
                         class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
                 <div class="space-y-1">
-                    <label class="text-xs font-medium text-slate-600">FECHA DE FIN SUGERIDA</label>
+                    <label for="period-end-date" class="text-xs font-medium text-slate-600">FECHA DE FIN SUGERIDA</label>
                     <input
+                        id="period-end-date"
                         type="date"
                         v-model="form.suggestedEndDate"
                         class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"

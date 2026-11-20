@@ -2,6 +2,7 @@
     <div ref="wrapRef" class="relative w-full h-full rounded-lg bg-white overflow-hidden">
         <canvas
             ref="canvasRef"
+            aria-label="Área para dibujar tu firma"
             class="w-full h-full touch-none cursor-crosshair block"
             @pointerdown="onDown"
             @pointermove="onMove"

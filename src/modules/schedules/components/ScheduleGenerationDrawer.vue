@@ -322,7 +322,7 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <select v-model="preview.groupBy" class="text-xs border rounded px-2 py-1 h-8">
+                        <select v-model="preview.groupBy" aria-label="Agrupar borrador por" class="text-xs border rounded px-2 py-1 h-8">
                             <option value="group">Por grupo</option>
                             <option value="teacher">Por docente</option>
                             <option value="place">Por aula</option>

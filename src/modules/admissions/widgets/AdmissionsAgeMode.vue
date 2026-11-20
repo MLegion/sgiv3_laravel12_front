@@ -2,8 +2,9 @@
     <!-- SETTINGS: vista por defecto (localStorage) + periodo -->
     <div v-if="view === 'settings'" class="h-full flex flex-col text-xs gap-3">
         <div>
-            <label class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">Vista por defecto</label>
+            <label for="default-view" class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">Vista por defecto</label>
             <select
+                id="default-view"
                 v-model="defaultView"
                 class="w-full text-xs bg-white border border-slate-200 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400"
                 @change="saveDefault"

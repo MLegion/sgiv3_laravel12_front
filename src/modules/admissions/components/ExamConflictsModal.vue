@@ -61,16 +61,18 @@
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label class="block text-[10px] font-semibold text-purple-700 uppercase mb-0.5">Nueva fecha</label>
+                                    <label :for="'ecm-newdate-' + c.scheduleId" class="block text-[10px] font-semibold text-purple-700 uppercase mb-0.5">Nueva fecha</label>
                                     <input
+                                        :id="'ecm-newdate-' + c.scheduleId"
                                         v-model="overridesLocal[c.scheduleId].newDate"
                                         type="date"
                                         class="field-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-semibold text-purple-700 uppercase mb-0.5">Nueva aula (id)</label>
+                                    <label :for="'ecm-newplace-' + c.scheduleId" class="block text-[10px] font-semibold text-purple-700 uppercase mb-0.5">Nueva aula (id)</label>
                                     <input
+                                        :id="'ecm-newplace-' + c.scheduleId"
                                         v-model.number="overridesLocal[c.scheduleId].newPlaceId"
                                         type="number"
                                         min="1"
@@ -78,16 +80,18 @@
                                     />
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-semibold text-purple-700 uppercase mb-0.5">Nuevo inicio</label>
+                                    <label :for="'ecm-newstart-' + c.scheduleId" class="block text-[10px] font-semibold text-purple-700 uppercase mb-0.5">Nuevo inicio</label>
                                     <input
+                                        :id="'ecm-newstart-' + c.scheduleId"
                                         v-model="overridesLocal[c.scheduleId].newStartTime"
                                         type="time"
                                         class="field-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-semibold text-purple-700 uppercase mb-0.5">Nuevo fin</label>
+                                    <label :for="'ecm-newend-' + c.scheduleId" class="block text-[10px] font-semibold text-purple-700 uppercase mb-0.5">Nuevo fin</label>
                                     <input
+                                        :id="'ecm-newend-' + c.scheduleId"
                                         v-model="overridesLocal[c.scheduleId].newEndTime"
                                         type="time"
                                         class="field-sm"

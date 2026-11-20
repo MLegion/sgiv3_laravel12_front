@@ -14,34 +14,34 @@
         <!-- Filtros para encontrar la escuela más fácil -->
         <div class="bg-white border rounded-xl p-3 flex flex-wrap gap-3 items-end">
             <div class="flex flex-col">
-                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Estado</label>
-                <select v-model="filterState" class="border rounded-lg px-3 py-1.5 text-sm min-w-[180px] focus:outline-none focus:ring-2 focus:ring-blue-400" @change="onStateChange">
+                <label for="os-filter-state" class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Estado</label>
+                <select id="os-filter-state" v-model="filterState" class="border rounded-lg px-3 py-1.5 text-sm min-w-[180px] focus:outline-none focus:ring-2 focus:ring-blue-400" @change="onStateChange">
                     <option value="">Todos</option>
                     <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
                 </select>
             </div>
             <div class="flex flex-col">
-                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Municipio</label>
-                <select v-model="filterMunicipality" :disabled="!filterState || loadingMunis" class="border rounded-lg px-3 py-1.5 text-sm min-w-[180px] disabled:bg-slate-50 disabled:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400" @change="applyFilters">
+                <label for="os-filter-municipality" class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Municipio</label>
+                <select id="os-filter-municipality" v-model="filterMunicipality" :disabled="!filterState || loadingMunis" class="border rounded-lg px-3 py-1.5 text-sm min-w-[180px] disabled:bg-slate-50 disabled:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400" @change="applyFilters">
                     <option value="">{{ loadingMunis ? 'Cargando…' : 'Todos' }}</option>
                     <option v-for="m in municipalities" :key="m.id" :value="m.id">{{ m.name }}</option>
                 </select>
             </div>
             <div class="flex flex-col">
-                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Nivel</label>
-                <input v-model="filterLevel" type="text" placeholder="p. ej. tecnológico" class="border rounded-lg px-3 py-1.5 text-sm min-w-[160px] focus:outline-none focus:ring-2 focus:ring-blue-400" @keyup.enter="applyFilters" @change="applyFilters" />
+                <label for="os-filter-level" class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Nivel</label>
+                <input id="os-filter-level" v-model="filterLevel" type="text" placeholder="p. ej. tecnológico" class="border rounded-lg px-3 py-1.5 text-sm min-w-[160px] focus:outline-none focus:ring-2 focus:ring-blue-400" @keyup.enter="applyFilters" @change="applyFilters" />
             </div>
             <div class="flex flex-col">
-                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Origen</label>
-                <select v-model="filterOrigin" class="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" @change="applyFilters">
+                <label for="os-filter-origin" class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Origen</label>
+                <select id="os-filter-origin" v-model="filterOrigin" class="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" @change="applyFilters">
                     <option value="">Todas</option>
                     <option value="nacional">Nacional</option>
                     <option value="plantel">Del plantel</option>
                 </select>
             </div>
             <div class="flex flex-col">
-                <label class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Estatus</label>
-                <select v-model="filterStatus" class="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" @change="applyFilters">
+                <label for="os-filter-status" class="text-[11px] font-semibold text-slate-500 uppercase mb-1">Estatus</label>
+                <select id="os-filter-status" v-model="filterStatus" class="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" @change="applyFilters">
                     <option value="">Todos</option>
                     <option value="1">Activa</option>
                     <option value="0">Inactiva</option>

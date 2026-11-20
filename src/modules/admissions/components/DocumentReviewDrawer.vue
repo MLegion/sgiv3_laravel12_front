@@ -164,8 +164,9 @@
                                 <div class="border-t px-6 py-4 shrink-0 flex flex-col gap-3">
                                     <!-- Rejection reason input (toggle) -->
                                     <div v-if="showRejectInput" class="flex flex-col gap-2">
-                                        <label class="text-xs font-semibold text-slate-600 uppercase">Motivo de rechazo</label>
+                                        <label for="drd-rejection-reason" class="text-xs font-semibold text-slate-600 uppercase">Motivo de rechazo</label>
                                         <textarea
+                                            id="drd-rejection-reason"
                                             v-model="rejectionReason"
                                             rows="3"
                                             maxlength="1000"

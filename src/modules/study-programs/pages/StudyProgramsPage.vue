@@ -70,8 +70,8 @@
             <div class="space-y-3">
                 <p class="text-sm text-slate-600">{{ actionMessage }}</p>
                 <div v-if="action.mode === 'reject'">
-                    <label class="block text-xs text-slate-500 mb-1">Motivo del rechazo</label>
-                    <textarea v-model="action.notes" rows="3" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm" placeholder="Explica por qué se rechaza…"></textarea>
+                    <label for="reject-notes" class="block text-xs text-slate-500 mb-1">Motivo del rechazo</label>
+                    <textarea id="reject-notes" v-model="action.notes" rows="3" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm" placeholder="Explica por qué se rechaza…"></textarea>
                 </div>
                 <p v-if="action.error" class="text-sm text-red-600">{{ action.error }}</p>
             </div>

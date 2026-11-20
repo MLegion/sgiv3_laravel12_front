@@ -37,8 +37,8 @@
                 />
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">ESTADO INICIAL</label>
-                    <select v-model="form.status" class="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:outline-none focus:border-blue-500">
+                    <label for="alc-status" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">ESTADO INICIAL</label>
+                    <select id="alc-status" v-model="form.status" class="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:outline-none focus:border-blue-500">
                         <option v-for="opt in STATUS_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                     </select>
                 </div>

@@ -13,8 +13,9 @@
 
         <div v-else class="bg-white rounded-lg shadow p-6 space-y-5">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Colegio a mostrar</label>
+                <label for="login-default-college" class="block text-sm font-medium text-gray-700 mb-1">Colegio a mostrar</label>
                 <select
+                    id="login-default-college"
                     v-model="selected"
                     class="w-full h-10 px-3 border border-gray-300 rounded"
                 >

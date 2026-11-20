@@ -11,34 +11,34 @@
         <!-- Filtros -->
         <div class="flex flex-wrap items-end gap-3 bg-white rounded-xl border border-slate-200 p-4">
             <div v-if="collegeScoped">
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Colegio</label>
-                <select v-model="selectedCollegeId" class="rounded-lg border border-slate-300 px-3 py-2 text-sm min-w-56" @change="onCollegeChange">
+                <label for="audit-college" class="block text-xs font-semibold text-slate-500 mb-1">Colegio</label>
+                <select id="audit-college" v-model="selectedCollegeId" class="rounded-lg border border-slate-300 px-3 py-2 text-sm min-w-56" @change="onCollegeChange">
                     <option value="">— Selecciona un colegio —</option>
                     <option v-for="c in colleges" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Acción</label>
-                <select v-model="filters.action" class="rounded-lg border border-slate-300 px-3 py-2 text-sm min-w-48" @change="reload">
+                <label for="audit-action" class="block text-xs font-semibold text-slate-500 mb-1">Acción</label>
+                <select id="audit-action" v-model="filters.action" class="rounded-lg border border-slate-300 px-3 py-2 text-sm min-w-48" @change="reload">
                     <option value="">Todas</option>
                     <option v-for="a in actions" :key="a" :value="a">{{ a }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Estado</label>
-                <select v-model="filters.status" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" @change="reload">
+                <label for="audit-status" class="block text-xs font-semibold text-slate-500 mb-1">Estado</label>
+                <select id="audit-status" v-model="filters.status" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" @change="reload">
                     <option value="">Todos</option>
                     <option value="ok">ok</option>
                     <option value="error">error</option>
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Desde</label>
-                <input v-model="filters.date_from" type="date" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" @change="reload" />
+                <label for="audit-date-from" class="block text-xs font-semibold text-slate-500 mb-1">Desde</label>
+                <input id="audit-date-from" v-model="filters.date_from" type="date" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" @change="reload" />
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Hasta</label>
-                <input v-model="filters.date_to" type="date" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" @change="reload" />
+                <label for="audit-date-to" class="block text-xs font-semibold text-slate-500 mb-1">Hasta</label>
+                <input id="audit-date-to" v-model="filters.date_to" type="date" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" @change="reload" />
             </div>
             <button type="button" class="px-4 py-2 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50" @click="clearFilters">
                 Limpiar

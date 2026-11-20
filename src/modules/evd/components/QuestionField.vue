@@ -82,6 +82,7 @@ function selectOption(oid: number) {
                 type="text"
                 class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"
                 placeholder="Tu respuesta…"
+                aria-label="Tu respuesta"
                 @input="(e: any) => emit('update', { text: e.target.value })"
             />
         </div>
@@ -92,6 +93,7 @@ function selectOption(oid: number) {
                 rows="3"
                 class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"
                 placeholder="Tu respuesta…"
+                aria-label="Tu respuesta"
                 @input="(e: any) => emit('update', { text: e.target.value })"
             />
         </div>
@@ -102,6 +104,7 @@ function selectOption(oid: number) {
                 type="range"
                 min="0" max="10" step="1"
                 class="w-full"
+                aria-label="Valor en la escala"
                 @input="(e: any) => emit('update', { scalar: Number(e.target.value) })"
             />
             <div class="text-xs text-slate-500 mt-1">Valor: {{ sel.scalar ?? 0 }}</div>

@@ -44,8 +44,9 @@
                 />
             </div>
             <div class="flex-1 min-w-[200px]">
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar</label>
+                <label for="admitted-applicants-search" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar</label>
                 <input
+                    id="admitted-applicants-search"
                     v-model="search"
                     type="text"
                     placeholder="Nombre, CURP, email..."

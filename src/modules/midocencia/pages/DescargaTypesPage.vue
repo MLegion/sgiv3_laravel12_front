@@ -15,6 +15,7 @@
                     v-model="search"
                     type="text"
                     placeholder="Buscar tipo…"
+                    aria-label="Buscar tipo de descarga"
                     class="w-full sm:w-72 h-9 px-3 border border-slate-300 rounded-lg text-sm"
                 />
             </div>

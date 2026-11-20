@@ -57,6 +57,7 @@
                         <p class="text-sm text-slate-600">Escribe el código de 6 dígitos que muestra tu app en este momento:</p>
                         <input
                             v-model="confirmCode"
+                            aria-label="Código de verificación de 6 dígitos"
                             inputmode="numeric" maxlength="6" placeholder="000000"
                             class="w-full sm:w-56 h-14 rounded-lg border border-slate-300 px-4 text-center text-2xl tracking-[0.4em] outline-none focus:border-indigo-500"
                             @input="confirmCode = confirmCode.replace(/\D/g, '').slice(0, 6)"

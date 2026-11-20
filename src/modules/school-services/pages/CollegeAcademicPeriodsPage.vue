@@ -134,16 +134,18 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">FECHA DE INICIO REAL <span class="text-red-500">*</span></label>
+                        <label for="cap-actual-start-date" class="text-xs font-medium text-slate-600">FECHA DE INICIO REAL <span class="text-red-500">*</span></label>
                         <input
+                            id="cap-actual-start-date"
                             type="date"
                             v-model="form.actualStartDate"
                             class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">FECHA DE FIN REAL <span class="text-red-500">*</span></label>
+                        <label for="cap-actual-end-date" class="text-xs font-medium text-slate-600">FECHA DE FIN REAL <span class="text-red-500">*</span></label>
                         <input
+                            id="cap-actual-end-date"
                             type="date"
                             v-model="form.actualEndDate"
                             class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"

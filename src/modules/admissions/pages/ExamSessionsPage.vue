@@ -135,40 +135,40 @@
 
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha</label>
-                                    <input v-model="form.date" type="date" class="field" />
+                                    <label for="es-date" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha</label>
+                                    <input id="es-date" v-model="form.date" type="date" class="field" />
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Inicio</label>
-                                    <input v-model="form.start_time" type="time" class="field" />
+                                    <label for="es-start-time" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Inicio</label>
+                                    <input id="es-start-time" v-model="form.start_time" type="time" class="field" />
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">
+                                    <label for="es-duration-minutes" class="block text-xs font-semibold text-slate-600 uppercase mb-1">
                                         Duración (min)
                                         <span class="text-slate-400 text-[10px] normal-case">— default {{ defaultDuration }}</span>
                                     </label>
-                                    <input v-model.number="form.duration_minutes" type="number" min="30" max="480" :placeholder="String(defaultDuration)" class="field" />
+                                    <input id="es-duration-minutes" v-model.number="form.duration_minutes" type="number" min="30" max="480" :placeholder="String(defaultDuration)" class="field" />
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">
+                                    <label for="es-capacity" class="block text-xs font-semibold text-slate-600 uppercase mb-1">
                                         Capacidad
                                         <span v-if="placeCapacity" class="text-slate-400 text-[10px] normal-case">— aula {{ placeCapacity }}</span>
                                     </label>
-                                    <input v-model.number="form.capacity" type="number" min="1" max="1000" class="field" />
+                                    <input id="es-capacity" v-model.number="form.capacity" type="number" min="1" max="1000" class="field" />
                                 </div>
                             </div>
 
                             <div v-if="reschedulingTarget">
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Razón del reagendado *</label>
-                                <textarea v-model="form.reason" rows="2" maxlength="500" class="field"></textarea>
+                                <label for="es-reason" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Razón del reagendado *</label>
+                                <textarea id="es-reason" v-model="form.reason" rows="2" maxlength="500" class="field"></textarea>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Notas</label>
-                                <textarea v-model="form.notes" rows="2" maxlength="1000" class="field"></textarea>
+                                <label for="es-notes" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Notas</label>
+                                <textarea id="es-notes" v-model="form.notes" rows="2" maxlength="1000" class="field"></textarea>
                             </div>
 
                 <p v-if="formError" class="text-xs text-red-600">{{ formError }}</p>

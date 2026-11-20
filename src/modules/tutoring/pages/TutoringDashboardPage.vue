@@ -7,7 +7,7 @@
 
         <!-- Filtros -->
         <div class="rounded-xl border bg-white p-4 grid sm:grid-cols-3 gap-3">
-            <select v-model="filters.period_id" @change="load" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.period_id" @change="load" aria-label="Filtrar por periodo" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todos los periodos</option>
                 <option v-for="p in options.periods" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>

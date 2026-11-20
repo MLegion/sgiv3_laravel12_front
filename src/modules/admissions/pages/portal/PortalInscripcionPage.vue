@@ -47,8 +47,8 @@
 
                     <!-- Campus -->
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">CAMPUS</label>
-                        <select v-model="selectedCampusId"
+                        <label for="preficha-campus" class="text-xs font-medium text-slate-600">CAMPUS</label>
+                        <select id="preficha-campus" v-model="selectedCampusId"
                             class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">Seleccionar campus</option>
                             <option v-for="opt in campusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
@@ -57,8 +57,8 @@
 
                     <!-- Tipo de Modalidad -->
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">TIPO DE MODALIDAD</label>
-                        <select v-model="selectedModalityTypeId" :disabled="!selectedCampusId"
+                        <label for="preficha-modality-type" class="text-xs font-medium text-slate-600">TIPO DE MODALIDAD</label>
+                        <select id="preficha-modality-type" v-model="selectedModalityTypeId" :disabled="!selectedCampusId"
                             class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
                             <option value="">{{ selectedCampusId ? 'Seleccionar modalidad' : 'Seleccione un campus primero' }}</option>
                             <option v-for="opt in modalityTypeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
@@ -67,8 +67,8 @@
 
                     <!-- 1ª Opción (siempre) -->
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">1ª OPCIÓN DE CARRERA <span class="text-red-500">*</span></label>
-                        <select v-model="form.offer_option_1_id" :disabled="!selectedModalityTypeId"
+                        <label for="preficha-offer-1" class="text-xs font-medium text-slate-600">1ª OPCIÓN DE CARRERA <span class="text-red-500">*</span></label>
+                        <select id="preficha-offer-1" v-model="form.offer_option_1_id" :disabled="!selectedModalityTypeId"
                             class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
                             <option value="">{{ selectedModalityTypeId ? 'Seleccionar' : 'Seleccione campus y modalidad primero' }}</option>
                             <option v-for="o in offerOptions1" :key="o.id" :value="o.id">{{ o.label }}</option>
@@ -77,8 +77,8 @@
 
                     <!-- 2ª Opción (si maxOfferOptions >= 2) -->
                     <div v-if="maxOfferOptions >= 2" class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">2ª OPCIÓN DE CARRERA <span class="text-red-500">*</span></label>
-                        <select v-model="form.offer_option_2_id" :disabled="!selectedModalityTypeId"
+                        <label for="preficha-offer-2" class="text-xs font-medium text-slate-600">2ª OPCIÓN DE CARRERA <span class="text-red-500">*</span></label>
+                        <select id="preficha-offer-2" v-model="form.offer_option_2_id" :disabled="!selectedModalityTypeId"
                             class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
                             <option value="">Seleccionar</option>
                             <option v-for="o in offerOptions2" :key="o.id" :value="o.id">{{ o.label }}</option>
@@ -87,8 +87,8 @@
 
                     <!-- 3ª Opción (si maxOfferOptions >= 3) -->
                     <div v-if="maxOfferOptions >= 3" class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">3ª OPCIÓN DE CARRERA <span class="text-red-500">*</span></label>
-                        <select v-model="form.offer_option_3_id" :disabled="!selectedModalityTypeId"
+                        <label for="preficha-offer-3" class="text-xs font-medium text-slate-600">3ª OPCIÓN DE CARRERA <span class="text-red-500">*</span></label>
+                        <select id="preficha-offer-3" v-model="form.offer_option_3_id" :disabled="!selectedModalityTypeId"
                             class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
                             <option value="">Seleccionar</option>
                             <option v-for="o in offerOptions3" :key="o.id" :value="o.id">{{ o.label }}</option>

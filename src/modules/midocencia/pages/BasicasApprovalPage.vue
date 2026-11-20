@@ -15,8 +15,8 @@
                     item-label="name" item-value="id" placeholder="Selecciona un periodo…" @update:model-value="load" />
             </div>
             <div class="w-48">
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Horario</label>
-                <select v-model="status" class="w-full border rounded-lg px-3 py-2 text-sm" @change="load">
+                <label for="ba-status" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Horario</label>
+                <select id="ba-status" v-model="status" class="w-full border rounded-lg px-3 py-2 text-sm" @change="load">
                     <option value="submitted">En revisión</option>
                     <option value="approved">Aprobados</option>
                     <option value="">Todos</option>
@@ -61,7 +61,7 @@
                 <p v-else class="text-xs text-slate-400">Sin bloques.</p>
 
                 <div v-if="detail.scheduleStatus === 'submitted'" class="space-y-2 border-t pt-3">
-                    <textarea v-model="reason" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Motivo de rechazo (si aplica)…"></textarea>
+                    <textarea v-model="reason" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Motivo de rechazo (si aplica)…" aria-label="Motivo de rechazo del horario"></textarea>
                     <div class="flex justify-end gap-2">
                         <button class="px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50" :disabled="busy || !reason.trim()" @click="reject">Rechazar</button>
                         <button class="px-3 py-1.5 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50" :disabled="busy" @click="approve">Aprobar horario</button>

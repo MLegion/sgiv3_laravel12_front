@@ -24,8 +24,8 @@
         <div v-else class="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2">
             <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Registrar institución (informativa)</p>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre *</label>
-                <input v-uppercase v-model="form.name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="Nombre de la institución" />
+                <label for="inst-name" class="block text-xs font-semibold text-slate-500 mb-1">Nombre *</label>
+                <input id="inst-name" v-uppercase v-model="form.name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="Nombre de la institución" />
             </div>
             <label class="flex items-center gap-2 text-sm text-slate-600">
                 <input v-model="form.is_foreign" type="checkbox" /> Institución extranjera
@@ -41,8 +41,8 @@
                 />
             </div>
             <div v-else>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">País</label>
-                <input v-uppercase v-model="form.country" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="País" />
+                <label for="inst-country" class="block text-xs font-semibold text-slate-500 mb-1">País</label>
+                <input id="inst-country" v-uppercase v-model="form.country" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="País" />
             </div>
             <div class="flex justify-end gap-2 pt-1">
                 <button type="button" class="rounded-lg px-3 py-1.5 text-xs text-slate-600" @click="cancelRegister">Cancelar</button>

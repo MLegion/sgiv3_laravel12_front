@@ -5,8 +5,8 @@
                 <FormInput label="RFC" v-model="form.rfc" uppercase :maxlength="13" />
                 <FormInput label="FECHA DE NACIMIENTO" v-model="form.birth_date" type="date" required />
                 <div class="space-y-1">
-                    <label class="text-xs font-medium text-slate-600">ESTADO CIVIL</label>
-                    <select v-model="form.marital_status" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label for="ext-marital-status" class="text-xs font-medium text-slate-600">ESTADO CIVIL</label>
+                    <select id="ext-marital-status" v-model="form.marital_status" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Seleccionar...</option>
                         <option value="soltero">Soltero/a</option>
                         <option value="casado">Casado/a</option>
@@ -17,15 +17,16 @@
                     </select>
                 </div>
                 <div class="space-y-1">
-                    <label class="text-xs font-medium text-slate-600">ESTADO DE NACIMIENTO</label>
-                    <select v-model="form.birth_state_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label for="ext-birth-state-id" class="text-xs font-medium text-slate-600">ESTADO DE NACIMIENTO</label>
+                    <select id="ext-birth-state-id" v-model="form.birth_state_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option :value="null">{{ loadingStates ? 'Cargando...' : 'Seleccionar...' }}</option>
                         <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
                     </select>
                 </div>
                 <div class="space-y-1">
-                    <label class="text-xs font-medium text-slate-600">MUNICIPIO DE NACIMIENTO</label>
+                    <label for="ext-birth-municipality-id" class="text-xs font-medium text-slate-600">MUNICIPIO DE NACIMIENTO</label>
                     <select
+                        id="ext-birth-municipality-id"
                         v-model="form.birth_municipality_id"
                         :disabled="!form.birth_state_id || loadingMunicipalities"
                         class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400"

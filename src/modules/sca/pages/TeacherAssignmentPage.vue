@@ -22,29 +22,29 @@
         <template v-if="periodLocked">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CAMPUS</label>
-                <select v-model="selectedCampusId" @change="onCampusOrTypeChange" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
+                <label for="ta-campus" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CAMPUS</label>
+                <select id="ta-campus" v-model="selectedCampusId" @change="onCampusOrTypeChange" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                     <option :value="null">-- SELECCIONAR --</option>
                     <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">TIPO MODALIDAD</label>
-                <select v-model="selectedModalityTypeId" @change="onCampusOrTypeChange" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
+                <label for="ta-modality-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">TIPO MODALIDAD</label>
+                <select id="ta-modality-type" v-model="selectedModalityTypeId" @change="onCampusOrTypeChange" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                     <option :value="null">-- SELECCIONAR --</option>
                     <option v-for="mt in modalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CARRERA</label>
-                <select v-model="selectedAcademicOfferId" @change="onCareerChange" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
+                <label for="ta-career" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CARRERA</label>
+                <select id="ta-career" v-model="selectedAcademicOfferId" @change="onCareerChange" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                     <option :value="null">-- SELECCIONAR --</option>
                     <option v-for="ao in academicOffers" :key="ao.id" :value="ao.id">{{ ao.career?.official_code }} {{ ao.career?.name }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">NIVEL</label>
-                <select v-model="selectedSemester" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
+                <label for="ta-semester" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">NIVEL</label>
+                <select id="ta-semester" v-model="selectedSemester" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                     <option :value="null">-- TODOS --</option>
                     <option v-for="s in availableSemesters" :key="s" :value="s">SEMESTRE {{ s }}</option>
                 </select>
@@ -370,7 +370,7 @@
                 <!-- Otros docentes -->
                 <h4 class="text-[10px] font-black text-slate-500 uppercase">Otros docentes</h4>
                 <div class="relative">
-                    <input type="text" v-model="searchModal.query" placeholder="Buscar por nombre..."
+                    <input type="text" v-model="searchModal.query" aria-label="Buscar docente por nombre" placeholder="Buscar por nombre..."
                         class="w-full border-2 rounded-lg pl-8 pr-3 py-2 text-xs focus:border-blue-500 outline-none" />
                     <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
@@ -455,6 +455,7 @@
                         <input
                             type="text"
                             v-model="auxModal.query"
+                            aria-label="Buscar docente auxiliar por nombre"
                             placeholder="Buscar por nombre..."
                             class="w-full border-2 rounded-lg pl-8 pr-3 py-2 text-xs focus:border-teal-500 outline-none"
                         />

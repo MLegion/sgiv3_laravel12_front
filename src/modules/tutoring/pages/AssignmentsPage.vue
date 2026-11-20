@@ -6,23 +6,23 @@
         </div>
 
         <div class="rounded-xl border bg-white p-4 grid sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <select v-model="filters.period_id" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.period_id" aria-label="Filtrar por periodo" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todos los periodos</option>
                 <option v-for="p in options.periods" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>
-            <select v-model="filters.career_id" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.career_id" aria-label="Filtrar por carrera" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todas las carreras</option>
                 <option v-for="c in options.careers" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
-            <select v-model="filters.campus_id" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.campus_id" aria-label="Filtrar por campus" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todos los campus</option>
                 <option v-for="c in options.campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
-            <select v-model="filters.modality_id" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.modality_id" aria-label="Filtrar por modalidad" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todas las modalidades</option>
                 <option v-for="m in options.modalities" :key="m.id" :value="m.id">{{ m.name }}</option>
             </select>
-            <select v-model="filters.status" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.status" aria-label="Filtrar por estado" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todos</option><option value="active">Activas</option><option value="closed">Cerradas</option>
             </select>
             <button @click="fetchList" class="px-4 py-2 rounded-lg border text-sm font-semibold text-slate-600">Filtrar</button>
@@ -59,7 +59,7 @@
                         <button type="button" @click="clearTutor" class="text-xs text-slate-400 hover:text-rose-500">cambiar</button>
                     </div>
                     <template v-else>
-                        <input v-model="tutorPick.search" @input="searchTutors" placeholder="Buscar empleado por nombre o correo…" class="mt-1 w-full rounded-lg border-slate-300 text-sm" autocomplete="off" />
+                        <input v-model="tutorPick.search" @input="searchTutors" placeholder="Buscar empleado por nombre o correo…" aria-label="Buscar empleado por nombre o correo" class="mt-1 w-full rounded-lg border-slate-300 text-sm" autocomplete="off" />
                         <ul v-if="tutorPick.results.length" class="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow">
                             <li v-for="t in tutorPick.results" :key="t.value" @click="pickTutor(t)" class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">{{ t.label }}</li>
                         </ul>
@@ -97,7 +97,7 @@
                         <button type="button" @click="clearGroup" class="text-xs text-slate-400 hover:text-rose-500">cambiar</button>
                     </div>
                     <template v-else>
-                        <input v-model="groupPick.search" @input="searchGroups" :placeholder="form.college_academic_period_id ? 'Buscar grupo…' : 'Elige un periodo primero'" :disabled="!form.college_academic_period_id" class="mt-1 w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-50" autocomplete="off" />
+                        <input v-model="groupPick.search" @input="searchGroups" :placeholder="form.college_academic_period_id ? 'Buscar grupo…' : 'Elige un periodo primero'" :disabled="!form.college_academic_period_id" aria-label="Buscar grupo" class="mt-1 w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-50" autocomplete="off" />
                         <ul v-if="groupPick.results.length" class="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-48 overflow-y-auto shadow">
                             <li v-for="g in groupPick.results" :key="g.id" @click="pickGroup(g)" class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">{{ g.label }}</li>
                         </ul>

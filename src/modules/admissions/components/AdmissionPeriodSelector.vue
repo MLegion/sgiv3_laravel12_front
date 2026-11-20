@@ -17,6 +17,7 @@
                 ref="inputRef"
                 v-model="searchText"
                 type="text"
+                aria-label="Buscar periodo"
                 :placeholder="store.selectedPeriod ? '' : 'Buscar periodo...'"
                 class="w-full px-2 py-1 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                 @focus="onFocus"

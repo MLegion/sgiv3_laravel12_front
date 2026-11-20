@@ -6,26 +6,26 @@
         <!-- Cascada: con una sola opción se muestra como etiqueta fija; con varias, selector. -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
             <div>
-                <label class="block text-xs font-medium text-slate-600">1 · Campus</label>
+                <label for="ga-campus" class="block text-xs font-medium text-slate-600">1 · Campus</label>
                 <div v-if="campuses.length === 1" class="mt-1 px-3 py-2 rounded-lg bg-slate-100 text-sm text-slate-700 truncate">{{ campuses[0].name }}</div>
-                <select v-else v-model="campusId" @change="onCampus" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
+                <select v-else id="ga-campus" v-model="campusId" @change="onCampus" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
                     <option :value="null">— Elige —</option>
                     <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-medium text-slate-600">2 · Modalidad</label>
+                <label for="ga-modality" class="block text-xs font-medium text-slate-600">2 · Modalidad</label>
                 <div v-if="campusId && modalidades.length === 1" class="mt-1 px-3 py-2 rounded-lg bg-slate-100 text-sm text-slate-700 truncate">{{ modalidades[0].name }}</div>
-                <select v-else v-model="modalityTypeId" @change="onModality" :disabled="!campusId"
+                <select v-else id="ga-modality" v-model="modalityTypeId" @change="onModality" :disabled="!campusId"
                         class="mt-1 w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-100">
                     <option :value="null">— Elige —</option>
                     <option v-for="m in modalidades" :key="m.id" :value="m.id">{{ m.name }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-medium text-slate-600">3 · Materia / grupo</label>
+                <label for="ga-group" class="block text-xs font-medium text-slate-600">3 · Materia / grupo</label>
                 <div v-if="modalityTypeId && materias.length === 1" class="mt-1 px-3 py-2 rounded-lg bg-slate-100 text-sm text-slate-700 truncate">{{ materias[0].grupo }} · {{ materias[0].materia }}</div>
-                <select v-else v-model="selectedGroup" @change="onGroup" :disabled="!modalityTypeId"
+                <select v-else id="ga-group" v-model="selectedGroup" @change="onGroup" :disabled="!modalityTypeId"
                         class="mt-1 w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-100">
                     <option :value="null">— Elige —</option>
                     <option v-for="g in materias" :key="g.teacher_assignment_id" :value="g.teacher_assignment_id">
@@ -34,13 +34,13 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-medium text-slate-600">4 · Fecha (horario)</label>
+                <label for="ga-date" class="block text-xs font-medium text-slate-600">4 · Fecha (horario)</label>
                 <div v-if="dates.length === 1" class="mt-1 px-3 py-2 rounded-lg bg-slate-100 text-sm text-slate-700 truncate">{{ dates[0].weekday }} {{ dates[0].date }}</div>
-                <select v-else-if="dates.length" v-model="date" @change="loadRoster" :disabled="!selectedGroup"
+                <select v-else-if="dates.length" id="ga-date" v-model="date" @change="loadRoster" :disabled="!selectedGroup"
                         class="mt-1 w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-100">
                     <option v-for="d in dates" :key="d.date" :value="d.date">{{ d.weekday }} {{ d.date }}</option>
                 </select>
-                <input v-else type="date" v-model="date" @change="loadRoster" :disabled="!selectedGroup"
+                <input v-else id="ga-date" type="date" v-model="date" @change="loadRoster" :disabled="!selectedGroup"
                        class="mt-1 w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-100" />
             </div>
         </div>
@@ -51,8 +51,8 @@
 
         <!-- Unidad de la sesión (autosugerida por la instrumentación; editable) -->
         <div v-if="selectedGroup && date && roster.length" class="flex items-center gap-2 mb-3">
-            <label class="text-xs font-medium text-slate-600">Unidad de esta clase:</label>
-            <select v-model="unit" class="rounded-lg border-slate-300 text-sm py-1.5">
+            <label for="ga-unit" class="text-xs font-medium text-slate-600">Unidad de esta clase:</label>
+            <select id="ga-unit" v-model="unit" class="rounded-lg border-slate-300 text-sm py-1.5">
                 <option :value="null">— Sin unidad —</option>
                 <option v-for="u in unitOptions" :key="u.number" :value="u.number">
                     Unidad {{ u.number }}{{ u.title ? ` · ${u.title}` : '' }}

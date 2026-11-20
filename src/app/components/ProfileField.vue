@@ -1,8 +1,9 @@
 <template>
     <div>
-        <label class="block text-xs font-semibold text-slate-500 mb-1">{{ label }}</label>
+        <label :for="fieldId" class="block text-xs font-semibold text-slate-500 mb-1">{{ label }}</label>
         <input
             v-if="editing"
+            :id="fieldId"
             :value="modelValue ?? value ?? ''"
             @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
             :type="type"
@@ -15,6 +16,10 @@
 </template>
 
 <script setup lang="ts">
+import { useId } from 'vue'
+
+const fieldId = useId()
+
 defineProps<{
     label: string
     value?: string | null

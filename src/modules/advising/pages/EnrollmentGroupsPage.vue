@@ -8,8 +8,8 @@
         <div class="bg-white border border-slate-200 rounded-lg p-3 space-y-3">
             <div class="flex flex-wrap gap-3 items-end">
                 <div class="flex flex-col gap-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Periodo</label>
-                    <select v-model.number="periodId" class="border border-slate-300 rounded px-2 py-1.5 text-sm min-w-[220px]"
+                    <label for="enroll-groups-period" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Periodo</label>
+                    <select id="enroll-groups-period" v-model.number="periodId" class="border border-slate-300 rounded px-2 py-1.5 text-sm min-w-[220px]"
                             @change="onPeriodChange">
                         <option :value="null">Selecciona…</option>
                         <option v-for="p in periods" :key="p.id" :value="p.id">
@@ -19,8 +19,8 @@
                 </div>
 
                 <div class="flex flex-col gap-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Carrera</label>
-                    <select v-model="careerFilter" class="border border-slate-300 rounded px-2 py-1.5 text-sm min-w-[180px]">
+                    <label for="enroll-groups-career" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Carrera</label>
+                    <select id="enroll-groups-career" v-model="careerFilter" class="border border-slate-300 rounded px-2 py-1.5 text-sm min-w-[180px]">
                         <option value="">Todas</option>
                         <option v-for="c in availableCareers" :key="c.id" :value="c.id">
                             {{ c.label }}
@@ -29,16 +29,16 @@
                 </div>
 
                 <div class="flex flex-col gap-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Turno</label>
-                    <select v-model="shiftFilter" class="border border-slate-300 rounded px-2 py-1.5 text-sm">
+                    <label for="enroll-groups-shift" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Turno</label>
+                    <select id="enroll-groups-shift" v-model="shiftFilter" class="border border-slate-300 rounded px-2 py-1.5 text-sm">
                         <option value="">Todos</option>
                         <option v-for="s in availableShifts" :key="s" :value="s">{{ shiftLabel(s) }}</option>
                     </select>
                 </div>
 
                 <div class="flex-1 min-w-[200px] flex flex-col gap-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Buscar grupo</label>
-                    <input v-model="search" type="text" placeholder="ej. 1A1"
+                    <label for="enroll-groups-search" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Buscar grupo</label>
+                    <input id="enroll-groups-search" v-model="search" type="text" placeholder="ej. 1A1"
                            class="border border-slate-300 rounded px-2 py-1.5 text-sm" />
                 </div>
 

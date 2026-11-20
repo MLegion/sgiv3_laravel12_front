@@ -207,14 +207,14 @@
                 <div class="p-6 space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-1">
-                            <label class="text-[10px] font-black text-slate-400 uppercase">Nuevo Periodo</label>
-                            <select v-model="moveForm.period" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm font-bold focus:border-indigo-500 outline-none transition-colors">
+                            <label for="move-period" class="text-[10px] font-black text-slate-400 uppercase">Nuevo Periodo</label>
+                            <select id="move-period" v-model="moveForm.period" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm font-bold focus:border-indigo-500 outline-none transition-colors">
                                 <option v-for="p in studyPlan.periods" :key="p" :value="p">{{ p }}° {{ labelPeriod }}</option>
                             </select>
                         </div>
                         <div class="space-y-1">
-                            <label class="text-[10px] font-black text-slate-400 uppercase">Nuevo Nivel (Fila)</label>
-                            <select v-model="moveForm.level" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm font-bold focus:border-indigo-500 outline-none transition-colors">
+                            <label for="move-level" class="text-[10px] font-black text-slate-400 uppercase">Nuevo Nivel (Fila)</label>
+                            <select id="move-level" v-model="moveForm.level" class="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm font-bold focus:border-indigo-500 outline-none transition-colors">
                                 <option v-for="l in 8" :key="l" :value="l">Nivel {{ l }}</option>
                             </select>
                         </div>

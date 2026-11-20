@@ -2,10 +2,11 @@
     <!-- MODO SETTINGS -->
     <div v-if="view === 'settings'" class="space-y-3 text-xs">
         <div>
-            <label class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
+            <label for="fm-period-choice" class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
                 Periodo actual
             </label>
             <select
+                id="fm-period-choice"
                 v-model="periodChoice"
                 class="w-full text-xs bg-white border border-slate-200 rounded px-2 py-1.5"
                 @change="emitParams"
@@ -18,10 +19,11 @@
         </div>
 
         <div>
-            <label class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
+            <label for="fm-compare-with" class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
                 Comparar con
             </label>
             <select
+                id="fm-compare-with"
                 v-model="compareWith"
                 class="w-full text-xs bg-white border border-slate-200 rounded px-2 py-1.5"
                 @change="emitParams"

@@ -136,6 +136,7 @@
                             v-model="manualToken"
                             type="text"
                             placeholder="Pegar token (v1.X.YYYYY)"
+                            aria-label="Pegar token"
                             class="flex-1 border rounded px-2 py-1.5 text-xs font-mono min-w-0"
                         />
                         <button class="px-3 py-1.5 text-xs rounded bg-blue-600 text-white whitespace-nowrap" @click="submitManualToken">ENVIAR</button>
@@ -152,6 +153,7 @@
                     v-model="filter"
                     type="text"
                     placeholder="Buscar por nombre o folio..."
+                    aria-label="Buscar por nombre o folio"
                     class="w-full border rounded px-3 py-1.5 text-sm"
                 />
 
@@ -182,6 +184,7 @@
                                     <select
                                         :value="(a as any).attendanceStatus || 'PENDING'"
                                         :disabled="session.status !== 'IN_PROGRESS'"
+                                        aria-label="Estado de asistencia"
                                         class="text-xs border rounded px-1.5 py-0.5 disabled:opacity-50"
                                         @change="markStatus(a.id, ($event.target as HTMLSelectElement).value)"
                                     >
@@ -217,6 +220,7 @@
                         <select
                             :value="(a as any).attendanceStatus || 'PENDING'"
                             :disabled="session.status !== 'IN_PROGRESS'"
+                            aria-label="Estado de asistencia"
                             class="text-xs border rounded px-1.5 py-1 disabled:opacity-50"
                             @change="markStatus(a.id, ($event.target as HTMLSelectElement).value)"
                         >
@@ -246,8 +250,9 @@
                     <p class="text-sm text-slate-600 leading-snug">{{ modalDescription }}</p>
 
                     <div v-if="needsReason">
-                        <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Motivo<span class="text-red-600">*</span></label>
+                        <label for="modal-reason" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Motivo<span class="text-red-600">*</span></label>
                         <textarea
+                            id="modal-reason"
                             v-model="modal.reason"
                             rows="3"
                             maxlength="500"

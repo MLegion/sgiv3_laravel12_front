@@ -46,13 +46,13 @@
 
             <div class="space-y-2">
                 <div v-for="(it, idx) in editing.items" :key="idx" class="grid grid-cols-12 gap-2 items-center">
-                    <input v-model="it.code" :disabled="readonly" placeholder="CODE" class="col-span-2 rounded-lg border-slate-300 text-xs uppercase" />
-                    <input v-model="it.name" :disabled="readonly" placeholder="Nombre" class="col-span-4 rounded-lg border-slate-300 text-xs" />
-                    <select v-model="it.kind" :disabled="readonly" class="col-span-2 rounded-lg border-slate-300 text-xs">
+                    <input v-model="it.code" :disabled="readonly" placeholder="CODE" aria-label="Código del documento" class="col-span-2 rounded-lg border-slate-300 text-xs uppercase" />
+                    <input v-model="it.name" :disabled="readonly" placeholder="Nombre" aria-label="Nombre del documento" class="col-span-4 rounded-lg border-slate-300 text-xs" />
+                    <select v-model="it.kind" :disabled="readonly" aria-label="Tipo de documento" class="col-span-2 rounded-lg border-slate-300 text-xs">
                         <option value="upload">Subida</option>
                         <option value="generated">Generado</option>
                     </select>
-                    <input v-model="it.generated_report_code" :disabled="readonly || it.kind !== 'generated'" placeholder="Report code" class="col-span-3 rounded-lg border-slate-300 text-xs" />
+                    <input v-model="it.generated_report_code" :disabled="readonly || it.kind !== 'generated'" placeholder="Report code" aria-label="Código del reporte generado" class="col-span-3 rounded-lg border-slate-300 text-xs" />
                     <button v-if="!readonly" @click="editing.items.splice(idx, 1)" class="col-span-1 text-red-500 text-xs">✕</button>
                 </div>
             </div>
@@ -66,7 +66,7 @@
         <!-- Modal nueva versión -->
         <BaseModal v-model="showNew" title="Nueva versión" size="md">
             <div class="space-y-3">
-                <input v-model="newForm.name" placeholder="Nombre de la versión" class="w-full rounded-lg border-slate-300 text-sm" />
+                <input v-model="newForm.name" placeholder="Nombre de la versión" aria-label="Nombre de la versión" class="w-full rounded-lg border-slate-300 text-sm" />
                 <label class="block">
                     <span class="text-xs font-semibold text-slate-500">Vigente desde</span>
                     <input v-model="newForm.effective_from" type="date" class="mt-1 w-full rounded-lg border-slate-300 text-sm" />

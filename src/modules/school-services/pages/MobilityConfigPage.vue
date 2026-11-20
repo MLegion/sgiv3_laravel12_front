@@ -50,16 +50,16 @@
         <div v-if="tab === 'requisitos'" class="space-y-4">
             <div class="flex flex-wrap items-end gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Proceso</label>
-                    <select v-model="req.process" class="h-10 rounded-lg border border-slate-300 px-3 text-sm">
+                    <label for="mob-req-process" class="block text-xs font-semibold text-slate-500 mb-1">Proceso</label>
+                    <select id="mob-req-process" v-model="req.process" class="h-10 rounded-lg border border-slate-300 px-3 text-sm">
                         <option value="traslado">Traslado</option>
                         <option value="equivalencia">Equivalencia</option>
                         <option value="revalidacion">Revalidación</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Ámbito</label>
-                    <select v-model="req.scope" class="h-10 rounded-lg border border-slate-300 px-3 text-sm">
+                    <label for="mob-req-scope" class="block text-xs font-semibold text-slate-500 mb-1">Ámbito</label>
+                    <select id="mob-req-scope" v-model="req.scope" class="h-10 rounded-lg border border-slate-300 px-3 text-sm">
                         <option value="global">Global (nacional)</option>
                         <option value="college">Este plantel (override)</option>
                     </select>
@@ -164,29 +164,29 @@
             <div class="space-y-3">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Código *</label>
-                        <input v-uppercase v-model="nmModal.form.code" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="ACUERDO-286" />
+                        <label for="mob-nm-code" class="block text-xs font-semibold text-slate-500 mb-1">Código *</label>
+                        <input id="mob-nm-code" v-uppercase v-model="nmModal.form.code" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="ACUERDO-286" />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Vigente desde</label>
-                        <input v-model="nmModal.form.effective_from" type="date" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        <label for="mob-nm-effective-from" class="block text-xs font-semibold text-slate-500 mb-1">Vigente desde</label>
+                        <input id="mob-nm-effective-from" v-model="nmModal.form.effective_from" type="date" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre *</label>
-                    <input v-model="nmModal.form.name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                    <label for="mob-nm-name" class="block text-xs font-semibold text-slate-500 mb-1">Nombre *</label>
+                    <input id="mob-nm-name" v-model="nmModal.form.name" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Emisor</label>
-                    <input v-model="nmModal.form.issuer" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="DGAIR / SEP / TecNM" />
+                    <label for="mob-nm-issuer" class="block text-xs font-semibold text-slate-500 mb-1">Emisor</label>
+                    <input id="mob-nm-issuer" v-model="nmModal.form.issuer" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="DGAIR / SEP / TecNM" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Referencia</label>
-                    <textarea v-model="nmModal.form.reference" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2"></textarea>
+                    <label for="mob-nm-reference" class="block text-xs font-semibold text-slate-500 mb-1">Referencia</label>
+                    <textarea id="mob-nm-reference" v-model="nmModal.form.reference" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2"></textarea>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">% máx. reconocible (equivalencia/revalidación)</label>
-                    <input v-model.number="nmModal.form.max_recognized_percent" type="number" min="0" max="100" class="w-32 h-10 rounded-lg border border-slate-300 px-3" placeholder="ej. 40" />
+                    <label for="mob-nm-max-recognized-percent" class="block text-xs font-semibold text-slate-500 mb-1">% máx. reconocible (equivalencia/revalidación)</label>
+                    <input id="mob-nm-max-recognized-percent" v-model.number="nmModal.form.max_recognized_percent" type="number" min="0" max="100" class="w-32 h-10 rounded-lg border border-slate-300 px-3" placeholder="ej. 40" />
                     <p class="mt-1 text-xs text-slate-400">Vacío = este lineamiento no fija tope. El validador usa la normativa activa que lo defina (fallback 40%).</p>
                 </div>
                 <label class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" v-model="nmModal.form.is_active" /> Activa</label>
@@ -202,32 +202,32 @@
             <div class="space-y-3">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Slot (identificador) *</label>
-                        <input v-model="sgModal.form.slot" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="jefe_carrera" />
+                        <label for="mob-sg-slot" class="block text-xs font-semibold text-slate-500 mb-1">Slot (identificador) *</label>
+                        <input id="mob-sg-slot" v-model="sgModal.form.slot" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="jefe_carrera" />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Rol</label>
-                        <select v-model="sgModal.form.role_code" class="w-full h-10 rounded-lg border border-slate-300 px-3">
+                        <label for="mob-sg-role-code" class="block text-xs font-semibold text-slate-500 mb-1">Rol</label>
+                        <select id="mob-sg-role-code" v-model="sgModal.form.role_code" class="w-full h-10 rounded-lg border border-slate-300 px-3">
                             <option :value="null">— sin rol (usuario específico) —</option>
                             <option v-for="r in roles" :key="r.code" :value="r.code">{{ r.label }}</option>
                         </select>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Contexto</label>
-                    <select v-model="sgModal.form.context" class="w-full h-10 rounded-lg border border-slate-300 px-3">
+                    <label for="mob-sg-context" class="block text-xs font-semibold text-slate-500 mb-1">Contexto</label>
+                    <select id="mob-sg-context" v-model="sgModal.form.context" class="w-full h-10 rounded-lg border border-slate-300 px-3">
                         <option value="none">Cualquiera con el rol</option>
                         <option value="college">Del plantel</option>
                         <option value="career">De la carrera específica del caso</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Usuario específico (opcional)</label>
-                    <input v-model.number="sgModal.form.specific_user_id" type="number" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="ID de usuario (deja vacío para usar el rol)" />
+                    <label for="mob-sg-specific-user-id" class="block text-xs font-semibold text-slate-500 mb-1">Usuario específico (opcional)</label>
+                    <input id="mob-sg-specific-user-id" v-model.number="sgModal.form.specific_user_id" type="number" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="ID de usuario (deja vacío para usar el rol)" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Texto "avala" (rúbrica)</label>
-                    <input v-model="sgModal.form.avala" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="Jefe(a) de la División de Carrera" />
+                    <label for="mob-sg-avala" class="block text-xs font-semibold text-slate-500 mb-1">Texto "avala" (rúbrica)</label>
+                    <input id="mob-sg-avala" v-model="sgModal.form.avala" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" placeholder="Jefe(a) de la División de Carrera" />
                 </div>
                 <label class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" v-model="sgModal.form.is_required" /> Firma requerida (bloquea aplicar si falta)</label>
             </div>

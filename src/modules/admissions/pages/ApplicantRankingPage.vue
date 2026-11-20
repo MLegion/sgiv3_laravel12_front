@@ -322,6 +322,7 @@
                             <div class="flex flex-col sm:flex-row gap-2">
                                 <select
                                     :value="(excludedReasons.get(exc.id)?.reason) ?? 'score_low'"
+                                    :aria-label="'Razón de exclusión de ' + fullName(exc)"
                                     class="text-xs border border-slate-200 rounded-md px-2 py-1 bg-white focus:outline-none focus:border-red-400 sm:w-56"
                                     @change="updateReason(exc.id, ($event.target as HTMLSelectElement).value as ExclusionReason)"
                                 >
@@ -330,6 +331,7 @@
                                 <input
                                     type="text"
                                     :value="excludedReasons.get(exc.id)?.note ?? ''"
+                                    :aria-label="'Nota de exclusión de ' + fullName(exc)"
                                     :placeholder="(excludedReasons.get(exc.id)?.reason) === 'other' ? 'Nota (requerida)' : 'Nota (opcional)'"
                                     class="flex-1 text-xs border rounded-md px-2 py-1 focus:outline-none"
                                     :class="(excludedReasons.get(exc.id)?.reason) === 'other' && !(excludedReasons.get(exc.id)?.note ?? '').trim()

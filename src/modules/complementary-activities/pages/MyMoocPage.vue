@@ -10,30 +10,30 @@
             <h2 class="text-sm font-bold uppercase text-slate-500">Declarar curso concluido</h2>
             <div class="grid sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Plataforma</label>
-                    <select v-model="form.platform_id" class="w-full rounded-lg border-slate-300 text-sm">
+                    <label for="mooc-platform-id" class="block text-xs font-semibold text-slate-500 mb-1">Plataforma</label>
+                    <select id="mooc-platform-id" v-model="form.platform_id" class="w-full rounded-lg border-slate-300 text-sm">
                         <option value="">Elegir…</option>
                         <option v-for="p in platforms" :key="p.id" :value="p.id">{{ p.name }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre del curso</label>
-                    <input v-model="form.course_name" :list="courseCatalog.length ? 'mooc-course-catalog' : undefined" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Ética profesional" />
+                    <label for="mooc-course-name" class="block text-xs font-semibold text-slate-500 mb-1">Nombre del curso</label>
+                    <input id="mooc-course-name" v-model="form.course_name" :list="courseCatalog.length ? 'mooc-course-catalog' : undefined" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Ética profesional" />
                     <datalist id="mooc-course-catalog">
                         <option v-for="c in courseCatalog" :key="c.id" :value="c.name" />
                     </datalist>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Horas (opcional)</label>
-                    <input v-model="form.hours" type="number" min="0" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="mooc-hours" class="block text-xs font-semibold text-slate-500 mb-1">Horas (opcional)</label>
+                    <input id="mooc-hours" v-model="form.hours" type="number" min="0" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Folio (opcional)</label>
-                    <input v-model="form.folio" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="mooc-folio" class="block text-xs font-semibold text-slate-500 mb-1">Folio (opcional)</label>
+                    <input id="mooc-folio" v-model="form.folio" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <div class="sm:col-span-2">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Constancia (PDF/imagen)</label>
-                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" @change="onFile" class="w-full text-sm" />
+                    <label for="mooc-certificate" class="block text-xs font-semibold text-slate-500 mb-1">Constancia (PDF/imagen)</label>
+                    <input id="mooc-certificate" type="file" accept=".pdf,.jpg,.jpeg,.png" @change="onFile" class="w-full text-sm" />
                 </div>
             </div>
             <button @click="submit" :disabled="busy || !form.platform_id || !form.course_name"

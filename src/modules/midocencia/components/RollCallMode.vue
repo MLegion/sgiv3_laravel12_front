@@ -52,7 +52,7 @@
             <template v-else>
                 <!-- Motivo (si no es presente) -->
                 <input v-if="marks[current.student_id].status !== 'present'"
-                    v-model="marks[current.student_id].notes" type="text" maxlength="255" placeholder="Motivo (opcional)"
+                    v-model="marks[current.student_id].notes" type="text" maxlength="255" placeholder="Motivo (opcional)" aria-label="Motivo de la inasistencia o retardo"
                     class="w-full max-w-sm rounded-xl bg-slate-800 border border-slate-600 text-sm px-3 py-2 placeholder:text-slate-500" />
 
                 <!-- Botones grandes (el justificante lo registra la jefatura, no el docente) -->

@@ -44,24 +44,24 @@
                 </header>
                 <div class="p-4 grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CAMPUS</label>
-                        <select v-model="selectedCampusId" @change="onCampusOrTypeChange"
+                        <label for="asp-campus" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CAMPUS</label>
+                        <select id="asp-campus" v-model="selectedCampusId" @change="onCampusOrTypeChange"
                             class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                             <option :value="null">-- SELECCIONAR --</option>
                             <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">TIPO MODALIDAD</label>
-                        <select v-model="selectedModalityTypeId" @change="onCampusOrTypeChange"
+                        <label for="asp-modality-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">TIPO MODALIDAD</label>
+                        <select id="asp-modality-type" v-model="selectedModalityTypeId" @change="onCampusOrTypeChange"
                             class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                             <option :value="null">-- SELECCIONAR --</option>
                             <option v-for="mt in modalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CARRERA</label>
-                        <select v-model.number="selectedCareerFilter" :disabled="!resolvedConfigId" @change="onCareerFilterChange"
+                        <label for="asp-career" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CARRERA</label>
+                        <select id="asp-career" v-model.number="selectedCareerFilter" :disabled="!resolvedConfigId" @change="onCareerFilterChange"
                             class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase disabled:bg-slate-100 disabled:text-slate-400">
                             <option :value="0">TODAS LAS CARRERAS</option>
                             <option v-for="c in availableCareersList" :key="c.id" :value="c.id">
@@ -70,8 +70,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">FILTRO</label>
-                        <select v-model="filterType" :disabled="!resolvedConfigId" @change="filterValue = null"
+                        <label for="asp-filter-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">FILTRO</label>
+                        <select id="asp-filter-type" v-model="filterType" :disabled="!resolvedConfigId" @change="filterValue = null"
                             class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase disabled:bg-slate-100 disabled:text-slate-400">
                             <option value="teacher">DOCENTE</option>
                             <option value="group">GRUPO</option>
@@ -79,8 +79,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">{{ filterType === 'teacher' ? 'DOCENTE' : filterType === 'group' ? 'GRUPO' : 'AULA' }}</label>
-                        <select v-model="filterValue" :disabled="!resolvedConfigId"
+                        <label for="asp-filter-value" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">{{ filterType === 'teacher' ? 'DOCENTE' : filterType === 'group' ? 'GRUPO' : 'AULA' }}</label>
+                        <select id="asp-filter-value" v-model="filterValue" :disabled="!resolvedConfigId"
                             class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase disabled:bg-slate-100 disabled:text-slate-400">
                             <option :value="null">-- SELECCIONA UN VALOR --</option>
                             <option v-for="opt in filterOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
@@ -710,6 +710,7 @@
                                     v-model="comparisonSearch"
                                     type="text"
                                     placeholder="FILTRAR..."
+                                    aria-label="Filtrar items a comparar"
                                     class="w-full border rounded-lg px-2 py-1 text-[10px] uppercase focus:outline-none focus:ring-2 focus:ring-violet-400"
                                 />
                             </div>
@@ -866,7 +867,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">
+                            <label for="drop-place" class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">
                                 AULA
                                 <span v-if="dropModal.lockPlace" class="ml-2 text-[9px] font-bold text-blue-600">(FIJADA POR FILTRO)</span>
                                 <span v-else-if="pinnedPlaceId && dropModal.placeId === pinnedPlaceId" class="ml-2 text-[9px] font-bold text-emerald-600">(AULA POR DEFECTO)</span>
@@ -874,6 +875,7 @@
                                 <span v-else class="ml-2 text-[9px] font-bold text-slate-500">{{ dropModal.availablePlaces.length }} DISPONIBLES</span>
                             </label>
                             <select
+                                id="drop-place"
                                 v-model="dropModal.placeId"
                                 :disabled="dropModal.lockPlace || dropModal.loadingPlaces"
                                 class="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-xs focus:border-orange-500 outline-none disabled:bg-slate-100"
@@ -890,8 +892,9 @@
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">HORA INICIO</label>
+                                <label for="drop-start-time" class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">HORA INICIO</label>
                                 <select
+                                    id="drop-start-time"
                                     v-model="dropModal.startTime"
                                     class="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:border-orange-500 outline-none"
                                     @change="onStartTimeChange"
@@ -900,8 +903,9 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">HORA TÉRMINO</label>
+                                <label for="drop-end-time" class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">HORA TÉRMINO</label>
                                 <select
+                                    id="drop-end-time"
                                     v-model="dropModal.endTime"
                                     class="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:border-orange-500 outline-none"
                                 >
@@ -956,8 +960,9 @@
                         </div>
 
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">AULA</label>
+                            <label for="comp-place" class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">AULA</label>
                             <select
+                                id="comp-place"
                                 v-model="compDropModal.placeId"
                                 class="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-xs focus:border-teal-500 outline-none"
                             >
@@ -970,8 +975,9 @@
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">HORA INICIO</label>
+                                <label for="comp-start-time" class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">HORA INICIO</label>
                                 <select
+                                    id="comp-start-time"
                                     v-model="compDropModal.startTime"
                                     class="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:border-teal-500 outline-none"
                                 >
@@ -979,8 +985,9 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">HORA TÉRMINO</label>
+                                <label for="comp-end-time" class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">HORA TÉRMINO</label>
                                 <select
+                                    id="comp-end-time"
                                     v-model="compDropModal.endTime"
                                     class="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:border-teal-500 outline-none"
                                 >
@@ -990,8 +997,9 @@
                         </div>
 
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">NOTAS (OPCIONAL)</label>
+                            <label for="comp-notes" class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">NOTAS (OPCIONAL)</label>
                             <textarea
+                                id="comp-notes"
                                 v-model="compDropModal.notes"
                                 rows="2"
                                 maxlength="500"
@@ -1199,6 +1207,7 @@
                             v-model="pinnedPlaceSearch"
                             type="text"
                             placeholder="BUSCAR AULA..."
+                            aria-label="Buscar aula"
                             class="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-xs uppercase focus:outline-none focus:border-emerald-500"
                         />
 
@@ -1404,6 +1413,7 @@
                             v-model="purgeModal.input"
                             type="text"
                             autocomplete="off"
+                            aria-label="Confirmar código oficial de la carrera"
                             :placeholder="purgeExpectedText"
                             class="w-full border-2 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2"
                             :class="purgeInputMatches ? 'border-red-400 focus:ring-red-200' : 'border-slate-200 focus:ring-slate-200'"

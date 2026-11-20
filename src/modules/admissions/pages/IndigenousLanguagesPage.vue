@@ -30,8 +30,8 @@
                     <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
                         <h2 class="text-sm font-bold uppercase tracking-widest text-slate-700">{{ editing ? 'Editar Lengua Indígena' : 'Nuevo/a Lengua Indígena' }}</h2>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre</label>
-                            <input v-model="form.name" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <label for="il-name" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre</label>
+                            <input id="il-name" v-model="form.name" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <p v-if="formError" class="text-xs text-red-600">{{ formError }}</p>
                         <div class="flex justify-end gap-2 pt-2">

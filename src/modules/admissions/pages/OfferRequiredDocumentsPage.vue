@@ -14,22 +14,22 @@
             <!-- Filtros -->
             <div class="bg-white border rounded-lg p-3 grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
                 <div>
-                    <label class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Campus</label>
-                    <select v-model="filterCampusId" class="w-full border border-slate-200 rounded px-2 py-1.5 text-xs">
+                    <label for="ord-filter-campus" class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Campus</label>
+                    <select id="ord-filter-campus" v-model="filterCampusId" class="w-full border border-slate-200 rounded px-2 py-1.5 text-xs">
                         <option :value="null">Todos</option>
                         <option v-for="c in availableCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Tipo de modalidad</label>
-                    <select v-model="filterModalityTypeId" class="w-full border border-slate-200 rounded px-2 py-1.5 text-xs">
+                    <label for="ord-filter-modality-type" class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Tipo de modalidad</label>
+                    <select id="ord-filter-modality-type" v-model="filterModalityTypeId" class="w-full border border-slate-200 rounded px-2 py-1.5 text-xs">
                         <option :value="null">Todos</option>
                         <option v-for="m in availableModalityTypes" :key="m.id" :value="m.id">{{ m.name }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Carrera</label>
-                    <select v-model="filterCareerId" class="w-full border border-slate-200 rounded px-2 py-1.5 text-xs">
+                    <label for="ord-filter-career" class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Carrera</label>
+                    <select id="ord-filter-career" v-model="filterCareerId" class="w-full border border-slate-200 rounded px-2 py-1.5 text-xs">
                         <option :value="null">Todas</option>
                         <option v-for="c in availableCareers" :key="c.id" :value="c.id">{{ c.name }}</option>
                     </select>

@@ -3,8 +3,8 @@
         <div class="flex items-center justify-between gap-3 flex-wrap">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">{{ title }}</h1>
             <div v-if="options.length > 1" class="flex items-center gap-2">
-                <label class="text-xs font-semibold text-slate-500">Asignación:</label>
-                <select v-model.number="selectedId" class="rounded-lg border-slate-300 text-sm">
+                <label for="mistutorias-assignment" class="text-xs font-semibold text-slate-500">Asignación:</label>
+                <select id="mistutorias-assignment" v-model.number="selectedId" class="rounded-lg border-slate-300 text-sm">
                     <option v-for="o in options" :key="o.id" :value="o.id">{{ o.label }}</option>
                 </select>
             </div>

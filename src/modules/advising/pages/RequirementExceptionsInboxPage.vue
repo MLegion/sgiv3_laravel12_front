@@ -12,16 +12,17 @@
         <div class="bg-white border rounded-xl p-3 shadow-sm">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
                 <input v-model="search" type="search" placeholder="Alumno o núm. control…"
+                    aria-label="Buscar por alumno o número de control"
                     class="lg:col-span-2 border rounded-md px-3 py-1.5 text-sm" />
-                <select v-model="periodFilter" class="border rounded-md px-3 py-1.5 text-sm">
+                <select v-model="periodFilter" aria-label="Filtrar por periodo" class="border rounded-md px-3 py-1.5 text-sm">
                     <option :value="null">Todos los periodos</option>
                     <option v-for="p in periodOptions" :key="p.id" :value="p.id">{{ p.name }}</option>
                 </select>
-                <select v-model="careerFilter" class="border rounded-md px-3 py-1.5 text-sm">
+                <select v-model="careerFilter" aria-label="Filtrar por carrera" class="border rounded-md px-3 py-1.5 text-sm">
                     <option value="">Todas las carreras</option>
                     <option v-for="c in careerOptions" :key="c" :value="c">{{ c }}</option>
                 </select>
-                <select v-model="statusFilter" class="border rounded-md px-3 py-1.5 text-sm">
+                <select v-model="statusFilter" aria-label="Filtrar por estado" class="border rounded-md px-3 py-1.5 text-sm">
                     <option value="">Todos los estados</option>
                     <option value="pending">PENDIENTES</option>
                     <option value="approved">APROBADAS</option>

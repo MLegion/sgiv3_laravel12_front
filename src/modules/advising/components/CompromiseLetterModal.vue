@@ -26,10 +26,11 @@
                 </section>
 
                 <section>
-                    <label class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">
+                    <label for="compromise-reason" class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">
                         Texto de compromiso
                     </label>
                     <textarea
+                        id="compromise-reason"
                         v-model="reason"
                         rows="5"
                         class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs"
@@ -39,10 +40,11 @@
                 </section>
 
                 <section>
-                    <label class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">
+                    <label for="compromise-file" class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">
                         Carta firmada (PDF)
                     </label>
                     <input
+                        id="compromise-file"
                         type="file"
                         accept="application/pdf"
                         class="w-full text-xs"

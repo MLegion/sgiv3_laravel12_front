@@ -10,7 +10,7 @@
                     <p class="text-xs text-slate-400">Puestos globales que se asignan al personal externo de las empresas.</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <input v-model="search" placeholder="Buscar…" class="border rounded-md px-2 py-1 text-xs" @keyup.enter="loadPositions" />
+                    <input v-model="search" placeholder="Buscar…" aria-label="Buscar puesto" class="border rounded-md px-2 py-1 text-xs" @keyup.enter="loadPositions" />
                     <button type="button" class="text-sm px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" @click="openNew">+ Nuevo puesto</button>
                 </div>
             </div>
@@ -74,7 +74,7 @@
         <!-- Modal puesto -->
         <BaseModal v-model="form.open" :title="form.id ? 'Editar puesto' : 'Nuevo puesto'" size="md">
             <div class="space-y-4">
-                <input v-model="form.name" placeholder="Nombre del puesto" class="border rounded-md w-full px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                <input v-model="form.name" placeholder="Nombre del puesto" aria-label="Nombre del puesto" class="border rounded-md w-full px-3 py-2 text-sm uppercase placeholder:normal-case" />
                 <label class="flex items-center gap-2 text-sm text-slate-700"><input v-model="form.is_active" type="checkbox" /> Activo</label>
                 <p v-if="form.error" class="text-xs text-red-600">{{ form.error }}</p>
             </div>

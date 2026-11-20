@@ -17,8 +17,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormInput label="NOMBRE" v-model="form.name" required />
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">TIPO</label>
-                        <select v-model.number="form.type" required
+                        <label for="dao-edit-type" class="text-xs font-medium text-slate-600">TIPO</label>
+                        <select id="dao-edit-type" v-model.number="form.type" required
                             class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option :value="1">SQL</option>
                             <option :value="2">REQUEST (HTTP)</option>
@@ -43,9 +43,10 @@
 
                 <!-- ═════ REQUEST / JSON: textarea crudo ═════ -->
                 <div v-else class="space-y-1">
-                    <label class="text-xs font-medium text-slate-600">{{ dataSourceLabel }}</label>
+                    <label for="dao-edit-data-source" class="text-xs font-medium text-slate-600">{{ dataSourceLabel }}</label>
                     <p class="text-xs text-slate-400">{{ dataSourceHint }}</p>
                     <textarea
+                        id="dao-edit-data-source"
                         v-model="form.data_source"
                         rows="8"
                         required

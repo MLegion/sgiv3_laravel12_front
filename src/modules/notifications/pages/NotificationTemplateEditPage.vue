@@ -87,6 +87,7 @@
                                 @input="setVar(key, ($event.target as HTMLInputElement).value)"
                                 type="text"
                                 class="col-span-2 border rounded-md px-2 py-1 text-xs"
+                                :aria-label="`Valor de prueba para ${varToken(key)}`"
                                 :placeholder="desc"
                             />
                         </div>

@@ -43,8 +43,8 @@
                     <h3 class="text-sm font-bold text-slate-700 uppercase">{{ submit.label }}</h3>
                     <button @click="submit.open = false" class="text-slate-400 hover:text-slate-600">✕</button>
                 </div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Contenido / observaciones</label>
-                <textarea v-model="submit.notes" rows="5" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Describe el avance / resultados de este hito…"></textarea>
+                <label for="followup-submit-notes" class="block text-xs font-semibold text-slate-500 mb-1">Contenido / observaciones</label>
+                <textarea id="followup-submit-notes" v-model="submit.notes" rows="5" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Describe el avance / resultados de este hito…"></textarea>
                 <div class="flex justify-end">
                     <button @click="doSubmit" :disabled="busy || !submit.notes.trim()" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Entregar</button>
                 </div>

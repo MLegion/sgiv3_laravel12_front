@@ -29,16 +29,16 @@
                 </label>
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">Campus</label>
-                <select v-model="selectedCampusId" @change="resolveConfig"
+                <label for="gpp-campus" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">Campus</label>
+                <select id="gpp-campus" v-model="selectedCampusId" @change="resolveConfig"
                     class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                     <option :value="null">-- SELECCIONAR --</option>
                     <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">Tipo modalidad</label>
-                <select v-model="selectedModalityTypeId" @change="resolveConfig"
+                <label for="gpp-modality-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">Tipo modalidad</label>
+                <select id="gpp-modality-type" v-model="selectedModalityTypeId" @change="resolveConfig"
                     class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                     <option :value="null">-- SELECCIONAR --</option>
                     <option v-for="mt in modalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
@@ -48,7 +48,7 @@
 
         <!-- ═════ Carrera ═════ -->
         <section v-if="resolvedConfigId && availableCareers.length > 0" class="bg-white border rounded-xl shadow-sm p-4">
-            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">Carrera</label>
+            <label for="gpp-career" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">Carrera</label>
             <!-- 1 carrera: info readonly -->
             <div v-if="availableCareers.length === 1"
                 class="px-4 py-2.5 border-2 border-slate-200 rounded-xl bg-slate-50 text-sm font-bold uppercase text-slate-700">
@@ -58,7 +58,7 @@
                 </span>
             </div>
             <!-- más carreras: selector -->
-            <select v-else v-model="selectedCareerId" @change="loadGroups"
+            <select id="gpp-career" v-else v-model="selectedCareerId" @change="loadGroups"
                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                 <option :value="null">-- SELECCIONE UNA CARRERA --</option>
                 <option v-for="c in availableCareers" :key="c.id" :value="c.id">
@@ -88,7 +88,7 @@
                         Aulas permitidas: {{ places.length }} (según <em>Aulas por Carrera</em>).
                     </p>
                 </div>
-                <input v-model="search" placeholder="Buscar grupo..." type="search"
+                <input v-model="search" placeholder="Buscar grupo..." type="search" aria-label="Buscar grupo"
                     class="border rounded-lg px-3 py-1.5 text-xs w-64 focus:outline-none focus:ring-2 focus:ring-blue-400" />
             </header>
 
@@ -120,7 +120,7 @@
                                   :class="shiftClass(row.groupShift)">{{ shiftLabel(row.groupShift) }}</span>
                         </td>
                         <td class="px-3 py-2">
-                            <select v-model.number="row.placeId"
+                            <select v-model.number="row.placeId" :aria-label="'Aula preferida del grupo ' + row.groupName"
                                 class="w-full border rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400">
                                 <option :value="null">— Sin aula preferida —</option>
                                 <option v-for="p in places" :key="p.id" :value="p.id">
@@ -129,11 +129,11 @@
                             </select>
                         </td>
                         <td class="px-3 py-2">
-                            <input v-model="row.startTime" type="time" :disabled="!row.placeId"
+                            <input v-model="row.startTime" type="time" :disabled="!row.placeId" :aria-label="'Hora desde del grupo ' + row.groupName"
                                 class="w-full border rounded-lg px-2 py-1.5 text-xs font-mono text-center focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-slate-50 disabled:text-slate-400" />
                         </td>
                         <td class="px-3 py-2">
-                            <input v-model="row.endTime" type="time" :disabled="!row.placeId"
+                            <input v-model="row.endTime" type="time" :disabled="!row.placeId" :aria-label="'Hora hasta del grupo ' + row.groupName"
                                 class="w-full border rounded-lg px-2 py-1.5 text-xs font-mono text-center focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-slate-50 disabled:text-slate-400" />
                         </td>
                         <td class="px-3 py-2 text-right">

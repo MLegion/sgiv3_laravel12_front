@@ -61,8 +61,9 @@
 
                         <div class="space-y-3">
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Etiqueta</label>
+                                <label for="status-label" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Etiqueta</label>
                                 <input
+                                    id="status-label"
                                     v-model="form.label"
                                     type="text"
                                     maxlength="60"
@@ -71,8 +72,9 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Descripción</label>
+                                <label for="status-description" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Descripción</label>
                                 <textarea
+                                    id="status-description"
                                     v-model="form.description"
                                     rows="3"
                                     maxlength="255"
@@ -81,10 +83,11 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">
+                                <label for="status-color" class="block text-xs font-semibold text-slate-600 uppercase mb-1">
                                     Color (clases Tailwind)
                                 </label>
                                 <input
+                                    id="status-color"
                                     v-model="form.color"
                                     type="text"
                                     maxlength="120"

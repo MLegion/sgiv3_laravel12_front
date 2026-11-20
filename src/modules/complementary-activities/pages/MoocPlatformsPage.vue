@@ -31,12 +31,12 @@
             <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-5 space-y-3">
                 <h2 class="text-sm font-bold uppercase text-slate-500">{{ form.id ? 'Editar' : 'Nueva' }} plataforma</h2>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre</label>
-                    <input v-model="form.name" class="w-full rounded-lg border-slate-300 text-sm" placeholder="MéxicoX" />
+                    <label for="mooc-platform-name" class="block text-xs font-semibold text-slate-500 mb-1">Nombre</label>
+                    <input id="mooc-platform-name" v-model="form.name" class="w-full rounded-lg border-slate-300 text-sm" placeholder="MéxicoX" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">URL (opcional)</label>
-                    <input v-model="form.url" class="w-full rounded-lg border-slate-300 text-sm" placeholder="https://mexicox.gob.mx" />
+                    <label for="mooc-platform-url" class="block text-xs font-semibold text-slate-500 mb-1">URL (opcional)</label>
+                    <input id="mooc-platform-url" v-model="form.url" class="w-full rounded-lg border-slate-300 text-sm" placeholder="https://mexicox.gob.mx" />
                 </div>
                 <label v-if="form.id" class="flex items-center gap-2 text-sm text-slate-600">
                     <input type="checkbox" v-model="form.is_active" /> Activa

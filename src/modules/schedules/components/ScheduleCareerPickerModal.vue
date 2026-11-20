@@ -32,6 +32,7 @@
                             v-model="search"
                             type="text"
                             placeholder="Buscar…"
+                            aria-label="Buscar carrera"
                             class="w-full px-6 py-3 border-b text-sm outline-none focus:bg-slate-50"
                         />
                         <ul class="divide-y">

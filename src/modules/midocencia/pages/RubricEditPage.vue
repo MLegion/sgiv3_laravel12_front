@@ -22,23 +22,23 @@
                 <p class="text-sm font-semibold text-slate-700 mb-2">Agregar criterio</p>
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
                     <div class="md:col-span-3">
-                        <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Rubro</label>
-                        <select v-model.number="newCrit.rubricRubroId" class="w-full border rounded-lg px-2 py-1.5 text-sm">
+                        <label for="rce-new-rubro" class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Rubro</label>
+                        <select id="rce-new-rubro" v-model.number="newCrit.rubricRubroId" class="w-full border rounded-lg px-2 py-1.5 text-sm">
                             <option :value="null" disabled>Elige…</option>
                             <option v-for="r in rubros" :key="r.id" :value="r.id">{{ r.name }}</option>
                         </select>
                     </div>
                     <div class="md:col-span-5">
-                        <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nombre</label>
-                        <input v-model="newCrit.name" class="w-full border rounded-lg px-2 py-1.5 text-sm" placeholder="Nombre del criterio" />
+                        <label for="rce-new-name" class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nombre</label>
+                        <input id="rce-new-name" v-model="newCrit.name" class="w-full border rounded-lg px-2 py-1.5 text-sm" placeholder="Nombre del criterio" />
                     </div>
                     <div class="md:col-span-1">
-                        <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Mín</label>
-                        <input v-model.number="newCrit.hoursMin" type="number" min="0" class="w-full border rounded-lg px-2 py-1.5 text-sm" />
+                        <label for="rce-new-min" class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Mín</label>
+                        <input id="rce-new-min" v-model.number="newCrit.hoursMin" type="number" min="0" class="w-full border rounded-lg px-2 py-1.5 text-sm" />
                     </div>
                     <div class="md:col-span-1">
-                        <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Máx</label>
-                        <input v-model.number="newCrit.hoursMax" type="number" min="0" class="w-full border rounded-lg px-2 py-1.5 text-sm" />
+                        <label for="rce-new-max" class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Máx</label>
+                        <input id="rce-new-max" v-model.number="newCrit.hoursMax" type="number" min="0" class="w-full border rounded-lg px-2 py-1.5 text-sm" />
                     </div>
                     <div class="md:col-span-2">
                         <button
@@ -60,22 +60,22 @@
                 <div class="p-4 border-b">
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
                         <div class="md:col-span-3">
-                            <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Rubro</label>
-                            <select v-model.number="crit.rubroId" class="w-full border rounded-lg px-2 py-1.5 text-sm">
+                            <label :for="`rce-crit-rubro-${crit.id}`" class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Rubro</label>
+                            <select :id="`rce-crit-rubro-${crit.id}`" v-model.number="crit.rubroId" class="w-full border rounded-lg px-2 py-1.5 text-sm">
                                 <option v-for="r in rubros" :key="r.id" :value="r.id">{{ r.name }}</option>
                             </select>
                         </div>
                         <div class="md:col-span-5">
-                            <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Criterio</label>
-                            <input v-model="crit.name" class="w-full border rounded-lg px-2 py-1.5 text-sm" />
+                            <label :for="`rce-crit-name-${crit.id}`" class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Criterio</label>
+                            <input :id="`rce-crit-name-${crit.id}`" v-model="crit.name" class="w-full border rounded-lg px-2 py-1.5 text-sm" />
                         </div>
                         <div class="md:col-span-1">
-                            <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Mín</label>
-                            <input v-model.number="crit.hoursMin" type="number" min="0" class="w-full border rounded-lg px-2 py-1.5 text-sm" />
+                            <label :for="`rce-crit-min-${crit.id}`" class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Mín</label>
+                            <input :id="`rce-crit-min-${crit.id}`" v-model.number="crit.hoursMin" type="number" min="0" class="w-full border rounded-lg px-2 py-1.5 text-sm" />
                         </div>
                         <div class="md:col-span-1">
-                            <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Máx</label>
-                            <input v-model.number="crit.hoursMax" type="number" min="0" class="w-full border rounded-lg px-2 py-1.5 text-sm" />
+                            <label :for="`rce-crit-max-${crit.id}`" class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Máx</label>
+                            <input :id="`rce-crit-max-${crit.id}`" v-model.number="crit.hoursMax" type="number" min="0" class="w-full border rounded-lg px-2 py-1.5 text-sm" />
                         </div>
                         <div class="md:col-span-2 flex gap-1">
                             <button class="flex-1 px-2 py-1.5 text-xs rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
@@ -91,8 +91,8 @@
                     <p class="text-[11px] font-semibold text-slate-400 uppercase">Productos</p>
                     <div v-for="prod in crit.products" :key="prod.id" class="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
                         <input v-model="prod.name" class="md:col-span-8 border rounded-lg px-2 py-1.5 text-sm" />
-                        <input v-model.number="prod.hoursMin" type="number" min="0" placeholder="propias mín" class="md:col-span-1 border rounded-lg px-2 py-1.5 text-sm" />
-                        <input v-model.number="prod.hoursMax" type="number" min="0" placeholder="máx" class="md:col-span-1 border rounded-lg px-2 py-1.5 text-sm" />
+                        <input v-model.number="prod.hoursMin" type="number" min="0" placeholder="propias mín" aria-label="Horas propias mínimas del producto" class="md:col-span-1 border rounded-lg px-2 py-1.5 text-sm" />
+                        <input v-model.number="prod.hoursMax" type="number" min="0" placeholder="máx" aria-label="Horas propias máximas del producto" class="md:col-span-1 border rounded-lg px-2 py-1.5 text-sm" />
                         <div class="md:col-span-2 flex gap-1">
                             <button class="flex-1 px-2 py-1 text-xs rounded bg-emerald-600 text-white hover:bg-emerald-700" :disabled="busy" @click="saveProduct(prod)">✓</button>
                             <button class="px-2 py-1 text-xs rounded bg-red-50 text-red-600 hover:bg-red-100" :disabled="busy" @click="removeProduct(crit, prod)">✕</button>
@@ -100,9 +100,9 @@
                     </div>
                     <!-- Agregar producto -->
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
-                        <input v-model="newProd[crit.id].name" placeholder="Nuevo producto…" class="md:col-span-8 border rounded-lg px-2 py-1.5 text-sm bg-slate-50" />
-                        <input v-model.number="newProd[crit.id].hoursMin" type="number" min="0" placeholder="mín" class="md:col-span-1 border rounded-lg px-2 py-1.5 text-sm bg-slate-50" />
-                        <input v-model.number="newProd[crit.id].hoursMax" type="number" min="0" placeholder="máx" class="md:col-span-1 border rounded-lg px-2 py-1.5 text-sm bg-slate-50" />
+                        <input v-model="newProd[crit.id].name" placeholder="Nuevo producto…" aria-label="Nombre del nuevo producto" class="md:col-span-8 border rounded-lg px-2 py-1.5 text-sm bg-slate-50" />
+                        <input v-model.number="newProd[crit.id].hoursMin" type="number" min="0" placeholder="mín" aria-label="Horas propias mínimas del nuevo producto" class="md:col-span-1 border rounded-lg px-2 py-1.5 text-sm bg-slate-50" />
+                        <input v-model.number="newProd[crit.id].hoursMax" type="number" min="0" placeholder="máx" aria-label="Horas propias máximas del nuevo producto" class="md:col-span-1 border rounded-lg px-2 py-1.5 text-sm bg-slate-50" />
                         <button class="md:col-span-2 px-2 py-1.5 text-xs rounded-lg border border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50"
                             :disabled="busy || !newProd[crit.id].name.trim()" @click="addProduct(crit)">+ Producto</button>
                     </div>
@@ -124,7 +124,7 @@
                     </div>
                     <!-- Agregar evidencia -->
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
-                        <input v-model="newEv[crit.id].name" placeholder="Nueva evidencia…" class="md:col-span-7 border rounded-lg px-2 py-1.5 text-sm bg-slate-50" />
+                        <input v-model="newEv[crit.id].name" placeholder="Nueva evidencia…" aria-label="Nombre de la nueva evidencia" class="md:col-span-7 border rounded-lg px-2 py-1.5 text-sm bg-slate-50" />
                         <select v-model.number="newEv[crit.id].productId" class="md:col-span-3 border rounded-lg px-2 py-1.5 text-sm bg-slate-50">
                             <option :value="null">— a nivel criterio —</option>
                             <option v-for="p in crit.products" :key="p.id" :value="p.id">{{ truncate(p.name) }}</option>

@@ -92,10 +92,10 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div class="space-y-4">
                                     <div>
-                                        <label class="block text-xs font-semibold uppercase tracking-widest text-slate-500 mb-1">Color primario</label>
+                                        <label for="onboarding-primary-color" class="block text-xs font-semibold uppercase tracking-widest text-slate-500 mb-1">Color primario</label>
                                         <div class="flex items-center gap-3">
-                                            <input type="color" v-model="branding.primary_color" class="h-10 w-14 rounded border border-slate-300 cursor-pointer" />
-                                            <input type="text" v-model="branding.primary_color" class="w-32 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+                                            <input type="color" aria-label="Color primario (selector)" v-model="branding.primary_color" class="h-10 w-14 rounded border border-slate-300 cursor-pointer" />
+                                            <input id="onboarding-primary-color" type="text" v-model="branding.primary_color" class="w-32 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
                                         </div>
                                     </div>
                                     <FormInput label="TÍTULO EN LA BARRA SUPERIOR" v-model="branding.navbar_title" />

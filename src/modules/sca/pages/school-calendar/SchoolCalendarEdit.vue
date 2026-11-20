@@ -70,8 +70,9 @@
 
                         <!-- Select modalidad (solo si el tipo lo permite) -->
                         <div v-if="selectedEventType.isPerModality">
-                            <label class="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Aplicar a</label>
+                            <label for="sce-modality" class="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Aplicar a</label>
                             <select
+                                id="sce-modality"
                                 v-model="selectedModalityId"
                                 class="w-full text-[11px] font-semibold rounded-md border border-blue-300 bg-white px-2 py-1 focus:ring-1 focus:ring-blue-500 outline-none"
                             >

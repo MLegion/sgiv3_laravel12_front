@@ -507,10 +507,11 @@
                         Indica al alumno por qué se rechaza esta propuesta. Verá el texto al reabrirla para corregir.
                     </p>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">
+                        <label for="advising-reject-reason" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">
                             Razón (mínimo 5 caracteres)
                         </label>
                         <textarea
+                            id="advising-reject-reason"
                             v-model="rejectReason"
                             rows="4"
                             maxlength="500"
@@ -551,10 +552,11 @@
                         El alumno será notificado del motivo de la excepción.
                     </p>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">
+                        <label for="advising-reopen-reason" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">
                             Motivo de la excepción (mínimo 10 caracteres)
                         </label>
                         <textarea
+                            id="advising-reopen-reason"
                             v-model="reopenReason"
                             rows="4"
                             maxlength="1000"
@@ -603,14 +605,14 @@
                     pedir durante un rato mientras apruebas más asesorías.
                 </p>
                 <div v-if="verifyMethod === 'totp'">
-                    <label class="text-xs font-semibold text-slate-600">Código de tu app (MFA)</label>
-                    <input v-model="verifyTotp" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+                    <label for="advising-verify-totp" class="text-xs font-semibold text-slate-600">Código de tu app (MFA)</label>
+                    <input id="advising-verify-totp" v-model="verifyTotp" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
                         class="mt-1 w-full h-9 border rounded-md px-3 text-sm tracking-widest text-center"
                         placeholder="000000" @keyup.enter="submitVerification" />
                 </div>
                 <div v-else>
-                    <label class="text-xs font-semibold text-slate-600">Tu contraseña</label>
-                    <input v-model="verifyPassword" type="password" autocomplete="current-password"
+                    <label for="advising-verify-password" class="text-xs font-semibold text-slate-600">Tu contraseña</label>
+                    <input id="advising-verify-password" v-model="verifyPassword" type="password" autocomplete="current-password"
                         class="mt-1 w-full h-9 border rounded-md px-3 text-sm"
                         placeholder="Contraseña" @keyup.enter="submitVerification" />
                 </div>

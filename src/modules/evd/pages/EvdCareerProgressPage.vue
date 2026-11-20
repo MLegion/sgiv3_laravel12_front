@@ -226,6 +226,7 @@ onMounted(async () => {
                 </div>
             </div>
             <input v-model="search" @keyup.enter="load" type="text" placeholder="Buscar materia, grupo o docente…"
+                   aria-label="Buscar materia, grupo o docente"
                    class="border border-slate-300 rounded px-2 py-1.5 text-sm w-64" />
         </div>
 

@@ -43,20 +43,20 @@
             <div class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre *</label>
-                            <input v-model="cForm.name" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <label for="contact-name" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre *</label>
+                            <input id="contact-name" v-model="cForm.name" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Primer Apellido *</label>
-                            <input v-model="cForm.first_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <label for="contact-first-surname" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Primer Apellido *</label>
+                            <input id="contact-first-surname" v-model="cForm.first_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Segundo Apellido</label>
-                            <input v-model="cForm.second_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <label for="contact-second-surname" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Segundo Apellido</label>
+                            <input id="contact-second-surname" v-model="cForm.second_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Parentesco *</label>
-                            <select v-model="cForm.relationship" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <label for="contact-relationship" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Parentesco *</label>
+                            <select id="contact-relationship" v-model="cForm.relationship" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
                                 <option value="">Seleccionar...</option>
                                 <option value="padre">Padre</option>
                                 <option value="madre">Madre</option>
@@ -67,12 +67,12 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teléfono</label>
-                            <input v-model="cForm.phone" type="text" maxlength="20" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <label for="contact-phone" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teléfono</label>
+                            <input id="contact-phone" v-model="cForm.phone" type="text" maxlength="20" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email</label>
-                            <input v-model="cForm.email" type="email" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <label for="contact-email" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email</label>
+                            <input id="contact-email" v-model="cForm.email" type="email" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <div class="sm:col-span-2 flex items-center gap-2">
                             <input v-model="cForm.is_emergency_contact" type="checkbox" id="portal_tab_emergency" class="rounded" />

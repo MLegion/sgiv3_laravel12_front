@@ -108,8 +108,8 @@
                             <tr v-for="(it, idx) in items" :key="it.id ?? ('n' + idx)" class="border-t border-slate-100">
                                 <td class="px-3 py-2">
                                     <template v-if="canEdit && isExternal">
-                                        <input v-model="it.origin_subject_code" placeholder="Clave" class="mb-1 w-full rounded border border-slate-200 px-2 py-1 text-xs font-mono" />
-                                        <input v-model="it.origin_subject_name" placeholder="Nombre materia origen" class="w-full rounded border border-slate-200 px-2 py-1 text-xs" />
+                                        <input v-model="it.origin_subject_code" placeholder="Clave" aria-label="Clave de la materia de origen" class="mb-1 w-full rounded border border-slate-200 px-2 py-1 text-xs font-mono" />
+                                        <input v-model="it.origin_subject_name" placeholder="Nombre materia origen" aria-label="Nombre de la materia de origen" class="w-full rounded border border-slate-200 px-2 py-1 text-xs" />
                                     </template>
                                     <template v-else>
                                         <span class="font-mono text-xs text-slate-400">{{ it.origin_subject_code || '—' }}</span>
@@ -117,20 +117,20 @@
                                     </template>
                                 </td>
                                 <td class="px-3 py-2 text-slate-600">
-                                    <input v-if="canEdit && isExternal" v-model.number="it.origin_grade" type="number" class="w-16 rounded border border-slate-200 px-2 py-1 text-xs" />
+                                    <input v-if="canEdit && isExternal" v-model.number="it.origin_grade" type="number" aria-label="Calificación de origen" class="w-16 rounded border border-slate-200 px-2 py-1 text-xs" />
                                     <span v-else>{{ it.origin_grade ?? '—' }}</span>
                                 </td>
                                 <td class="px-3 py-2 text-slate-600">
-                                    <input v-if="canEdit && isExternal" v-model.number="it.destination_subject_id" type="number" placeholder="ID" class="w-20 rounded border border-slate-200 px-2 py-1 text-xs" />
+                                    <input v-if="canEdit && isExternal" v-model.number="it.destination_subject_id" type="number" placeholder="ID" aria-label="ID de la materia destino" class="w-20 rounded border border-slate-200 px-2 py-1 text-xs" />
                                     <template v-else>#{{ it.destination_subject_id ?? '—' }} <span v-if="it.is_auto" class="text-[10px] rounded bg-blue-50 text-blue-600 px-1">auto</span></template>
                                 </td>
                                 <td class="px-3 py-2 text-slate-700">
-                                    <input v-if="canEdit && isExternal" v-model.number="it.recognized_grade" type="number" class="w-16 rounded border border-slate-200 px-2 py-1 text-xs" />
+                                    <input v-if="canEdit && isExternal" v-model.number="it.recognized_grade" type="number" aria-label="Calificación reconocida" class="w-16 rounded border border-slate-200 px-2 py-1 text-xs" />
                                     <span v-else>{{ it.recognized_grade ?? '—' }}</span>
                                 </td>
                                 <td class="px-3 py-2">
                                     <div class="flex items-center gap-2">
-                                        <select v-if="canEdit" v-model="it.decision" class="rounded border border-slate-300 text-xs px-2 py-1">
+                                        <select v-if="canEdit" v-model="it.decision" aria-label="Decisión de convalidación" class="rounded border border-slate-300 text-xs px-2 py-1">
                                             <option value="recognized">Reconocida</option>
                                             <option value="not_recognized">No reconocida</option>
                                             <option value="pending">Pendiente</option>
@@ -199,14 +199,14 @@
                     <button v-if="c.status === 'sent'" class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="busy" @click="act('review')">Tomar para revisión</button>
 
                     <template v-if="c.status === 'in_review'">
-                        <input v-model="dictamen" placeholder="No. dictamen" class="h-9 w-40 rounded-lg border border-slate-300 px-3 text-sm" />
-                        <input v-model="resolutionDate" type="date" class="h-9 rounded-lg border border-slate-300 px-3 text-sm" />
+                        <input v-model="dictamen" placeholder="No. dictamen" aria-label="Número de dictamen" class="h-9 w-40 rounded-lg border border-slate-300 px-3 text-sm" />
+                        <input v-model="resolutionDate" type="date" aria-label="Fecha de resolución" class="h-9 rounded-lg border border-slate-300 px-3 text-sm" />
                         <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="busy" @click="approve">Aprobar dictamen</button>
                     </template>
 
                     <template v-if="c.status === 'approved'">
-                        <input v-model="numControl" placeholder="Núm. control (opc.)" class="h-9 w-44 rounded-lg border border-slate-300 px-3 text-sm" />
-                        <input v-model.number="periodNumber" type="number" placeholder="Semestre" class="h-9 w-28 rounded-lg border border-slate-300 px-3 text-sm" />
+                        <input v-model="numControl" placeholder="Núm. control (opc.)" aria-label="Número de control" class="h-9 w-44 rounded-lg border border-slate-300 px-3 text-sm" />
+                        <input v-model.number="periodNumber" type="number" placeholder="Semestre" aria-label="Semestre" class="h-9 w-28 rounded-lg border border-slate-300 px-3 text-sm" />
                         <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40" :disabled="busy" @click="apply">Aplicar traslado</button>
                     </template>
 

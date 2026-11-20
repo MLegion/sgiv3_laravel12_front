@@ -12,21 +12,21 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
                     <div class="lg:col-span-2">
                         <input v-model="search" @input="debouncedFetch" type="search" placeholder="Nombre, núm. control, CURP…"
-                            class="w-full rounded-lg border-slate-300 text-sm" />
+                            aria-label="Buscar estudiante" class="w-full rounded-lg border-slate-300 text-sm" />
                     </div>
-                    <select v-model="filters.campusId" @change="onFilterChange" class="rounded-lg border-slate-300 text-sm">
+                    <select v-model="filters.campusId" @change="onFilterChange" aria-label="Campus" class="rounded-lg border-slate-300 text-sm">
                         <option :value="null">Campus</option>
                         <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name ?? c.shortName }}</option>
                     </select>
-                    <select v-model="filters.modalityTypeId" @change="onFilterChange" class="rounded-lg border-slate-300 text-sm">
+                    <select v-model="filters.modalityTypeId" @change="onFilterChange" aria-label="Modalidad" class="rounded-lg border-slate-300 text-sm">
                         <option :value="null">Modalidad</option>
                         <option v-for="m in modalityTypes" :key="m.id" :value="m.id">{{ m.name }}</option>
                     </select>
-                    <select v-model="filters.careerId" @change="onFilterChange" class="rounded-lg border-slate-300 text-sm">
+                    <select v-model="filters.careerId" @change="onFilterChange" aria-label="Carrera" class="rounded-lg border-slate-300 text-sm">
                         <option :value="null">Carrera</option>
                         <option v-for="c in careers" :key="c.id" :value="c.id">{{ c.name }}</option>
                     </select>
-                    <select v-model="filters.studentStatusId" @change="onFilterChange" class="rounded-lg border-slate-300 text-sm">
+                    <select v-model="filters.studentStatusId" @change="onFilterChange" aria-label="Estatus" class="rounded-lg border-slate-300 text-sm">
                         <option :value="null">Estatus</option>
                         <option v-for="s in studentStatuses" :key="s.id" :value="s.id">{{ s.name }}</option>
                     </select>

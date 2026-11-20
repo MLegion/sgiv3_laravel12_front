@@ -15,19 +15,19 @@
             <h2 class="text-sm font-bold uppercase text-slate-500">Ventana de propuesta individual</h2>
             <div class="grid sm:grid-cols-4 gap-3 items-end">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Periodo</label>
-                    <select v-model="win.period_id" @change="loadWindow" class="w-full rounded-lg border-slate-300 text-sm">
+                    <label for="win-period" class="block text-xs font-semibold text-slate-500 mb-1">Periodo</label>
+                    <select id="win-period" v-model="win.period_id" @change="loadWindow" class="w-full rounded-lg border-slate-300 text-sm">
                         <option value="">Elegir…</option>
                         <option v-for="p in periods" :key="p.id" :value="p.id">{{ p.name }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Abre</label>
-                    <input v-model="win.opens_at" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="win-opens-at" class="block text-xs font-semibold text-slate-500 mb-1">Abre</label>
+                    <input id="win-opens-at" v-model="win.opens_at" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Cierra</label>
-                    <input v-model="win.closes_at" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="win-closes-at" class="block text-xs font-semibold text-slate-500 mb-1">Cierra</label>
+                    <input id="win-closes-at" v-model="win.closes_at" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <label class="flex items-center gap-2 text-sm text-slate-600 pb-2">
                     <input type="checkbox" v-model="win.is_open" /> Abierta ahora (override)
@@ -41,21 +41,21 @@
             <h2 class="text-sm font-bold uppercase text-slate-500">Límites y umbrales</h2>
             <div class="grid sm:grid-cols-4 gap-3 items-end">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Semestres con tutoría grupal (X)</label>
-                    <input v-model="limits.group_tutoring_max_semester" type="number" min="1" max="20" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="limits-group-max-semester" class="block text-xs font-semibold text-slate-500 mb-1">Semestres con tutoría grupal (X)</label>
+                    <input id="limits-group-max-semester" v-model="limits.group_tutoring_max_semester" type="number" min="1" max="20" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Créditos de la tutoría grupal</label>
-                    <input v-model="limits.group_tutoring_credits" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="limits-group-credits" class="block text-xs font-semibold text-slate-500 mb-1">Créditos de la tutoría grupal</label>
+                    <input id="limits-group-credits" v-model="limits.group_tutoring_credits" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
                     <p class="text-[10px] text-slate-400 mt-0.5">Van al libro de créditos de AC (no directo al kardex).</p>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Cupo de tutorados por tutor (individual)</label>
-                    <input v-model="limits.max_tutees_per_tutor" type="number" min="0" class="w-full rounded-lg border-slate-300 text-sm" placeholder="0 = sin límite" />
+                    <label for="limits-max-tutees" class="block text-xs font-semibold text-slate-500 mb-1">Cupo de tutorados por tutor (individual)</label>
+                    <input id="limits-max-tutees" v-model="limits.max_tutees_per_tutor" type="number" min="0" class="w-full rounded-lg border-slate-300 text-sm" placeholder="0 = sin límite" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Mín. recurses para sugerir riesgo</label>
-                    <input v-model="limits.risk_min_repeat" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="limits-risk-min-repeat" class="block text-xs font-semibold text-slate-500 mb-1">Mín. recurses para sugerir riesgo</label>
+                    <input id="limits-risk-min-repeat" v-model="limits.risk_min_repeat" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <button @click="saveLimits" :disabled="busy" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Guardar límites</button>
             </div>
@@ -74,8 +74,8 @@
             </p>
             <div class="grid sm:grid-cols-4 gap-3 items-end">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Periodo</label>
-                    <select v-model="sched.period_id" @change="loadSchedule" class="w-full rounded-lg border-slate-300 text-sm">
+                    <label for="sched-period" class="block text-xs font-semibold text-slate-500 mb-1">Periodo</label>
+                    <select id="sched-period" v-model="sched.period_id" @change="loadSchedule" class="w-full rounded-lg border-slate-300 text-sm">
                         <option value="">Elegir…</option>
                         <option v-for="p in periods" :key="p.id" :value="p.id">{{ p.name }}</option>
                     </select>
@@ -93,8 +93,8 @@
                             {{ s.label }}
                             <span v-if="s.stage === 'pat_initial'" class="ml-1 text-[10px] font-bold text-amber-700">· entrega del PAT</span>
                         </td>
-                        <td class="px-3 py-1"><input v-model="s.opens_at" type="date" class="rounded-lg border-slate-300 text-sm" /></td>
-                        <td class="px-3 py-1"><input v-model="s.due_date" type="date" class="rounded-lg border-slate-300 text-sm" /></td>
+                        <td class="px-3 py-1"><input v-model="s.opens_at" type="date" :aria-label="`Abre — ${s.label}`" class="rounded-lg border-slate-300 text-sm" /></td>
+                        <td class="px-3 py-1"><input v-model="s.due_date" type="date" :aria-label="`Límite — ${s.label}`" class="rounded-lg border-slate-300 text-sm" /></td>
                     </tr>
                 </tbody>
             </table>

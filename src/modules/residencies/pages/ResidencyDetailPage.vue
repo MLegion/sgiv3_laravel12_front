@@ -76,7 +76,7 @@
                 <p v-else class="text-xs text-slate-400 italic">Sin asesores asignados.</p>
 
                 <div class="flex flex-wrap items-end gap-2 border-t pt-3">
-                    <select v-model="advisorType" class="border rounded-md px-3 py-2 text-sm">
+                    <select v-model="advisorType" aria-label="Tipo de asesor" class="border rounded-md px-3 py-2 text-sm">
                         <option v-for="o in ADVISOR_TYPE_OPTIONS" :key="o.value" :value="o.value"
                             :disabled="residency.advisors.some(a => a.advisorType === o.value)">{{ o.label }}</option>
                     </select>
@@ -129,7 +129,7 @@
                         <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Vigente hasta</span>
                         <input v-model="exForm.until" type="date" class="border rounded-md px-3 py-2 text-sm" />
                     </label>
-                    <input v-model="exForm.reason" placeholder="Motivo (opcional)" class="border rounded-md px-3 py-2 text-sm flex-1 min-w-48" />
+                    <input v-model="exForm.reason" placeholder="Motivo (opcional)" aria-label="Motivo de la excepción" class="border rounded-md px-3 py-2 text-sm flex-1 min-w-48" />
                     <button type="button" :disabled="(!exForm.info && !exForm.grade) || !exForm.until || exSaving"
                         class="text-xs px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                         @click="grantException">Otorgar excepción</button>
@@ -185,7 +185,7 @@
         <!-- Modal de motivo (rechazo) -->
         <BaseModal v-model="reason.open" title="Motivo del rechazo" size="md">
             <div class="space-y-4">
-                <textarea v-model="reason.text" rows="3" class="border rounded-md w-full px-3 py-2 text-sm"
+                <textarea v-model="reason.text" rows="3" aria-label="Motivo del rechazo" class="border rounded-md w-full px-3 py-2 text-sm"
                     placeholder="Explica por qué se rechaza…"></textarea>
                 <p v-if="reason.error" class="text-xs text-red-600">{{ reason.error }}</p>
             </div>

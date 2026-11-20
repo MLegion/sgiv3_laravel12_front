@@ -47,24 +47,24 @@
                 <div class="bg-white border rounded-xl shadow-sm p-4">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
-                            <select v-model="proy.campusId" @change="onProyCampusChange"
+                            <label for="rep-proy-campus" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
+                            <select id="rep-proy-campus" v-model="proy.campusId" @change="onProyCampusChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                                 <option :value="null">-- SELECCIONAR --</option>
                                 <option v-for="c in proyCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
-                            <select v-model="proy.modalityTypeId" @change="onProyModalityTypeChange"
+                            <label for="rep-proy-modality-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
+                            <select id="rep-proy-modality-type" v-model="proy.modalityTypeId" @change="onProyModalityTypeChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                                 <option :value="null">-- SELECCIONAR --</option>
                                 <option v-for="mt in proyModalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Carrera</label>
-                            <select v-model="proy.careerId" @change="onProyCareerChange"
+                            <label for="rep-proy-career" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Carrera</label>
+                            <select id="rep-proy-career" v-model="proy.careerId" @change="onProyCareerChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                                 <option :value="null">-- SELECCIONAR --</option>
                                 <option value="all">TODAS</option>
@@ -108,24 +108,24 @@
                 <div class="bg-white border rounded-xl shadow-sm p-4">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
-                            <select v-model="sol.campusId" @change="onSolCampusChange"
+                            <label for="rep-sol-campus" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
+                            <select id="rep-sol-campus" v-model="sol.campusId" @change="onSolCampusChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                                 <option :value="null">-- SELECCIONAR --</option>
                                 <option v-for="c in solCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
-                            <select v-model="sol.modalityTypeId" @change="onSolModalityTypeChange"
+                            <label for="rep-sol-modality-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
+                            <select id="rep-sol-modality-type" v-model="sol.modalityTypeId" @change="onSolModalityTypeChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                                 <option :value="null">-- SELECCIONAR --</option>
                                 <option v-for="mt in solModalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Docente</label>
-                            <select v-model="sol.teacherId" @change="onSolTeacherChange"
+                            <label for="rep-sol-teacher" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Docente</label>
+                            <select id="rep-sol-teacher" v-model="sol.teacherId" @change="onSolTeacherChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase"
                                 :disabled="!solResolvedModalityId">
                                 <option :value="null">-- SELECCIONAR --</option>
@@ -164,24 +164,24 @@
                 <div class="bg-white border rounded-xl shadow-sm p-4">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
-                            <select v-model="carga.campusId" @change="onCargaCampusChange"
+                            <label for="rep-carga-campus" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
+                            <select id="rep-carga-campus" v-model="carga.campusId" @change="onCargaCampusChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                                 <option :value="null">-- SELECCIONAR --</option>
                                 <option v-for="c in cargaCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
-                            <select v-model="carga.modalityTypeId" @change="onCargaModalityTypeChange"
+                            <label for="rep-carga-modality-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
+                            <select id="rep-carga-modality-type" v-model="carga.modalityTypeId" @change="onCargaModalityTypeChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                                 <option :value="null">-- SELECCIONAR --</option>
                                 <option v-for="mt in cargaModalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Carrera</label>
-                            <select v-model="carga.careerId" @change="onCargaCareerChange"
+                            <label for="rep-carga-career" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Carrera</label>
+                            <select id="rep-carga-career" v-model="carga.careerId" @change="onCargaCareerChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase"
                                 :disabled="!cargaResolvedModalityId">
                                 <option :value="null">-- SELECCIONAR --</option>
@@ -190,8 +190,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Categoría</label>
-                            <select v-model="carga.category" @change="onCargaCategoryChange"
+                            <label for="rep-carga-category" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Categoría</label>
+                            <select id="rep-carga-category" v-model="carga.category" @change="onCargaCategoryChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase"
                                 :disabled="carga.careerId === null">
                                 <option :value="null">-- SELECCIONAR --</option>
@@ -233,24 +233,24 @@
                 <div class="bg-white border rounded-xl shadow-sm p-4">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
-                            <select v-model="oficio.campusId" @change="onOficioCampusChange"
+                            <label for="rep-oficio-campus" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
+                            <select id="rep-oficio-campus" v-model="oficio.campusId" @change="onOficioCampusChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                                 <option :value="null">-- SELECCIONAR --</option>
                                 <option v-for="c in oficioCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
-                            <select v-model="oficio.modalityTypeId" @change="onOficioModalityTypeChange"
+                            <label for="rep-oficio-modality-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
+                            <select id="rep-oficio-modality-type" v-model="oficio.modalityTypeId" @change="onOficioModalityTypeChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                                 <option :value="null">-- SELECCIONAR --</option>
                                 <option v-for="mt in oficioModalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Carrera</label>
-                            <select v-model="oficio.careerId" @change="onOficioCareerChange"
+                            <label for="rep-oficio-career" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Carrera</label>
+                            <select id="rep-oficio-career" v-model="oficio.careerId" @change="onOficioCareerChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase"
                                 :disabled="!oficioResolvedModalityId">
                                 <option :value="null">-- SELECCIONAR --</option>
@@ -260,8 +260,8 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Docente</label>
-                            <select v-model="oficio.teacherId" @change="onOficioTeacherChange"
+                            <label for="rep-oficio-teacher" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Docente</label>
+                            <select id="rep-oficio-teacher" v-model="oficio.teacherId" @change="onOficioTeacherChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase"
                                 :disabled="!oficio.careerId">
                                 <option :value="null">-- SELECCIONAR --</option>
@@ -269,14 +269,14 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Folio</label>
-                            <input v-model="oficio.folio" type="text" placeholder="Ej: ITSTB/DA/001/2026"
+                            <label for="rep-oficio-folio" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Folio</label>
+                            <input id="rep-oficio-folio" v-model="oficio.folio" type="text" placeholder="Ej: ITSTB/DA/001/2026"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase"
                                 :disabled="!oficio.teacherId" />
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Fecha</label>
-                            <input v-model="oficio.fecha" type="date"
+                            <label for="rep-oficio-fecha" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Fecha</label>
+                            <input id="rep-oficio-fecha" v-model="oficio.fecha" type="date"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none"
                                 :disabled="!oficio.teacherId" />
                         </div>
@@ -340,24 +340,24 @@
                 <div class="bg-white border rounded-xl shadow-sm p-4">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
-                            <select v-model="hor.campusId" @change="onHorCampusChange"
+                            <label for="rep-hor-campus" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
+                            <select id="rep-hor-campus" v-model="hor.campusId" @change="onHorCampusChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                                 <option :value="null">-- SELECCIONAR --</option>
                                 <option v-for="c in horCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
-                            <select v-model="hor.modalityTypeId" @change="onHorModalityTypeChange"
+                            <label for="rep-hor-modality-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
+                            <select id="rep-hor-modality-type" v-model="hor.modalityTypeId" @change="onHorModalityTypeChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                                 <option :value="null">-- SELECCIONAR --</option>
                                 <option v-for="mt in horModalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Carrera</label>
-                            <select v-model="hor.careerId" @change="onHorCareerChange"
+                            <label for="rep-hor-career" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Carrera</label>
+                            <select id="rep-hor-career" v-model="hor.careerId" @change="onHorCareerChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase"
                                 :disabled="!horResolvedModalityId">
                                 <option :value="null">-- SELECCIONAR --</option>
@@ -367,8 +367,8 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4" v-if="hor.careerId">
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Filtro</label>
-                            <select v-model="hor.filterType" @change="onHorFilterTypeChange"
+                            <label for="rep-hor-filter-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Filtro</label>
+                            <select id="rep-hor-filter-type" v-model="hor.filterType" @change="onHorFilterTypeChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                                 <option :value="null">-- SELECCIONAR --</option>
                                 <option value="docente">DOCENTE</option>
@@ -377,10 +377,10 @@
                             </select>
                         </div>
                         <div v-if="hor.filterType">
-                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">
+                            <label for="rep-hor-filter-value" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">
                                 {{ hor.filterType === 'docente' ? 'Docente' : hor.filterType === 'grupo' ? 'Grupo' : 'Aula' }}
                             </label>
-                            <select v-model="hor.filterValue" @change="onHorFilterValueChange"
+                            <select id="rep-hor-filter-value" v-model="hor.filterValue" @change="onHorFilterValueChange"
                                 class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                                 <option :value="null">-- SELECCIONAR --</option>
                                 <option v-for="opt in horFilterOptions" :key="opt.id" :value="opt.id">{{ opt.name }}</option>

@@ -2,7 +2,7 @@
     <div class="space-y-5">
         <h1 class="text-xl font-semibold text-slate-800 uppercase">Canalizaciones por atender</h1>
         <div class="flex gap-2">
-            <select v-model="status" @change="load" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="status" @change="load" aria-label="Filtrar por estado" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Abiertas / en proceso</option><option value="open">Abiertas</option><option value="in_progress">En proceso</option><option value="attended">Atendidas</option>
             </select>
         </div>

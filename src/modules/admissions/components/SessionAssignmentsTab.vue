@@ -20,6 +20,7 @@
                 <input
                     v-model="searchTerm"
                     type="text"
+                    aria-label="Buscar por nombre, folio, CURP"
                     placeholder="Buscar por nombre, folio, CURP..."
                     class="field-sm"
                     @input="onSearch"

@@ -33,8 +33,8 @@
 
         <BaseModal v-model="showModal" :title="(form.id ? 'Editar' : 'Nueva') + ' área'" size="md">
             <div class="space-y-3">
-                <input v-model="form.name" placeholder="Nombre" class="w-full rounded-lg border-slate-300 text-sm" />
-                <textarea v-model="form.description" rows="2" placeholder="Descripción" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+                <input v-model="form.name" placeholder="Nombre" aria-label="Nombre del área" class="w-full rounded-lg border-slate-300 text-sm" />
+                <textarea v-model="form.description" rows="2" placeholder="Descripción" aria-label="Descripción del área" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
                 <label class="block"><span class="text-xs font-semibold text-slate-500">Rol receptor (código, opcional)</span>
                     <input v-model="form.handler_role_code" placeholder="p. ej. TUTORING_REFERRAL_HANDLER" class="mt-1 w-full rounded-lg border-slate-300 text-sm" /></label>
                 <label v-if="form.id" class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" v-model="form.is_active" /> Activa</label>

@@ -31,6 +31,7 @@
                         <td class="py-1.5 text-center text-slate-500">{{ c.weight }}%</td>
                         <td class="py-1.5 text-center">
                             <input type="number" min="0" max="100" :disabled="locked" :value="c.score ?? ''"
+                                   :aria-label="`Calificación de ${c.label}`"
                                    class="border rounded-md px-2 py-1 text-sm w-20 text-center disabled:bg-slate-50"
                                    @change="(e) => save(c.key, e)" />
                         </td>

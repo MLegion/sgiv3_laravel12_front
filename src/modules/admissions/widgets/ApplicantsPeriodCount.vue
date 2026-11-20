@@ -2,10 +2,11 @@
     <!-- MODO SETTINGS -->
     <div v-if="view === 'settings'" class="h-full flex flex-col text-xs space-y-3">
         <div>
-            <label class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
+            <label for="compare-with" class="block text-[10px] uppercase tracking-wide text-slate-500 mb-1">
                 Comparar con
             </label>
             <select
+                id="compare-with"
                 v-model="compareWith"
                 class="w-full text-xs bg-white border border-slate-200 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400"
                 @change="emitParams"

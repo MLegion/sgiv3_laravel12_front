@@ -72,22 +72,23 @@
                             </thead>
                             <tbody class="divide-y">
                                 <tr v-for="(it, idx) in detail.items" :key="idx">
-                                    <td class="px-2 py-1"><input v-model="it.code" :disabled="!detail.editable" placeholder="VIGENCIA_IMSS" class="border rounded px-2 py-1 text-xs w-36 uppercase disabled:bg-slate-50 disabled:border-transparent" /></td>
-                                    <td class="px-2 py-1"><input v-model="it.name" :disabled="!detail.editable" placeholder="Nombre del documento" class="border rounded px-2 py-1 text-xs w-full uppercase disabled:bg-slate-50 disabled:border-transparent" /></td>
+                                    <td class="px-2 py-1"><input v-model="it.code" :disabled="!detail.editable" placeholder="VIGENCIA_IMSS" aria-label="Código del documento" class="border rounded px-2 py-1 text-xs w-36 uppercase disabled:bg-slate-50 disabled:border-transparent" /></td>
+                                    <td class="px-2 py-1"><input v-model="it.name" :disabled="!detail.editable" placeholder="Nombre del documento" aria-label="Nombre del documento" class="border rounded px-2 py-1 text-xs w-full uppercase disabled:bg-slate-50 disabled:border-transparent" /></td>
                                     <td class="px-2 py-1 align-top">
-                                        <select v-model="it.kind" :disabled="!detail.editable" class="border rounded px-1 py-1 text-xs disabled:bg-slate-50 disabled:border-transparent" @change="onKindChange(it)">
+                                        <select v-model="it.kind" :disabled="!detail.editable" aria-label="Tipo de documento" class="border rounded px-1 py-1 text-xs disabled:bg-slate-50 disabled:border-transparent" @change="onKindChange(it)">
                                             <option value="upload">Sube el residente</option>
                                             <option value="generated">Lo genera el sistema</option>
                                         </select>
                                         <div v-if="it.kind === 'generated'" class="mt-1">
                                             <input v-model="it.generatedReportCode" list="residency-report-codes"
                                                    :disabled="!detail.editable" placeholder="CLAVE DE REPORTE"
+                                                   aria-label="Clave de reporte"
                                                    class="border rounded px-2 py-1 text-xs w-44 uppercase disabled:bg-slate-50 disabled:border-transparent"
                                                    :class="!it.generatedReportCode ? 'border-red-300' : ''" />
                                             <p v-if="detail.editable && !it.generatedReportCode" class="text-[10px] text-red-500 mt-0.5">Selecciona o escribe la clave del reporte.</p>
                                         </div>
                                     </td>
-                                    <td class="px-2 py-1 text-center"><input v-model="it.isRequired" type="checkbox" :disabled="!detail.editable" /></td>
+                                    <td class="px-2 py-1 text-center"><input v-model="it.isRequired" type="checkbox" :disabled="!detail.editable" aria-label="Documento obligatorio" /></td>
                                     <td v-if="detail.editable" class="px-2 py-1 text-right"><button type="button" class="text-red-500 hover:text-red-700 text-xs" @click="detail.items.splice(idx, 1)">Quitar</button></td>
                                 </tr>
                                 <tr v-if="!detail.items.length"><td :colspan="detail.editable ? 5 : 4" class="px-2 py-3 text-center text-xs text-slate-400 italic">Sin documentos.</td></tr>
@@ -122,7 +123,7 @@
         <!-- Modal crear/clonar -->
         <BaseModal v-model="form.open" :title="form.cloneFrom ? `Clonar «${form.cloneFrom}»` : 'Nueva versión de requisitos'" size="md">
             <div class="space-y-4">
-                <input v-model="form.name" placeholder="Nombre (p. ej. REQUISITOS GENERACIÓN 2026)" class="border rounded-md w-full px-3 py-2 text-sm uppercase placeholder:normal-case" />
+                <input v-model="form.name" placeholder="Nombre (p. ej. REQUISITOS GENERACIÓN 2026)" aria-label="Nombre de la versión de requisitos" class="border rounded-md w-full px-3 py-2 text-sm uppercase placeholder:normal-case" />
                 <label class="block text-sm">
                     <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Vigente desde</span>
                     <input v-model="form.effectiveFrom" type="date" class="border rounded-md w-full px-3 py-2 text-sm" />

@@ -133,8 +133,8 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ESTADO</label>
-                        <select v-model.number="form.status" class="w-full border rounded-lg px-3 py-2 text-sm">
+                        <label for="academic-offer-status" class="block text-xs font-semibold text-slate-600 uppercase mb-1">ESTADO</label>
+                        <select id="academic-offer-status" v-model.number="form.status" class="w-full border rounded-lg px-3 py-2 text-sm">
                             <option :value="0">INACTIVA</option>
                             <option :value="1">ACTIVA</option>
                         </select>

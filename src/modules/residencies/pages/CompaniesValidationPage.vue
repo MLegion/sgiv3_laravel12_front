@@ -3,8 +3,8 @@
         <div class="flex items-center justify-between flex-wrap gap-3">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Empresas</h1>
             <div class="flex items-center gap-2">
-                <input v-model="search" placeholder="Buscar…" class="border rounded-md px-2 py-1 text-xs" @keyup.enter="reload" />
-                <select v-model="statusFilter" class="border rounded-md px-2 py-1 text-xs" @change="reload">
+                <input v-model="search" placeholder="Buscar…" aria-label="Buscar empresa" class="border rounded-md px-2 py-1 text-xs" @keyup.enter="reload" />
+                <select v-model="statusFilter" aria-label="Filtrar por estado" class="border rounded-md px-2 py-1 text-xs" @change="reload">
                     <option value="pending">PENDIENTES</option>
                     <option value="approved">APROBADAS</option>
                     <option value="rejected">RECHAZADAS</option>
@@ -64,7 +64,7 @@
         <!-- Modal motivo -->
         <BaseModal v-model="reason.open" title="Motivo del rechazo" size="md">
             <div class="space-y-4">
-                <textarea v-model="reason.text" rows="3" class="border rounded-md w-full px-3 py-2 text-sm" placeholder="Explica por qué se rechaza…"></textarea>
+                <textarea v-model="reason.text" rows="3" aria-label="Motivo del rechazo" class="border rounded-md w-full px-3 py-2 text-sm" placeholder="Explica por qué se rechaza…"></textarea>
                 <p v-if="reason.error" class="text-xs text-red-600">{{ reason.error }}</p>
             </div>
             <template #footer>

@@ -8,8 +8,9 @@
 
             <form class="space-y-4" @submit.prevent="submit">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Correo electrónico</label>
+                    <label for="forgot-email" class="block text-sm font-medium text-slate-700 mb-1">Correo electrónico</label>
                     <input
+                        id="forgot-email"
                         v-model="email"
                         type="email"
                         autocomplete="email"

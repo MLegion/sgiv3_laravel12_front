@@ -15,13 +15,14 @@
                 <input
                     v-if="!usePassword"
                     v-model="totp"
+                    aria-label="Código de tu app de autenticación (MFA)"
                     inputmode="numeric" maxlength="6" placeholder="000000"
                     class="w-full h-12 rounded-lg border border-slate-300 px-4 text-center text-lg tracking-[0.4em]"
                     @input="totp = totp.replace(/\D/g, '').slice(0, 6)"
                 />
                 <input
                     v-else
-                    v-model="password" type="password" placeholder="Tu contraseña"
+                    v-model="password" type="password" placeholder="Tu contraseña" aria-label="Contraseña"
                     class="w-full h-11 rounded-lg border border-slate-300 px-4"
                 />
                 <button type="button" class="mt-2 text-xs text-slate-500 hover:text-slate-700" @click="togglePassword">

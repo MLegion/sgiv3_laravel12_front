@@ -197,8 +197,8 @@
                     <div class="space-y-5">
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">PLAN DE ESTUDIO</label>
-                                <select v-model="affiliationForm.study_plan_id" class="w-full border rounded-lg px-3 py-2 text-sm" required>
+                                <label for="affiliation-study-plan" class="block text-xs font-semibold text-slate-600 uppercase mb-1">PLAN DE ESTUDIO</label>
+                                <select id="affiliation-study-plan" v-model="affiliationForm.study_plan_id" class="w-full border rounded-lg px-3 py-2 text-sm" required>
                                     <option :value="null" disabled>Seleccionar plan...</option>
                                     <option v-for="sp in availableStudyPlans" :key="sp.id" :value="sp.id">
                                         {{ sp.careerName ?? sp.name }} ({{ sp.officialCode }})
@@ -346,8 +346,8 @@
                     <div class="space-y-5">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">MATERIA</label>
-                                <select v-model="gradeForm.subject_id" class="w-full border rounded-lg px-3 py-2 text-sm" required :disabled="!!editingGrade?.id">
+                                <label for="grade-subject" class="block text-xs font-semibold text-slate-600 uppercase mb-1">MATERIA</label>
+                                <select id="grade-subject" v-model="gradeForm.subject_id" class="w-full border rounded-lg px-3 py-2 text-sm" required :disabled="!!editingGrade?.id">
                                     <option :value="null" disabled>Seleccionar materia...</option>
                                     <option v-for="s in availableSubjects" :key="s.id" :value="s.id">
                                         {{ s.officialCode }} — {{ s.name }} (Sem. {{ s.period }})
@@ -356,8 +356,8 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">TIPO DE APROBACION</label>
-                                <select v-model="gradeForm.approval_type_id" class="w-full border rounded-lg px-3 py-2 text-sm" required>
+                                <label for="grade-approval-type" class="block text-xs font-semibold text-slate-600 uppercase mb-1">TIPO DE APROBACION</label>
+                                <select id="grade-approval-type" v-model="gradeForm.approval_type_id" class="w-full border rounded-lg px-3 py-2 text-sm" required>
                                     <option :value="null" disabled>Seleccionar tipo...</option>
                                     <option v-for="at in approvalTypesList" :key="at.id" :value="at.id">
                                         {{ at.name }}
@@ -373,8 +373,8 @@
                             <div v-for="n in 3" :key="n" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                                 <FormInput :label="`NO. PERIODO ${n}`" v-model="gradeForm[`number_period_${n}`]" type="number" />
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">PERIODO {{ n }}</label>
-                                    <select v-model="gradeForm[`period_${n}_id`]" class="w-full border rounded-lg px-3 py-2 text-sm">
+                                    <label :for="`grade-period-${n}`" class="block text-xs font-semibold text-slate-600 uppercase mb-1">PERIODO {{ n }}</label>
+                                    <select :id="`grade-period-${n}`" v-model="gradeForm[`period_${n}_id`]" class="w-full border rounded-lg px-3 py-2 text-sm">
                                         <option :value="null">Sin asignar</option>
                                         <option v-for="p in periodsList" :key="p.id" :value="p.id">
                                             {{ p.name }}
@@ -382,8 +382,8 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">DOCENTE {{ n }}</label>
-                                    <select v-model="gradeForm[`teacher_${n}_id`]" class="w-full border rounded-lg px-3 py-2 text-sm">
+                                    <label :for="`grade-teacher-${n}`" class="block text-xs font-semibold text-slate-600 uppercase mb-1">DOCENTE {{ n }}</label>
+                                    <select :id="`grade-teacher-${n}`" v-model="gradeForm[`teacher_${n}_id`]" class="w-full border rounded-lg px-3 py-2 text-sm">
                                         <option :value="null">Sin asignar</option>
                                         <option v-for="t in teachersList" :key="t.id" :value="t.id">
                                             {{ t.employeeName ?? `Docente #${t.id}` }}

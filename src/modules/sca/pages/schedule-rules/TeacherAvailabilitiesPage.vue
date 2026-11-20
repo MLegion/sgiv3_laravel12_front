@@ -21,6 +21,7 @@
                     <input
                         v-model="teacherSearch"
                         type="text"
+                        aria-label="Buscar docente"
                         placeholder="Buscar docente…"
                         class="mt-2 w-full h-9 border rounded-md px-3 text-sm"
                     />

@@ -15,16 +15,16 @@
         <div v-if="contactLoading" class="bg-white border rounded-xl shadow-sm px-4 py-12 text-center text-xs text-slate-400">Cargando…</div>
         <form v-else class="bg-white border rounded-xl shadow-sm p-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm" @submit.prevent="saveContactInfo">
             <div class="md:col-span-2">
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Dirección (calle y número)</label>
-                <input v-model="contact.address" type="text" maxlength="255" placeholder="Ej. AV. UNIVERSIDAD 123, INT 4"
+                <label for="contact-address" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Dirección (calle y número)</label>
+                <input id="contact-address" v-model="contact.address" type="text" maxlength="255" placeholder="Ej. AV. UNIVERSIDAD 123, INT 4"
                        class="w-full border rounded-md px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-blue-400" />
                 <p v-if="errors.address" class="text-[11px] text-red-600 mt-1">{{ errors.address }}</p>
             </div>
 
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Código Postal</label>
+                <label for="contact-postal-code" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Código Postal</label>
                 <div class="flex gap-2">
-                    <input v-model="contact.postalCode" type="text" maxlength="5" inputmode="numeric" pattern="\d{5}" placeholder="86650"
+                    <input id="contact-postal-code" v-model="contact.postalCode" type="text" maxlength="5" inputmode="numeric" pattern="\d{5}" placeholder="86650"
                            class="w-32 border rounded-md px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-400"
                            @blur="lookupPostalCode(contact.postalCode ?? '')"
                            @keydown.enter.prevent="lookupPostalCode(contact.postalCode ?? '')" />
@@ -35,8 +35,8 @@
             </div>
 
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Colonia / Asentamiento</label>
-                <select v-model.number="contact.geoSettlementId"
+                <label for="contact-geo-settlement" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Colonia / Asentamiento</label>
+                <select id="contact-geo-settlement" v-model.number="contact.geoSettlementId"
                         class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                         :disabled="cpSettlements.length === 0">
                     <option :value="null" disabled>{{ cpSettlements.length ? 'Selecciona…' : (contact.settlementName ?? 'Ingresa CP primero') }}</option>
@@ -46,21 +46,21 @@
             </div>
 
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Teléfono de casa <span class="text-slate-300 normal-case">(opcional)</span></label>
-                <input v-model="contact.homePhone" type="tel" maxlength="20" placeholder="9931234567"
+                <label for="contact-home-phone" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Teléfono de casa <span class="text-slate-300 normal-case">(opcional)</span></label>
+                <input id="contact-home-phone" v-model="contact.homePhone" type="tel" maxlength="20" placeholder="9931234567"
                        class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
             </div>
 
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Celular</label>
-                <input v-model="contact.mobilePhone" type="tel" maxlength="20" placeholder="9931234567"
+                <label for="contact-mobile-phone" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Celular</label>
+                <input id="contact-mobile-phone" v-model="contact.mobilePhone" type="tel" maxlength="20" placeholder="9931234567"
                        class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                 <p v-if="errors.mobile_phone" class="text-[11px] text-red-600 mt-1">{{ errors.mobile_phone }}</p>
             </div>
 
             <div class="md:col-span-2">
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Correo electrónico</label>
-                <input :value="contact.email" type="email" readonly class="w-full border rounded-md px-3 py-2 text-sm bg-slate-50 text-slate-600" />
+                <label for="contact-email" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Correo electrónico</label>
+                <input id="contact-email" :value="contact.email" type="email" readonly class="w-full border rounded-md px-3 py-2 text-sm bg-slate-50 text-slate-600" />
                 <p class="text-[11px] text-slate-400 mt-1">Si tu correo es incorrecto, contacta a Servicios Escolares.</p>
             </div>
 

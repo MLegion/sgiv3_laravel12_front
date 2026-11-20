@@ -32,16 +32,16 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-medium text-slate-600">Tipo</label>
-                    <select v-model="form.type" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
+                    <label for="aj-type" class="block text-xs font-medium text-slate-600">Tipo</label>
+                    <select id="aj-type" v-model="form.type" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
                         <option value="medical">Médico</option>
                         <option value="personal">Personal</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-600">Evidencia PDF o imagen (opcional)</label>
+                    <label for="aj-evidence" class="block text-xs font-medium text-slate-600">Evidencia PDF o imagen (opcional)</label>
                     <div class="mt-1 flex items-center gap-2">
-                        <input ref="fileInput" type="file" accept="application/pdf,image/jpeg,image/png" @change="onFile" class="flex-1 text-xs" />
+                        <input id="aj-evidence" ref="fileInput" type="file" accept="application/pdf,image/jpeg,image/png" @change="onFile" class="flex-1 text-xs" />
                         <button v-if="form.evidence" type="button" @click="previewSelected" title="Ver evidencia"
                             class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 shrink-0">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -59,20 +59,20 @@
 
                 <div v-if="mode === 'full'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-slate-600">Desde (día)</label>
-                        <input type="date" v-model="dayFrom" class="mt-1 w-full rounded-lg border-slate-300 text-sm" />
+                        <label for="aj-day-from" class="block text-xs font-medium text-slate-600">Desde (día)</label>
+                        <input id="aj-day-from" type="date" v-model="dayFrom" class="mt-1 w-full rounded-lg border-slate-300 text-sm" />
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-600">Hasta (día)</label>
-                        <input type="date" v-model="dayTo" :min="dayFrom" class="mt-1 w-full rounded-lg border-slate-300 text-sm" />
+                        <label for="aj-day-to" class="block text-xs font-medium text-slate-600">Hasta (día)</label>
+                        <input id="aj-day-to" type="date" v-model="dayTo" :min="dayFrom" class="mt-1 w-full rounded-lg border-slate-300 text-sm" />
                     </div>
                 </div>
 
                 <div v-else>
                     <div class="flex items-end gap-3 mb-2">
                         <div>
-                            <label class="block text-xs font-medium text-slate-600">Día</label>
-                            <input type="date" v-model="hourDate" @change="loadSchedule" :disabled="!studentId"
+                            <label for="aj-hour-date" class="block text-xs font-medium text-slate-600">Día</label>
+                            <input id="aj-hour-date" type="date" v-model="hourDate" @change="loadSchedule" :disabled="!studentId"
                                 class="mt-1 rounded-lg border-slate-300 text-sm disabled:bg-slate-100" />
                         </div>
                         <p class="text-xs text-slate-400 pb-2">Marca las clases a las que NO podrá asistir.</p>
@@ -94,13 +94,13 @@
 
             <!-- Descripción -->
             <div class="mt-4">
-                <label class="block text-xs font-medium text-slate-600">Descripción / motivo <span class="text-rose-500">*</span></label>
-                <select v-model="reasonChoice" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
+                <label for="aj-reason-choice" class="block text-xs font-medium text-slate-600">Descripción / motivo <span class="text-rose-500">*</span></label>
+                <select id="aj-reason-choice" v-model="reasonChoice" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
                     <option v-for="r in genericReasons" :key="r" :value="r">{{ r }}</option>
                     <option value="__custom__">Otra (escribir…)</option>
                 </select>
                 <textarea v-if="reasonChoice === '__custom__'" v-model="customReason" rows="2" maxlength="500"
-                    class="mt-2 w-full rounded-lg border-slate-300 text-sm" placeholder="Describe el motivo del justificante…"></textarea>
+                    class="mt-2 w-full rounded-lg border-slate-300 text-sm" placeholder="Describe el motivo del justificante…" aria-label="Describe el motivo del justificante"></textarea>
             </div>
 
             <div class="flex justify-end mt-3">
@@ -147,22 +147,22 @@
                 <!-- Filtros -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-slate-600">Carrera</label>
-                        <select v-model="mfCareer" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
+                        <label for="aj-mf-career" class="block text-xs font-medium text-slate-600">Carrera</label>
+                        <select id="aj-mf-career" v-model="mfCareer" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
                             <option :value="''">Todas</option>
                             <option v-for="c in scopeCareers" :key="c.id" :value="c.id">{{ c.name }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-600">Modalidad</label>
-                        <select v-model="mfModality" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
+                        <label for="aj-mf-modality" class="block text-xs font-medium text-slate-600">Modalidad</label>
+                        <select id="aj-mf-modality" v-model="mfModality" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
                             <option :value="''">Todas</option>
                             <option v-for="m in scopeModalities" :key="m.id" :value="m.id">{{ m.name }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-600">Semestre</label>
-                        <select v-model="mfSemester" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
+                        <label for="aj-mf-semester" class="block text-xs font-medium text-slate-600">Semestre</label>
+                        <select id="aj-mf-semester" v-model="mfSemester" class="mt-1 w-full rounded-lg border-slate-300 text-sm">
                             <option :value="''">Todos</option>
                             <option v-for="n in 12" :key="n" :value="n">{{ n }}</option>
                         </select>

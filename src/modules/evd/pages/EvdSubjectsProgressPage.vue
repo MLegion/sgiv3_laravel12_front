@@ -117,8 +117,8 @@ onMounted(loadCaps)
         <div class="bg-white border border-slate-200 rounded-lg p-3 flex flex-wrap items-end gap-3">
             <EvdPeriodSelect v-model="selectedCap" :periods="caPeriods" :disabled="loadingCaps" label="Periodo SCA" />
             <div class="flex flex-col gap-1 flex-1 min-w-[220px]">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Buscar (materia / código / docente)</label>
-                <input v-model="search" type="text" placeholder="Empieza a escribir…"
+                <label for="evd-subj-search" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Buscar (materia / código / docente)</label>
+                <input id="evd-subj-search" v-model="search" type="text" placeholder="Empieza a escribir…"
                        class="border border-slate-300 rounded px-2 py-1.5 text-sm" />
             </div>
         </div>

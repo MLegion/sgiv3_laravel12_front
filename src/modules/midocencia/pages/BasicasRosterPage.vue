@@ -6,8 +6,8 @@
         </div>
 
         <div class="bg-white border rounded-xl shadow-sm p-4">
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Ámbito (modalidad · campus)</label>
-            <select v-model.number="modalityId" class="w-full border rounded-lg px-3 py-2 text-sm" @change="loadMembers">
+            <label for="br-modality" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Ámbito (modalidad · campus)</label>
+            <select id="br-modality" v-model.number="modalityId" class="w-full border rounded-lg px-3 py-2 text-sm" @change="loadMembers">
                 <option :value="null" disabled>Selecciona un ámbito…</option>
                 <option v-for="m in modalities" :key="m.id" :value="m.id">{{ m.label }}</option>
             </select>

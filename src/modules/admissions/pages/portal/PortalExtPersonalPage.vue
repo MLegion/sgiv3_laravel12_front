@@ -56,15 +56,16 @@
 
                     <!-- Nacimiento -->
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">ESTADO DE NACIMIENTO</label>
-                        <select v-model="form.birth_state_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label for="birth-state-id" class="text-xs font-medium text-slate-600">ESTADO DE NACIMIENTO</label>
+                        <select id="birth-state-id" v-model="form.birth_state_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option :value="null">Seleccionar...</option>
                             <option v-for="s in states" :key="s.id" :value="s.id">{{ s.name }}</option>
                         </select>
                     </div>
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">MUNICIPIO DE NACIMIENTO</label>
+                        <label for="birth-municipality-id" class="text-xs font-medium text-slate-600">MUNICIPIO DE NACIMIENTO</label>
                         <select
+                            id="birth-municipality-id"
                             v-model="form.birth_municipality_id"
                             :disabled="!form.birth_state_id || loadingMunicipalities"
                             class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400"
@@ -76,8 +77,8 @@
                     <FormInput label="FECHA DE NACIMIENTO" v-model="form.birth_date" type="date" highlight />
 
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">SEXO <span class="text-red-500">*</span></label>
-                        <select v-model="form.sex" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label for="sex" class="text-xs font-medium text-slate-600">SEXO <span class="text-red-500">*</span></label>
+                        <select id="sex" v-model="form.sex" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">SELECCIONAR...</option>
                             <option value="M">MASCULINO</option>
                             <option value="F">FEMENINO</option>
@@ -85,8 +86,8 @@
                     </div>
 
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">ESTADO CIVIL</label>
-                        <select v-model="form.marital_status" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase">
+                        <label for="marital-status" class="text-xs font-medium text-slate-600">ESTADO CIVIL</label>
+                        <select id="marital-status" v-model="form.marital_status" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase">
                             <option value="">SELECCIONAR...</option>
                             <option value="SOLTERO">SOLTERO/A</option>
                             <option value="CASADO">CASADO/A</option>
@@ -98,8 +99,8 @@
                     </div>
 
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">BECA</label>
-                        <select v-model="form.scholarship_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase">
+                        <label for="scholarship-id" class="text-xs font-medium text-slate-600">BECA</label>
+                        <select id="scholarship-id" v-model="form.scholarship_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase">
                             <option :value="null">SIN BECA</option>
                             <option v-for="s in scholarships" :key="s.id" :value="s.id">{{ s.name }}</option>
                         </select>

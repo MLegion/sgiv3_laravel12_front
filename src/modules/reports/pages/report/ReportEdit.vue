@@ -38,11 +38,12 @@
                 </div>
                 <div v-else class="space-y-2">
                     <div v-for="p in reportRequestParams" :key="'rp-' + p.name" class="flex items-center gap-2">
-                        <label class="text-[11px] font-mono font-bold text-slate-700 w-36 truncate flex items-center gap-1">
+                        <label :for="`re-param-${p.name}`" class="text-[11px] font-mono font-bold text-slate-700 w-36 truncate flex items-center gap-1">
                             :{{ p.name }}
                             <span v-if="p.is_required" class="text-red-500">*</span>
                         </label>
                         <input
+                            :id="`re-param-${p.name}`"
                             :value="reportParamValues[p.name] ?? ''"
                             :type="inputTypeForDataType(p.data_type)"
                             :placeholder="p.data_type"

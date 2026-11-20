@@ -151,6 +151,7 @@
                 <div class="relative bg-white rounded-xl shadow-lg w-full max-w-md p-6 space-y-4 z-10">
                     <h3 class="text-sm font-bold text-slate-800 uppercase">Rechazar solicitud</h3>
                     <textarea v-model="rejectReason" rows="3" class="w-full border rounded-md px-3 py-2 text-sm"
+                        aria-label="Motivo del rechazo"
                         placeholder="Motivo del rechazo (mínimo 5 caracteres)…" />
                     <div class="flex justify-end gap-2">
                         <button type="button" class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50" :disabled="busy" @click="rejectOpen = false">Cancelar</button>

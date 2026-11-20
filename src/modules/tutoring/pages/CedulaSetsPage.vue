@@ -39,9 +39,9 @@
             </div>
             <div class="space-y-2">
                 <div v-for="(f, i) in editing.fields" :key="i" class="grid grid-cols-12 gap-2 items-center">
-                    <input v-model="f.code" :disabled="readonly" placeholder="CODE" class="col-span-2 rounded-lg border-slate-300 text-xs uppercase" />
-                    <input v-model="f.label" :disabled="readonly" placeholder="Etiqueta" class="col-span-4 rounded-lg border-slate-300 text-xs" />
-                    <select v-model="f.type" :disabled="readonly" class="col-span-2 rounded-lg border-slate-300 text-xs">
+                    <input v-model="f.code" :disabled="readonly" placeholder="CODE" aria-label="Código del campo" class="col-span-2 rounded-lg border-slate-300 text-xs uppercase" />
+                    <input v-model="f.label" :disabled="readonly" placeholder="Etiqueta" aria-label="Etiqueta del campo" class="col-span-4 rounded-lg border-slate-300 text-xs" />
+                    <select v-model="f.type" :disabled="readonly" aria-label="Tipo de campo" class="col-span-2 rounded-lg border-slate-300 text-xs">
                         <option value="text">Texto</option><option value="textarea">Párrafo</option><option value="number">Número</option><option value="boolean">Sí/No</option><option value="select">Lista</option>
                     </select>
                     <label class="col-span-2 text-xs flex items-center gap-1"><input type="checkbox" v-model="f.is_risk_flag" :disabled="readonly" /> Riesgo</label>
@@ -58,7 +58,7 @@
 
         <BaseModal v-model="showNew" title="Nueva versión" size="md">
             <div class="space-y-3">
-                <input v-model="nf.name" placeholder="Nombre" class="w-full rounded-lg border-slate-300 text-sm" />
+                <input v-model="nf.name" placeholder="Nombre" aria-label="Nombre de la versión" class="w-full rounded-lg border-slate-300 text-sm" />
                 <label class="block"><span class="text-xs font-semibold text-slate-500">Vigente desde</span><input v-model="nf.effective_from" type="date" class="mt-1 w-full rounded-lg border-slate-300 text-sm" /></label>
             </div>
             <template #footer>

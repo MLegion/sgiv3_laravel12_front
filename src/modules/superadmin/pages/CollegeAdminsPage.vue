@@ -34,6 +34,7 @@
                 <input
                     v-model="search"
                     type="text"
+                    aria-label="Buscar por nombre o email"
                     placeholder="Buscar por nombre o email…"
                     class="w-full md:w-80 h-9 px-3 text-sm border rounded-md"
                 />

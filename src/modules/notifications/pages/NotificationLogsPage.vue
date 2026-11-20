@@ -40,12 +40,12 @@
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Desde</label>
-                <input v-model="dateFrom" type="date" class="w-full border rounded-md px-2 py-1.5 text-sm" />
+                <label for="nlog-date-from" class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Desde</label>
+                <input id="nlog-date-from" v-model="dateFrom" type="date" class="w-full border rounded-md px-2 py-1.5 text-sm" />
             </div>
             <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Hasta</label>
-                <input v-model="dateTo" type="date" class="w-full border rounded-md px-2 py-1.5 text-sm" />
+                <label for="nlog-date-to" class="block text-[10px] font-bold uppercase text-slate-600 mb-0.5">Hasta</label>
+                <input id="nlog-date-to" v-model="dateTo" type="date" class="w-full border rounded-md px-2 py-1.5 text-sm" />
             </div>
 
             <label class="lg:col-span-2 flex items-center gap-2 text-xs text-slate-600 mt-1">

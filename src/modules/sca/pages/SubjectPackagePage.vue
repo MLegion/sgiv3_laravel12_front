@@ -35,8 +35,8 @@
         <!-- Filtros en cascada -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CAMPUS</label>
-                <select v-model="selectedCampusId" @change="onCampusOrTypeChange"
+                <label for="sp-campus" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CAMPUS</label>
+                <select id="sp-campus" v-model="selectedCampusId" @change="onCampusOrTypeChange"
                     class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                     <option :value="null">-- SELECCIONAR --</option>
                     <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
@@ -44,8 +44,8 @@
             </div>
 
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">TIPO MODALIDAD</label>
-                <select v-model="selectedModalityTypeId" @change="onCampusOrTypeChange"
+                <label for="sp-modality-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">TIPO MODALIDAD</label>
+                <select id="sp-modality-type" v-model="selectedModalityTypeId" @change="onCampusOrTypeChange"
                     class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                     <option :value="null">-- SELECCIONAR --</option>
                     <option v-for="mt in modalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
@@ -53,8 +53,8 @@
             </div>
 
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">PLAN DE ESTUDIO</label>
-                <select v-model="selectedStudyPlanId" @change="onStudyPlanChange"
+                <label for="sp-study-plan" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">PLAN DE ESTUDIO</label>
+                <select id="sp-study-plan" v-model="selectedStudyPlanId" @change="onStudyPlanChange"
                     class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase"
                     :disabled="!resolvedModalityId">
                     <option :value="null">SELECCIONE UN PLAN DE ESTUDIO</option>
@@ -98,16 +98,16 @@
                 <!-- Selectores de especialidad y grupo optativa -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">ESPECIALIDAD (OPCIONAL)</label>
-                        <select v-model="selectedSpecialtyId" @change="fetchCurriculumSubjects"
+                        <label for="sp-specialty" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">ESPECIALIDAD (OPCIONAL)</label>
+                        <select id="sp-specialty" v-model="selectedSpecialtyId" @change="fetchCurriculumSubjects"
                             class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                             <option :value="null">-- NINGUNA --</option>
                             <option v-for="s in specialties" :key="s.id" :value="s.id">{{ s.name }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">GRUPO DE OPTATIVAS (OPCIONAL)</label>
-                        <select v-model="selectedOptionalGroupId" @change="fetchCurriculumSubjects"
+                        <label for="sp-optional-group" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">GRUPO DE OPTATIVAS (OPCIONAL)</label>
+                        <select id="sp-optional-group" v-model="selectedOptionalGroupId" @change="fetchCurriculumSubjects"
                             class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                             <option :value="null">-- NINGUNO --</option>
                             <option v-for="og in optionalGroups" :key="og.id" :value="og.id">{{ og.name }}</option>
@@ -566,8 +566,8 @@
                 </div>
                 <div class="p-6 space-y-4">
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Semestre destino</label>
-                        <input type="number" v-model.number="duplicateModal.targetSemester"
+                        <label for="sp-duplicate-semester" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Semestre destino</label>
+                        <input id="sp-duplicate-semester" type="number" v-model.number="duplicateModal.targetSemester"
                             min="1" max="15"
                             class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none text-center" />
                     </div>

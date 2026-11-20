@@ -3,7 +3,7 @@
         <h1 class="text-xl font-semibold text-slate-800 uppercase">Solicitudes de ventanilla</h1>
 
         <div class="rounded-xl border bg-white p-4 flex gap-3">
-            <select v-model="filters.status" @change="fetchList" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.status" @change="fetchList" aria-label="Estado de la solicitud" class="rounded-lg border-slate-300 text-sm">
                 <option value="requested">Pendientes</option>
                 <option value="issued">Emitidas</option>
                 <option value="rejected">Rechazadas</option>

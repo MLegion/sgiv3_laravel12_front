@@ -52,8 +52,8 @@
                 </tbody>
             </table></div>
             <div class="grid sm:grid-cols-3 gap-2 pt-2">
-                <input v-model.number="juryForm.user_id" type="number" placeholder="ID usuario docente" class="rounded-lg border-slate-300 text-sm" />
-                <select v-model="juryForm.role" class="rounded-lg border-slate-300 text-sm">
+                <input v-model.number="juryForm.user_id" type="number" placeholder="ID usuario docente" aria-label="ID de usuario docente" class="rounded-lg border-slate-300 text-sm" />
+                <select v-model="juryForm.role" aria-label="Rol en el jurado" class="rounded-lg border-slate-300 text-sm">
                     <option value="presidente">Presidente</option><option value="secretario">Secretario</option>
                     <option value="vocal">Vocal</option><option value="suplente">Suplente</option>
                 </select>

@@ -24,8 +24,8 @@
                 />
             </div>
             <div class="flex-1 min-w-[220px]">
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar docente…</label>
-                <input v-model="search" type="text" placeholder="Buscar docente…"
+                <label for="plaza-search" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar docente…</label>
+                <input id="plaza-search" v-model="search" type="text" placeholder="Buscar docente…"
                     class="w-full border rounded-lg px-3 py-2 text-sm" />
             </div>
             <div class="text-sm text-slate-500 pb-2 ml-auto">

@@ -11,8 +11,9 @@
         <!-- Filtros -->
         <div class="bg-white border rounded-xl shadow-sm p-4 flex flex-wrap items-end gap-3">
             <div class="w-72">
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Periodo</label>
+                <label for="oe-period" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Periodo</label>
                 <select
+                    id="oe-period"
                     v-model="periodId"
                     class="w-full h-9 px-2 border border-slate-300 rounded-lg text-sm"
                     @change="loadOficios"
@@ -22,8 +23,9 @@
                 </select>
             </div>
             <div class="flex-1 min-w-56">
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar</label>
+                <label for="oe-search" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar</label>
                 <input
+                    id="oe-search"
                     v-model="search"
                     type="text"
                     placeholder="Docente o folio…"

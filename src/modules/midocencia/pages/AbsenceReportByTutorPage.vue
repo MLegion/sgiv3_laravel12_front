@@ -10,12 +10,12 @@
                 <button @click="setMode('detail')" :class="mode === 'detail' ? 'bg-slate-700 text-white' : 'bg-white text-slate-600'" class="px-3 py-2 border-l border-slate-200">Detalle</button>
             </div>
             <div>
-                <label class="block text-xs font-medium text-slate-600">Desde</label>
-                <input type="date" v-model="from" class="mt-1 rounded-lg border-slate-300 text-sm" />
+                <label for="art-from" class="block text-xs font-medium text-slate-600">Desde</label>
+                <input id="art-from" type="date" v-model="from" class="mt-1 rounded-lg border-slate-300 text-sm" />
             </div>
             <div>
-                <label class="block text-xs font-medium text-slate-600">Hasta</label>
-                <input type="date" v-model="to" class="mt-1 rounded-lg border-slate-300 text-sm" />
+                <label for="art-to" class="block text-xs font-medium text-slate-600">Hasta</label>
+                <input id="art-to" type="date" v-model="to" class="mt-1 rounded-lg border-slate-300 text-sm" />
             </div>
             <button @click="load" class="px-4 py-2 rounded-lg bg-slate-700 text-white text-sm font-medium">Filtrar</button>
             <button @click="exportPdf" :disabled="exporting"

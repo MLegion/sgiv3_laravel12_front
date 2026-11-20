@@ -75,24 +75,24 @@
                 <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Datos del alumno</p>
                 <div class="grid grid-cols-2 gap-3">
                     <div class="col-span-2">
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre(s) *</label>
-                        <input v-uppercase v-model="xt.names" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        <label for="xt-names" class="block text-xs font-semibold text-slate-500 mb-1">Nombre(s) *</label>
+                        <input id="xt-names" v-uppercase v-model="xt.names" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Apellido paterno *</label>
-                        <input v-uppercase v-model="xt.first_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        <label for="xt-first-surname" class="block text-xs font-semibold text-slate-500 mb-1">Apellido paterno *</label>
+                        <input id="xt-first-surname" v-uppercase v-model="xt.first_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Apellido materno</label>
-                        <input v-uppercase v-model="xt.second_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        <label for="xt-second-surname" class="block text-xs font-semibold text-slate-500 mb-1">Apellido materno</label>
+                        <input id="xt-second-surname" v-uppercase v-model="xt.second_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Correo *</label>
-                        <input v-model="xt.email" type="email" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        <label for="xt-email" class="block text-xs font-semibold text-slate-500 mb-1">Correo *</label>
+                        <input id="xt-email" v-model="xt.email" type="email" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">CURP</label>
-                        <input v-uppercase v-model="xt.curp" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                        <label for="xt-curp" class="block text-xs font-semibold text-slate-500 mb-1">CURP</label>
+                        <input id="xt-curp" v-uppercase v-model="xt.curp" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                     </div>
                 </div>
 
@@ -140,24 +140,24 @@
                     <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Datos del alumno nuevo</p>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="col-span-2">
-                            <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre(s) *</label>
-                            <input v-uppercase v-model="ext.ns.names" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                            <label for="ext-ns-names" class="block text-xs font-semibold text-slate-500 mb-1">Nombre(s) *</label>
+                            <input id="ext-ns-names" v-uppercase v-model="ext.ns.names" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1">Apellido paterno *</label>
-                            <input v-uppercase v-model="ext.ns.first_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                            <label for="ext-ns-first-surname" class="block text-xs font-semibold text-slate-500 mb-1">Apellido paterno *</label>
+                            <input id="ext-ns-first-surname" v-uppercase v-model="ext.ns.first_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1">Apellido materno</label>
-                            <input v-uppercase v-model="ext.ns.second_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                            <label for="ext-ns-second-surname" class="block text-xs font-semibold text-slate-500 mb-1">Apellido materno</label>
+                            <input id="ext-ns-second-surname" v-uppercase v-model="ext.ns.second_surname" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1">Correo *</label>
-                            <input v-model="ext.ns.email" type="email" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                            <label for="ext-ns-email" class="block text-xs font-semibold text-slate-500 mb-1">Correo *</label>
+                            <input id="ext-ns-email" v-model="ext.ns.email" type="email" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1">CURP</label>
-                            <input v-uppercase v-model="ext.ns.curp" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
+                            <label for="ext-ns-curp" class="block text-xs font-semibold text-slate-500 mb-1">CURP</label>
+                            <input id="ext-ns-curp" v-uppercase v-model="ext.ns.curp" type="text" class="w-full h-10 rounded-lg border border-slate-300 px-3" />
                         </div>
                     </div>
                 </template>

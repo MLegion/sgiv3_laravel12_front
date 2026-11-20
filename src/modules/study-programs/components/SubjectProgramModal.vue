@@ -70,10 +70,11 @@
 
                 <!-- Pegar URL externa -->
                 <section>
-                    <label class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">
+                    <label for="program-url-input" class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">
                         O pegar URL externa
                     </label>
                     <input
+                        id="program-url-input"
                         v-model="urlInput"
                         type="url"
                         placeholder="https://..."

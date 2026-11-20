@@ -3,13 +3,13 @@
         <h1 class="text-xl font-semibold text-slate-800 uppercase">Actos de Titulación</h1>
 
         <div class="rounded-xl border bg-white p-4 grid sm:grid-cols-5 gap-3">
-            <input type="date" v-model="filters.from" class="rounded-lg border-slate-300 text-sm" />
-            <input type="date" v-model="filters.to" class="rounded-lg border-slate-300 text-sm" />
-            <select v-model="filters.career_id" class="rounded-lg border-slate-300 text-sm">
+            <input type="date" v-model="filters.from" aria-label="Fecha desde" class="rounded-lg border-slate-300 text-sm" />
+            <input type="date" v-model="filters.to" aria-label="Fecha hasta" class="rounded-lg border-slate-300 text-sm" />
+            <select v-model="filters.career_id" aria-label="Carrera" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todas las carreras</option>
                 <option v-for="c in options.careers" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
-            <select v-model="filters.status" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.status" aria-label="Estado" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todos</option><option value="scheduled">Programados</option>
                 <option value="done">Realizados</option><option value="cancelled">Cancelados</option>
             </select>

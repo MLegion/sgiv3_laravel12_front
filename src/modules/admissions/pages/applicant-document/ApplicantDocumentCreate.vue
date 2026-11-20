@@ -20,8 +20,9 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <!-- Tipo de documento -->
                 <div class="space-y-1 sm:col-span-2">
-                    <label class="text-xs font-medium text-slate-600 uppercase tracking-widest">TIPO DE DOCUMENTO</label>
+                    <label for="adc-document-type" class="text-xs font-medium text-slate-600 uppercase tracking-widest">TIPO DE DOCUMENTO</label>
                     <select
+                        id="adc-document-type"
                         v-model="form.document_type_id"
                         class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
@@ -39,8 +40,9 @@
 
                 <!-- Disco -->
                 <div class="space-y-1">
-                    <label class="text-xs font-medium text-slate-600 uppercase tracking-widest">DISCO</label>
+                    <label for="adc-disk" class="text-xs font-medium text-slate-600 uppercase tracking-widest">DISCO</label>
                     <select
+                        id="adc-disk"
                         v-model="form.disk"
                         class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >

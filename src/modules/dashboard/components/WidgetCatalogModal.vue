@@ -22,6 +22,7 @@
                         <input
                             v-model="search"
                             type="search"
+                            aria-label="Buscar por título o descripción"
                             placeholder="Buscar por título o descripción…"
                             class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />

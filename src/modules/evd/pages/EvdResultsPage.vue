@@ -235,32 +235,32 @@ onMounted(async () => {
             <EvdPeriodSelect v-model="selectedCap" :periods="caPeriods" :disabled="loadingCaps"
                              label="Periodo *" @change="onPeriodChange" />
             <div class="flex flex-col gap-1 min-w-[170px]">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Campus</label>
-                <select v-model.number="campusId" :disabled="!hasPeriod"
+                <label for="evd-res-campus" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Campus</label>
+                <select id="evd-res-campus" v-model.number="campusId" :disabled="!hasPeriod"
                         class="border border-slate-300 rounded px-2 py-1.5 text-sm disabled:bg-slate-50">
                     <option :value="null">Todos</option>
                     <option v-for="c in filterOptions.campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
             </div>
             <div class="flex flex-col gap-1 min-w-[170px]">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Tipo de modalidad</label>
-                <select v-model.number="modalityTypeId" :disabled="!hasPeriod"
+                <label for="evd-res-modality" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Tipo de modalidad</label>
+                <select id="evd-res-modality" v-model.number="modalityTypeId" :disabled="!hasPeriod"
                         class="border border-slate-300 rounded px-2 py-1.5 text-sm disabled:bg-slate-50">
                     <option :value="null">Todas</option>
                     <option v-for="m in filterOptions.modality_types" :key="m.id" :value="m.id">{{ m.name }}</option>
                 </select>
             </div>
             <div class="flex flex-col gap-1 min-w-[190px]">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Carrera</label>
-                <select v-model.number="careerId" :disabled="!hasPeriod"
+                <label for="evd-res-career" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Carrera</label>
+                <select id="evd-res-career" v-model.number="careerId" :disabled="!hasPeriod"
                         class="border border-slate-300 rounded px-2 py-1.5 text-sm disabled:bg-slate-50">
                     <option :value="null">Todas</option>
                     <option v-for="c in filterOptions.careers" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
             </div>
             <div class="flex flex-col gap-1 flex-1 min-w-[200px]">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Buscar docente</label>
-                <input v-model="search" :disabled="!hasPeriod" type="text" placeholder="Nombre o ID"
+                <label for="evd-res-search" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Buscar docente</label>
+                <input id="evd-res-search" v-model="search" :disabled="!hasPeriod" type="text" placeholder="Nombre o ID"
                        class="border border-slate-300 rounded px-2 py-1.5 text-sm disabled:bg-slate-50" />
             </div>
         </div>

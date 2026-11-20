@@ -76,6 +76,7 @@
                                     <input :value="cell(s.teacher_assignment_id, st.student_id, u)"
                                         @input="setCell(s.teacher_assignment_id, st.student_id, u, $event)"
                                         :readonly="!editable" inputmode="decimal"
+                                        :aria-label="`${st.nombre} — ${s.materia} — unidad ${roman(u)}`"
                                         class="w-10 text-center tabular-nums rounded text-xs px-0.5 py-0.5"
                                         :class="editable ? 'border-slate-200 focus:border-teal-400 focus:ring-teal-300' : 'border-transparent bg-transparent'" />
                                 </td>
@@ -83,6 +84,7 @@
                                     <input :value="cell(s.teacher_assignment_id, st.student_id, 0)"
                                         @input="setCell(s.teacher_assignment_id, st.student_id, 0, $event)"
                                         :readonly="!editable" inputmode="decimal"
+                                        :aria-label="`${st.nombre} — ${s.materia} — calificación final`"
                                         class="w-11 text-center tabular-nums font-semibold rounded text-xs px-0.5 py-0.5"
                                         :class="[finalClass(s.teacher_assignment_id, st.student_id), editable ? 'border-slate-200 focus:border-teal-400 focus:ring-teal-300' : 'border-transparent bg-transparent']" />
                                 </td>

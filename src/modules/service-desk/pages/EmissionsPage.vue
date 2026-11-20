@@ -3,7 +3,7 @@
         <h1 class="text-xl font-semibold text-slate-800 uppercase">Emisiones de ventanilla</h1>
 
         <div class="rounded-xl border bg-white p-4 flex gap-3">
-            <select v-model="filters.status" @change="fetchList" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="filters.status" @change="fetchList" aria-label="Estado de la emisión" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todas</option>
                 <option value="issued">Emitidas</option>
                 <option value="delivered">Entregadas</option>
@@ -45,7 +45,7 @@
         <BaseModal v-model="signModalOpen" title="Firmar documento" size="sm">
             <div class="space-y-3">
                 <p class="text-xs text-slate-500">Ingresa el código de tu app de autenticación (MFA) para firmar electrónicamente.</p>
-                <input v-model="totp" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos" class="w-full rounded-lg border-slate-300 text-sm tracking-widest text-center" />
+                <input v-model="totp" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos" aria-label="Código MFA de 6 dígitos" class="w-full rounded-lg border-slate-300 text-sm tracking-widest text-center" />
                 <p v-if="signMsg" class="text-sm text-red-600">{{ signMsg }}</p>
             </div>
             <template #footer>

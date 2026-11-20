@@ -19,7 +19,7 @@
                     @update:model-value="loadEvidences"
                 />
             </div>
-            <input v-model="search" placeholder="Buscar docente…" class="border rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px]" />
+            <input v-model="search" placeholder="Buscar docente…" aria-label="Buscar docente" class="border rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px]" />
         </div>
 
         <!-- Pestañas: una por sección (rubro). Con una sola sección no se muestran. -->

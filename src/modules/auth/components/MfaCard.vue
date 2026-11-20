@@ -60,10 +60,11 @@
         <template v-else-if="status.enabled">
             <div class="space-y-3 max-w-md">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">
+                    <label for="mfa-current-password" class="block text-xs font-semibold text-slate-500 mb-1">
                         Contraseña actual (requerida para cambios)
                     </label>
                     <input
+                        id="mfa-current-password"
                         v-model="password"
                         type="password"
                         autocomplete="current-password"

@@ -34,8 +34,9 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <!-- Filtros de estado/municipio -->
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">ESTADO (filtro)</label>
+                        <label for="filter-state-id" class="text-xs font-medium text-slate-600">ESTADO (filtro)</label>
                         <select
+                            id="filter-state-id"
                             v-model="filterStateId"
                             class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
@@ -44,8 +45,9 @@
                         </select>
                     </div>
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">MUNICIPIO (filtro)</label>
+                        <label for="filter-municipality-id" class="text-xs font-medium text-slate-600">MUNICIPIO (filtro)</label>
                         <select
+                            id="filter-municipality-id"
                             v-model="filterMunicipalityId"
                             :disabled="!filterStateId || loadingMunicipalities"
                             class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400"
@@ -73,8 +75,8 @@
                     <FormInput label="PROMEDIO (escala 100)" v-model="form.academic_average" type="number" step="0.01" min="0" max="100" />
 
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">ÁREA ACADÉMICA</label>
-                        <select v-model="form.academic_area_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase">
+                        <label for="academic-area-id" class="text-xs font-medium text-slate-600">ÁREA ACADÉMICA</label>
+                        <select id="academic-area-id" v-model="form.academic_area_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase">
                             <option :value="null">NINGUNA</option>
                             <option v-for="a in academicAreas" :key="a.id" :value="a.id">{{ a.name }}</option>
                         </select>

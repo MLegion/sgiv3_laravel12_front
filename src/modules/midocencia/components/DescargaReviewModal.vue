@@ -54,13 +54,13 @@
                 <!-- Folio + motivo (solo si está en revisión) -->
                 <div v-if="request.status === 'submitted'" class="grid md:grid-cols-2 gap-3 border-t pt-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Folio del oficio</label>
-                        <input v-model="folio" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Ej. DI/001" />
+                        <label for="dr-folio" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Folio del oficio</label>
+                        <input id="dr-folio" v-model="folio" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Ej. DI/001" />
                         <p class="text-[11px] text-slate-400 mt-0.5">Se usa al aprobar.</p>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Motivo <span class="text-red-500 normal-case">(obligatorio si rechazas)</span></label>
-                        <textarea v-model="reason" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Explica al docente qué debe corregir…"></textarea>
+                        <label for="dr-reason" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Motivo <span class="text-red-500 normal-case">(obligatorio si rechazas)</span></label>
+                        <textarea id="dr-reason" v-model="reason" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Explica al docente qué debe corregir…"></textarea>
                     </div>
                 </div>
             </div>

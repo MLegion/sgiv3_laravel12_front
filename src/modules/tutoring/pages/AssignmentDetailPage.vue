@@ -231,7 +231,7 @@
                         <span class="ml-2">{{ row.full_name }}</span>
                     </template>
                     <template #cell-nivel="{ row }">
-                        <select v-model.number="evLevels[row.student_id]" :disabled="!ev.can_capture" class="w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-50">
+                        <select v-model.number="evLevels[row.student_id]" :disabled="!ev.can_capture" aria-label="Nivel de desempeño" class="w-full rounded-lg border-slate-300 text-sm disabled:bg-slate-50">
                             <option :value="undefined">—</option>
                             <option v-for="o in ev.level_options" :key="o.value" :value="o.value">{{ o.value }} · {{ o.label }}</option>
                         </select>
@@ -256,13 +256,13 @@
         <div v-if="showSession" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showSession = false">
             <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Registrar sesión</h2>
-                <select v-model="sf.type" class="w-full rounded-lg border-slate-300 text-sm"><option value="grupal">Grupal</option><option value="individual">Individual</option></select>
-                <select v-if="sf.type === 'individual'" v-model="sf.student_id" class="w-full rounded-lg border-slate-300 text-sm">
+                <select v-model="sf.type" aria-label="Tipo de sesión" class="w-full rounded-lg border-slate-300 text-sm"><option value="grupal">Grupal</option><option value="individual">Individual</option></select>
+                <select v-if="sf.type === 'individual'" v-model="sf.student_id" aria-label="Tutorado" class="w-full rounded-lg border-slate-300 text-sm">
                     <option :value="null">— Tutorado —</option><option v-for="t in a?.tutees" :key="t.id" :value="t.student_id">{{ t.student_name }}</option>
                 </select>
-                <input v-model="sf.session_date" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
-                <input v-model="sf.topic" placeholder="Tema" class="w-full rounded-lg border-slate-300 text-sm" />
-                <textarea v-model="sf.notes" rows="2" placeholder="Notas / acuerdos" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+                <input v-model="sf.session_date" type="date" aria-label="Fecha de la sesión" class="w-full rounded-lg border-slate-300 text-sm" />
+                <input v-model="sf.topic" placeholder="Tema" aria-label="Tema" class="w-full rounded-lg border-slate-300 text-sm" />
+                <textarea v-model="sf.notes" rows="2" placeholder="Notas / acuerdos" aria-label="Notas / acuerdos" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
                 <div v-if="sf.type === 'grupal'" class="max-h-32 overflow-y-auto border rounded-lg p-2">
                     <p class="text-xs text-slate-400 mb-1">Asistencia</p>
                     <label v-for="t in a?.tutees" :key="t.id" class="flex items-center gap-2 text-sm"><input type="checkbox" :value="t.student_id" v-model="sf.attendance" /> {{ t.student_name }}</label>
@@ -275,12 +275,12 @@
         <!-- Drawer canalizar -->
         <BaseDrawer v-model="showRefer" title="Canalizar tutorado" :subtitle="referTutee?.student_name" size="md">
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Área de canalización</label>
-                <select v-model="rf.referral_area_id" class="w-full rounded-lg border-slate-300 text-sm"><option :value="null">— Área —</option><option v-for="ar in areas" :key="ar.id" :value="ar.id">{{ ar.name }}</option></select>
+                <label for="refer-area" class="block text-xs font-semibold text-slate-500 mb-1">Área de canalización</label>
+                <select id="refer-area" v-model="rf.referral_area_id" class="w-full rounded-lg border-slate-300 text-sm"><option :value="null">— Área —</option><option v-for="ar in areas" :key="ar.id" :value="ar.id">{{ ar.name }}</option></select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Motivo</label>
-                <textarea v-model="rf.reason" rows="4" placeholder="Describe el motivo de la canalización…" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+                <label for="refer-reason" class="block text-xs font-semibold text-slate-500 mb-1">Motivo</label>
+                <textarea id="refer-reason" v-model="rf.reason" rows="4" placeholder="Describe el motivo de la canalización…" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
             </div>
             <p v-if="modalMsg" class="text-sm text-red-600">{{ modalMsg }}</p>
             <template #footer>
@@ -310,10 +310,10 @@
             <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
                 <h3 class="text-sm font-bold text-slate-700 uppercase">Reasignar tutor</h3>
                 <p class="text-[11px] text-slate-400">Los tutorados y la bitácora se mueven con la asignación.</p>
-                <label class="block text-xs font-semibold text-slate-500">ID de usuario del nuevo tutor</label>
-                <input v-model="reassign.tutor" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm" placeholder="tutor_user_id" />
-                <label class="block text-xs font-semibold text-slate-500">Motivo (opcional)</label>
-                <textarea v-model="reassign.reason" rows="2" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+                <label for="reassign-tutor" class="block text-xs font-semibold text-slate-500">ID de usuario del nuevo tutor</label>
+                <input id="reassign-tutor" v-model="reassign.tutor" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm" placeholder="tutor_user_id" />
+                <label for="reassign-reason" class="block text-xs font-semibold text-slate-500">Motivo (opcional)</label>
+                <textarea id="reassign-reason" v-model="reassign.reason" rows="2" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
                 <div class="flex justify-end gap-2">
                     <button @click="showReassign = false" class="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
                     <button @click="doReassign" :disabled="!reassign.tutor" class="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-semibold disabled:opacity-50">Reasignar</button>
@@ -325,7 +325,7 @@
         <div v-if="showAddTutee" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showAddTutee = false">
             <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Agregar tutorado</h2>
-                <input v-model="studentSearch" @input="searchStudents" placeholder="Buscar por nombre / no. control" class="w-full rounded-lg border-slate-300 text-sm" />
+                <input v-model="studentSearch" @input="searchStudents" placeholder="Buscar por nombre / no. control" aria-label="Buscar por nombre o número de control" class="w-full rounded-lg border-slate-300 text-sm" />
                 <div v-if="studentResults.length" class="max-h-40 overflow-y-auto border rounded-lg">
                     <button v-for="s in studentResults" :key="s.id" @click="addTutee(s.id)" class="block w-full text-left px-3 py-2 text-sm hover:bg-slate-50">{{ s.names }} {{ s.first_surname }} <span class="font-mono text-xs text-slate-400">{{ s.num_control }}</span></button>
                 </div>

@@ -69,16 +69,16 @@
                         <FormInput label="RFC" v-model="form.rfc" uppercase :maxlength="13" />
                         <FormInput label="FECHA DE NACIMIENTO" v-model="form.birth_date" type="date" required />
                         <div class="space-y-1">
-                            <label class="text-xs font-medium text-slate-600">SEXO</label>
-                            <select v-model="form.sex" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label for="ae-sex" class="text-xs font-medium text-slate-600">SEXO</label>
+                            <select id="ae-sex" v-model="form.sex" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="">Seleccionar...</option>
                                 <option value="M">Masculino</option>
                                 <option value="F">Femenino</option>
                             </select>
                         </div>
                         <div class="space-y-1">
-                            <label class="text-xs font-medium text-slate-600">ESTADO CIVIL</label>
-                            <select v-model="form.marital_status" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label for="ae-marital-status" class="text-xs font-medium text-slate-600">ESTADO CIVIL</label>
+                            <select id="ae-marital-status" v-model="form.marital_status" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="">Seleccionar...</option>
                                 <option value="soltero">Soltero/a</option>
                                 <option value="casado">Casado/a</option>
@@ -138,26 +138,26 @@
                         <FormInput label="NSS / NÚMERO IMSS" v-model="form.nss" :maxlength="20" />
                         <FormInput label="CLÍNICA DE ATENCIÓN" v-model="form.medical_clinic" :maxlength="120" />
                         <div class="space-y-1">
-                            <label class="text-xs font-medium text-slate-600">TIPO DE SANGRE</label>
-                            <select v-model="form.blood_type" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label for="ae-blood-type" class="text-xs font-medium text-slate-600">TIPO DE SANGRE</label>
+                            <select id="ae-blood-type" v-model="form.blood_type" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="">Seleccionar...</option>
                                 <option v-for="t in bloodTypes" :key="t" :value="t">{{ t }}</option>
                             </select>
                         </div>
                         <div class="space-y-1">
-                            <label class="text-xs font-medium text-slate-600">DISCAPACIDAD</label>
-                            <select v-model="form.disability_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label for="ae-disability" class="text-xs font-medium text-slate-600">DISCAPACIDAD</label>
+                            <select id="ae-disability" v-model="form.disability_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option :value="null">Ninguna</option>
                                 <option v-for="d in disabilities" :key="d.id" :value="d.id">{{ d.name }}</option>
                             </select>
                         </div>
                         <div class="sm:col-span-2 space-y-1">
-                            <label class="text-xs font-medium text-slate-600">ALERGIAS</label>
-                            <textarea v-model="form.allergies" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                            <label for="ae-allergies" class="text-xs font-medium text-slate-600">ALERGIAS</label>
+                            <textarea id="ae-allergies" v-model="form.allergies" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
                         </div>
                         <div class="sm:col-span-2 space-y-1">
-                            <label class="text-xs font-medium text-slate-600">TRATAMIENTOS PSICOLÓGICOS/PSIQUIÁTRICOS</label>
-                            <textarea v-model="form.psychological_treatment" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                            <label for="ae-psychological-treatment" class="text-xs font-medium text-slate-600">TRATAMIENTOS PSICOLÓGICOS/PSIQUIÁTRICOS</label>
+                            <textarea id="ae-psychological-treatment" v-model="form.psychological_treatment" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
                         </div>
                     </div>
                     <div class="flex justify-end gap-2 pt-4 border-t">
@@ -173,15 +173,15 @@
                 <div v-show="activeTab === 'otros'" class="p-6 space-y-5">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div class="sm:col-span-2 space-y-1">
-                            <label class="text-xs font-medium text-slate-600">GRUPO INDÍGENA</label>
-                            <select v-model="form.indigenous_group_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label for="ae-indigenous-group" class="text-xs font-medium text-slate-600">GRUPO INDÍGENA</label>
+                            <select id="ae-indigenous-group" v-model="form.indigenous_group_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option :value="null">Ninguno</option>
                                 <option v-for="g in indigenousGroups" :key="g.id" :value="g.id">{{ g.name }}</option>
                             </select>
                         </div>
                         <div class="sm:col-span-2 space-y-1">
-                            <label class="text-xs font-medium text-slate-600">LENGUA INDÍGENA</label>
-                            <select v-model="form.indigenous_language_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label for="ae-indigenous-language" class="text-xs font-medium text-slate-600">LENGUA INDÍGENA</label>
+                            <select id="ae-indigenous-language" v-model="form.indigenous_language_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option :value="null">Ninguna</option>
                                 <option v-for="l in indigenousLanguages" :key="l.id" :value="l.id">{{ l.name }}</option>
                             </select>
@@ -190,8 +190,8 @@
                         <FormInput label="AÑO DE EGRESO" v-model="form.graduation_year" type="number" min="1950" max="2099" />
                         <FormInput label="PROMEDIO (escala 100)" v-model="form.academic_average" type="number" step="0.01" min="0" max="100" />
                         <div class="space-y-1">
-                            <label class="text-xs font-medium text-slate-600">ÁREA ACADÉMICA</label>
-                            <select v-model="form.academic_area_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label for="ae-academic-area" class="text-xs font-medium text-slate-600">ÁREA ACADÉMICA</label>
+                            <select id="ae-academic-area" v-model="form.academic_area_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option :value="null">Ninguna</option>
                                 <option v-for="a in academicAreas" :key="a.id" :value="a.id">{{ a.name }}</option>
                             </select>
@@ -218,32 +218,32 @@
                         </div>
 
                         <div class="space-y-1 sm:col-span-2">
-                            <label class="text-xs font-medium text-slate-600">CAMPUS</label>
-                            <select v-model="selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label for="ae-campus" class="text-xs font-medium text-slate-600">CAMPUS</label>
+                            <select id="ae-campus" v-model="selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="">Seleccionar campus</option>
                                 <option v-for="opt in campusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                             </select>
                         </div>
 
                         <div class="space-y-1 sm:col-span-2">
-                            <label class="text-xs font-medium text-slate-600">1ª OPCIÓN DE OFERTA</label>
-                            <select v-model="form.offer_option_1_id" :disabled="!selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
+                            <label for="ae-offer-option-1" class="text-xs font-medium text-slate-600">1ª OPCIÓN DE OFERTA</label>
+                            <select id="ae-offer-option-1" v-model="form.offer_option_1_id" :disabled="!selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
                                 <option value="">{{ selectedCampusId ? 'Seleccionar' : 'Seleccione un campus primero' }}</option>
                                 <option v-for="opt in offerOptions1" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
                             </select>
                         </div>
 
                         <div class="space-y-1">
-                            <label class="text-xs font-medium text-slate-600">2ª OPCIÓN DE OFERTA</label>
-                            <select v-model="form.offer_option_2_id" :disabled="!selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
+                            <label for="ae-offer-option-2" class="text-xs font-medium text-slate-600">2ª OPCIÓN DE OFERTA</label>
+                            <select id="ae-offer-option-2" v-model="form.offer_option_2_id" :disabled="!selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
                                 <option value="">Sin segunda opción</option>
                                 <option v-for="opt in offerOptions2" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
                             </select>
                         </div>
 
                         <div class="space-y-1">
-                            <label class="text-xs font-medium text-slate-600">3ª OPCIÓN DE OFERTA</label>
-                            <select v-model="form.offer_option_3_id" :disabled="!selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
+                            <label for="ae-offer-option-3" class="text-xs font-medium text-slate-600">3ª OPCIÓN DE OFERTA</label>
+                            <select id="ae-offer-option-3" v-model="form.offer_option_3_id" :disabled="!selectedCampusId" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400">
                                 <option value="">Sin tercera opción</option>
                                 <option v-for="opt in offerOptions3" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
                             </select>
@@ -376,20 +376,20 @@
                     <h2 class="text-sm font-bold uppercase tracking-widest text-slate-700">{{ editingContact ? 'Editar Contacto' : 'Nuevo Contacto' }}</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre *</label>
-                            <input v-model="contactForm.name" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <label for="ae-contact-name" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre *</label>
+                            <input id="ae-contact-name" v-model="contactForm.name" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Primer Apellido *</label>
-                            <input v-model="contactForm.first_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <label for="ae-contact-first-surname" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Primer Apellido *</label>
+                            <input id="ae-contact-first-surname" v-model="contactForm.first_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Segundo Apellido</label>
-                            <input v-model="contactForm.second_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <label for="ae-contact-second-surname" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Segundo Apellido</label>
+                            <input id="ae-contact-second-surname" v-model="contactForm.second_surname" type="text" maxlength="120" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Parentesco *</label>
-                            <select v-model="contactForm.relationship" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <label for="ae-contact-relationship" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Parentesco *</label>
+                            <select id="ae-contact-relationship" v-model="contactForm.relationship" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
                                 <option value="">Seleccionar...</option>
                                 <option value="padre">Padre</option>
                                 <option value="madre">Madre</option>
@@ -400,12 +400,12 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teléfono</label>
-                            <input v-model="contactForm.phone" type="text" maxlength="20" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <label for="ae-contact-phone" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teléfono</label>
+                            <input id="ae-contact-phone" v-model="contactForm.phone" type="text" maxlength="20" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email</label>
-                            <input v-model="contactForm.email" type="email" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <label for="ae-contact-email" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email</label>
+                            <input id="ae-contact-email" v-model="contactForm.email" type="email" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </div>
                         <div class="sm:col-span-2 flex items-center gap-2">
                             <input v-model="contactForm.is_emergency_contact" type="checkbox" id="is_emergency" class="rounded" />

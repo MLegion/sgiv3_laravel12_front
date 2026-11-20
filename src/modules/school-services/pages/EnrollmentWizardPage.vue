@@ -43,8 +43,9 @@
                     />
                 </div>
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar</label>
+                    <label for="enroll-wizard-search" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar</label>
                     <input
+                        id="enroll-wizard-search"
                         v-model="search"
                         type="text"
                         placeholder="Nombre, CURP, email..."
@@ -190,6 +191,7 @@
                             <td class="px-4 py-3">
                                 <select
                                     v-model="row.offerKey"
+                                    aria-label="Plan de estudio y modalidad del aspirante"
                                     class="w-full text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:border-blue-400 outline-none"
                                 >
                                     <option :value="null">— Seleccionar —</option>

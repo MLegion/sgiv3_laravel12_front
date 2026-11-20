@@ -78,15 +78,15 @@
 
                     <template v-if="editable">
                         <div>
-                            <label class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Aula para nuevos bloques</label>
-                            <select v-model="selectedPlace" class="w-full border rounded-lg px-2 py-1.5 text-sm">
+                            <label for="sr-place" class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Aula para nuevos bloques</label>
+                            <select id="sr-place" v-model="selectedPlace" class="w-full border rounded-lg px-2 py-1.5 text-sm">
                                 <option :value="null">Oficina (por defecto)</option>
                                 <option v-for="p in places" :key="p.id" :value="p.id">{{ p.name }}</option>
                             </select>
                         </div>
                         <button class="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50" :disabled="busy || !dirty" @click="save">💾 Guardar reajuste</button>
                         <button class="w-full px-3 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50" :disabled="busy" @click="approve">✔ Aprobar horario</button>
-                        <textarea v-model="reason" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Motivo de rechazo (si aplica)…"></textarea>
+                        <textarea v-model="reason" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Motivo de rechazo (si aplica)…" aria-label="Motivo de rechazo del horario"></textarea>
                         <button class="w-full px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50" :disabled="busy || !reason.trim()" @click="reject">✕ Rechazar horario</button>
                     </template>
                     <template v-else-if="scheduleStatus === 'approved'">

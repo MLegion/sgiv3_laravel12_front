@@ -29,10 +29,11 @@
                 <form class="space-y-5" @submit.prevent="submit">
                     <!-- Usuario -->
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1.5 uppercase tracking-wide">
+                        <label for="superadmin-user" class="block text-xs font-medium text-slate-300 mb-1.5 uppercase tracking-wide">
                             Usuario
                         </label>
                         <input
+                            id="superadmin-user"
                             v-model="email"
                             type="text"
                             placeholder="usuario o correo"
@@ -44,11 +45,12 @@
 
                     <!-- Contraseña -->
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1.5 uppercase tracking-wide">
+                        <label for="superadmin-password" class="block text-xs font-medium text-slate-300 mb-1.5 uppercase tracking-wide">
                             Contraseña
                         </label>
                         <div class="relative">
                             <input
+                                id="superadmin-password"
                                 v-model="password"
                                 :type="showPassword ? 'text' : 'password'"
                                 placeholder="••••••••"

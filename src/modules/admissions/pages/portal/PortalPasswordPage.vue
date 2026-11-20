@@ -33,8 +33,9 @@
             <template v-else>
                 <div class="space-y-4">
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">CONTRASEÑA ACTUAL</label>
+                        <label for="current-password" class="text-xs font-medium text-slate-600">CONTRASEÑA ACTUAL</label>
                         <input
+                            id="current-password"
                             v-model="form.current_password"
                             type="password"
                             autocomplete="current-password"
@@ -42,8 +43,9 @@
                         />
                     </div>
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">NUEVA CONTRASEÑA</label>
+                        <label for="new-password" class="text-xs font-medium text-slate-600">NUEVA CONTRASEÑA</label>
                         <input
+                            id="new-password"
                             v-model="form.new_password"
                             type="password"
                             autocomplete="new-password"
@@ -52,8 +54,9 @@
                         <p class="text-[10px] text-slate-400">Mínimo 8 caracteres.</p>
                     </div>
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">CONFIRMAR NUEVA CONTRASEÑA</label>
+                        <label for="new-password-confirmation" class="text-xs font-medium text-slate-600">CONFIRMAR NUEVA CONTRASEÑA</label>
                         <input
+                            id="new-password-confirmation"
                             v-model="form.new_password_confirmation"
                             type="password"
                             autocomplete="new-password"

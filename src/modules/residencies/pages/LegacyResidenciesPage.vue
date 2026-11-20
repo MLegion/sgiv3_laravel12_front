@@ -7,16 +7,17 @@
             </div>
             <div class="flex items-center gap-2 flex-wrap">
                 <input v-model="search" placeholder="Buscar por control, nombre o empresa…"
+                       aria-label="Buscar por control, nombre o empresa"
                        class="border rounded-md px-2 py-1 text-xs w-64" @keyup.enter="reload" />
-                <select v-model="careerId" class="border rounded-md px-2 py-1 text-xs max-w-[16rem]" @change="reload">
+                <select v-model="careerId" aria-label="Filtrar por carrera" class="border rounded-md px-2 py-1 text-xs max-w-[16rem]" @change="reload">
                     <option :value="null">TODAS LAS CARRERAS</option>
                     <option v-for="c in careers" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
-                <select v-model="advisorId" class="border rounded-md px-2 py-1 text-xs max-w-[16rem]" @change="reload">
+                <select v-model="advisorId" aria-label="Filtrar por asesor" class="border rounded-md px-2 py-1 text-xs max-w-[16rem]" @change="reload">
                     <option :value="null">TODOS LOS ASESORES</option>
                     <option v-for="a in advisors" :key="a.id" :value="a.id">{{ a.name }}</option>
                 </select>
-                <select v-model="statusFilter" class="border rounded-md px-2 py-1 text-xs" @change="reload">
+                <select v-model="statusFilter" aria-label="Filtrar por estado" class="border rounded-md px-2 py-1 text-xs" @change="reload">
                     <option value="">TODOS</option>
                     <option value="in_progress">EN PROCESO</option>
                     <option value="concluded">CONCLUIDA</option>

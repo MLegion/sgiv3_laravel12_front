@@ -119,15 +119,15 @@ onMounted(loadCaps)
         <div class="bg-white border border-slate-200 rounded-lg p-3 flex flex-wrap items-end gap-3">
             <EvdPeriodSelect v-model="selectedCap" :periods="caPeriods" :disabled="loadingCaps" label="Periodo *" @change="onPeriodChange" />
             <div class="flex flex-col gap-1 min-w-[170px]">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Ubicación</label>
-                <select v-model.number="campusId" :disabled="!hasPeriod" class="border border-slate-300 rounded px-2 py-1.5 text-sm disabled:bg-slate-50">
+                <label for="evd-gen-campus" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Ubicación</label>
+                <select id="evd-gen-campus" v-model.number="campusId" :disabled="!hasPeriod" class="border border-slate-300 rounded px-2 py-1.5 text-sm disabled:bg-slate-50">
                     <option :value="null">Todas</option>
                     <option v-for="c in filterOptions.campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
             </div>
             <div class="flex flex-col gap-1 min-w-[170px]">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Tipo de modalidad</label>
-                <select v-model.number="modalityTypeId" :disabled="!hasPeriod" class="border border-slate-300 rounded px-2 py-1.5 text-sm disabled:bg-slate-50">
+                <label for="evd-gen-modality" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Tipo de modalidad</label>
+                <select id="evd-gen-modality" v-model.number="modalityTypeId" :disabled="!hasPeriod" class="border border-slate-300 rounded px-2 py-1.5 text-sm disabled:bg-slate-50">
                     <option :value="null">Todas</option>
                     <option v-for="m in filterOptions.modality_types" :key="m.id" :value="m.id">{{ m.name }}</option>
                 </select>

@@ -3,8 +3,8 @@
         <div class="flex items-center justify-between flex-wrap gap-3">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Banco de Proyectos</h1>
             <div class="flex items-center gap-2">
-                <input v-model="search" placeholder="Buscar…" class="border rounded-md px-2 py-1 text-xs" @keyup.enter="fetchData" />
-                <select v-model="statusFilter" class="border rounded-md px-2 py-1 text-xs" @change="fetchData">
+                <input v-model="search" placeholder="Buscar…" aria-label="Buscar proyecto" class="border rounded-md px-2 py-1 text-xs" @keyup.enter="fetchData" />
+                <select v-model="statusFilter" aria-label="Filtrar por estado" class="border rounded-md px-2 py-1 text-xs" @change="fetchData">
                     <option value="">Todos</option>
                     <option value="draft">BORRADOR</option>
                     <option value="published">PUBLICADO</option>
@@ -42,15 +42,15 @@
                 <div class="relative bg-white rounded-xl shadow-lg w-full max-w-lg p-6 space-y-3 z-10 max-h-[90vh] overflow-y-auto">
                     <h3 class="text-sm font-semibold text-slate-800">{{ form.id ? 'Editar' : 'Nuevo' }} proyecto</h3>
 
-                    <input v-model="form.title" placeholder="Título *" class="border rounded-md w-full px-3 py-2 text-sm" />
-                    <textarea v-model="form.description" rows="2" placeholder="Descripción" class="border rounded-md w-full px-3 py-2 text-sm"></textarea>
-                    <textarea v-model="form.required_profile" rows="2" placeholder="Perfil requerido" class="border rounded-md w-full px-3 py-2 text-sm"></textarea>
+                    <input v-model="form.title" placeholder="Título *" aria-label="Título del proyecto" class="border rounded-md w-full px-3 py-2 text-sm" />
+                    <textarea v-model="form.description" rows="2" placeholder="Descripción" aria-label="Descripción del proyecto" class="border rounded-md w-full px-3 py-2 text-sm"></textarea>
+                    <textarea v-model="form.required_profile" rows="2" placeholder="Perfil requerido" aria-label="Perfil requerido" class="border rounded-md w-full px-3 py-2 text-sm"></textarea>
 
                     <label class="flex items-center gap-2 text-sm text-slate-600">
                         <input type="checkbox" v-model="form.is_internal" /> Proyecto interno (de la institución)
                     </label>
 
-                    <select v-if="!form.is_internal" v-model.number="form.company_id" class="border rounded-md w-full px-3 py-2 text-sm">
+                    <select v-if="!form.is_internal" v-model.number="form.company_id" aria-label="Empresa aprobada" class="border rounded-md w-full px-3 py-2 text-sm">
                         <option :value="null">— Empresa aprobada —</option>
                         <option v-for="c in companies" :key="c.id" :value="c.id">{{ c.name }}</option>
                     </select>
@@ -64,7 +64,7 @@
                         </div>
                     </div>
 
-                    <input v-model.number="form.slots" type="number" min="1" placeholder="Lugares" class="border rounded-md w-full px-3 py-2 text-sm" />
+                    <input v-model.number="form.slots" type="number" min="1" placeholder="Lugares" aria-label="Número de lugares" class="border rounded-md w-full px-3 py-2 text-sm" />
 
                     <p v-if="form.error" class="text-xs text-red-600">{{ form.error }}</p>
                     <div class="flex justify-end gap-2 pt-2">

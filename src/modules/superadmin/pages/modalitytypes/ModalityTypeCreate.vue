@@ -49,11 +49,12 @@
 
             <!-- Config -->
             <div>
-                <label class="text-xs font-medium text-slate-600">
+                <label for="modality-config-json" class="text-xs font-medium text-slate-600">
                     CONFIGURACIÓN (JSON)
                 </label>
 
                 <textarea
+                    id="modality-config-json"
                     v-model="configRaw"
                     rows="12"
                     class="w-full mt-1 p-3 text-sm border rounded-lg

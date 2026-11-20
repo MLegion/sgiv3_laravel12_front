@@ -12,8 +12,9 @@
 
             <form v-if="hasParams" class="space-y-4" @submit.prevent="submit">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Correo</label>
+                    <label for="reset-email" class="block text-sm font-medium text-slate-700 mb-1">Correo</label>
                     <input
+                        id="reset-email"
                         :value="email"
                         type="email"
                         readonly
@@ -30,8 +31,9 @@
                 />
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Confirmar contraseña</label>
+                    <label for="reset-password-confirmation" class="block text-sm font-medium text-slate-700 mb-1">Confirmar contraseña</label>
                     <input
+                        id="reset-password-confirmation"
                         v-model="passwordConfirmation"
                         type="password"
                         autocomplete="new-password"

@@ -11,8 +11,8 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <label class="text-xs font-semibold text-slate-500">Categoría</label>
-            <select v-model="categoryFilter" @change="onFilterChange" class="rounded-lg border-slate-300 text-sm" :disabled="visibleCategories.length === 1">
+            <label for="ac-catalog-category-filter" class="text-xs font-semibold text-slate-500">Categoría</label>
+            <select id="ac-catalog-category-filter" v-model="categoryFilter" @change="onFilterChange" class="rounded-lg border-slate-300 text-sm" :disabled="visibleCategories.length === 1">
                 <option v-if="visibleCategories.length > 1" value="">Todas</option>
                 <option v-for="c in visibleCategories" :key="c.value" :value="c.value">{{ c.label }}</option>
             </select>
@@ -52,18 +52,18 @@
             <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-5 space-y-3">
                 <h2 class="text-sm font-bold uppercase text-slate-500">{{ form.id ? 'Editar' : 'Nueva' }} entrada</h2>
                 <div v-if="!form.id">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Categoría</label>
-                    <select v-model="form.category" class="w-full rounded-lg border-slate-300 text-sm">
+                    <label for="ac-catalog-form-category" class="block text-xs font-semibold text-slate-500 mb-1">Categoría</label>
+                    <select id="ac-catalog-form-category" v-model="form.category" class="w-full rounded-lg border-slate-300 text-sm">
                         <option v-for="c in visibleCategories" :key="c.value" :value="c.value">{{ c.label }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre</label>
-                    <input v-model="form.name" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Taller de ajedrez" />
+                    <label for="ac-catalog-form-name" class="block text-xs font-semibold text-slate-500 mb-1">Nombre</label>
+                    <input id="ac-catalog-form-name" v-model="form.name" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. Taller de ajedrez" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Créditos sugeridos (opcional)</label>
-                    <input v-model.number="form.default_credits" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. 5" />
+                    <label for="ac-catalog-form-credits" class="block text-xs font-semibold text-slate-500 mb-1">Créditos sugeridos (opcional)</label>
+                    <input id="ac-catalog-form-credits" v-model.number="form.default_credits" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" placeholder="p. ej. 5" />
                 </div>
                 <label v-if="form.id" class="flex items-center gap-2 text-sm text-slate-600">
                     <input type="checkbox" v-model="form.is_active" /> Activa

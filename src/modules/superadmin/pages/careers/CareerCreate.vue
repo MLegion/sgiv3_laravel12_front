@@ -41,8 +41,9 @@
                 />
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Nivel</label>
+                    <label for="career-level" class="block text-sm font-medium text-slate-700 mb-1">Nivel</label>
                     <select
+                        id="career-level"
                         v-model="form.level"
                         class="w-full border rounded-lg px-3 py-2 text-sm"
                     >

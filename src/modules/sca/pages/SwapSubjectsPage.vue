@@ -19,22 +19,22 @@
             <div class="bg-white border rounded-xl shadow-sm p-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
-                        <select v-model="campusId" @change="onCampusChange" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
+                        <label for="swap-campus" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Campus</label>
+                        <select id="swap-campus" v-model="campusId" @change="onCampusChange" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                             <option :value="null">-- SELECCIONAR --</option>
                             <option v-for="c in filteredCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
-                        <select v-model="modalityTypeId" @change="onModalityTypeChange" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
+                        <label for="swap-modality-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Tipo Modalidad</label>
+                        <select id="swap-modality-type" v-model="modalityTypeId" @change="onModalityTypeChange" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                             <option :value="null">-- SELECCIONAR --</option>
                             <option v-for="mt in filteredModalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Carrera</label>
-                        <select v-model="careerId" @change="onCareerChange" :disabled="!resolvedModalityId" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
+                        <label for="swap-career" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Carrera</label>
+                        <select id="swap-career" v-model="careerId" @change="onCareerChange" :disabled="!resolvedModalityId" class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 outline-none uppercase">
                             <option :value="null">-- TODAS --</option>
                             <option v-for="c in careers" :key="c.careerId" :value="c.careerId">{{ c.name }}</option>
                         </select>
@@ -56,8 +56,8 @@
                 <!-- Panel Docente A -->
                 <div class="bg-white border-2 rounded-xl shadow-sm overflow-hidden" :class="selectedA ? 'border-blue-400' : 'border-slate-200'">
                     <div class="bg-blue-50 border-b px-4 py-3">
-                        <label class="block text-[10px] font-black text-blue-700 uppercase mb-1.5">Docente A</label>
-                        <select v-model="teacherAId" @change="selectedA = null" class="w-full border rounded-lg px-3 py-2 text-sm font-bold uppercase">
+                        <label for="swap-teacher-a" class="block text-[10px] font-black text-blue-700 uppercase mb-1.5">Docente A</label>
+                        <select id="swap-teacher-a" v-model="teacherAId" @change="selectedA = null" class="w-full border rounded-lg px-3 py-2 text-sm font-bold uppercase">
                             <option :value="null">-- Seleccionar docente --</option>
                             <option v-for="t in teachers" :key="t.id" :value="t.id" :disabled="t.id === teacherBId">{{ t.name }}</option>
                         </select>
@@ -77,8 +77,8 @@
                 <!-- Panel Docente B -->
                 <div class="bg-white border-2 rounded-xl shadow-sm overflow-hidden" :class="selectedB ? 'border-purple-400' : 'border-slate-200'">
                     <div class="bg-purple-50 border-b px-4 py-3">
-                        <label class="block text-[10px] font-black text-purple-700 uppercase mb-1.5">Docente B</label>
-                        <select v-model="teacherBId" @change="selectedB = null" class="w-full border rounded-lg px-3 py-2 text-sm font-bold uppercase">
+                        <label for="swap-teacher-b" class="block text-[10px] font-black text-purple-700 uppercase mb-1.5">Docente B</label>
+                        <select id="swap-teacher-b" v-model="teacherBId" @change="selectedB = null" class="w-full border rounded-lg px-3 py-2 text-sm font-bold uppercase">
                             <option :value="null">-- Seleccionar docente --</option>
                             <option v-for="t in teachers" :key="t.id" :value="t.id" :disabled="t.id === teacherAId">{{ t.name }}</option>
                         </select>

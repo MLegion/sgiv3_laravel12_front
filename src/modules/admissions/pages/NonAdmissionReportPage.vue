@@ -9,8 +9,9 @@
 
         <!-- Selector de periodo -->
         <div class="bg-white border rounded-xl shadow-sm p-4 flex items-center gap-3">
-            <label class="text-xs font-semibold text-slate-600 uppercase">Periodo</label>
+            <label for="nar-period-id" class="text-xs font-semibold text-slate-600 uppercase">Periodo</label>
             <select
+                id="nar-period-id"
                 v-model="periodId"
                 class="border-2 border-slate-200 rounded-lg px-3 py-1.5 text-sm font-bold focus:outline-none focus:border-rose-500"
                 @change="reload"

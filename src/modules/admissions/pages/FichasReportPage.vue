@@ -15,8 +15,9 @@
         <!-- Selectores (no se imprimen) -->
         <div class="flex flex-wrap items-end gap-3 bg-slate-50 border border-slate-200 rounded-lg p-3 print:hidden">
             <div>
-                <label class="block text-xs text-slate-500 mb-1">Periodo actual</label>
+                <label for="fichas-period-id" class="block text-xs text-slate-500 mb-1">Periodo actual</label>
                 <select
+                    id="fichas-period-id"
                     v-model.number="periodId"
                     class="text-sm border border-slate-300 rounded px-2 py-1.5 bg-white min-w-[180px]"
                     :disabled="loading"
@@ -30,8 +31,9 @@
             </div>
 
             <div>
-                <label class="block text-xs text-slate-500 mb-1">Comparar con</label>
+                <label for="fichas-compare-period-id" class="block text-xs text-slate-500 mb-1">Comparar con</label>
                 <select
+                    id="fichas-compare-period-id"
                     v-model.number="comparePeriodId"
                     class="text-sm border border-slate-300 rounded px-2 py-1.5 bg-white min-w-[180px]"
                     :disabled="loading"

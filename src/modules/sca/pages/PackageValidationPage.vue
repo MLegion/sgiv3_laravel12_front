@@ -29,24 +29,24 @@
         <!-- Filtros: Campus + Tipo Modalidad + Plan de Estudio -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CAMPUS</label>
-                <select v-model="selectedCampusId" @change="onCampusOrTypeChange"
+                <label for="pv-campus" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">CAMPUS</label>
+                <select id="pv-campus" v-model="selectedCampusId" @change="onCampusOrTypeChange"
                     class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                     <option :value="null">-- SELECCIONAR --</option>
                     <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">TIPO MODALIDAD</label>
-                <select v-model="selectedModalityTypeId" @change="onCampusOrTypeChange"
+                <label for="pv-modality-type" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">TIPO MODALIDAD</label>
+                <select id="pv-modality-type" v-model="selectedModalityTypeId" @change="onCampusOrTypeChange"
                     class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase">
                     <option :value="null">-- SELECCIONAR --</option>
                     <option v-for="mt in modalityTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">PLAN DE ESTUDIO</label>
-                <select v-model="selectedStudyPlanId" @change="onStudyPlanChange"
+                <label for="pv-study-plan" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">PLAN DE ESTUDIO</label>
+                <select id="pv-study-plan" v-model="selectedStudyPlanId" @change="onStudyPlanChange"
                     class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase"
                     :disabled="!resolvedModalityId">
                     <option :value="null">-- TODOS --</option>

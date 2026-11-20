@@ -61,20 +61,20 @@
         <BaseModal v-model="searchOpen" title="Buscar candidatos a tutoría individual" size="xl">
             <div class="space-y-4">
                 <div class="grid sm:grid-cols-3 gap-3">
-                    <select v-model="filters.period_id" @change="fetchWindow" class="rounded-lg border-slate-300 text-sm">
+                    <select v-model="filters.period_id" @change="fetchWindow" aria-label="Filtrar por periodo" class="rounded-lg border-slate-300 text-sm">
                         <option value="">Periodo…</option>
                         <option v-for="p in options.periods" :key="p.id" :value="p.id">{{ p.name }}</option>
                     </select>
-                    <select v-model="filters.campus_id" @change="onCampusChange" class="rounded-lg border-slate-300 text-sm">
+                    <select v-model="filters.campus_id" @change="onCampusChange" aria-label="Filtrar por campus" class="rounded-lg border-slate-300 text-sm">
                         <option value="">Todos los campus</option>
                         <option v-for="c in options.campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
                     </select>
-                    <select v-model="filters.career_id" class="rounded-lg border-slate-300 text-sm">
+                    <select v-model="filters.career_id" aria-label="Filtrar por carrera" class="rounded-lg border-slate-300 text-sm">
                         <option value="">Todas las carreras</option>
                         <option v-for="c in visibleCareers" :key="c.id" :value="c.id">{{ c.name }}</option>
                     </select>
-                    <input v-model="filters.semester" type="number" min="1" placeholder="Semestre" class="rounded-lg border-slate-300 text-sm" />
-                    <input v-model="filters.search" @keyup.enter="fetchRisk" placeholder="Nombre / nº control" class="rounded-lg border-slate-300 text-sm" />
+                    <input v-model="filters.semester" type="number" min="1" placeholder="Semestre" aria-label="Semestre" class="rounded-lg border-slate-300 text-sm" />
+                    <input v-model="filters.search" @keyup.enter="fetchRisk" placeholder="Nombre / nº control" aria-label="Buscar por nombre o número de control" class="rounded-lg border-slate-300 text-sm" />
                     <label class="flex items-center gap-2 text-sm text-slate-600">
                         <input type="checkbox" v-model="filters.only_suggested" /> Solo sugeridos
                     </label>
@@ -117,8 +117,8 @@
 
         <!-- Modal proponer -->
         <BaseModal v-model="propose.open" :title="'Proponer: ' + (propose.row?.full_name ?? '')" size="md">
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Motivo</label>
-            <textarea v-model="propose.reason" rows="3" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Describe la razón de la tutoría individual…"></textarea>
+            <label for="propose-reason" class="block text-xs font-semibold text-slate-500 mb-1">Motivo</label>
+            <textarea id="propose-reason" v-model="propose.reason" rows="3" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Describe la razón de la tutoría individual…"></textarea>
             <p class="text-[11px] text-slate-400 mt-1">Origen: <b>{{ propose.row?.suggested ? 'sugerido por riesgo' : 'manual (academia)' }}</b></p>
             <template #footer>
                 <button @click="submitPropose" :disabled="busy || !propose.reason.trim()" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Registrar propuesta</button>
@@ -154,8 +154,8 @@
                 :item-searchs="['full_name']"
                 label="Nuevo tutor (personal del plantel)"
                 placeholder="Buscar al nuevo tutor por nombre…" />
-            <label class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Motivo del cambio</label>
-            <textarea v-model="changeM.reason" rows="3" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Describe por qué se cambia de tutor…"></textarea>
+            <label for="change-tutor-reason" class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Motivo del cambio</label>
+            <textarea id="change-tutor-reason" v-model="changeM.reason" rows="3" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Describe por qué se cambia de tutor…"></textarea>
             <template #footer>
                 <button @click="submitChangeTutor" :disabled="busy || !changeM.tutor || !changeM.reason.trim()" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Cambiar tutor</button>
             </template>

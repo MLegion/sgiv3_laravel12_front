@@ -111,8 +111,9 @@
 
                             <!-- Nombre -->
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre del corte</label>
+                                <label for="window-name" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre del corte</label>
                                 <input
+                                    id="window-name"
                                     v-model="form.name"
                                     type="text"
                                     maxlength="120"
@@ -124,22 +125,22 @@
                             <!-- Fechas -->
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Inicio</label>
-                                    <input v-model="form.starts_at" type="date" class="field" />
+                                    <label for="window-starts-at" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Inicio</label>
+                                    <input id="window-starts-at" v-model="form.starts_at" type="date" class="field" />
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cierre</label>
-                                    <input v-model="form.ends_at" type="date" class="field" />
+                                    <label for="window-ends-at" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cierre</label>
+                                    <input id="window-ends-at" v-model="form.ends_at" type="date" class="field" />
                                 </div>
                             </div>
 
                             <!-- Liberación de resultados -->
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">
+                                <label for="window-results-release-at" class="block text-xs font-semibold text-slate-600 uppercase mb-1">
                                     Liberar resultados a partir de
                                     <span class="font-normal normal-case text-slate-400">(opcional)</span>
                                 </label>
-                                <input v-model="form.results_release_at" type="datetime-local" class="field" />
+                                <input id="window-results-release-at" v-model="form.results_release_at" type="datetime-local" class="field" />
                                 <p class="text-[11px] text-slate-500 mt-1">
                                     Hasta esta fecha y hora el aspirante NO ve su puntaje en el portal. Vacío = siempre visible.
                                 </p>

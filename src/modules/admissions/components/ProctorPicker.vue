@@ -29,10 +29,11 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-[10px] font-semibold text-slate-600 uppercase mb-0.5">
+                    <label for="pp-search-term" class="block text-[10px] font-semibold text-slate-600 uppercase mb-0.5">
                         {{ includeEmployees ? 'Empleado' : 'Docente' }}
                     </label>
                     <input
+                        id="pp-search-term"
                         v-model="searchTerm"
                         type="text"
                         placeholder="Buscar por nombre o email..."
@@ -64,18 +65,19 @@
 
                 <div class="space-y-2">
                     <div>
-                        <label class="block text-[10px] font-semibold text-slate-600 uppercase mb-0.5">Rol en sesión</label>
-                        <select v-model="role" class="field-sm">
+                        <label for="pp-role" class="block text-[10px] font-semibold text-slate-600 uppercase mb-0.5">Rol en sesión</label>
+                        <select id="pp-role" v-model="role" class="field-sm">
                             <option value="TITULAR">Titular</option>
                             <option value="APOYO">Apoyo</option>
                         </select>
                     </div>
 
                     <div v-if="selectedUser && (!selectedUser.isTeacher || includeEmployees)">
-                        <label class="block text-[10px] font-semibold text-slate-600 uppercase mb-0.5">
+                        <label for="pp-exception-reason" class="block text-[10px] font-semibold text-slate-600 uppercase mb-0.5">
                             Razón de la excepción <span class="text-red-600">*</span>
                         </label>
                         <textarea
+                            id="pp-exception-reason"
                             v-model="exceptionReason"
                             rows="2"
                             maxlength="255"

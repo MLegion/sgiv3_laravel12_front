@@ -146,10 +146,11 @@
                         Se desconectará al instante a <strong>{{ disableModal.userName }}</strong> de cualquier sesión activa y no podrá ingresar de nuevo. Indica la razón (queda en auditoría).
                     </p>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">
+                        <label for="disable-user-reason" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">
                             Razón (mínimo 5 caracteres)
                         </label>
                         <textarea
+                            id="disable-user-reason"
                             v-model="disableModal.reason"
                             rows="4"
                             maxlength="500"

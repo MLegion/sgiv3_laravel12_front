@@ -43,8 +43,8 @@
                                 <input type="color" v-model="cfg.background!.gradientFrom" class="h-9 w-14 border rounded" />
                                 <span class="text-xs text-gray-500">→</span>
                                 <input type="color" v-model="cfg.background!.gradientTo" class="h-9 w-14 border rounded" />
-                                <label class="text-xs text-gray-500 ml-auto">Ángulo</label>
-                                <input type="number" v-model.number="cfg.background!.gradientAngle" class="w-20 h-9 px-2 border rounded text-sm" />
+                                <label for="lc-gradient-angle" class="text-xs text-gray-500 ml-auto">Ángulo</label>
+                                <input id="lc-gradient-angle" type="number" v-model.number="cfg.background!.gradientAngle" class="w-20 h-9 px-2 border rounded text-sm" />
                             </div>
                         </div>
                         <div v-else class="text-xs text-gray-500">
@@ -70,16 +70,16 @@
                     <div class="px-4 pb-4 space-y-3">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-xs text-gray-600">Posición horizontal</label>
-                                <select v-model="cfg.form!.position" class="w-full h-9 px-2 border rounded text-sm">
+                                <label for="lc-form-position" class="text-xs text-gray-600">Posición horizontal</label>
+                                <select id="lc-form-position" v-model="cfg.form!.position" class="w-full h-9 px-2 border rounded text-sm">
                                     <option value="left">Izquierda</option>
                                     <option value="center">Centro</option>
                                     <option value="right">Derecha</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="text-xs text-gray-600">Posición vertical</label>
-                                <select v-model="cfg.form!.align" class="w-full h-9 px-2 border rounded text-sm">
+                                <label for="lc-form-align" class="text-xs text-gray-600">Posición vertical</label>
+                                <select id="lc-form-align" v-model="cfg.form!.align" class="w-full h-9 px-2 border rounded text-sm">
                                     <option value="top">Arriba</option>
                                     <option value="center">Centro</option>
                                     <option value="bottom">Abajo</option>
@@ -88,12 +88,12 @@
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-xs text-gray-600">Ancho tarjeta (px)</label>
-                                <input type="number" v-model.number="cfg.form!.cardWidth" class="w-full h-9 px-2 border rounded text-sm" placeholder="420" />
+                                <label for="lc-card-width" class="text-xs text-gray-600">Ancho tarjeta (px)</label>
+                                <input id="lc-card-width" type="number" v-model.number="cfg.form!.cardWidth" class="w-full h-9 px-2 border rounded text-sm" placeholder="420" />
                             </div>
                             <div>
-                                <label class="text-xs text-gray-600">Redondeo (px)</label>
-                                <input type="number" v-model.number="cfg.form!.cardRadius" class="w-full h-9 px-2 border rounded text-sm" placeholder="16" />
+                                <label for="lc-card-radius" class="text-xs text-gray-600">Redondeo (px)</label>
+                                <input id="lc-card-radius" type="number" v-model.number="cfg.form!.cardRadius" class="w-full h-9 px-2 border rounded text-sm" placeholder="16" />
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3 items-end">
@@ -105,8 +105,8 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="text-xs text-gray-600 flex justify-between"><span>Opacidad tarjeta</span><span>{{ Math.round((cfg.form!.cardOpacity ?? 1) * 100) }}%</span></label>
-                                <input type="range" min="0.4" max="1" step="0.05" v-model.number="cfg.form!.cardOpacity" class="w-full" />
+                                <label for="lc-card-opacity" class="text-xs text-gray-600 flex justify-between"><span>Opacidad tarjeta</span><span>{{ Math.round((cfg.form!.cardOpacity ?? 1) * 100) }}%</span></label>
+                                <input id="lc-card-opacity" type="range" min="0.4" max="1" step="0.05" v-model.number="cfg.form!.cardOpacity" class="w-full" />
                             </div>
                         </div>
                     </div>
@@ -117,15 +117,15 @@
                     <summary class="cursor-pointer px-4 py-2 text-sm font-semibold text-gray-700 select-none">Diseño dividido</summary>
                     <div class="px-4 pb-4 space-y-3">
                         <div>
-                            <label class="text-xs text-gray-600">Lado de la imagen</label>
-                            <select v-model="cfg.split!.imageSide" class="w-full h-9 px-2 border rounded text-sm">
+                            <label for="lc-split-side" class="text-xs text-gray-600">Lado de la imagen</label>
+                            <select id="lc-split-side" v-model="cfg.split!.imageSide" class="w-full h-9 px-2 border rounded text-sm">
                                 <option value="left">Izquierda</option>
                                 <option value="right">Derecha</option>
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs text-gray-600 flex justify-between"><span>Ancho del formulario</span><span>{{ cfg.split!.formRatio }}%</span></label>
-                            <input type="range" min="30" max="70" step="1" v-model.number="cfg.split!.formRatio" class="w-full" />
+                            <label for="lc-split-ratio" class="text-xs text-gray-600 flex justify-between"><span>Ancho del formulario</span><span>{{ cfg.split!.formRatio }}%</span></label>
+                            <input id="lc-split-ratio" type="range" min="30" max="70" step="1" v-model.number="cfg.split!.formRatio" class="w-full" />
                         </div>
                     </div>
                 </details>
@@ -149,17 +149,17 @@
                     <summary class="cursor-pointer px-4 py-2 text-sm font-semibold text-gray-700 select-none">Tipografía</summary>
                     <div class="px-4 pb-4 space-y-3">
                         <div>
-                            <label class="text-xs text-gray-600">Familia tipográfica (CSS font-family)</label>
-                            <input type="text" v-model="cfg.typography!.fontFamily" class="w-full h-9 px-2 border rounded text-sm" placeholder="Inter, system-ui, sans-serif" />
+                            <label for="lc-font-family" class="text-xs text-gray-600">Familia tipográfica (CSS font-family)</label>
+                            <input id="lc-font-family" type="text" v-model="cfg.typography!.fontFamily" class="w-full h-9 px-2 border rounded text-sm" placeholder="Inter, system-ui, sans-serif" />
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-xs text-gray-600">Tamaño título (px)</label>
-                                <input type="number" v-model.number="cfg.typography!.titleSize" class="w-full h-9 px-2 border rounded text-sm" placeholder="20" />
+                                <label for="lc-title-size" class="text-xs text-gray-600">Tamaño título (px)</label>
+                                <input id="lc-title-size" type="number" v-model.number="cfg.typography!.titleSize" class="w-full h-9 px-2 border rounded text-sm" placeholder="20" />
                             </div>
                             <div>
-                                <label class="text-xs text-gray-600">Tamaño base (px)</label>
-                                <input type="number" v-model.number="cfg.typography!.baseSize" class="w-full h-9 px-2 border rounded text-sm" placeholder="14" />
+                                <label for="lc-base-size" class="text-xs text-gray-600">Tamaño base (px)</label>
+                                <input id="lc-base-size" type="number" v-model.number="cfg.typography!.baseSize" class="w-full h-9 px-2 border rounded text-sm" placeholder="14" />
                             </div>
                         </div>
                     </div>
@@ -195,6 +195,7 @@
                         </p>
                         <textarea
                             v-model="cfg.customHtml"
+                            aria-label="HTML personalizado del login"
                             rows="14"
                             spellcheck="false"
                             class="w-full font-mono text-xs p-3 border rounded bg-white"

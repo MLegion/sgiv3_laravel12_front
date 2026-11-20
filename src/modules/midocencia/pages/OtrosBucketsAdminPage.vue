@@ -80,8 +80,8 @@
             <!-- Alta -->
             <div class="bg-white border rounded-xl shadow-sm p-4 flex flex-wrap items-end gap-3">
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nueva categoría</label>
-                    <input v-model="newName" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Nombre de la categoría…" @keyup.enter="add" />
+                    <label for="oba-new-name" class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nueva categoría</label>
+                    <input id="oba-new-name" v-model="newName" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Nombre de la categoría…" @keyup.enter="add" />
                 </div>
                 <button
                     class="text-sm bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 disabled:opacity-50"

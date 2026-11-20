@@ -18,6 +18,7 @@
             <input
                 ref="codeInput"
                 v-model="code"
+                :aria-label="useRecovery ? 'Código de recuperación' : 'Código de verificación de 6 dígitos'"
                 :inputmode="useRecovery ? 'text' : 'numeric'"
                 :maxlength="useRecovery ? 11 : 6"
                 autocomplete="one-time-code"

@@ -8,8 +8,9 @@
         <!-- Filtros -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">MODALIDAD</label>
+                <label for="pbc-modality" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">MODALIDAD</label>
                 <select
+                    id="pbc-modality"
                     v-model="selectedModalityId"
                     class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase"
                     @change="onModalityChange"
@@ -19,8 +20,9 @@
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">OFERTA ACADÉMICA (CARRERA)</label>
+                <label for="pbc-academic-offer" class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">OFERTA ACADÉMICA (CARRERA)</label>
                 <select
+                    id="pbc-academic-offer"
                     v-model="selectedAcademicOfferId"
                     class="w-full border-2 rounded-xl px-4 py-2.5 text-sm font-bold border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none uppercase"
                     @change="onAcademicOfferChange"
@@ -47,6 +49,7 @@
                         <input
                             v-model="availableSearch"
                             type="text"
+                            aria-label="Buscar aulas disponibles"
                             placeholder="Buscar..."
                             class="w-full border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
                             @input="debouncedFetchAvailable"
@@ -115,6 +118,7 @@
                         <input
                             v-model="assignedSearch"
                             type="text"
+                            aria-label="Buscar aulas asignadas"
                             placeholder="Buscar..."
                             class="w-full border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
                             @input="debouncedFetchAssigned"

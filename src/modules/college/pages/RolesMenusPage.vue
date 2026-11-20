@@ -35,7 +35,7 @@
                 <!-- Buscador -->
                 <div class="relative">
                     <MagnifyingGlassIcon class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <input v-model="query" type="text" placeholder="Buscar rol…"
+                    <input v-model="query" type="text" aria-label="Buscar rol" placeholder="Buscar rol…"
                         class="w-full rounded-xl border bg-white pl-9 pr-8 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 transition" />
                     <button v-if="query" type="button" @click="query = ''"
                         class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition">

@@ -26,6 +26,7 @@
                     <template v-else>
                         <input
                             type="text"
+                            :aria-label="keyDef.label"
                             :value="comboSearch[keyName] ?? ''"
                             @input="onComboSearch(keyName, keyDef.options_source!, ($event.target as HTMLInputElement).value)"
                             :placeholder="keyDef.placeholder ?? 'Buscar…'"
@@ -43,6 +44,7 @@
             <template v-else-if="keyDef.values && keyDef.values.length > 0">
                 <span class="text-xs font-semibold text-slate-600">{{ keyDef.label }}</span>
                 <select
+                    :aria-label="keyDef.label"
                     :value="model[keyName] as any"
                     @change="setValue(keyName, ($event.target as HTMLSelectElement).value)"
                     class="mt-1 w-full h-9 border rounded-md px-3 text-sm bg-white"
@@ -56,6 +58,7 @@
                 <span class="text-xs font-semibold text-slate-600">{{ keyDef.label }}</span>
                 <input
                     type="number"
+                    :aria-label="keyDef.label"
                     :min="keyDef.min ?? undefined"
                     :max="keyDef.max ?? undefined"
                     :value="model[keyName] as any"
@@ -69,6 +72,7 @@
             <template v-else-if="keyDef.type === 'json'">
                 <span class="text-xs font-semibold text-slate-600">{{ keyDef.label }}</span>
                 <textarea
+                    :aria-label="keyDef.label"
                     :value="stringifyJson(model[keyName])"
                     @input="onJsonInput(keyName, ($event.target as HTMLTextAreaElement).value)"
                     rows="4"
@@ -89,6 +93,7 @@
                 </span>
                 <input
                     type="password"
+                    :aria-label="keyDef.label"
                     :value="secretInput[keyName] ?? ''"
                     @input="onSecretInput(keyName, ($event.target as HTMLInputElement).value)"
                     :placeholder="secretHasValue(keyName) ? '(dejar vacío para conservar)' : (keyDef.placeholder ?? '')"
@@ -102,6 +107,7 @@
                 <span class="text-xs font-semibold text-slate-600">{{ keyDef.label }}</span>
                 <input
                     type="text"
+                    :aria-label="keyDef.label"
                     :value="model[keyName] as any"
                     @input="setValue(keyName, ($event.target as HTMLInputElement).value)"
                     :placeholder="keyDef.placeholder ?? ''"

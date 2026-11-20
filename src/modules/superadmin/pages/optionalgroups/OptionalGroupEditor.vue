@@ -268,14 +268,14 @@ onMounted(fetchData)
                 <div class="p-8 space-y-6">
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Periodo</label>
-                            <select v-model="moveForm.period" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold focus:border-indigo-500 outline-none transition-all">
+                            <label for="move-period" class="text-[10px] font-black text-slate-400 uppercase ml-1">Periodo</label>
+                            <select id="move-period" v-model="moveForm.period" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold focus:border-indigo-500 outline-none transition-all">
                                 <option v-for="p in studyPlan.periods" :key="p" :value="p">{{ p }}° {{ labelPeriod }}</option>
                             </select>
                         </div>
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Nivel (Fila)</label>
-                            <select v-model="moveForm.level" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold focus:border-indigo-500 outline-none transition-all">
+                            <label for="move-level" class="text-[10px] font-black text-slate-400 uppercase ml-1">Nivel (Fila)</label>
+                            <select id="move-level" v-model="moveForm.level" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-bold focus:border-indigo-500 outline-none transition-all">
                                 <option v-for="l in 10" :key="l" :value="l">Nivel {{ l }}</option>
                             </select>
                         </div>

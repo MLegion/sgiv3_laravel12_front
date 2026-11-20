@@ -22,8 +22,9 @@
         <div v-else class="bg-white border rounded-xl shadow-sm p-6 space-y-5">
             <!-- Estado -->
             <div class="space-y-1">
-                <label class="text-xs font-medium text-slate-600 uppercase tracking-widest">ESTADO</label>
+                <label for="adr-status" class="text-xs font-medium text-slate-600 uppercase tracking-widest">ESTADO</label>
                 <select
+                    id="adr-status"
                     v-model="form.status"
                     class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -35,8 +36,9 @@
 
             <!-- Motivo de rechazo (solo si status = rejected) -->
             <div v-if="form.status === 'rejected'" class="space-y-1">
-                <label class="text-xs font-medium text-slate-600 uppercase tracking-widest">MOTIVO DE RECHAZO</label>
+                <label for="adr-rejection-reason" class="text-xs font-medium text-slate-600 uppercase tracking-widest">MOTIVO DE RECHAZO</label>
                 <textarea
+                    id="adr-rejection-reason"
                     v-model="form.rejection_reason"
                     rows="3"
                     class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"

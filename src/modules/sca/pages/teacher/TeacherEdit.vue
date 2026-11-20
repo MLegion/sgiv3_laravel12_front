@@ -38,8 +38,9 @@
                 <!-- Modo Vacante: editable -->
                 <template v-else>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">NOMBRE DE LA VACANTE <span class="text-red-500">*</span></label>
+                        <label for="te-vacancy-name" class="block text-xs font-semibold text-slate-500 uppercase mb-1">NOMBRE DE LA VACANTE <span class="text-red-500">*</span></label>
                         <input
+                            id="te-vacancy-name"
                             :value="form.name"
                             type="text"
                             maxlength="255"
@@ -62,8 +63,9 @@
                 </template>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">ID EXTERNO <span class="font-normal text-slate-400">(opcional)</span></label>
+                    <label for="te-custom-id" class="block text-xs font-semibold text-slate-500 uppercase mb-1">ID EXTERNO <span class="font-normal text-slate-400">(opcional)</span></label>
                     <input
+                        id="te-custom-id"
                         v-model="form.customId"
                         type="text"
                         class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

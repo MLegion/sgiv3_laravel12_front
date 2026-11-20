@@ -23,7 +23,7 @@
 
         <!-- Modal motivo -->
         <BaseDrawer v-model="reason.open" title="Motivo del rechazo">
-            <textarea v-model="reason.text" rows="3" class="border rounded-md w-full px-3 py-2 text-sm" placeholder="Explica por qué se rechaza…"></textarea>
+            <textarea v-model="reason.text" rows="3" aria-label="Motivo del rechazo" class="border rounded-md w-full px-3 py-2 text-sm" placeholder="Explica por qué se rechaza…"></textarea>
             <p v-if="reason.error" class="text-xs text-red-600">{{ reason.error }}</p>
             <template #footer>
                 <button type="button" class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="reason.open = false">Cancelar</button>

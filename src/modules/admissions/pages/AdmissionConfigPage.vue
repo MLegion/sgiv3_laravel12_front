@@ -36,16 +36,18 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha de inicio</label>
+                        <label for="cfg-starts-at" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha de inicio</label>
                         <input
+                            id="cfg-starts-at"
                             v-model="form.starts_at"
                             type="date"
                             class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha de cierre</label>
+                        <label for="cfg-ends-at" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha de cierre</label>
                         <input
+                            id="cfg-ends-at"
                             v-model="form.ends_at"
                             type="date"
                             class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -66,8 +68,9 @@
 
                 <!-- Cupo máximo -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cupo máximo de aspirantes</label>
+                    <label for="cfg-max-applicants" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cupo máximo de aspirantes</label>
                     <input
+                        id="cfg-max-applicants"
                         v-model.number="form.max_applicants"
                         type="number"
                         min="0"
@@ -141,6 +144,7 @@
                     </div>
                     <select
                         v-model.number="form.max_offer_options"
+                        aria-label="Opciones de oferta en la preficha"
                         class="shrink-0 w-24 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                     >
                         <option :value="1">1</option>

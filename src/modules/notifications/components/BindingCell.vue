@@ -30,6 +30,7 @@
                     type="number"
                     min="0"
                     max="43200"
+                    aria-label="Cooldown en minutos"
                     :value="cooldown"
                     class="w-16 border rounded px-1 py-0.5 text-[11px] text-center"
                     :disabled="saving"

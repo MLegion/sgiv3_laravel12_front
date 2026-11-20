@@ -31,8 +31,8 @@
                     <summary class="cursor-pointer px-4 py-2 text-sm font-semibold text-gray-700 select-none">Barra superior (navbar)</summary>
                     <div class="px-4 pb-4 space-y-3">
                         <div>
-                            <label class="text-xs text-gray-600">Estilo</label>
-                            <select v-model="cfg.navbar!.variant" class="w-full h-9 px-2 border rounded text-sm">
+                            <label for="atc-navbar-variant" class="text-xs text-gray-600">Estilo</label>
+                            <select id="atc-navbar-variant" v-model="cfg.navbar!.variant" class="w-full h-9 px-2 border rounded text-sm">
                                 <option value="light">Clara</option>
                                 <option value="brand">Color de marca</option>
                                 <option value="dark">Oscura</option>
@@ -71,8 +71,8 @@
                             </div>
                         </div>
                         <div>
-                            <label class="text-xs text-gray-600 flex justify-between"><span>Ancho expandido</span><span>{{ cfg.sidebar!.width || 288 }}px</span></label>
-                            <input type="range" min="220" max="360" step="4" :value="cfg.sidebar!.width || 288" @input="cfg.sidebar!.width = Number(val($event))" class="w-full" />
+                            <label for="atc-sidebar-width" class="text-xs text-gray-600 flex justify-between"><span>Ancho expandido</span><span>{{ cfg.sidebar!.width || 288 }}px</span></label>
+                            <input id="atc-sidebar-width" type="range" min="220" max="360" step="4" :value="cfg.sidebar!.width || 288" @input="cfg.sidebar!.width = Number(val($event))" class="w-full" />
                         </div>
                     </div>
                 </details>

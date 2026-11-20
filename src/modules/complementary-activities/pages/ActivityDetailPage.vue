@@ -28,32 +28,32 @@
             </div>
             <div class="grid sm:grid-cols-3 gap-3">
                 <div class="sm:col-span-3">
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Nombre</label>
-                    <input v-model="info.name" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="ac-info-name" class="block text-[10px] uppercase text-slate-400 mb-1">Nombre</label>
+                    <input id="ac-info-name" v-model="info.name" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Créditos</label>
-                    <input v-model.number="info.credits" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="ac-info-credits" class="block text-[10px] uppercase text-slate-400 mb-1">Créditos</label>
+                    <input id="ac-info-credits" v-model.number="info.credits" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Horas semanales</label>
-                    <input v-model.number="info.weekly_hours" type="number" min="0" max="60" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="ac-info-weekly-hours" class="block text-[10px] uppercase text-slate-400 mb-1">Horas semanales</label>
+                    <input id="ac-info-weekly-hours" v-model.number="info.weekly_hours" type="number" min="0" max="60" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Cupo (opcional)</label>
-                    <input v-model.number="info.capacity" type="number" min="1" max="1000" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="ac-info-capacity" class="block text-[10px] uppercase text-slate-400 mb-1">Cupo (opcional)</label>
+                    <input id="ac-info-capacity" v-model.number="info.capacity" type="number" min="1" max="1000" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Periodo (semestre)</label>
-                    <input :value="activity.period_name ?? '—'" disabled class="w-full rounded-lg border-slate-200 bg-slate-50 text-sm text-slate-500" />
+                    <label for="ac-info-period" class="block text-[10px] uppercase text-slate-400 mb-1">Periodo (semestre)</label>
+                    <input id="ac-info-period" :value="activity.period_name ?? '—'" disabled class="w-full rounded-lg border-slate-200 bg-slate-50 text-sm text-slate-500" />
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Inicia (duración)</label>
-                    <input v-model="info.starts_on" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="ac-info-starts-on" class="block text-[10px] uppercase text-slate-400 mb-1">Inicia (duración)</label>
+                    <input id="ac-info-starts-on" v-model="info.starts_on" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Termina (duración)</label>
-                    <input v-model="info.ends_on" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="ac-info-ends-on" class="block text-[10px] uppercase text-slate-400 mb-1">Termina (duración)</label>
+                    <input id="ac-info-ends-on" v-model="info.ends_on" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
             </div>
             <p class="text-[11px] text-slate-400">{{ typeLabel }} · {{ activity.period_name }}<span v-if="activity.career_name"> · {{ activity.career_name }}</span><span v-if="info.starts_on || info.ends_on"> · {{ info.starts_on || '…' }} → {{ info.ends_on || '…' }}</span></p>
@@ -71,8 +71,8 @@
 
             <div v-else class="grid sm:grid-cols-3 gap-3">
                 <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Estado (sigue la ventana)</label>
-                    <select v-model="enroll.status" class="w-full rounded-lg border-slate-300 text-sm">
+                    <label for="ac-enroll-status" class="block text-[10px] uppercase text-slate-400 mb-1">Estado (sigue la ventana)</label>
+                    <select id="ac-enroll-status" v-model="enroll.status" class="w-full rounded-lg border-slate-300 text-sm">
                         <option value="draft">Borrador (no visible)</option>
                         <option value="enrollment">Inscripción abierta</option>
                         <option value="active">Activa (en curso)</option>
@@ -80,24 +80,24 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Abre (opcional)</label>
-                    <input v-model="enroll.opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="ac-enroll-opens-at" class="block text-[10px] uppercase text-slate-400 mb-1">Abre (opcional)</label>
+                    <input id="ac-enroll-opens-at" v-model="enroll.opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Cierra (opcional)</label>
-                    <input v-model="enroll.closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="ac-enroll-closes-at" class="block text-[10px] uppercase text-slate-400 mb-1">Cierra (opcional)</label>
+                    <input id="ac-enroll-closes-at" v-model="enroll.closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
             </div>
             <p v-if="!isGroupTutoring" class="text-[11px] text-slate-400">Si fijas una ventana, el estado se mueve <strong>solo</strong>: Borrador → Inscripción abierta (cuando abre, los alumnos la ven) → Activa (al cerrar). Sin ventana, controlas el estado a mano. Las fechas deben estar dentro del periodo. El cupo lo controla el campo “Cupo”.</p>
 
             <div class="grid sm:grid-cols-2 gap-3 pt-1">
                 <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Captura de resultados — abre (opcional)</label>
-                    <input v-model="enroll.result_opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="ac-enroll-result-opens-at" class="block text-[10px] uppercase text-slate-400 mb-1">Captura de resultados — abre (opcional)</label>
+                    <input id="ac-enroll-result-opens-at" v-model="enroll.result_opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase text-slate-400 mb-1">Captura de resultados — cierra (opcional)</label>
-                    <input v-model="enroll.result_closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
+                    <label for="ac-enroll-result-closes-at" class="block text-[10px] uppercase text-slate-400 mb-1">Captura de resultados — cierra (opcional)</label>
+                    <input id="ac-enroll-result-closes-at" v-model="enroll.result_closes_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
                 </div>
             </div>
             <p class="text-[11px] text-slate-400">Ventana de cierre en que el instructor/encargado puede marcar acreditó/no acreditó para ESTA actividad. Vacío = aplica la ventana general del periodo.</p>
@@ -120,8 +120,8 @@
                 </div>
                 <div class="space-y-3">
                     <div>
-                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Género</label>
-                        <select v-model="rules.gender" class="w-full rounded-lg border-slate-300 text-sm">
+                        <label for="ac-rules-gender" class="block text-[10px] uppercase text-slate-400 mb-1">Género</label>
+                        <select id="ac-rules-gender" v-model="rules.gender" class="w-full rounded-lg border-slate-300 text-sm">
                             <option :value="null">Cualquiera</option>
                             <option value="M">Masculino</option>
                             <option value="F">Femenino</option>
@@ -185,7 +185,7 @@
 
             <!-- Agregar alumno -->
             <div class="relative max-w-md">
-                <input v-model="studentSearch" @input="searchStudents" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Agregar alumno: buscar por control o nombre…" />
+                <input v-model="studentSearch" @input="searchStudents" aria-label="Agregar alumno: buscar por control o nombre" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Agregar alumno: buscar por control o nombre…" />
                 <ul v-if="studentResults.length" class="absolute z-10 bg-white border rounded-lg mt-1 w-full max-h-56 overflow-y-auto shadow">
                     <li v-for="s in studentResults" :key="s.id" @click="addStudent(s)" class="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">
                         <span class="font-semibold text-slate-700">{{ s.full_name }}</span>
@@ -280,8 +280,8 @@
                     </dl>
 
                     <div>
-                        <label class="block text-[10px] uppercase text-slate-400 mb-1">Aula · {{ (assign.places.filter((p:any)=>p.free)).length }} disponibles</label>
-                        <select v-model.number="assign.placeId" class="w-full rounded-lg border-slate-300 text-sm">
+                        <label for="ac-assign-place" class="block text-[10px] uppercase text-slate-400 mb-1">Aula · {{ (assign.places.filter((p:any)=>p.free)).length }} disponibles</label>
+                        <select id="ac-assign-place" v-model.number="assign.placeId" class="w-full rounded-lg border-slate-300 text-sm">
                             <option :value="null">— Sin aula —</option>
                             <option v-for="p in assign.places" :key="p.id" :value="p.id" :disabled="!p.free">
                                 {{ p.name }}{{ p.id === activity.place_id ? ' (por defecto)' : '' }}{{ p.free ? '' : ' — ocupada' }}
@@ -290,14 +290,14 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[10px] uppercase text-slate-400 mb-1">Hora inicio</label>
-                            <select v-model.number="assign.startHour" @change="onAssignRange" class="w-full rounded-lg border-slate-300 text-sm">
+                            <label for="ac-assign-start-hour" class="block text-[10px] uppercase text-slate-400 mb-1">Hora inicio</label>
+                            <select id="ac-assign-start-hour" v-model.number="assign.startHour" @change="onAssignRange" class="w-full rounded-lg border-slate-300 text-sm">
                                 <option v-for="h in HOURS.slice(0, -1)" :key="h" :value="h">{{ hh(h) }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] uppercase text-slate-400 mb-1">Hora término</label>
-                            <select v-model.number="assign.endHour" @change="onAssignRange" class="w-full rounded-lg border-slate-300 text-sm">
+                            <label for="ac-assign-end-hour" class="block text-[10px] uppercase text-slate-400 mb-1">Hora término</label>
+                            <select id="ac-assign-end-hour" v-model.number="assign.endHour" @change="onAssignRange" class="w-full rounded-lg border-slate-300 text-sm">
                                 <option v-for="h in HOURS.filter(x => x > assign.startHour)" :key="h" :value="h">{{ hh(h) }}</option>
                             </select>
                         </div>

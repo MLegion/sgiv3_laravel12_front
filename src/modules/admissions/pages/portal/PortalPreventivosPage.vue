@@ -36,26 +36,26 @@
                     <FormInput label="NSS / NÚMERO IMSS" v-model="form.nss" :maxlength="20" uppercase />
                     <FormInput label="CLÍNICA DE ATENCIÓN" v-model="form.medical_clinic" :maxlength="120" uppercase />
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">TIPO DE SANGRE</label>
-                        <select v-model="form.blood_type" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label for="blood-type" class="text-xs font-medium text-slate-600">TIPO DE SANGRE</label>
+                        <select id="blood-type" v-model="form.blood_type" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">Seleccionar...</option>
                             <option v-for="t in BLOOD_TYPES" :key="t" :value="t">{{ t }}</option>
                         </select>
                     </div>
                     <div class="space-y-1">
-                        <label class="text-xs font-medium text-slate-600">DISCAPACIDAD</label>
-                        <select v-model="form.disability_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase">
+                        <label for="disability-id" class="text-xs font-medium text-slate-600">DISCAPACIDAD</label>
+                        <select id="disability-id" v-model="form.disability_id" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase">
                             <option :value="null">NINGUNA</option>
                             <option v-for="d in disabilities" :key="d.id" :value="d.id">{{ d.name }}</option>
                         </select>
                     </div>
                     <div class="sm:col-span-2 space-y-1">
-                        <label class="text-xs font-medium text-slate-600">ALERGIAS</label>
-                        <textarea v-model="form.allergies" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none uppercase placeholder:normal-case"></textarea>
+                        <label for="allergies" class="text-xs font-medium text-slate-600">ALERGIAS</label>
+                        <textarea id="allergies" v-model="form.allergies" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none uppercase placeholder:normal-case"></textarea>
                     </div>
                     <div class="sm:col-span-2 space-y-1">
-                        <label class="text-xs font-medium text-slate-600">TRATAMIENTOS PSICOLÓGICOS/PSIQUIÁTRICOS</label>
-                        <textarea v-model="form.psychological_treatment" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none uppercase placeholder:normal-case"></textarea>
+                        <label for="psychological-treatment" class="text-xs font-medium text-slate-600">TRATAMIENTOS PSICOLÓGICOS/PSIQUIÁTRICOS</label>
+                        <textarea id="psychological-treatment" v-model="form.psychological_treatment" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none uppercase placeholder:normal-case"></textarea>
                     </div>
                 </div>
             </template>

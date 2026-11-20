@@ -25,14 +25,16 @@
             <!-- Columna izquierda: formulario -->
             <div class="bg-white rounded-lg shadow p-6 space-y-5">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Color primario</label>
+                    <label for="branding-primary-color" class="block text-sm font-medium text-gray-700 mb-1">Color primario</label>
                     <div class="flex items-center gap-3">
                         <input
                             type="color"
+                            aria-label="Color primario (selector)"
                             v-model="form.primary_color"
                             class="h-10 w-16 border border-gray-300 rounded cursor-pointer"
                         />
                         <input
+                            id="branding-primary-color"
                             type="text"
                             v-model="form.primary_color"
                             placeholder="#4f46e5"
@@ -43,8 +45,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Título de bienvenida</label>
+                    <label for="branding-welcome-title" class="block text-sm font-medium text-gray-700 mb-1">Título de bienvenida</label>
                     <input
+                        id="branding-welcome-title"
                         v-model="form.welcome_title"
                         type="text"
                         placeholder="Bienvenido al ITSTB"
@@ -54,8 +57,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Sub-título de bienvenida</label>
+                    <label for="branding-welcome-subtitle" class="block text-sm font-medium text-gray-700 mb-1">Sub-título de bienvenida</label>
                     <input
+                        id="branding-welcome-subtitle"
                         v-model="form.welcome_subtitle"
                         type="text"
                         placeholder="Acceso al Sistema Integral de Gestión"
@@ -66,8 +70,9 @@
 
                 <div class="pt-3 border-t">
                     <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">App autenticada</p>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Texto en la navbar</label>
+                    <label for="branding-navbar-title" class="block text-sm font-medium text-gray-700 mb-1">Texto en la navbar</label>
                     <input
+                        id="branding-navbar-title"
                         v-model="form.navbar_title"
                         type="text"
                         placeholder="ITSTB · Sistema Integral de Gestión"
@@ -78,8 +83,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Texto del footer</label>
+                    <label for="branding-footer-text" class="block text-sm font-medium text-gray-700 mb-1">Texto del footer</label>
                     <input
+                        id="branding-footer-text"
                         v-model="form.footer_text"
                         type="text"
                         placeholder="© ITSTB · 2026"
@@ -181,8 +187,8 @@
                             />
                         </div>
                         <div class="space-y-2">
-                            <input type="text" placeholder="Usuario" class="w-full h-9 px-3 border border-gray-300 rounded text-sm" disabled />
-                            <input type="password" placeholder="Contraseña" class="w-full h-9 px-3 border border-gray-300 rounded text-sm" disabled />
+                            <input type="text" aria-label="Usuario (vista previa)" placeholder="Usuario" class="w-full h-9 px-3 border border-gray-300 rounded text-sm" disabled />
+                            <input type="password" aria-label="Contraseña (vista previa)" placeholder="Contraseña" class="w-full h-9 px-3 border border-gray-300 rounded text-sm" disabled />
                             <button
                                 type="button"
                                 class="w-full h-9 text-white font-semibold rounded shadow-sm text-sm"

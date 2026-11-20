@@ -14,20 +14,20 @@
 
         <div class="bg-white border border-slate-200 rounded-lg p-3 flex flex-wrap gap-3 items-end">
             <div class="flex-1 min-w-[180px]">
-                <label class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Buscar</label>
-                <input v-model="search" type="text" placeholder="Asunto o cuerpo..." class="w-full border rounded-md px-2 py-1.5 text-sm" />
+                <label for="ninbox-search" class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Buscar</label>
+                <input id="ninbox-search" v-model="search" type="text" placeholder="Asunto o cuerpo..." class="w-full border rounded-md px-2 py-1.5 text-sm" />
             </div>
             <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Estado</label>
-                <select v-model="statusFilter" class="border rounded-md px-2 py-1.5 text-sm">
+                <label for="ninbox-status" class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Estado</label>
+                <select id="ninbox-status" v-model="statusFilter" class="border rounded-md px-2 py-1.5 text-sm">
                     <option value="all">Todas</option>
                     <option value="unread">Sin leer</option>
                     <option value="read">Leídas</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Por página</label>
-                <select v-model.number="perPage" class="border rounded-md px-2 py-1.5 text-sm">
+                <label for="ninbox-per-page" class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Por página</label>
+                <select id="ninbox-per-page" v-model.number="perPage" class="border rounded-md px-2 py-1.5 text-sm">
                     <option :value="10">10</option>
                     <option :value="20">20</option>
                     <option :value="50">50</option>

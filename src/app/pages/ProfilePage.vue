@@ -243,8 +243,9 @@
                         <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest">Cambiar Contraseña</h3>
                         <form @submit.prevent="changePassword" class="space-y-4">
                             <div>
-                                <label class="block text-xs font-semibold text-slate-500 mb-1">Contraseña actual</label>
+                                <label for="pf-current-password" class="block text-xs font-semibold text-slate-500 mb-1">Contraseña actual</label>
                                 <input
+                                    id="pf-current-password"
                                     v-model="form.current_password"
                                     type="password"
                                     class="w-full sm:w-80 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
@@ -259,8 +260,9 @@
                                     @generated="(v: string) => form.password_confirmation = v"
                                 />
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-500 mb-1">Confirmar contraseña</label>
+                                    <label for="pf-password-confirmation" class="block text-xs font-semibold text-slate-500 mb-1">Confirmar contraseña</label>
                                     <input
+                                        id="pf-password-confirmation"
                                         v-model="form.password_confirmation"
                                         type="password"
                                         autocomplete="new-password"

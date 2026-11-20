@@ -8,15 +8,15 @@
         <div class="bg-white border border-slate-200 rounded-lg p-4 space-y-3">
             <div class="grid sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Plantilla</label>
-                    <select v-model="selectedKey" class="w-full border rounded-md px-2 py-1.5 text-sm" @change="onTemplateChange">
+                    <label for="nsend-template" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Plantilla</label>
+                    <select id="nsend-template" v-model="selectedKey" class="w-full border rounded-md px-2 py-1.5 text-sm" @change="onTemplateChange">
                         <option value="">— Selecciona —</option>
                         <option v-for="(_opts, key) in groupedTemplates" :key="key" :value="key">{{ key }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Canal</label>
-                    <select v-model="selectedChannel" class="w-full border rounded-md px-2 py-1.5 text-sm" :disabled="!selectedKey">
+                    <label for="nsend-channel" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Canal</label>
+                    <select id="nsend-channel" v-model="selectedChannel" class="w-full border rounded-md px-2 py-1.5 text-sm" :disabled="!selectedKey">
                         <option value="">— Selecciona —</option>
                         <option
                             v-for="ch in availableChannelsForKey"
@@ -88,6 +88,7 @@
                             @input="setVar(key, ($event.target as HTMLInputElement).value)"
                             type="text"
                             class="col-span-2 border rounded-md px-2 py-1 text-xs"
+                            :aria-label="`Valor para ${key}`"
                             :placeholder="desc"
                         />
                     </div>

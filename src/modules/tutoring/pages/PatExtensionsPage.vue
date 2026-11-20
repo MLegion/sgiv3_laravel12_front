@@ -6,7 +6,7 @@
         </div>
 
         <div class="rounded-xl border bg-white p-4 flex items-center gap-3">
-            <select v-model="periodId" @change="load" class="rounded-lg border-slate-300 text-sm">
+            <select v-model="periodId" @change="load" aria-label="Filtrar por periodo" class="rounded-lg border-slate-300 text-sm">
                 <option value="">Todos los periodos</option>
                 <option v-for="p in periods" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>
@@ -51,10 +51,10 @@
         <!-- Modal otorgar plazo -->
         <BaseModal v-model="grant.open" :title="'Otorgar plazo de PAT: ' + (grant.row?.group_name ?? '')" size="md">
             <p class="text-[11px] text-slate-500 mb-2">El tutor podrá capturar/editar su PAT hasta la fecha indicada.</p>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Nueva fecha límite</label>
-            <input v-model="grant.until" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
-            <label class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Nota (opcional)</label>
-            <textarea v-model="grant.note" rows="2" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+            <label for="grant-until" class="block text-xs font-semibold text-slate-500 mb-1">Nueva fecha límite</label>
+            <input id="grant-until" v-model="grant.until" type="date" class="w-full rounded-lg border-slate-300 text-sm" />
+            <label for="grant-note" class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Nota (opcional)</label>
+            <textarea id="grant-note" v-model="grant.note" rows="2" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
             <template #footer>
                 <button @click="submitGrant" :disabled="busy || !grant.until" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Otorgar</button>
             </template>
