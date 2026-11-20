@@ -33,8 +33,8 @@
                 <p class="text-xs font-bold text-red-800 uppercase tracking-tight">Error de validación</p>
                 <p class="text-xs text-red-600 uppercase">{{ errorMessage }}</p>
             </div>
-            <button @click="errorMessage = ''" class="text-red-400 hover:text-red-600">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button @click="errorMessage = ''" aria-label="Cerrar mensaje de error" class="text-red-400 hover:text-red-600">
+                <svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>

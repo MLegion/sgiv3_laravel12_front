@@ -5,8 +5,8 @@
             <div class="relative bg-white rounded-xl shadow-lg w-full max-w-3xl z-10 flex flex-col max-h-[85vh]">
                 <header class="flex items-center justify-between gap-3 px-5 py-3 border-b">
                     <h3 class="text-sm font-bold text-slate-800 uppercase">Buscar empresa</h3>
-                    <button type="button" class="text-slate-400 hover:text-slate-600" @click="close">
-                        <XMarkIcon class="w-5 h-5" />
+                    <button type="button" aria-label="Cerrar" class="text-slate-400 hover:text-slate-600" @click="close">
+                        <XMarkIcon class="w-5 h-5" aria-hidden="true" />
                     </button>
                 </header>
 

@@ -176,8 +176,8 @@ onMounted(fetchData)
                 </div>
             </div>
             <div class="flex items-center gap-2 w-full md:w-auto">
-                <button @click="fetchData" class="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
-                    <ArrowPathIcon class="w-5 h-5" :class="{'animate-spin': loading}" />
+                <button @click="fetchData" aria-label="Actualizar" class="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
+                    <ArrowPathIcon class="w-5 h-5" aria-hidden="true" :class="{'animate-spin': loading}" />
                 </button>
                 <button @click="router.back()" class="flex-1 md:flex-none px-6 py-2.5 text-[10px] font-black border border-slate-200 rounded-xl hover:bg-slate-50 uppercase transition-all text-slate-500 tracking-widest shadow-sm">
                     Regresar
@@ -207,8 +207,8 @@ onMounted(fetchData)
                             </div>
                         </div>
                         <div class="flex gap-1" v-if="isSpecialtyItem(item)">
-                            <button @click="onMoveItem(item)" class="p-2 text-slate-400 hover:text-indigo-600"><CursorArrowRaysIcon class="w-4 h-4"/></button>
-                            <button @click="onRemoveItem(item)" class="p-2 text-slate-400 hover:text-red-500"><XMarkIcon class="w-4 h-4"/></button>
+                            <button @click="onMoveItem(item)" aria-label="Reubicar materia" class="p-2 text-slate-400 hover:text-indigo-600"><CursorArrowRaysIcon class="w-4 h-4" aria-hidden="true"/></button>
+                            <button @click="onRemoveItem(item)" aria-label="Quitar materia" class="p-2 text-slate-400 hover:text-red-500"><XMarkIcon class="w-4 h-4" aria-hidden="true"/></button>
                         </div>
                     </div>
                     <button @click="openAddModal(p, 1)" class="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-[10px] font-black text-slate-400 uppercase hover:border-indigo-300 hover:text-indigo-500 transition-all">
@@ -263,7 +263,7 @@ onMounted(fetchData)
                         <h3 class="font-black uppercase text-xs tracking-widest text-slate-800">Reubicar Materia</h3>
                         <p class="text-[9px] text-indigo-500 font-bold uppercase mt-1">{{ itemToMove?.subject?.name }}</p>
                     </div>
-                    <button @click="showMoveModal = false" class="text-slate-400 hover:text-red-500 transition-colors"><XMarkIcon class="w-5 h-5"/></button>
+                    <button @click="showMoveModal = false" aria-label="Cerrar" class="text-slate-400 hover:text-red-500 transition-colors"><XMarkIcon class="w-5 h-5" aria-hidden="true"/></button>
                 </div>
                 <div class="p-8 space-y-6">
                     <div class="grid grid-cols-2 gap-4">
@@ -295,7 +295,7 @@ onMounted(fetchData)
             <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md border border-slate-100 overflow-hidden">
                 <div class="p-6 border-b bg-slate-50/50 flex justify-between items-center text-slate-800 font-black uppercase text-xs">
                     <span>Añadir a {{ targetCell.period }}° {{ labelPeriod }} (Fila {{ targetCell.level }})</span>
-                    <button @click="showModal = false"><XMarkIcon class="w-5 h-5"/></button>
+                    <button @click="showModal = false" aria-label="Cerrar"><XMarkIcon class="w-5 h-5" aria-hidden="true"/></button>
                 </div>
                 <div class="p-8 space-y-6">
                     <FormRemoteSelect

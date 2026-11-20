@@ -327,8 +327,8 @@
                             <option value="teacher">Por docente</option>
                             <option value="place">Por aula</option>
                         </select>
-                        <button type="button" class="text-slate-400 hover:text-slate-700" @click="closePreview">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <button type="button" aria-label="Cerrar" class="text-slate-400 hover:text-slate-700" @click="closePreview">
+                            <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
                         </button>

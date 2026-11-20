@@ -5,7 +5,7 @@
         <div class="flex items-center gap-3">
             <PeriodSelector v-show="!periodLocked" ref="periodSelectorRef" v-model="selectedPeriodId" @update:model-value="onPeriodChange" @auto-selected="onPeriodAutoSelected" label="" placeholder="SELECCIONE UN PERIODO" class="flex-1" :auto-select-status="['planned', 'draft', 'active']" />
             <div v-show="periodLocked" class="flex-1 border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold uppercase bg-slate-50 text-slate-700">{{ lockedPeriodName }}</div>
-            <button class="w-12 h-[46px] border-2 rounded-xl flex items-center justify-center transition"
+            <button :aria-label="periodLocked ? 'Desbloquear periodo' : 'Bloquear periodo'" class="w-12 h-[46px] border-2 rounded-xl flex items-center justify-center transition"
                 :class="periodLocked ? 'border-slate-300 bg-slate-50 text-slate-500 hover:bg-slate-100' : 'border-blue-500 bg-blue-50 text-blue-600 hover:bg-blue-100'"
                 :disabled="!selectedPeriodId && !periodLocked" @click="toggleLock">
                 <svg v-if="periodLocked" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
@@ -849,7 +849,7 @@
                         <h3 class="text-sm font-black uppercase text-orange-800">
                             {{ dropModal.mode === 'move' ? 'Mover Horario' : 'Asignar Horario' }}
                         </h3>
-                        <button class="text-slate-400 hover:text-slate-600" @click="closeDropModal">
+                        <button aria-label="Cerrar" class="text-slate-400 hover:text-slate-600" @click="closeDropModal">
                             <XMarkIcon class="w-5 h-5" />
                         </button>
                     </div>
@@ -947,7 +947,7 @@
                         <h3 class="text-sm font-black uppercase text-teal-800">
                             {{ compDropModal.mode === 'move' ? 'Mover Descarga' : 'Asignar Descarga' }}
                         </h3>
-                        <button class="text-slate-400 hover:text-slate-600" @click="closeComplementaryDropModal">
+                        <button aria-label="Cerrar" class="text-slate-400 hover:text-slate-600" @click="closeComplementaryDropModal">
                             <XMarkIcon class="w-5 h-5" />
                         </button>
                     </div>
@@ -1193,7 +1193,7 @@
                 <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
                     <div class="px-5 py-3 bg-emerald-50 border-b border-emerald-200 flex items-center justify-between">
                         <h3 class="text-sm font-black uppercase text-emerald-800">Fijar Aula por Defecto</h3>
-                        <button class="text-slate-400 hover:text-slate-600" @click="closePinnedPlaceModal">
+                        <button aria-label="Cerrar" class="text-slate-400 hover:text-slate-600" @click="closePinnedPlaceModal">
                             <XMarkIcon class="w-5 h-5" />
                         </button>
                     </div>
@@ -1251,7 +1251,7 @@
                 <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
                     <div class="px-5 py-3 bg-indigo-50 border-b border-indigo-200 flex items-center justify-between">
                         <h3 class="text-sm font-black uppercase text-indigo-800">Fechas visibles</h3>
-                        <button class="text-slate-400 hover:text-slate-600" @click="closeDateVisibilityModal">
+                        <button aria-label="Cerrar" class="text-slate-400 hover:text-slate-600" @click="closeDateVisibilityModal">
                             <XMarkIcon class="w-5 h-5" />
                         </button>
                     </div>

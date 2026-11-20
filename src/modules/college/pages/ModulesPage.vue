@@ -24,6 +24,7 @@
                     </span>
                     <!-- Interruptor -->
                     <button type="button" role="switch" :aria-checked="m.enabled"
+                            :aria-label="(m.enabled ? 'Desactivar' : 'Activar') + ' módulo ' + m.label"
                             class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
                             :class="[m.enabled ? 'bg-blue-600' : 'bg-slate-300', busyKey === m.key ? 'opacity-50 pointer-events-none' : '']"
                             @click="toggle(m)">

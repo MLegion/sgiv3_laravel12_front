@@ -306,7 +306,7 @@
                     <div class="relative bg-white w-full max-w-3xl h-full z-10 flex flex-col shadow-2xl">
                         <div class="flex items-center justify-between px-5 py-3 border-b shrink-0">
                             <h3 class="text-sm font-bold text-slate-700">{{ formatTitle }}</h3>
-                            <button type="button" class="text-slate-400 hover:text-slate-700 text-lg leading-none" @click="closeFormat">✕</button>
+                            <button type="button" aria-label="Cerrar" class="text-slate-400 hover:text-slate-700 text-lg leading-none" @click="closeFormat">✕</button>
                         </div>
                         <div class="flex-1 overflow-auto bg-slate-100 p-4 relative">
                             <div v-if="formatLoading" class="absolute inset-0 flex items-center justify-center">

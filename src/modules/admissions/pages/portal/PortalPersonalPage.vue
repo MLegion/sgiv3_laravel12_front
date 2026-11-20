@@ -98,7 +98,7 @@
                 <aside class="relative w-full max-w-md bg-white h-full shadow-xl overflow-y-auto">
                     <div class="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-white">
                         <h3 class="text-sm font-bold text-slate-800 uppercase">Cómo llenar Información General</h3>
-                        <button type="button" class="text-slate-400 hover:text-slate-700 text-xl leading-none" @click="helpOpen = false">&times;</button>
+                        <button type="button" aria-label="Cerrar" class="text-slate-400 hover:text-slate-700 text-xl leading-none" @click="helpOpen = false">&times;</button>
                     </div>
 
                     <div class="p-5 space-y-6 text-sm text-slate-700">

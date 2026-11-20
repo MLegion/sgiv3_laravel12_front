@@ -31,11 +31,11 @@
 
             <template #cell-opciones="{ row }">
                 <div class="flex items-center justify-center gap-2">
-                    <button type="button" class="border p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition" @click="openEdit(row)">
-                        <PencilSquareIcon class="w-4 h-4" />
+                    <button type="button" aria-label="Editar" class="border p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition" @click="openEdit(row)">
+                        <PencilSquareIcon class="w-4 h-4" aria-hidden="true" />
                     </button>
-                    <button type="button" class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition" @click="confirmDelete(row)">
-                        <TrashIcon class="w-4 h-4" />
+                    <button type="button" aria-label="Eliminar" class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition" @click="confirmDelete(row)">
+                        <TrashIcon class="w-4 h-4" aria-hidden="true" />
                     </button>
                 </div>
             </template>

@@ -245,8 +245,8 @@
                         <component v-if="getIcon(evt.eventType?.image)" :is="getIcon(evt.eventType?.image)" class="w-4 h-4 flex-shrink-0" :style="{ color: evt.eventType?.color }" />
                         <span v-else class="w-3 h-3 rounded-full flex-shrink-0" :style="{ backgroundColor: evt.eventType?.color }"></span>
                         <span class="text-[10px] font-bold text-slate-700 flex-1 uppercase">{{ evt.eventType?.name }}</span>
-                        <button @click="deleteEvent(evt.id); tooltip.visible = false" class="text-red-400 hover:text-red-600">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <button aria-label="Eliminar" @click="deleteEvent(evt.id); tooltip.visible = false" class="text-red-400 hover:text-red-600">
+                            <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                     </div>
                     <!-- Holiday info -->

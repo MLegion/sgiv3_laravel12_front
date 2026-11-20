@@ -7,7 +7,7 @@
                     <p class="font-semibold text-slate-800">Configurar autenticación de dos factores</p>
                     <p class="text-xs text-slate-400">Paso {{ step }} de 4</p>
                 </div>
-                <button type="button" class="text-slate-400 hover:text-slate-600 text-xl leading-none" @click="cancel">✕</button>
+                <button type="button" aria-label="Cerrar" class="text-slate-400 hover:text-slate-600 text-xl leading-none" @click="cancel">✕</button>
             </div>
 
             <!-- Indicador de pasos -->

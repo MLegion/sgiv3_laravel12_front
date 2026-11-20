@@ -19,6 +19,7 @@
             </transition>
 
             <button
+                :aria-label="layout.sidebarPinned ? 'Contraer menú' : 'Expandir menú'"
                 class="transition-all duration-200 p-2 rounded-xl group items-center justify-center"
                 :class="[
                     layout.sidebarPinned
@@ -30,6 +31,7 @@
                 @click="layout.togglePin"
             >
                 <svg
+                    aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     fill="currentColor"

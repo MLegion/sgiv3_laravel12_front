@@ -95,7 +95,7 @@
                             <h3 class="text-sm font-bold text-slate-800">Vista previa — {{ CHANNEL_LABELS[selected.channel] || selected.channel }}</h3>
                             <p class="text-[11px] text-slate-500">Así se vería al enviarse (capturado, no enviado).</p>
                         </div>
-                        <button class="text-slate-400 hover:text-slate-700 text-xl leading-none" @click="selected = null">&times;</button>
+                        <button aria-label="Cerrar" class="text-slate-400 hover:text-slate-700 text-xl leading-none" @click="selected = null">&times;</button>
                     </div>
                     <div class="p-4">
                         <NotificationPreview :notification="selected" />

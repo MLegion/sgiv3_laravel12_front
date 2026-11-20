@@ -9,10 +9,11 @@
             <!-- Botón Hamburguesa (Solo Móvil/Tablet) -->
             <button
                 @click="$emit('toggle-sidebar')"
+                aria-label="Abrir menú"
                 class="p-2 rounded-xl hover:bg-black/5 lg:hidden transition-colors"
                 :style="{ color: 'var(--app-navbar-muted, #64748b)' }"
             >
-                <Bars3BottomLeftIcon class="w-6 h-6" />
+                <Bars3BottomLeftIcon class="w-6 h-6" aria-hidden="true" />
             </button>
 
             <div class="flex items-center gap-3">
@@ -72,6 +73,7 @@
             <div class="relative pl-2 border-l border-slate-100" ref="dropdownRef">
                 <button
                     @click="menuOpen = !menuOpen"
+                    aria-label="Abrir menú de usuario"
                     class="w-10 h-10 rounded-2xl overflow-hidden bg-slate-100 border-2 border-white shadow-sm hover:scale-105 transition-transform"
                 >
                     <UserAvatar :key="auth.avatarVersion" :url="auth.avatarUrl" :name="auth.userName" shape="square" eager fill />

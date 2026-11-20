@@ -213,7 +213,7 @@
                 <div class="absolute inset-y-0 right-0 w-96 max-w-full bg-white shadow-2xl flex flex-col" style="z-index: 99999;">
                     <div class="px-4 py-3 bg-slate-100 border-b flex items-center justify-between flex-shrink-0">
                         <h2 class="text-sm font-black uppercase text-slate-700">Historial de Cambios</h2>
-                        <button type="button" class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200" @click="showHistoryDrawer = false">
+                        <button type="button" aria-label="Cerrar" class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200" @click="showHistoryDrawer = false">
                             <XMarkIcon class="w-5 h-5" />
                         </button>
                     </div>

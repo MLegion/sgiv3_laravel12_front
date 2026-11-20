@@ -57,8 +57,8 @@
                             <td class="p-3 text-center font-mono text-xs text-slate-600">{{ item.subject?.hp }}</td>
                             <td class="p-3 text-center font-mono text-xs text-slate-600">{{ item.subject?.credits }}</td>
                             <td class="p-3 text-right">
-                                <button @click="confirmRemove(item)" class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
-                                    <XMarkIcon class="w-4 h-4" />
+                                <button @click="confirmRemove(item)" aria-label="Quitar materia" class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
+                                    <XMarkIcon class="w-4 h-4" aria-hidden="true" />
                                 </button>
                             </td>
                         </tr>
@@ -115,12 +115,13 @@
                                 v-else
                                 :disabled="isLinkingMode"
                                 @click="openAddModal(col, row)"
+                                :aria-label="`Agregar materia al periodo ${col}, fila ${row}`"
                                 :class="[
                                     'w-full h-full border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group',
                                     isLinkingMode ? 'border-slate-100 opacity-20' : 'border-slate-200 text-slate-300 hover:border-indigo-300 hover:text-indigo-400 hover:bg-white shadow-sm'
                                 ]"
                             >
-                                <PlusIcon class="w-8 h-8 group-hover:scale-110 transition-transform" />
+                                <PlusIcon class="w-8 h-8 group-hover:scale-110 transition-transform" aria-hidden="true" />
                                 <span class="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100">Asignar</span>
                             </button>
                         </div>
@@ -165,7 +166,7 @@
                         <h3 class="font-black uppercase text-sm tracking-tight">Agregar materia</h3>
                         <p class="text-[10px] text-slate-500 uppercase font-bold">P {{ targetCell.period }} • Nivel {{ targetCell.row }}</p>
                     </div>
-                    <button @click="showModal = false" class="text-slate-400 hover:text-slate-600"><XMarkIcon class="w-5 h-5"/></button>
+                    <button @click="showModal = false" aria-label="Cerrar" class="text-slate-400 hover:text-slate-600"><XMarkIcon class="w-5 h-5" aria-hidden="true"/></button>
                 </div>
 
                 <form @submit.prevent="handleAddSubject" class="p-6 space-y-5">
@@ -201,7 +202,7 @@
                         <h3 class="font-black uppercase text-sm tracking-tight">Reubicar materia</h3>
                         <p class="text-[10px] text-slate-500 uppercase font-bold">{{ itemToMove?.subject?.name }}</p>
                     </div>
-                    <button @click="showMoveModal = false" class="text-slate-400 hover:text-slate-600"><XMarkIcon class="w-5 h-5"/></button>
+                    <button @click="showMoveModal = false" aria-label="Cerrar" class="text-slate-400 hover:text-slate-600"><XMarkIcon class="w-5 h-5" aria-hidden="true"/></button>
                 </div>
 
                 <div class="p-6 space-y-4">

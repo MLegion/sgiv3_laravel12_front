@@ -70,7 +70,7 @@
                                     <textarea :value="c" rows="2" aria-label="Competencia previa" placeholder="Describe una competencia previa"
                                         class="flex-1 border border-slate-300 rounded px-2 py-1 text-sm"
                                         @input="form.competencias_previas[i] = ($event.target as HTMLTextAreaElement).value"></textarea>
-                                    <button type="button" class="text-red-400 hover:text-red-600 text-xs pt-1.5" @click="form.competencias_previas.splice(i, 1)">✕</button>
+                                    <button type="button" aria-label="Quitar competencia previa" class="text-red-400 hover:text-red-600 text-xs pt-1.5" @click="form.competencias_previas.splice(i, 1)">✕</button>
                                 </div>
                                 <p v-if="!form.competencias_previas.length" class="text-xs text-slate-400">Sin competencias previas.</p>
                             </div>
@@ -84,7 +84,7 @@
                                     <textarea :value="c" rows="2" aria-label="Competencia específica" placeholder="Describe una competencia específica"
                                         class="flex-1 border border-slate-300 rounded px-2 py-1 text-sm"
                                         @input="form.competencia_especifica[i] = ($event.target as HTMLTextAreaElement).value"></textarea>
-                                    <button type="button" class="text-red-400 hover:text-red-600 text-xs pt-1.5" @click="form.competencia_especifica.splice(i, 1)">✕</button>
+                                    <button type="button" aria-label="Quitar competencia específica" class="text-red-400 hover:text-red-600 text-xs pt-1.5" @click="form.competencia_especifica.splice(i, 1)">✕</button>
                                 </div>
                                 <p v-if="!form.competencia_especifica.length" class="text-xs text-slate-400">Sin competencias específicas.</p>
                             </div>
@@ -107,7 +107,7 @@
                                         aria-label="Descripción de la competencia genérica"
                                         placeholder="Elige una existente o escribe una nueva"
                                         class="flex-1 border border-slate-300 rounded px-2 py-1 text-sm" />
-                                    <button type="button" class="text-red-400 hover:text-red-600 text-xs pt-1.5" @click="form.genericCompetencies.splice(i, 1)">✕</button>
+                                    <button type="button" aria-label="Quitar competencia genérica" class="text-red-400 hover:text-red-600 text-xs pt-1.5" @click="form.genericCompetencies.splice(i, 1)">✕</button>
                                 </div>
                                 <p v-if="!form.genericCompetencies.length" class="text-xs text-slate-400">Sin competencias genéricas.</p>
                             </div>
@@ -120,12 +120,12 @@
                             <!-- Barra del carrusel -->
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
-                                    <button type="button" class="px-2 py-1 rounded border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                                    <button type="button" aria-label="Unidad anterior" class="px-2 py-1 rounded border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
                                         :disabled="unidadIndex <= 0" @click="unidadIndex--">←</button>
                                     <span class="text-sm font-medium text-slate-700">
                                         {{ form.temas.length ? `Unidad ${unidadIndex + 1} de ${form.temas.length}` : 'Sin unidades' }}
                                     </span>
-                                    <button type="button" class="px-2 py-1 rounded border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                                    <button type="button" aria-label="Unidad siguiente" class="px-2 py-1 rounded border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
                                         :disabled="unidadIndex >= form.temas.length - 1" @click="unidadIndex++">→</button>
                                 </div>
                                 <div class="flex items-center gap-3">
@@ -160,7 +160,7 @@
                                     <div v-for="(sub, j) in currentUnidad.subtemas" :key="j" class="flex gap-2 items-center">
                                         <input v-model="sub.number" aria-label="Número del subtema" class="w-20 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="1.1" />
                                         <input v-model="sub.title" aria-label="Título del subtema" class="flex-1 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="Título del subtema" />
-                                        <button type="button" class="text-red-400 hover:text-red-600 text-xs" @click="currentUnidad.subtemas.splice(j, 1)">✕</button>
+                                        <button type="button" aria-label="Quitar subtema" class="text-red-400 hover:text-red-600 text-xs" @click="currentUnidad.subtemas.splice(j, 1)">✕</button>
                                     </div>
                                     <p v-if="!currentUnidad.subtemas.length" class="text-[11px] text-slate-400">Sin subtemas.</p>
                                 </div>
@@ -173,7 +173,7 @@
                                     </div>
                                     <div v-for="(act, k) in currentUnidad.learningActivities" :key="k" class="flex gap-2 items-center">
                                         <input v-model="act.description" aria-label="Actividad de aprendizaje" class="flex-1 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="Describe la actividad de aprendizaje" />
-                                        <button type="button" class="text-red-400 hover:text-red-600 text-xs" @click="currentUnidad.learningActivities.splice(k, 1)">✕</button>
+                                        <button type="button" aria-label="Quitar actividad de aprendizaje" class="text-red-400 hover:text-red-600 text-xs" @click="currentUnidad.learningActivities.splice(k, 1)">✕</button>
                                     </div>
                                 </div>
                             </div>
@@ -191,7 +191,7 @@
                             <div v-for="(src, i) in form.sources" :key="i" class="flex gap-2 items-center">
                                 <input v-model="src.type" list="source-type-options" aria-label="Tipo de fuente" class="w-44 px-2 py-1 text-sm border border-slate-300 rounded" placeholder="Tipo (ej. CONSULTA BÁSICA)" />
                                 <input v-model="src.reference" aria-label="Referencia bibliográfica" class="flex-1 px-2 py-1 text-sm border border-slate-300 rounded" placeholder="Referencia bibliográfica" />
-                                <button type="button" class="text-red-400 hover:text-red-600 text-xs" @click="form.sources.splice(i, 1)">✕</button>
+                                <button type="button" aria-label="Quitar fuente" class="text-red-400 hover:text-red-600 text-xs" @click="form.sources.splice(i, 1)">✕</button>
                             </div>
                             <datalist id="source-type-options">
                                 <option value="CONSULTA BÁSICA" />

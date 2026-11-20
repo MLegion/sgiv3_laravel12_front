@@ -87,26 +87,29 @@
 
                         <!-- Ver -->
                         <button
+                            aria-label="Ver grupo"
                             class="p-2 rounded-lg border border-slate-100 text-slate-400 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-100 transition-all"
                             @click="show(row)"
                         >
-                            <EyeIcon class="w-4 h-4" />
+                            <EyeIcon class="w-4 h-4" aria-hidden="true" />
                         </button>
 
                         <!-- Editar -->
                         <button
+                            aria-label="Editar grupo"
                             class="p-2 rounded-lg border border-slate-100 text-slate-400 hover:text-amber-600 hover:bg-amber-50 hover:border-amber-100 transition-all"
                             @click="edit(row)"
                         >
-                            <PencilSquareIcon class="w-4 h-4" />
+                            <PencilSquareIcon class="w-4 h-4" aria-hidden="true" />
                         </button>
 
                         <!-- Eliminar -->
                         <button
+                            aria-label="Eliminar grupo"
                             class="p-2 rounded-lg border border-slate-100 text-slate-400 hover:text-red-600 hover:bg-red-50 hover:border-red-100 transition-all"
                             @click="remove(row)"
                         >
-                            <TrashIcon class="w-4 h-4" />
+                            <TrashIcon class="w-4 h-4" aria-hidden="true" />
                         </button>
                     </div>
                 </template>

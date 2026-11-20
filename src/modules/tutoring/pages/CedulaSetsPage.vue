@@ -46,7 +46,7 @@
                     </select>
                     <label class="col-span-2 text-xs flex items-center gap-1"><input type="checkbox" v-model="f.is_risk_flag" :disabled="readonly" /> Riesgo</label>
                     <label class="col-span-1 text-xs flex items-center gap-1"><input type="checkbox" v-model="f.is_required" :disabled="readonly" /> Req</label>
-                    <button v-if="!readonly" @click="editing.fields.splice(i, 1)" class="col-span-1 text-red-500 text-xs">✕</button>
+                    <button v-if="!readonly" @click="editing.fields.splice(i, 1)" aria-label="Eliminar campo" class="col-span-1 text-red-500 text-xs">✕</button>
                 </div>
             </div>
             <div v-if="!readonly" class="flex items-center gap-2">

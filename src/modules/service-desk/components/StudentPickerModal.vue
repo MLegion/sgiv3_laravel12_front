@@ -88,8 +88,8 @@
             <div v-if="!loading && items.length" class="flex items-center justify-between px-5 py-2.5 border-t bg-slate-50 text-xs text-slate-500">
                 <span>Página {{ page }} de {{ lastPage }} ({{ total }})</span>
                 <div class="flex gap-1">
-                    <button class="px-2.5 py-1 rounded border bg-white disabled:opacity-40" :disabled="page <= 1" @click="changePage(page - 1)">‹</button>
-                    <button class="px-2.5 py-1 rounded border bg-white disabled:opacity-40" :disabled="page >= lastPage" @click="changePage(page + 1)">›</button>
+                    <button aria-label="Página anterior" class="px-2.5 py-1 rounded border bg-white disabled:opacity-40" :disabled="page <= 1" @click="changePage(page - 1)">‹</button>
+                    <button aria-label="Página siguiente" class="px-2.5 py-1 rounded border bg-white disabled:opacity-40" :disabled="page >= lastPage" @click="changePage(page + 1)">›</button>
                 </div>
             </div>
     </BaseModal>

@@ -41,7 +41,7 @@
             <div class="bg-white rounded-xl p-5 w-full max-w-lg space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="text-sm font-bold text-slate-700 uppercase">{{ submit.label }}</h3>
-                    <button @click="submit.open = false" class="text-slate-400 hover:text-slate-600">✕</button>
+                    <button @click="submit.open = false" aria-label="Cerrar" class="text-slate-400 hover:text-slate-600">✕</button>
                 </div>
                 <label for="followup-submit-notes" class="block text-xs font-semibold text-slate-500 mb-1">Contenido / observaciones</label>
                 <textarea id="followup-submit-notes" v-model="submit.notes" rows="5" class="w-full rounded-lg border-slate-300 text-sm" placeholder="Describe el avance / resultados de este hito…"></textarea>

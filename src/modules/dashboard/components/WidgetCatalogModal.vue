@@ -12,7 +12,7 @@
                         <h3 class="text-base font-semibold text-slate-800">
                             Agregar widgets al dashboard
                         </h3>
-                        <button class="text-slate-400 hover:text-slate-600" @click="close">
+                        <button aria-label="Cerrar" class="text-slate-400 hover:text-slate-600" @click="close">
                             <XMarkIcon class="w-5 h-5" />
                         </button>
                     </div>

@@ -29,6 +29,7 @@
                             <p v-if="applicantName" class="text-xs text-slate-400 mt-0.5">{{ applicantName }}</p>
                         </div>
                         <button
+                            aria-label="Cerrar"
                             class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
                             @click="$emit('close')"
                         >
@@ -235,6 +236,7 @@
                                         <!-- Nav prev/next -->
                                         <div class="flex gap-1">
                                             <button
+                                                aria-label="Documento anterior"
                                                 class="border p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-30 transition"
                                                 :disabled="selectedIndex <= 0"
                                                 @click="navigateTo(selectedIndex - 1)"
@@ -245,6 +247,7 @@
                                             </button>
                                             <span class="text-xs text-slate-400 self-center px-1">{{ selectedIndex + 1 }} / {{ documents.length }}</span>
                                             <button
+                                                aria-label="Documento siguiente"
                                                 class="border p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-30 transition"
                                                 :disabled="selectedIndex >= documents.length - 1"
                                                 @click="navigateTo(selectedIndex + 1)"

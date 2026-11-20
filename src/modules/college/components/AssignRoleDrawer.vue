@@ -34,10 +34,11 @@
                             <p class="text-xs text-slate-500 truncate">{{ user.email }}</p>
                         </div>
                         <button
+                            aria-label="Cerrar"
                             class="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
                             @click="$emit('close')"
                         >
-                            <XMarkIcon class="w-5 h-5" />
+                            <XMarkIcon class="w-5 h-5" aria-hidden="true" />
                         </button>
                     </div>
 

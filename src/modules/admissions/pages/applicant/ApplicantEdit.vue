@@ -120,10 +120,10 @@
                                     <p v-if="c.email" class="text-xs text-slate-400">{{ c.email }}</p>
                                 </div>
                                 <div class="flex gap-1 shrink-0">
-                                    <button class="border p-1 rounded text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition" @click="openContactEdit(c)">
+                                    <button aria-label="Editar contacto" class="border p-1 rounded text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition" @click="openContactEdit(c)">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l2.651 2.651M7.5 13.85l-.75 3.75 3.75-.75L19.513 7.138a2.121 2.121 0 00-3-3L7.5 13.85z" /></svg>
                                     </button>
-                                    <button class="border p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition" @click="confirmDeleteContact(c)">
+                                    <button aria-label="Eliminar contacto" class="border p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition" @click="confirmDeleteContact(c)">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 7.5h12m-10.5 0v10.125A1.875 1.875 0 009.375 19.5h5.25A1.875 1.875 0 0016.5 17.625V7.5M9.75 4.875A1.875 1.875 0 0111.625 3h.75A1.875 1.875 0 0114.25 4.875L15 7.5h-6l.75-2.625z" /></svg>
                                     </button>
                                 </div>

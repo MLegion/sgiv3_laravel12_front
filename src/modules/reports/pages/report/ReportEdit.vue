@@ -78,6 +78,7 @@
                 >
                     <span class="text-slate-500">Estado:</span>
                     <button type="button"
+                        aria-label="Cambiar estado activo/inactivo"
                         :disabled="!templateState.hasTemplate"
                         @click="toggleStatus"
                         :class="['relative inline-flex h-5 w-9 items-center rounded-full transition-colors',

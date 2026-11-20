@@ -6,7 +6,7 @@
             <PeriodSelector v-show="!periodLocked" ref="periodSelectorRef" v-model="selectedPeriodId" @update:model-value="onPeriodChange" @auto-selected="onPeriodAutoSelected" label="" placeholder="SELECCIONE UN PERIODO" class="flex-1" :auto-select-status="['planned', 'draft', 'active']" />
             <!-- PeriodSelector queda montado con v-show para tener su lista disponible cuando restauremos lockedPeriodName desde URL. -->
             <div v-show="periodLocked" class="flex-1 border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold uppercase bg-slate-50 text-slate-700">{{ lockedPeriodName }}</div>
-            <button class="w-12 h-[46px] border-2 rounded-xl flex items-center justify-center transition"
+            <button :aria-label="periodLocked ? 'Desbloquear' : 'Bloquear'" class="w-12 h-[46px] border-2 rounded-xl flex items-center justify-center transition"
                 :class="periodLocked ? 'border-slate-300 bg-slate-50 text-slate-500 hover:bg-slate-100' : 'border-blue-500 bg-blue-50 text-blue-600 hover:bg-blue-100'"
                 :disabled="!selectedPeriodId && !periodLocked" @click="toggleLock">
                 <svg v-if="periodLocked" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
@@ -411,7 +411,7 @@
                             <span class="block">{{ auxModal.subjectName }} · {{ auxModal.groupName }}</span>
                         </p>
                     </div>
-                    <button @click="closeAuxModal" class="text-slate-400 hover:text-slate-700">
+                    <button aria-label="Cerrar" @click="closeAuxModal" class="text-slate-400 hover:text-slate-700">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -522,6 +522,7 @@
                             </p>
                         </div>
                         <button
+                            aria-label="Cerrar"
                             type="button"
                             class="text-gray-400 hover:text-gray-700"
                             @click="closeTeacherDrawer"
