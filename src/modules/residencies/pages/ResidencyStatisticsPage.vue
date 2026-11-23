@@ -2,7 +2,15 @@
     <div class="space-y-5">
         <h1 class="text-xl font-semibold text-slate-800 uppercase">Estadísticas de Residencias</h1>
 
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
+        <!-- Skeleton con la silueta del dashboard (tarjetas + gráficos) -->
+        <div v-if="loading" class="space-y-5">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <SkeletonStat v-for="n in 4" :key="n" />
+            </div>
+            <div class="grid lg:grid-cols-2 gap-4">
+                <SkeletonChart v-for="n in 4" :key="n" />
+            </div>
+        </div>
         <div v-else-if="!stats || stats.total === 0" class="rounded-lg border bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
             Aún no hay residencias registradas.
         </div>
@@ -53,6 +61,8 @@ import {
 } from 'chart.js'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonStat from '@/app/components/ui/SkeletonStat.vue'
+import SkeletonChart from '@/app/components/ui/SkeletonChart.vue'
 import StatCard from '@/modules/admissions/pages/statistics/StatCard.vue'
 import type { ResidencyStatistics } from '@/modules/residencies/types/residency.type'
 

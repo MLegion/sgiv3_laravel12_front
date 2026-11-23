@@ -8,7 +8,19 @@
             <button type="button" class="text-sm px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" @click="openCreate">+ Nueva versión</button>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
+        <!-- Skeleton con la silueta de la lista de tarjetas (evita salto de layout) -->
+        <div v-if="loading" role="status">
+            <span class="sr-only">Cargando…</span>
+            <ul aria-hidden="true" class="space-y-2">
+                <li v-for="n in 4" :key="n" class="rounded-xl border bg-white p-4 flex items-center justify-between gap-3">
+                    <div class="min-w-0 w-full max-w-sm space-y-2">
+                        <div class="h-4 w-2/5 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-3 w-3/5 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                    <div class="h-7 w-28 shrink-0 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </li>
+            </ul>
+        </div>
         <ul v-else class="space-y-2">
             <li v-for="s in sets" :key="s.id" class="rounded-xl border bg-white p-4 flex items-center justify-between gap-3">
                 <div class="min-w-0">

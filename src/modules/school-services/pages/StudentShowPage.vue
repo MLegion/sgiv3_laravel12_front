@@ -30,11 +30,15 @@
             </button>
         </div>
 
-        <div v-if="loading" class="flex justify-center py-12">
-            <svg class="animate-spin w-8 h-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
+        <!-- Skeleton con la silueta de la pestaña Datos (evita salto de layout) -->
+        <div v-if="loading" role="status" class="bg-white border rounded-xl shadow-sm p-6">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div v-for="n in 9" :key="n" class="space-y-1.5">
+                    <div class="h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-4 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+            </div>
         </div>
 
         <template v-else-if="student">
@@ -81,7 +85,7 @@
                     </button>
                 </div>
 
-                <div v-if="loadingContacts" class="text-sm text-slate-400 py-6 text-center">Cargando...</div>
+                <SkeletonText v-if="loadingContacts" :lines="3" class="py-2" />
                 <div v-else-if="contacts.length === 0" class="text-sm text-slate-400 py-6 text-center">Sin contactos registrados.</div>
 
                 <div v-else class="space-y-3">
@@ -147,7 +151,7 @@
                     </button>
                 </div>
 
-                <div v-if="loadingAffiliations" class="text-sm text-slate-400 py-6 text-center">Cargando...</div>
+                <SkeletonTable v-if="loadingAffiliations" :rows="3" :cols="4" />
                 <div v-else-if="affiliations.length === 0" class="text-sm text-slate-400 py-6 text-center">Sin afiliaciones registradas.</div>
 
                 <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
@@ -283,7 +287,7 @@
                     </button>
                 </div>
 
-                <div v-if="loadingGrades" class="text-sm text-slate-400 py-6 text-center">Cargando...</div>
+                <SkeletonTable v-if="loadingGrades" :rows="5" :cols="5" />
                 <div v-else-if="grades.length === 0" class="text-sm text-slate-400 py-6 text-center">Sin calificaciones registradas.</div>
 
                 <div v-else class="bg-white border rounded-xl shadow-sm overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Kardex de calificaciones">
@@ -418,7 +422,7 @@
                 <!-- Modal historial de auditoría -->
                 <BaseModal v-model="auditModal" title="Historial de Cambios" size="lg">
                     <div class="space-y-4">
-                        <div v-if="loadingAudits" class="text-sm text-slate-400 text-center py-4">Cargando...</div>
+                        <SkeletonText v-if="loadingAudits" :lines="4" />
                         <div v-else-if="audits.length === 0" class="text-sm text-slate-400 text-center py-4">Sin cambios registrados.</div>
                         <div v-else class="space-y-2">
                             <div v-for="a in audits" :key="a.id" class="border rounded-lg p-3 text-xs space-y-1">
@@ -457,6 +461,8 @@ import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import ReadField from '@/modules/admissions/pages/portal/ReadField.vue'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 const route  = useRoute()
 const router = useRouter()
