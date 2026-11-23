@@ -41,7 +41,21 @@
         <div v-if="okMsg" class="text-sm px-4 py-3 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100">{{ okMsg }}</div>
         <div v-if="loadError" class="text-sm px-4 py-3 rounded-lg bg-red-50 text-red-700 border border-red-100">{{ loadError }}</div>
 
-        <div v-if="loading" class="bg-white border rounded-xl p-6 text-center text-sm text-slate-400">Cargando…</div>
+        <div v-if="loading" role="status">
+            <span class="sr-only">Cargando…</span>
+            <ul aria-hidden="true" class="space-y-3">
+                <li v-for="n in 3" :key="n" class="bg-white border rounded-xl shadow-sm p-4 space-y-3">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0 flex-1 space-y-2">
+                            <div class="h-4 w-1/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-3 w-1/2 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-2.5 w-2/5 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
+                        <div class="h-7 w-14 rounded-md bg-slate-200 animate-pulse motion-reduce:animate-none shrink-0"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
         <div v-else-if="!items.length" class="bg-white border rounded-xl p-8 text-center text-sm text-slate-400 italic">
             Sin solicitudes.
         </div>

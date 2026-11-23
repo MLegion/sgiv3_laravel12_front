@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-5">
         <h1 class="text-xl font-semibold text-slate-800 uppercase">Mi Tutoría</h1>
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
+        <SkeletonText v-if="loading" :lines="6" />
         <template v-else>
             <p v-if="msg" class="text-sm px-4 py-2.5 rounded-lg" :class="msgError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'">{{ msg }}</p>
 
@@ -69,6 +69,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { REFERRAL_STATUS_LABELS, type TutoringAssignment, type TutoringSession, type TutoringReferral, type TuteeCedula } from '@/modules/tutoring/types/tutoring.type'

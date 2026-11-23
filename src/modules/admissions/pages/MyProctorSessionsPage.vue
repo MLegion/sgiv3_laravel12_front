@@ -2,7 +2,22 @@
     <div class="space-y-4">
         <h1 class="text-xl font-semibold text-slate-800 uppercase">Mis Sesiones de Examen</h1>
 
-        <div v-if="loading" class="text-xs text-slate-400 italic py-8 text-center">Cargando...</div>
+        <div v-if="loading" role="status">
+            <span class="sr-only">Cargando…</span>
+            <ul aria-hidden="true" class="space-y-3">
+                <li
+                    v-for="n in 3"
+                    :key="n"
+                    class="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between gap-4"
+                >
+                    <div class="space-y-2 flex-1">
+                        <div class="h-4 w-1/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-3 w-1/2 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                    <div class="h-6 w-20 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </li>
+            </ul>
+        </div>
 
         <div v-else-if="!hasAny" class="bg-slate-50 border border-slate-200 rounded-xl p-10 text-center space-y-2">
             <QrCodeIcon class="w-12 h-12 mx-auto text-slate-300" />

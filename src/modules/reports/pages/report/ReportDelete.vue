@@ -6,7 +6,7 @@
         </div>
 
         <div class="bg-white border border-red-200 rounded-xl shadow-sm p-6 space-y-4">
-            <div v-if="loading" class="text-center text-slate-400 py-4">Cargando...</div>
+            <SkeletonText v-if="loading" :lines="2" />
 
             <template v-else-if="report">
                 <p class="text-sm text-slate-600">
@@ -36,6 +36,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { Report } from '@/modules/reports/types/report.type'

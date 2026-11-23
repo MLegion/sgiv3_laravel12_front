@@ -13,7 +13,7 @@
             <span v-if="applying" class="ml-auto text-[10px] text-slate-500 italic">Aplicando…</span>
         </div>
 
-        <div v-if="loading && !data" class="text-slate-400 italic">Cargando…</div>
+        <SkeletonText v-if="loading && !data" :lines="3" />
 
         <div v-else-if="items.length === 0" class="text-slate-400 italic">
             ✓ Todos los periodos están en sincronía.
@@ -99,6 +99,7 @@ import { computed, reactive, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 interface DriftItem {
     scope:                   'global' | 'college'

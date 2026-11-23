@@ -18,7 +18,9 @@
             un código de 6 dígitos cada 30 segundos.
         </p>
 
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
+        <div v-if="loading">
+            <SkeletonText :lines="2" />
+        </div>
 
         <!-- ESTADO: DESACTIVADO -->
         <template v-else-if="!status.enabled && step === 'idle'">
@@ -106,6 +108,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import MfaSetupWizard from '@/modules/auth/components/MfaSetupWizard.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 type Step = 'idle' | 'recovery'
 

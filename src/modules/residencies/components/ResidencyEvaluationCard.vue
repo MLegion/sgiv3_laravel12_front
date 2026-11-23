@@ -8,7 +8,17 @@
             </span>
         </div>
 
-        <p v-if="loading" class="text-xs text-slate-400">Cargando…</p>
+        <div v-if="loading" role="status">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="space-y-2">
+                <div v-for="i in 3" :key="i" class="flex items-center gap-4 border-t first:border-t-0 py-1.5">
+                    <div class="h-4 flex-1 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-4 w-16 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-8 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-4 w-24 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+            </div>
+        </div>
 
         <template v-else-if="evaluation">
             <p v-if="locked" class="text-xs text-emerald-600">

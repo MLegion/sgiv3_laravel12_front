@@ -11,7 +11,7 @@
             <span v-else-if="options.length === 1" class="text-xs text-slate-400">{{ options[0].label }}</span>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
+        <SkeletonText v-if="loading" :lines="3" />
         <div v-else-if="!options.length" class="rounded-lg border bg-amber-50 border-amber-200 px-4 py-6 text-sm text-amber-800">
             {{ grupalOnly ? 'No tienes asignaciones de tutoría GRUPAL activas.' : 'No tienes asignaciones de tutoría activas.' }}
         </div>
@@ -27,6 +27,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import AssignmentDetailPage from '@/modules/tutoring/pages/AssignmentDetailPage.vue'

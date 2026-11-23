@@ -9,7 +9,12 @@
             >Recargar</button>
         </header>
 
-        <div v-if="loading && !data" class="text-sm text-slate-500 italic">Cargando…</div>
+        <template v-if="loading && !data">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <SkeletonStat v-for="n in 4" :key="n" />
+            </div>
+            <SkeletonTable :rows="6" :cols="8" />
+        </template>
         <div v-else-if="!data?.found" class="text-sm text-rose-700">Periodo no encontrado.</div>
 
         <template v-else-if="data">
@@ -261,6 +266,8 @@ import { useRoute } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
+import SkeletonStat from '@/app/components/ui/SkeletonStat.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface ActaRow {
     teacherAssignmentId: number

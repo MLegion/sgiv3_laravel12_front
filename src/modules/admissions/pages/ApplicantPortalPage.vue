@@ -33,7 +33,20 @@
             </div>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
+        <div v-if="loading" role="status" class="bg-white border rounded-xl shadow-sm overflow-hidden">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true">
+                <div class="flex gap-6 border-b px-4 py-3">
+                    <div v-for="n in 4" :key="n" class="h-3 w-24 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
+                    <div v-for="n in 6" :key="n" class="space-y-2">
+                        <div class="h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-4 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <template v-else-if="applicant">
             <p v-if="saveError" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">{{ saveError }}</p>

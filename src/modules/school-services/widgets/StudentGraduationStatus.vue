@@ -1,6 +1,6 @@
 <template>
     <div class="h-full flex flex-col text-xs">
-        <div v-if="loading && !data" class="text-slate-400 italic">Cargando…</div>
+        <SkeletonText v-if="loading && !data" :lines="3" />
 
         <div v-else-if="!data?.studentId" class="flex-1 flex items-center justify-center text-slate-400 italic text-center">
             Aún no tienes un perfil de estudiante activo.
@@ -62,6 +62,7 @@
 
 <script setup lang="ts">
 import { CheckCircleIcon } from '@heroicons/vue/24/outline'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 interface Debt {
     code:        string

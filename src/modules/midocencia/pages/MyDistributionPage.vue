@@ -7,7 +7,7 @@
             </div>
         </div>
 
-        <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
+        <SkeletonText v-if="loading" :lines="6" />
         <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">{{ error }}</div>
 
         <template v-else>
@@ -204,6 +204,7 @@ import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import BaseDrawer from '@/app/components/ui/modal/BaseDrawer.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import type { Budget, DistributionRequest, LockedRow } from '@/modules/midocencia/types/distribution.type'
 import type { RubricTree, RubricCriterion, RubricRubro, RubricEvidence, RubricProduct } from '@/modules/midocencia/types/rubric.type'
 

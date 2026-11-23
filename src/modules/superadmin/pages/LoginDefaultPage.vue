@@ -9,7 +9,9 @@
             </p>
         </div>
 
-        <div v-if="loading" class="bg-white rounded-lg shadow p-6 text-gray-500">Cargando…</div>
+        <div v-if="loading" class="bg-white rounded-lg shadow p-6">
+            <SkeletonText :lines="3" />
+        </div>
 
         <div v-else class="bg-white rounded-lg shadow p-6 space-y-5">
             <div>
@@ -67,6 +69,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { api } from '@/shared/services/api'
 import { apiUrl } from '@/shared/api/config'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 interface CollegeOption {
     id: number

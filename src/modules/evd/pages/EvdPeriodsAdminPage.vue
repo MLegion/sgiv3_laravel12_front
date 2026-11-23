@@ -3,6 +3,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import type {
     EvdCapStatus,
     EvdPeriodModalityRow,
@@ -197,7 +198,7 @@ onMounted(load)
             </div>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400 text-center py-12">Cargando…</div>
+        <SkeletonTable v-if="loading" :rows="4" :cols="3" />
 
         <div v-else-if="!filteredRows.length"
              class="bg-white border border-dashed border-slate-300 rounded-lg px-4 py-12 text-center">

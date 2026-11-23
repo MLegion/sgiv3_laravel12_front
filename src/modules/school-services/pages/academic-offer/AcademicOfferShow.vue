@@ -7,7 +7,15 @@
             </div>
         </div>
 
-        <div v-if="loading" class="bg-white border rounded-xl p-6 text-center text-slate-400">Cargando...</div>
+        <div v-if="loading" role="status" class="space-y-6">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="bg-white border rounded-xl shadow-sm p-6">
+                <SkeletonText :lines="3" />
+            </div>
+            <div aria-hidden="true" class="bg-white border rounded-xl shadow-sm p-6">
+                <SkeletonText :lines="4" />
+            </div>
+        </div>
 
         <template v-else-if="offer">
             <!-- Info -->
@@ -84,6 +92,7 @@ import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import type { AcademicOfferType } from '@/modules/school-services/types/academic-offer.type'
 import type { AcademicOfferStudyPlanType } from '@/modules/school-services/types/academic-offer-study-plan.type'
 

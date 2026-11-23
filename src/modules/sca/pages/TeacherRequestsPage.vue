@@ -7,8 +7,8 @@
         </div>
 
         <!-- Cargando estado de docente -->
-        <div v-if="!teacherChecked" class="flex justify-center py-12">
-            <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div v-if="!teacherChecked" class="bg-white border rounded-xl shadow-sm p-4">
+            <SkeletonText :lines="3" />
         </div>
 
         <!-- Contenido si es docente -->
@@ -115,8 +115,8 @@
                 <span></span>
             </div>
 
-            <div v-if="loadingRequests" class="flex justify-center py-12">
-                <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div v-if="loadingRequests" class="p-4">
+                <SkeletonTable :rows="5" :cols="6" />
             </div>
 
             <div v-else class="divide-y max-h-[60vh] overflow-y-auto">
@@ -180,8 +180,15 @@
                 </div>
             </div>
 
-            <div v-if="loadingAvailable" class="flex justify-center py-12">
-                <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div v-if="loadingAvailable" class="divide-y" role="status" aria-busy="true">
+                <span class="sr-only">Cargando…</span>
+                <div v-for="n in 6" :key="n" class="flex items-center gap-3 px-4 py-3">
+                    <div class="flex-1 space-y-1.5">
+                        <div class="h-4 w-1/2 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-2.5 w-2/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                    <div class="h-7 w-20 rounded-lg bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
             </div>
 
             <div v-else class="divide-y max-h-[60vh] overflow-y-auto">
@@ -236,6 +243,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ReportGenerateButton from '@/modules/reports/components/ReportGenerateButton.vue'
 import { ReportCode } from '@/modules/reports/types/reportCodes'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 /* ── State: Teacher ──────────────────────────────────────────────── */
 const teacherChecked = ref(false)

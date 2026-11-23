@@ -28,7 +28,9 @@
             </div>
         </PortalHelpDrawer>
 
-        <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
+        <div v-if="loading" class="bg-white border rounded-xl shadow-sm p-6">
+            <SkeletonText :lines="6" />
+        </div>
         <div v-else class="bg-white border rounded-xl shadow-sm p-6 space-y-5">
             <template v-if="editing">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -97,6 +99,7 @@
 
 <script setup lang="ts">
 import PortalStepper from '@/modules/admissions/components/PortalStepper.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'

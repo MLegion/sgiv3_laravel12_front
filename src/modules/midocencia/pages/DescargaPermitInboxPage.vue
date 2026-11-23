@@ -8,7 +8,19 @@
             </p>
         </div>
 
-        <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
+        <div v-if="loading" role="status" class="bg-white border rounded-xl shadow-sm divide-y">
+            <span class="sr-only">Cargando…</span>
+            <ul aria-hidden="true">
+                <li v-for="n in 3" :key="n" class="p-4 flex items-start justify-between gap-3">
+                    <div class="min-w-0 flex-1 space-y-2">
+                        <div class="h-4 w-48 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-2.5 w-64 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-2.5 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                    <div class="h-6 w-20 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none shrink-0"></div>
+                </li>
+            </ul>
+        </div>
 
         <div v-else class="bg-white border rounded-xl shadow-sm divide-y">
             <div v-for="g in items" :key="g.id" class="p-4 flex items-start justify-between gap-3">

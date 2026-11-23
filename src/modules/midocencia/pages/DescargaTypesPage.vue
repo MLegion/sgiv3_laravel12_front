@@ -20,7 +20,7 @@
                 />
             </div>
 
-            <div v-if="loading" class="py-8 text-center text-slate-400">Cargando…</div>
+            <SkeletonTable v-if="loading" :rows="5" :cols="4" />
 
             <div v-else-if="!filtered.length" class="py-8 text-center text-slate-400">
                 No hay tipos de hora de descarga activos en este plantel.
@@ -81,6 +81,7 @@ import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface DescargaType {
     id: number

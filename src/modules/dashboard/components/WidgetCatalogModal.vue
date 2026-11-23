@@ -30,8 +30,16 @@
                 </div>
 
                 <div class="flex-1 overflow-y-auto px-5 py-4">
-                    <div v-if="store.loadingCatalog" class="flex justify-center py-12">
-                        <ArrowPathIcon class="w-6 h-6 animate-spin text-slate-400" />
+                    <div v-if="store.loadingCatalog" role="status" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <span class="sr-only">Cargando…</span>
+                        <div v-for="n in 4" :key="n" aria-hidden="true" class="border border-slate-200 rounded-lg p-3 flex gap-3">
+                            <div class="shrink-0 w-20 h-20 rounded-md bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="flex-1 space-y-2 py-1">
+                                <div class="h-4 w-3/4 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-3 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-3 w-2/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <div v-else-if="filtered.length === 0" class="text-center py-12 text-slate-500 text-sm">
@@ -119,7 +127,6 @@ import { useDashboardStore } from '@/modules/dashboard/stores/dashboard.store'
 import {
     XMarkIcon,
     MagnifyingGlassIcon,
-    ArrowPathIcon,
     Squares2X2Icon,
 } from '@heroicons/vue/24/outline'
 

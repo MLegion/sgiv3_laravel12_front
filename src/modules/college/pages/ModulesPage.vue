@@ -9,7 +9,19 @@
             </p>
         </div>
 
-        <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
+        <div v-if="loading" role="status" class="bg-white border rounded-xl shadow-sm divide-y">
+            <span class="sr-only">Cargando…</span>
+            <div v-for="n in 4" :key="n" aria-hidden="true" class="flex items-center justify-between gap-4 px-4 py-3">
+                <div class="min-w-0 space-y-2">
+                    <div class="h-4 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-2.5 w-56 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                    <div class="h-4 w-14 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-6 w-11 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+            </div>
+        </div>
 
         <div v-else class="bg-white border rounded-xl shadow-sm divide-y">
             <div v-for="m in modules" :key="m.key" class="flex items-center justify-between gap-4 px-4 py-3">

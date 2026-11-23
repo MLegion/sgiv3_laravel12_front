@@ -27,7 +27,7 @@
             >Reintentar</button>
         </div>
 
-        <div v-if="loading && items.length === 0" class="text-sm text-slate-500 italic">Cargando…</div>
+        <SkeletonTable v-if="loading && items.length === 0" :rows="5" :cols="7" />
         <div v-else-if="!errorMsg && items.length === 0" class="text-sm text-slate-500 italic">No hay periodos.</div>
 
         <div v-else class="bg-white border border-slate-200 rounded-lg overflow-hidden">
@@ -92,6 +92,7 @@ import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface SummaryItem {
     collegeAcademicPeriodId: number

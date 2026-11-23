@@ -24,7 +24,7 @@
             </div>
         </div>
 
-        <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
+        <SkeletonText v-if="loading" :lines="5" />
 
         <template v-else>
             <!-- Pestañas -->
@@ -190,6 +190,7 @@ import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 interface EvFile { id: number; originalName: string; mime: string | null; size: number }
 interface Evidence { evidenceId: number; name: string; files: EvFile[] }

@@ -1,6 +1,9 @@
 <template>
     <div class="space-y-4">
-        <div v-if="loading" class="py-12 text-center text-slate-400 text-sm">Cargando...</div>
+        <div v-if="loading" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <SkeletonChart :height="320" />
+            <SkeletonTable :rows="4" :cols="3" />
+        </div>
         <div v-else-if="!data || data.total === 0" class="py-16 text-center text-slate-400 text-sm">
             No hay asignaciones de examen presencial registradas.
         </div>
@@ -47,6 +50,8 @@ import {
 } from 'chart.js'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonChart from '@/app/components/ui/SkeletonChart.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement)
 

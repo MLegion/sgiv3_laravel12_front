@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
+        <SkeletonTable v-if="loading" :rows="5" :cols="4" />
         <div v-else-if="!periodId" class="text-center py-12 text-slate-400">Selecciona un periodo para ver los docentes.</div>
         <div v-else-if="filtered.length === 0" class="text-center py-12 text-slate-400">No hay docentes que coincidan.</div>
 
@@ -91,6 +91,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface PlazaRow {
     teacherId: number

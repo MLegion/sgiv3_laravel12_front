@@ -6,7 +6,15 @@
     />
 
     <div v-else class="h-full flex flex-col text-xs">
-        <div v-if="loading && !data" class="flex-1 grid place-items-center text-slate-400">Cargando…</div>
+        <div v-if="loading && !data" role="status" class="flex-1 min-h-0">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="flex flex-col gap-2.5 pt-1">
+                <div v-for="n in 4" :key="n" class="space-y-1">
+                    <div class="h-2.5 w-1/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-2.5 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+            </div>
+        </div>
         <div v-else-if="error" class="flex-1 grid place-items-center text-rose-500">Error al cargar.</div>
         <div v-else-if="!data || data.careers.length === 0" class="flex-1 grid place-items-center text-slate-400 text-center px-4">
             Sin aspirantes con oferta elegida en este periodo.

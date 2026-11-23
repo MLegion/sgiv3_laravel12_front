@@ -39,7 +39,7 @@
         </div>
 
         <div v-else-if="periodId" class="bg-white border rounded-xl shadow-sm p-4">
-            <div v-if="loading" class="py-8 text-center text-slate-400">Cargando…</div>
+            <SkeletonTable v-if="loading" :rows="5" :cols="5" />
             <div v-else-if="!filtered.length" class="py-8 text-center text-slate-400">No hay oficios que mostrar.</div>
             <div v-else role="region" aria-label="Oficios emitidos" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
@@ -83,6 +83,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface Period { id: number; name: string }
 interface Oficio {

@@ -33,12 +33,11 @@
             <!-- Overlay -->
             <div
                 v-if="loading"
-                class="absolute inset-0 bg-white/70 z-10
-                       flex items-center justify-center"
+                class="absolute inset-0 bg-white/80 z-10 p-6"
+                role="status"
             >
-                <span class="text-sm text-slate-500">
-                    Cargando información…
-                </span>
+                <span class="sr-only">Cargando información…</span>
+                <SkeletonText :lines="3" />
             </div>
 
             <!-- Datos -->
@@ -85,6 +84,7 @@ import { mapWorkAreaUpdatePayload } from '@/shared/api/mappers/work-area.mapper'
 
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 /* -------------------------------------------------------------------------- */
 /* ROUTER */

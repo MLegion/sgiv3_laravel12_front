@@ -11,9 +11,7 @@
         </div>
 
         <!-- Estados de carga / sin contexto -->
-        <div v-if="loading" class="bg-white border rounded-xl shadow-sm p-6 text-center text-sm text-slate-400">
-            Cargando…
-        </div>
+        <SkeletonText v-if="loading" :lines="3" class="bg-white border rounded-xl shadow-sm p-6" />
         <PhaseUnavailable
             v-else-if="!activePeriod?.open"
             :message="activePeriod?.message || 'No hay periodo abierto para reinscripción. Vuelve cuando tu coordinación habilite la fase.'"
@@ -90,10 +88,7 @@
         </template>
 
         <!-- Estado intermedio: cargando enrollments -->
-        <div v-else-if="session && session.status === 'approved' && loadingEnrollment"
-             class="bg-white border rounded-xl shadow-sm p-6 text-center text-sm text-slate-400">
-            Cargando información de reinscripción…
-        </div>
+        <SkeletonTable v-else-if="session && session.status === 'approved' && loadingEnrollment" :rows="4" :cols="3" />
 
         <!-- Estado B: aprobado pero sin reinscripción confirmada -->
         <template v-else-if="session && session.status === 'approved'">
@@ -254,6 +249,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 import PhaseUnavailable from '@/app/components/ui/PhaseUnavailable.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import FormatUnavailableModal from '@/modules/reports/components/FormatUnavailableModal.vue'
 import ExceptionControl from '@/modules/advising/components/ExceptionControl.vue'
 import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'

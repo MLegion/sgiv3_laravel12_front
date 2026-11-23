@@ -6,6 +6,7 @@ import { API } from '@/shared/api'
 import EvdPeriodSelect from '@/modules/evd/components/EvdPeriodSelect.vue'
 import EvdReportDrawer from '@/modules/evd/components/EvdReportDrawer.vue'
 import { ReportCode } from '@/modules/reports/types/reportCodes'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import type {
     EvdLevel,
     EvdResultsFilterOptions,
@@ -288,7 +289,7 @@ onMounted(async () => {
                     </tr>
                 </thead>
                 <tbody class="divide-y">
-                    <tr v-if="loading"><td colspan="8" class="px-4 py-6 text-center text-sm text-slate-400">Cargando…</td></tr>
+                    <tr v-if="loading"><td colspan="8" class="p-3"><SkeletonTable :rows="5" :cols="8" /></td></tr>
                     <tr v-else-if="!rows.length">
                         <td colspan="8" class="px-4 py-6 text-center text-sm text-slate-400 italic">
                             No hay resultados para los filtros seleccionados.

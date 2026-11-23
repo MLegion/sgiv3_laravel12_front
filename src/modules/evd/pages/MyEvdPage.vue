@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { MyEvdAssignment, MyEvdStatus } from '@/modules/evd/types/evd.type'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface ActivePeriod {
     open: boolean
@@ -107,10 +108,7 @@ onMounted(load)
         </div>
 
         <!-- (loading) ─────────────────────────────────────────────────── -->
-        <div v-if="uiState === 'loading'"
-             class="bg-white border rounded-xl shadow-sm p-6 text-center text-sm text-slate-400">
-            Cargando…
-        </div>
+        <SkeletonTable v-if="uiState === 'loading'" :rows="5" :cols="5" />
 
         <!-- (a) Sin periodo activo en el college ──────────────────────── -->
         <div v-else-if="uiState === 'no_period_active'"

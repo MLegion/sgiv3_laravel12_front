@@ -56,7 +56,7 @@
         </BaseModal>
 
         <!-- Lista -->
-        <div v-if="loading" class="text-xs text-slate-400 italic">Cargando...</div>
+        <SkeletonTable v-if="loading" :rows="5" :cols="7" />
         <div v-else-if="assignments.length > 0" role="region" aria-label="Aspirantes asignados" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-xs border border-slate-200 rounded-md overflow-hidden">
             <caption class="sr-only">Aspirantes asignados</caption>
             <thead class="bg-slate-50">
@@ -112,6 +112,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useConfirm } from '@/app/composables/useConfirm'
 import { PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { ExamSession } from '@/modules/admissions/types/exam-session.type'

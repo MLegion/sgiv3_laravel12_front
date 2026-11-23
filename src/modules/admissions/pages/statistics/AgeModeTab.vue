@@ -1,6 +1,18 @@
 <template>
     <div class="space-y-6">
-        <div v-if="loading" class="py-12 text-center text-slate-400 text-sm">Cargando...</div>
+        <template v-if="loading">
+            <section>
+                <SkeletonChart :height="320" />
+            </section>
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <SkeletonChart :height="280" />
+                <SkeletonTable :rows="4" :cols="2" />
+            </section>
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <SkeletonChart :height="280" />
+                <SkeletonTable :rows="4" :cols="2" />
+            </section>
+        </template>
 
         <template v-else-if="data">
             <!-- Edad -->
@@ -86,6 +98,8 @@ import {
 } from 'chart.js'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonChart from '@/app/components/ui/SkeletonChart.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement)
 

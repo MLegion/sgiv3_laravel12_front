@@ -2,7 +2,26 @@
     <div class="space-y-4 max-w-4xl">
         <h1 class="text-xl font-semibold text-slate-800 uppercase">Mis Residentes</h1>
 
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
+        <div v-if="loading" role="status" aria-label="Cargando residentes">
+            <span class="sr-only">Cargando…</span>
+            <ul aria-hidden="true" class="space-y-3">
+                <li v-for="n in 3" :key="n" class="rounded-xl border bg-white p-4 space-y-3">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="space-y-1.5">
+                            <div class="h-4 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-2.5 w-24 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-3 w-32 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
+                        <div class="h-4 w-20 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-2">
+                        <div class="h-4 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-4 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                    <div class="h-7 w-44 rounded-md bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </li>
+            </ul>
+        </div>
         <div v-else-if="!rows.length" class="rounded-lg border bg-slate-50 px-4 py-6 text-sm text-slate-500">
             Aún no tienes residentes asignados como asesor interno.
         </div>

@@ -39,7 +39,9 @@
             <!-- Contenido -->
             <main class="flex-1">
                 <div class="max-w-4xl mx-auto px-6 py-8">
-                    <div v-if="loading" class="text-center text-slate-400 py-20">Cargando…</div>
+                    <div v-if="loading" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <SkeletonText :lines="5" />
+                    </div>
 
                     <template v-else>
                         <!-- PASO 1: Datos institucionales -->
@@ -206,6 +208,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import GeoAddressFields from '@/app/components/ui/form/GeoAddressFields.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import BrandingAssetUploader from '@/modules/college/components/BrandingAssetUploader.vue'
 import LoginCustomizer from '@/modules/college/components/LoginCustomizer.vue'
 import { useAuthStore } from '@/modules/auth/stores/auth.store'

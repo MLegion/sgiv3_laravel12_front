@@ -63,8 +63,14 @@
                                     </svg>
                                 </button>
                             </div>
-                            <div v-if="loadingDocs" class="flex items-center justify-center h-32 text-slate-400 text-sm">
-                                Cargando...
+                            <div v-if="loadingDocs" role="status">
+                                <span class="sr-only">Cargando…</span>
+                                <ul aria-hidden="true" class="divide-y">
+                                    <li v-for="n in 6" :key="n" class="flex flex-col gap-1.5 px-4 py-3">
+                                        <div class="h-3.5 w-3/4 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                        <div class="h-4 w-16 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                    </li>
+                                </ul>
                             </div>
                             <ul v-else class="divide-y">
                                 <li

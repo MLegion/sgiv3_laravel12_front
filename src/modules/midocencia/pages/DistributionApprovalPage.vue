@@ -36,7 +36,7 @@
                 </button>
             </div>
 
-            <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
+            <SkeletonTable v-if="loading" :rows="5" :cols="5" />
             <div v-else-if="visibleRows.length === 0" class="text-center py-8 text-slate-400">Sin docentes en este filtro.</div>
 
             <!-- Tabla -->
@@ -98,6 +98,7 @@ import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import DescargaReviewModal from '@/modules/midocencia/components/DescargaReviewModal.vue'
 import type { DistributionRequest } from '@/modules/midocencia/types/distribution.type'
 

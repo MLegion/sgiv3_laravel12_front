@@ -1,6 +1,11 @@
 <template>
     <div class="space-y-4">
-        <div v-if="loading" class="py-12 text-center text-slate-400 text-sm">Cargando...</div>
+        <template v-if="loading">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <SkeletonStat v-for="n in 5" :key="n" />
+            </div>
+            <SkeletonChart :height="360" />
+        </template>
 
         <div v-else-if="!data || data.stats.count === 0" class="py-16 text-center text-slate-400 text-sm">
             No hay calificaciones cargadas para este filtro.
@@ -34,6 +39,8 @@ import {
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import StatCard from './StatCard.vue'
+import SkeletonStat from '@/app/components/ui/SkeletonStat.vue'
+import SkeletonChart from '@/app/components/ui/SkeletonChart.vue'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 

@@ -3,7 +3,19 @@
         <p class="text-xs text-slate-400">
             Carga cada formato en su menú, luego <b>Entrégalo</b> para que quede bloqueado y la coordinación lo revise.
         </p>
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
+        <div v-if="loading" role="status" class="space-y-2">
+            <span class="sr-only">Cargando…</span>
+            <div v-for="n in 3" :key="n" aria-hidden="true" class="rounded-xl border bg-white p-4 flex items-center justify-between gap-3">
+                <div class="space-y-2">
+                    <div class="h-4 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-2.5 w-56 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="h-5 w-20 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-7 w-24 rounded-lg bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+            </div>
+        </div>
         <div v-else class="space-y-2">
             <div v-for="f in data.formats" :key="f.code" class="rounded-xl border bg-white p-4 flex items-center justify-between gap-3 flex-wrap">
                 <div class="min-w-0">

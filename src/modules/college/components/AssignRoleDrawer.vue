@@ -49,7 +49,13 @@
                             <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
                                 Roles asignados ({{ detail?.assignments?.length || 0 }})
                             </h3>
-                            <div v-if="loadingDetail" class="text-sm text-slate-400 py-3">Cargando...</div>
+                            <div v-if="loadingDetail" role="status" class="space-y-2">
+                                <span class="sr-only">Cargando…</span>
+                                <div v-for="n in 3" :key="n" aria-hidden="true" class="border border-slate-200 rounded-xl p-3 space-y-2">
+                                    <div class="h-4 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                    <div class="h-3 w-24 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                </div>
+                            </div>
                             <div v-else-if="!detail?.assignments?.length" class="text-sm text-slate-400 py-3 italic">
                                 Sin roles asignados en este college.
                             </div>

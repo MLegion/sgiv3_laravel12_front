@@ -41,8 +41,23 @@
                 </button>
             </div>
 
-            <div v-if="loading" class="py-8">
-                <LoadingOverlay :absolute="false" text="Cargando contactos…" />
+            <div v-if="loading" role="status">
+                <span class="sr-only">Cargando contactos…</span>
+                <ul aria-hidden="true" class="space-y-3">
+                    <li v-for="n in 3" :key="n" class="border border-slate-200 rounded-xl px-4 py-3 bg-white">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="space-y-1.5">
+                                <div class="h-4 w-48 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-2.5 w-24 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-2.5 w-28 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                            <div class="flex gap-1 shrink-0">
+                                <div class="h-7 w-7 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-7 w-7 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
             </div>
 
             <!-- Estado vacío con CTA (paso obligatorio: mínimo 1) -->
@@ -158,7 +173,6 @@ import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import FormPhoneInput from '@/app/components/ui/form/FormPhoneInput.vue'
 import FormEmailInput from '@/app/components/ui/form/FormEmailInput.vue'
 import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
-import LoadingOverlay from '@/app/components/ui/LoadingOverlay.vue'
 import IconButton from '@/app/components/ui/IconButton.vue'
 import { useToast } from '@/app/composables/useToast'
 import { useConfirm } from '@/app/composables/useConfirm'

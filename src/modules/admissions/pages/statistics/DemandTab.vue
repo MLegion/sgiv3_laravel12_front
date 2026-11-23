@@ -1,6 +1,9 @@
 <template>
     <div class="space-y-4">
-        <div v-if="loading" class="py-12 text-center text-slate-400 text-sm">Cargando...</div>
+        <template v-if="loading">
+            <SkeletonChart :height="360" />
+            <SkeletonTable :rows="5" :cols="5" />
+        </template>
         <div v-else-if="!data || data.careers.length === 0" class="py-16 text-center text-slate-400 text-sm">
             No hay aspirantes con oferta seleccionada en este filtro.
         </div>
@@ -49,6 +52,8 @@ import {
 } from 'chart.js'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonChart from '@/app/components/ui/SkeletonChart.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 

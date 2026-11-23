@@ -3,6 +3,7 @@ import { onMounted, reactive, ref, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import EvdPeriodSelect from '@/modules/evd/components/EvdPeriodSelect.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface CapOption { id: number; academicPeriod?: { name?: string | null; shortName?: string | null } | null }
 interface Career { id: number; name: string; short_name: string | null }
@@ -231,7 +232,27 @@ onMounted(async () => {
         </div>
 
         <div v-if="error" class="bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded px-3 py-2">{{ error }}</div>
-        <div v-if="loading" class="text-center text-sm text-slate-400 py-8">Cargando…</div>
+        <div v-if="loading" role="status" class="space-y-2">
+            <span class="sr-only">Cargando…</span>
+            <ul aria-hidden="true" class="space-y-2">
+                <li v-for="n in 4" :key="n" class="bg-white border border-slate-200 rounded-lg">
+                    <div class="w-full px-4 py-3 flex items-center gap-3">
+                        <span class="h-3 w-3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></span>
+                        <div class="min-w-0 flex-1 space-y-2">
+                            <div class="h-4 w-1/2 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-3 w-3/4 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
+                        <div class="text-right shrink-0 w-40 space-y-2">
+                            <div class="flex items-center gap-2 justify-end">
+                                <div class="h-2 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-4 w-10 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                            <div class="h-2.5 w-28 ml-auto rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
 
         <div v-else-if="groups.length === 0" class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center text-sm text-slate-500">
             No hay grupos con evaluación docente para este periodo y carrera.
@@ -266,7 +287,7 @@ onMounted(async () => {
 
                 <!-- Lista de estudiantes -->
                 <div v-if="expanded[g.teacher_assignment_id]" class="border-t border-slate-100 px-4 py-3">
-                    <div v-if="loadingStudents[g.teacher_assignment_id]" class="text-xs text-slate-400 italic">Cargando estudiantes…</div>
+                    <SkeletonTable v-if="loadingStudents[g.teacher_assignment_id]" :rows="3" :cols="4" />
                     <div v-else-if="(students[g.teacher_assignment_id] ?? []).length === 0" class="text-xs text-slate-500 italic">
                         Sin estudiantes en esta materia.
                     </div>

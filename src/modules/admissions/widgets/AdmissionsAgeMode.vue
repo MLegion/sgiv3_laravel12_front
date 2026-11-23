@@ -17,7 +17,17 @@
 
     <!-- DATA: toggle de vista + sección activa -->
     <div v-else class="h-full flex flex-col text-xs">
-        <div v-if="loading && !data" class="flex-1 grid place-items-center text-slate-400">Cargando…</div>
+        <div v-if="loading && !data" role="status" class="flex-1 min-h-0">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="flex items-end gap-1.5 pt-2" style="height: 130px">
+                <div
+                    v-for="(h, i) in ['55%','80%','40%','65%','90%','50%']"
+                    :key="i"
+                    class="flex-1 rounded-t bg-slate-200 animate-pulse motion-reduce:animate-none"
+                    :style="{ height: h }"
+                ></div>
+            </div>
+        </div>
         <div v-else-if="error" class="flex-1 grid place-items-center text-rose-500">Error al cargar.</div>
         <div v-else-if="!data" class="flex-1 grid place-items-center text-slate-400">Sin datos.</div>
 

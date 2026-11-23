@@ -5,7 +5,9 @@
             <button class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-100" @click="router.back()">VOLVER</button>
         </div>
 
-        <div v-if="loadingData" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
+        <div v-if="loadingData" class="bg-white border rounded-xl shadow-sm p-6">
+            <SkeletonText :lines="6" />
+        </div>
 
         <template v-else>
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
@@ -106,7 +108,24 @@
                         <p class="text-sm text-slate-500">Mínimo 1, máximo 3 contactos.</p>
                         <button v-if="contacts.length < 3" class="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-blue-600 text-white hover:bg-blue-700" @click="openContactCreate">+ AGREGAR</button>
                     </div>
-                    <div v-if="loadingContacts" class="text-xs text-slate-400">Cargando...</div>
+                    <div v-if="loadingContacts" role="status">
+                        <span class="sr-only">Cargando…</span>
+                        <ul aria-hidden="true" class="space-y-3">
+                            <li v-for="n in 3" :key="n" class="border rounded-xl px-4 py-3 bg-white">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="space-y-1.5">
+                                        <div class="h-4 w-44 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                        <div class="h-2.5 w-24 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                        <div class="h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                    </div>
+                                    <div class="flex gap-1 shrink-0">
+                                        <div class="h-6 w-6 rounded border bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                        <div class="h-6 w-6 rounded border bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                     <div v-else-if="contacts.length === 0" class="text-xs text-slate-400 italic">Sin contactos registrados.</div>
                     <ul v-else class="space-y-3">
                         <li v-for="c in contacts" :key="c.id" class="border rounded-xl px-4 py-3 bg-white">
@@ -296,7 +315,21 @@
 
                 <!-- ── Pestaña: Documentos ── -->
                 <div v-show="activeTab === 'documentos'" class="p-6 space-y-4">
-                    <div v-if="loadingDocs" class="text-xs text-slate-400">Cargando...</div>
+                    <div v-if="loadingDocs" role="status">
+                        <span class="sr-only">Cargando…</span>
+                        <ul aria-hidden="true" class="space-y-2">
+                            <li v-for="n in 3" :key="n" class="flex items-center justify-between rounded-lg border px-4 py-3 bg-white">
+                                <div class="space-y-1.5">
+                                    <div class="h-4 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                    <div class="h-2.5 w-28 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="h-4 w-16 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                    <div class="h-7 w-20 rounded-lg border bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
 
                     <div v-else-if="docSlots.length === 0" class="text-xs text-slate-400 italic">
                         No hay documentos requeridos configurados.
@@ -447,6 +480,7 @@ import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import PhotoUpload from '@/app/components/ui/form/PhotoUpload.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import { STATUS_OPTIONS } from '@/modules/admissions/types/applicant.type'
 import type { ApplicantDocument } from '@/modules/admissions/types/applicant-document.type'
 import { DOC_STATUS_OPTIONS, DOC_STATUS_CLASSES } from '@/modules/admissions/types/applicant-document.type'

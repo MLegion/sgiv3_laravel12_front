@@ -65,9 +65,20 @@
                         <tr v-if="collegeScoped && !selectedCollegeId">
                             <td :colspan="colspan" class="px-4 py-8 text-center text-slate-400">Selecciona un colegio para ver su bitácora.</td>
                         </tr>
-                        <tr v-else-if="loading">
-                            <td :colspan="colspan" class="px-4 py-8 text-center text-slate-400">Cargando…</td>
-                        </tr>
+                        <template v-else-if="loading">
+                            <tr v-for="n in 6" :key="'sk-'+n" role="status">
+                                <td :colspan="colspan" class="px-4 py-3">
+                                    <span class="sr-only">Cargando…</span>
+                                    <div aria-hidden="true" class="flex items-center gap-4">
+                                        <div class="h-4 w-28 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                        <div class="h-4 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                        <div class="h-4 flex-1 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                        <div class="h-4 w-16 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                        <div class="h-4 w-24 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
                         <tr v-else-if="items.length === 0">
                             <td :colspan="colspan" class="px-4 py-8 text-center text-slate-400">Sin registros.</td>
                         </tr>

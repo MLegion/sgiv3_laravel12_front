@@ -80,12 +80,7 @@
         </div>
 
         <!-- Cargando -->
-        <div v-if="loading" role="status" aria-label="Cargando estudiantes" class="flex justify-center py-12">
-            <svg class="animate-spin w-8 h-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
-        </div>
+        <SkeletonTable v-if="loading" :rows="5" :cols="8" />
 
         <!-- Error -->
         <div v-else-if="errorMsg" role="alert" class="flex flex-col items-center justify-center py-16 gap-3 text-center">
@@ -205,6 +200,7 @@
 import { computed, reactive, ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 const loading  = ref(true)
 const items    = ref<any[]>([])

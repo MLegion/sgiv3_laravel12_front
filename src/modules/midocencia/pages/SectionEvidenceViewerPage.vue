@@ -35,7 +35,15 @@
             </button>
         </div>
 
-        <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
+        <div v-if="loading" role="status" class="space-y-3">
+            <span class="sr-only">Cargando…</span>
+            <ul aria-hidden="true" class="space-y-3">
+                <li v-for="n in 3" :key="n" class="bg-white border rounded-xl shadow-sm px-4 py-3 flex items-center justify-between">
+                    <div class="h-4 w-56 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-2.5 w-24 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </li>
+            </ul>
+        </div>
         <div v-else-if="!periodId" class="text-center py-8 text-slate-400">Selecciona un periodo.</div>
         <div v-else-if="!sections.length" class="text-center py-8 text-slate-400">No tienes secciones asignadas.</div>
         <div v-else-if="filtered.length === 0" class="text-center py-8 text-slate-400">Sin evidencias en esta sección para el periodo.</div>

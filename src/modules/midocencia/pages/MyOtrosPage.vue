@@ -6,7 +6,7 @@
             <p class="text-sm text-slate-500">Sube archivos de evidencia libres, opcionalmente clasificados en una categoría.</p>
         </div>
 
-        <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
+        <SkeletonTable v-if="loading" :rows="5" :cols="4" />
         <template v-else>
             <!-- Subir -->
             <div class="bg-white border rounded-xl shadow-sm p-4 flex flex-wrap items-end gap-3">
@@ -58,6 +58,7 @@ import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface Bucket { id: number; name: string }
 interface OFile { id: number; bucketId: number | null; label: string | null; originalName: string; mime: string | null; size: number }

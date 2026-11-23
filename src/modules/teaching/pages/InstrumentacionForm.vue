@@ -54,7 +54,7 @@
             ⚠ El programa de estudio de esta materia aún no está aprobado (estado: <span class="font-medium">{{ programStatusLabel }}</span>). La instrumentación se pre-llenó con su contenido actual; podría cambiar al aprobarse.
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-500">Cargando…</div>
+        <SkeletonText v-if="loading" :lines="6" />
 
         <div v-else-if="!header.studyProgramId" class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
             Esta materia no tiene un programa de estudio digitalizado, por lo que no se puede pre-llenar la instrumentación.
@@ -495,6 +495,7 @@
 import { reactive, ref, computed, onMounted, onBeforeUnmount, watch, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import Tabs from '@/app/components/ui/Tabs.vue'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import CalendarizacionView from '@/modules/teaching/components/CalendarizacionView.vue'

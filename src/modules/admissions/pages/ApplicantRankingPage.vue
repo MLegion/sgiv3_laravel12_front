@@ -96,13 +96,8 @@
             Selecciona un período para ver el cuadro de resultados.
         </div>
 
-        <!-- Cargando -->
-        <div v-else-if="loading" class="flex justify-center py-12">
-            <svg class="animate-spin w-8 h-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
-        </div>
+        <!-- Cargando (skeleton de tabla) -->
+        <SkeletonTable v-else-if="loading" :rows="5" :cols="5" />
 
         <!-- Sin resultados -->
         <div v-else-if="items.length === 0" class="flex flex-col items-center justify-center py-16 text-slate-400 text-sm gap-2">
@@ -428,6 +423,7 @@
 import { computed, ref, watch } from 'vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 

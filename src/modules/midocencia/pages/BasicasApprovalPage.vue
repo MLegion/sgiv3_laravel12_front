@@ -24,7 +24,7 @@
             </div>
         </div>
 
-        <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
+        <SkeletonTable v-if="loading" :rows="5" :cols="3" />
         <div v-else-if="!periodId" class="text-center py-8 text-slate-400">Selecciona un periodo.</div>
         <div v-else-if="rows.length === 0" class="text-center py-8 text-slate-400">Sin horarios para este filtro.</div>
 
@@ -84,6 +84,7 @@ import { useToast } from '@/app/composables/useToast'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import type { DistributionRequest } from '@/modules/midocencia/types/distribution.type'
 
 const toast = useToast()

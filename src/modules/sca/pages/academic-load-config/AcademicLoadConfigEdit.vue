@@ -1,9 +1,20 @@
 <template>
     <div class="min-h-screen bg-slate-50">
         <!-- Loading -->
-        <div v-if="loading" class="flex flex-col items-center justify-center py-32">
-            <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-3"></div>
-            <span class="text-sm text-slate-500 font-bold uppercase">CARGANDO...</span>
+        <div v-if="loading" class="p-6" role="status" aria-busy="true">
+            <span class="sr-only">Cargando…</span>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div v-for="n in 6" :key="n" class="bg-white border rounded-xl shadow-sm p-5 space-y-3">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex-1 space-y-1.5">
+                            <div class="h-2.5 w-16 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-4 w-2/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
+                        <div class="h-6 w-11 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                    <div class="h-2.5 w-1/2 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+            </div>
         </div>
 
         <!-- Error banner -->

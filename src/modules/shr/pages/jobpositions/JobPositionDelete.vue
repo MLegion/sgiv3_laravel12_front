@@ -23,12 +23,11 @@
             <!-- Overlay -->
             <div
                 v-if="loading"
-                class="absolute inset-0 bg-white/70 z-10
-                       flex items-center justify-center"
+                class="absolute inset-0 bg-white/80 z-10 p-6"
+                role="status"
             >
-                <span class="text-sm text-slate-500">
-                    Cargando información…
-                </span>
+                <span class="sr-only">Cargando información…</span>
+                <SkeletonText :lines="3" />
             </div>
 
             <!-- Información del puesto -->
@@ -140,6 +139,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 /* -------------------------------------------------------------------------- */
 /* ROUTER */

@@ -18,7 +18,9 @@
             </button>
         </div>
 
-        <div v-if="loading" class="bg-white rounded-lg shadow p-6 text-gray-500">Cargando…</div>
+        <div v-if="loading" class="bg-white rounded-lg shadow p-6">
+            <SkeletonText :lines="4" />
+        </div>
 
         <div v-else class="space-y-6">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -271,6 +273,7 @@ import { useBrandingStore } from '@/modules/auth/stores/branding.store'
 import BrandingAssetUploader from '@/modules/college/components/BrandingAssetUploader.vue'
 import LoginCustomizer from '@/modules/college/components/LoginCustomizer.vue'
 import AppThemeCustomizer from '@/modules/college/components/AppThemeCustomizer.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 const brandingStore = useBrandingStore()
 const loading = ref(true)

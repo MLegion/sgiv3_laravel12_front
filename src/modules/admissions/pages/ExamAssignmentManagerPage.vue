@@ -62,7 +62,7 @@
                 Estado de sesiones del periodo
             </h2>
 
-            <div v-if="loadingSessions" class="text-xs text-slate-400 italic">Cargando...</div>
+            <SkeletonTable v-if="loadingSessions" :rows="5" :cols="7" />
             <div v-else-if="sessions.length > 0" role="region" aria-label="Estado de sesiones del periodo" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-xs border border-slate-200 rounded-md overflow-hidden">
                 <caption class="sr-only">Estado de sesiones del periodo</caption>
                 <thead class="bg-slate-50">
@@ -117,6 +117,7 @@ import { useRoute, RouterLink } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import type { ExamSession } from '@/modules/admissions/types/exam-session.type'
 import type { AutoDistributeStrategy } from '@/modules/admissions/types/applicant-exam-assignment.type'
 

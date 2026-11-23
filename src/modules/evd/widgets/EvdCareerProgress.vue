@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 interface Career { id: number; name: string; short_name: string | null }
 interface BehindGroup {
@@ -74,7 +75,7 @@ function goDetail() {
             </span>
         </div>
 
-        <div v-if="loading && !data" class="text-slate-400 italic">Cargando…</div>
+        <SkeletonText v-if="loading && !data" :lines="3" class="flex-1" />
 
         <div v-else-if="!hasData" class="text-slate-500 italic text-[11px] flex-1 flex items-center justify-center text-center">
             Sin evaluación docente activa para tu carrera en el periodo.

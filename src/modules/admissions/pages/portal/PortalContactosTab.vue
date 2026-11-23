@@ -11,7 +11,24 @@
             </button>
         </div>
 
-        <div v-if="loading" class="text-xs text-slate-400">Cargando...</div>
+        <div v-if="loading" role="status">
+            <span class="sr-only">Cargando…</span>
+            <ul aria-hidden="true" class="space-y-3">
+                <li v-for="n in 3" :key="n" class="border rounded-xl px-4 py-3 bg-white">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="space-y-1.5">
+                            <div class="h-4 w-44 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-2.5 w-24 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
+                        <div class="flex gap-1 shrink-0">
+                            <div class="h-6 w-6 rounded border bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-6 w-6 rounded border bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
         <div v-else-if="contacts.length === 0" class="text-xs text-slate-400 italic">Sin contactos registrados.</div>
 
         <ul v-else class="space-y-3">

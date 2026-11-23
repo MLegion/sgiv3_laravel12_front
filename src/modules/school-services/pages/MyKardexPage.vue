@@ -7,9 +7,12 @@
             </p>
         </div>
 
-        <div v-if="loading" class="bg-white border rounded-xl p-10 text-center text-slate-400 text-sm">
-            Cargando...
-        </div>
+        <template v-if="loading">
+            <div class="grid grid-cols-3 gap-3 max-w-md">
+                <SkeletonStat v-for="n in 3" :key="n" />
+            </div>
+            <SkeletonTable :rows="5" :cols="5" />
+        </template>
 
         <template v-else>
             <!-- Resumen -->
@@ -75,6 +78,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonStat from '@/app/components/ui/SkeletonStat.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface KardexRow {
     id: number

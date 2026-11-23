@@ -37,7 +37,7 @@
                 </button>
             </div>
 
-            <div v-if="loading" class="p-8 text-center text-slate-400 text-sm">Cargando…</div>
+            <div v-if="loading" class="p-4"><SkeletonTable :rows="6" :cols="6" /></div>
             <div v-else-if="items.length === 0" class="p-8 text-center text-slate-400 text-sm">
                 No hay mensajes capturados.
             </div>
@@ -111,6 +111,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import NotificationPreview from '@/modules/notifications/components/NotificationPreview.vue'
 import { stripHtml } from '@/app/utils/sanitizeHtml'
 

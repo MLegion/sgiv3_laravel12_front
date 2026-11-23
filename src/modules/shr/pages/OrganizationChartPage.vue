@@ -100,8 +100,9 @@
             </div>
         </div>
 
-        <div v-if="loading" class="p-10 text-center text-sm text-gray-500">
-            Cargando organigrama…
+        <div v-if="loading" class="bg-white rounded-xl border p-6" role="status">
+            <span class="sr-only">Cargando organigrama…</span>
+            <SkeletonText :lines="6" />
         </div>
 
         <div v-else class="grid grid-cols-12 gap-4">
@@ -234,6 +235,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import OrgChartNode from '@/modules/shr/components/OrgChartNode.vue'
 import EditWorkAreaParentDrawer from '@/modules/shr/components/EditWorkAreaParentDrawer.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import { ArrowDownTrayIcon, ArrowUpTrayIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 
 interface OrgImportResult {

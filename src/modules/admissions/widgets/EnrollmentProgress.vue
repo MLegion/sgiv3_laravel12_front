@@ -119,7 +119,16 @@
             </span>
         </div>
 
-        <div v-if="loading && !data" class="text-slate-400 italic">Cargando…</div>
+        <div v-if="loading && !data" role="status" class="flex-1 flex flex-col gap-2">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="h-8 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+            <div aria-hidden="true" class="grid grid-cols-2 gap-2">
+                <div v-for="n in 2" :key="n" class="space-y-1">
+                    <div class="h-5 w-10 mx-auto rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-2 w-14 mx-auto rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+            </div>
+        </div>
 
         <div v-else-if="admittedTotal === 0" class="text-slate-400 italic">
             Aún no hay admitidos en este periodo.

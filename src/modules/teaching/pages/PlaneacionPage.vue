@@ -13,10 +13,10 @@
             <div class="w-full sm:w-56">
                 <FormSelect label="MODALIDAD" v-model="modalityFilter" :options="modalityOptions" />
             </div>
-            <div v-if="loading" class="text-sm text-slate-400 pb-2">Cargando…</div>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <SkeletonTable v-if="loading" :rows="5" :cols="6" />
+        <div v-else class="bg-white border border-slate-200 rounded-xl overflow-hidden">
             <div tabindex="0" role="region" aria-label="Planeación de asignaturas y grupos" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
                 <caption class="sr-only">Planeación de asignaturas y grupos</caption>
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
@@ -79,6 +79,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ClipboardDocumentListIcon, PlusIcon, DocumentTextIcon } from '@heroicons/vue/24/outline'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { openSubjectProgram } from '@/modules/study-programs/composables/useSubjectProgram'

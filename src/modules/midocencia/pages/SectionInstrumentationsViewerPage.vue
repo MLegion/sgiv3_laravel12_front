@@ -33,7 +33,15 @@
             <input v-model="search" placeholder="Buscar docente o materia…" aria-label="Buscar docente o materia" class="border rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px]" />
         </div>
 
-        <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
+        <div v-if="loading" role="status" class="space-y-3">
+            <span class="sr-only">Cargando…</span>
+            <ul aria-hidden="true" class="space-y-3">
+                <li v-for="n in 3" :key="n" class="bg-white border rounded-xl shadow-sm px-4 py-3 flex items-center justify-between">
+                    <div class="h-4 w-56 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-2.5 w-28 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </li>
+            </ul>
+        </div>
         <div v-else-if="!periodId" class="text-center py-8 text-slate-400">Selecciona un periodo.</div>
         <div v-else-if="filtered.length === 0" class="text-center py-8 text-slate-400">Sin instrumentaciones para este periodo.</div>
 

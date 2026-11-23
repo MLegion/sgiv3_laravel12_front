@@ -68,7 +68,15 @@
             </span>
         </div>
 
-        <div v-if="loading && !data" class="text-slate-400 italic">Cargando…</div>
+        <div v-if="loading && !data" role="status" class="space-y-2 flex-1">
+            <span class="sr-only">Cargando…</span>
+            <div
+                v-for="n in 4"
+                :key="n"
+                aria-hidden="true"
+                class="h-10 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"
+            ></div>
+        </div>
 
         <div v-else-if="!rows.length" class="text-slate-400 italic">
             Sin aspirantes en el periodo.

@@ -7,9 +7,7 @@
             </RouterLink>
         </div>
 
-        <div v-if="loading" class="bg-white border rounded-xl shadow-sm p-6 text-center text-sm text-slate-400">
-            Cargando…
-        </div>
+        <SkeletonText v-if="loading" :lines="3" class="bg-white border rounded-xl shadow-sm p-6" />
 
         <!-- Fase cerrada -->
         <PhaseUnavailable
@@ -244,6 +242,7 @@ import { RouterLink } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PhaseUnavailable from '@/app/components/ui/PhaseUnavailable.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import type {
     AddDropActivePeriod, AddDropRequest, AddDropItemType,
     CurriculumStatus, CurriculumStatusEntry, EnrolledCourse, PolicyViolation, AdvisingStatus,

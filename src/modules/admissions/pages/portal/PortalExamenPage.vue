@@ -3,8 +3,8 @@
         <PortalStepper />
         <h1 class="text-xl font-semibold text-slate-800 print:hidden">EXAMEN DE ADMISIÓN</h1>
 
-        <div v-if="loading" class="bg-white border rounded-xl shadow-sm p-10 text-center text-slate-400 text-sm">
-            Cargando...
+        <div v-if="loading" class="bg-white border rounded-xl shadow-sm p-8">
+            <SkeletonText :lines="4" />
         </div>
 
         <!-- 1. Mixto sin elegir → tarjetas de elección -->
@@ -267,6 +267,7 @@
 
 <script setup lang="ts">
 import PortalStepper from '@/modules/admissions/components/PortalStepper.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import { computed, onMounted, ref } from 'vue'
 import { useConfirm } from '@/app/composables/useConfirm'
 import {

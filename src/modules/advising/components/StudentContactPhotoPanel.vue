@@ -12,7 +12,15 @@
             </div>
         </div>
 
-        <div v-if="contactLoading" class="bg-white border rounded-xl shadow-sm px-4 py-12 text-center text-xs text-slate-400">Cargando…</div>
+        <div v-if="contactLoading" role="status" class="bg-white border rounded-xl shadow-sm p-5">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div v-for="n in 6" :key="n" :class="n === 1 ? 'md:col-span-2 space-y-1.5' : 'space-y-1.5'">
+                    <div class="h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-4 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+            </div>
+        </div>
         <form v-else class="bg-white border rounded-xl shadow-sm p-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm" @submit.prevent="saveContactInfo">
             <div class="md:col-span-2">
                 <label for="contact-address" class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Dirección (calle y número)</label>

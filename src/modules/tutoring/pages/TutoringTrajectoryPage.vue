@@ -24,7 +24,7 @@
             <span v-if="head.tutor"><b>Tutor(a):</b> {{ head.tutor }}</span>
         </p>
 
-        <div v-if="loading" class="text-sm text-slate-500">Cargando…</div>
+        <SkeletonTable v-if="loading" :rows="6" :cols="8" />
         <div v-else-if="!students.length" class="text-sm text-slate-500">
             Este grupo no tiene tutorados sincronizados todavía.
         </div>
@@ -99,6 +99,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'

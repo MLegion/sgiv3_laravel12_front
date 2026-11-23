@@ -1,7 +1,17 @@
 <template>
     <div class="space-y-3">
-        <div v-if="loading && !data" class="py-6 text-center text-sm text-slate-400">
-            Cargando…
+        <div v-if="loading && !data" role="status">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="space-y-3">
+                <div class="h-8 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                <div class="flex flex-col gap-2">
+                    <div v-for="n in 4" :key="n" class="flex items-center gap-2">
+                        <div class="h-3 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="flex-1 h-4 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-3 w-8 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <template v-else-if="data">

@@ -15,7 +15,15 @@
                 </div>
             </div>
 
-            <div v-if="loadingPos" class="text-sm text-slate-400">Cargando…</div>
+            <div v-if="loadingPos" role="status">
+                <span class="sr-only">Cargando…</span>
+                <ul aria-hidden="true" class="divide-y border rounded-lg">
+                    <li v-for="i in 4" :key="i" class="flex items-center justify-between px-4 py-2.5">
+                        <div class="h-4 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-6 w-16 rounded-md bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </li>
+                </ul>
+            </div>
             <p v-else-if="!positions.length" class="text-sm text-slate-400 italic">Sin puestos.</p>
             <ul v-else class="divide-y border rounded-lg">
                 <li v-for="p in positions" :key="p.id" class="flex items-center justify-between px-4 py-2.5">

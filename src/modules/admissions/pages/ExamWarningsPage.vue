@@ -14,7 +14,7 @@
             <strong>reagendar</strong> manualmente. Marca como <em>atendido</em> cuando hayas tomado la decisión.
         </p>
 
-        <div v-if="loading" class="text-xs text-slate-400 italic py-8 text-center">Cargando...</div>
+        <SkeletonTable v-if="loading" :rows="5" :cols="5" />
 
         <div v-else-if="warnings.length === 0" class="bg-emerald-50 border border-emerald-200 rounded-xl p-10 text-center space-y-2">
             <CheckCircleIcon class="w-12 h-12 mx-auto text-emerald-400" />
@@ -105,6 +105,7 @@ import { computed, onMounted, ref } from 'vue'
 import { CheckCircleIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import type { ExamClassWarning } from '@/modules/admissions/types/exam-class-warning.type'
 
 const warnings    = ref<ExamClassWarning[]>([])

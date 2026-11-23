@@ -10,7 +10,7 @@
             </div>
         </div>
 
-        <div v-if="loading" class="bg-white border rounded-xl shadow-sm p-6 text-center text-sm text-slate-400">Cargando…</div>
+        <SkeletonText v-if="loading" :lines="3" class="bg-white border rounded-xl shadow-sm p-6" />
 
         <template v-else-if="request">
             <!-- Alumno -->
@@ -172,6 +172,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { AddDropRequest, AdvisingStatus, PolicyViolation } from '@/modules/advising/types/advising.type'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 const route  = useRoute()
 const router = useRouter()

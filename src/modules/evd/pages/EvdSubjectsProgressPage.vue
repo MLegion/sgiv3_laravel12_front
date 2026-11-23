@@ -4,6 +4,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import EvdPeriodSelect from '@/modules/evd/components/EvdPeriodSelect.vue'
 import type { EvdSubjectProgressRow } from '@/modules/evd/types/evd.type'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface CollegeAcademicPeriodOption {
     id: number
@@ -140,7 +141,7 @@ onMounted(loadCaps)
                 </thead>
                 <tbody class="divide-y">
                     <tr v-if="loading">
-                        <td colspan="7" class="px-3 py-6 text-center text-sm text-slate-400">Cargando…</td>
+                        <td colspan="7" class="p-3"><SkeletonTable :rows="5" :cols="7" /></td>
                     </tr>
                     <tr v-else-if="!rows.length">
                         <td colspan="7" class="px-3 py-6 text-center text-sm text-slate-400 italic">

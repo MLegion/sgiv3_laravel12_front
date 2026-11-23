@@ -5,9 +5,7 @@
         </div>
 
         <!-- Cargando -->
-        <div v-if="loading" class="flex justify-center py-12">
-            <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        </div>
+        <SkeletonTable v-if="loading" :rows="5" :cols="7" />
 
         <!-- Tabla -->
         <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
@@ -182,6 +180,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface CareerSetting {
     careerId: number

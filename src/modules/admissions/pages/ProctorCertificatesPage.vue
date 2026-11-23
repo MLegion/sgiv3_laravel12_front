@@ -14,7 +14,7 @@
             Valida cada registro para autorizar la emisión de su constancia.
         </p>
 
-        <div v-if="loading && items.length === 0" class="text-sm text-slate-500 italic">Cargando…</div>
+        <SkeletonTable v-if="loading && items.length === 0" :rows="5" :cols="6" />
 
         <div v-else-if="items.length === 0" class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-sm text-emerald-700">
             ✓ No hay constancias pendientes de validación. Cerrar el proceso de admisión genera esta lista.
@@ -77,6 +77,7 @@ import { onMounted, ref } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface PendingItem {
     id:                       number

@@ -32,7 +32,8 @@
         </div>
 
         <!-- Tabla -->
-        <div tabindex="0" role="region" aria-label="Reporte de lista de alumnos" class="bg-white border border-slate-200 rounded-xl overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
+        <SkeletonTable v-if="loading" :rows="5" :cols="8" />
+        <div v-else tabindex="0" role="region" aria-label="Reporte de lista de alumnos" class="bg-white border border-slate-200 rounded-xl overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
             <table class="w-full text-sm">
                 <caption class="sr-only">Reporte de lista de alumnos</caption>
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
@@ -58,10 +59,7 @@
                         <td class="px-3 py-2 text-green-700">{{ r.email ?? '—' }}</td>
                         <td class="px-3 py-2 text-center font-semibold">{{ r.curso }}</td>
                     </tr>
-                    <tr v-if="loading">
-                        <td colspan="8" class="px-3 py-6 text-center text-slate-400 text-sm">Cargando…</td>
-                    </tr>
-                    <tr v-else-if="selectedAssignment && !roster.length">
+                    <tr v-if="selectedAssignment && !roster.length">
                         <td colspan="8" class="px-3 py-6 text-center text-slate-400 text-sm">Sin alumnos en este grupo.</td>
                     </tr>
                     <tr v-else-if="!selectedAssignment">
@@ -76,6 +74,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 

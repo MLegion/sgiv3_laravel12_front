@@ -6,8 +6,8 @@
         </div>
 
         <div class="bg-white border rounded-xl shadow-sm p-6 space-y-4">
-            <div v-if="loading" class="flex justify-center py-8">
-                <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div v-if="loading">
+                <SkeletonText :lines="2" />
             </div>
 
             <template v-else>
@@ -39,6 +39,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { SchoolCalendar } from '@/modules/sca/types/schoolCalendar.type'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 const router   = useRouter()
 const route    = useRoute()

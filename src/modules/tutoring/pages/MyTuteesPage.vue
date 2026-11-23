@@ -1,7 +1,19 @@
 <template>
     <div class="space-y-5">
         <h1 class="text-xl font-semibold text-slate-800 uppercase">Mis Tutorados</h1>
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
+        <div v-if="loading" role="status" class="space-y-4">
+            <span class="sr-only">Cargando…</span>
+            <div v-for="n in 3" :key="n" aria-hidden="true" class="rounded-xl border bg-white p-5 flex items-center justify-between">
+                <div class="space-y-2">
+                    <div class="h-4 w-48 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-3 w-32 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+                <div class="space-y-2 text-right">
+                    <div class="h-6 w-8 rounded bg-slate-200 animate-pulse motion-reduce:animate-none ml-auto"></div>
+                    <div class="h-2.5 w-16 rounded bg-slate-200 animate-pulse motion-reduce:animate-none ml-auto"></div>
+                </div>
+            </div>
+        </div>
         <div v-else-if="!assignments.length" class="rounded-lg border bg-amber-50 border-amber-200 px-4 py-6 text-sm text-amber-800">
             No tienes asignaciones de tutoría activas.
         </div>

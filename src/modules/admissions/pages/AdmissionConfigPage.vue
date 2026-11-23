@@ -4,7 +4,13 @@
             <h1 class="text-xl font-semibold text-slate-800">CONFIGURACIÓN DE ADMISIÓN</h1>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
+        <div v-if="loading" role="status" class="space-y-6">
+            <span class="sr-only">Cargando…</span>
+            <div v-for="n in 2" :key="n" aria-hidden="true" class="bg-white border rounded-xl shadow-sm p-6 space-y-4">
+                <div class="h-3 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                <SkeletonText :lines="3" />
+            </div>
+        </div>
 
         <template v-else>
             <!-- PERÍODO ACADÉMICO -->
@@ -209,6 +215,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 function toDateInput(dt: string | null | undefined): string {
     if (!dt) return ''

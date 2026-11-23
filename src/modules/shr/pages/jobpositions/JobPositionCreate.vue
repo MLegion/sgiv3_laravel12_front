@@ -33,12 +33,11 @@
             <!-- Overlay -->
             <div
                 v-if="loading"
-                class="absolute inset-0 bg-white/70 z-10
-                       flex items-center justify-center"
+                class="absolute inset-0 bg-white/80 z-10 p-6"
+                role="status"
             >
-                <span class="text-sm text-slate-500">
-                    Cargando…
-                </span>
+                <span class="sr-only">Cargando…</span>
+                <SkeletonText :lines="5" />
             </div>
 
             <!-- Información general -->
@@ -113,6 +112,7 @@ import { mapJobPositionCreatePayload } from '@/shared/api/mappers/job-position.m
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import JobPositionDefaultContext from '@/modules/shr/components/JobPositionDefaultContext.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 interface RoleItem {
     code: string

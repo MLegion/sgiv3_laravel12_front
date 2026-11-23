@@ -6,6 +6,7 @@ import { API } from '@/shared/api'
 import { createSgiFormsClient, type SgiFormsAttemptClient } from '@/modules/evd/api/sgiFormsClient'
 import QuestionField from '@/modules/evd/components/QuestionField.vue'
 import type { EvaluationStartResponse } from '@/modules/evd/types/evd.type'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 interface AttemptPayload {
     attempt: {
@@ -255,7 +256,7 @@ onMounted(load)
             ◀ Volver a Mis Evaluaciones
         </button>
 
-        <div v-if="loading" class="text-center text-sm text-slate-400 py-12">Cargando cuestionario…</div>
+        <SkeletonText v-if="loading" :lines="4" class="py-2" />
         <div v-else-if="error && !data" class="bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded px-3 py-2">{{ error }}</div>
 
         <template v-if="data">

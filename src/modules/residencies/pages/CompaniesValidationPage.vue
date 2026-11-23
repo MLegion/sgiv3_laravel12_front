@@ -13,7 +13,27 @@
             </div>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
+        <div v-if="loading" role="status">
+            <span class="sr-only">Cargando…</span>
+            <ul aria-hidden="true" class="space-y-3">
+                <li v-for="i in 4" :key="i" class="rounded-xl border bg-white p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <div class="h-4 w-48 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-4 w-20 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                            <div class="h-3 w-56 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-3 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <div class="h-7 w-20 rounded-md bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-7 w-20 rounded-md bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
         <div v-else-if="!companies.length" class="text-sm text-slate-400 italic">Sin empresas.</div>
 
         <ul v-else class="space-y-3">

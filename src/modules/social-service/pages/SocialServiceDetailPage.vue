@@ -2,7 +2,22 @@
     <div class="space-y-5">
         <button @click="$router.back()" class="text-sm text-slate-500 hover:text-slate-700">← Volver</button>
 
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
+        <div v-if="loading" role="status" class="space-y-5">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="flex items-center justify-between">
+                <div class="space-y-2">
+                    <div class="h-5 w-48 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-3 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+                <div class="h-6 w-24 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+            </div>
+            <div aria-hidden="true" class="rounded-xl border bg-white p-5 grid sm:grid-cols-2 gap-4">
+                <div v-for="i in 4" :key="i" class="space-y-1.5">
+                    <div class="h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-4 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+            </div>
+        </div>
 
         <template v-else-if="record">
             <div class="flex items-center justify-between">

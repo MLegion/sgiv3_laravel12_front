@@ -30,7 +30,7 @@
             >{{ cat.label }} <span class="opacity-70">({{ cat.count }})</span></button>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400 italic">Cargando...</div>
+        <SkeletonTable v-if="loading" :rows="6" :cols="4" />
 
         <div v-else-if="data" class="bg-white border border-slate-200 rounded-lg overflow-hidden">
             <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Disparadores de notificación">
@@ -84,6 +84,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import BindingCell from '@/modules/notifications/components/BindingCell.vue'
 
 // Etiquetas humanas por módulo (categoría del evento).

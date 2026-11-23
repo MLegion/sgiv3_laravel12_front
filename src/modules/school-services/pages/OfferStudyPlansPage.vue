@@ -33,7 +33,29 @@
             Selecciona un campus y un tipo de modalidad para ver las ofertas.
         </div>
 
-        <div v-else-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando ofertas...</div>
+        <div v-else-if="loading" role="status" class="space-y-3">
+            <span class="sr-only">Cargando ofertas…</span>
+            <div
+                v-for="n in 3"
+                :key="n"
+                aria-hidden="true"
+                class="bg-white border rounded-xl shadow-sm overflow-hidden"
+            >
+                <div class="w-full flex items-center justify-between px-6 py-4">
+                    <div class="flex items-center gap-4">
+                        <div class="space-y-2">
+                            <div class="h-4 w-48 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-2.5 w-32 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
+                        <div class="h-4 w-16 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="h-3 w-16 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-4 w-4 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div v-else-if="offers.length === 0" class="bg-white border rounded-xl p-8 text-center text-sm text-slate-400 italic">
             No hay ofertas académicas registradas con esos filtros.

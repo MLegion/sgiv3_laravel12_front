@@ -43,8 +43,13 @@
             </div>
 
             <!-- Loading -->
-            <div v-if="loading" class="flex justify-center py-12">
-                <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div v-if="loading" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="bg-white border-2 border-slate-200 rounded-xl shadow-sm p-4">
+                    <SkeletonText :lines="5" />
+                </div>
+                <div class="bg-white border-2 border-slate-200 rounded-xl shadow-sm p-4">
+                    <SkeletonText :lines="5" />
+                </div>
             </div>
 
             <div v-else-if="configError" class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
@@ -119,6 +124,7 @@ import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 /* ── Period ─────────────────────────────────────────────────────── */
 const selectedPeriodId = ref<number|null>(null); const periodSelectorRef = ref<any>(null)

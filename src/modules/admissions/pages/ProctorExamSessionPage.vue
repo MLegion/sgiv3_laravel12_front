@@ -4,7 +4,21 @@
             ← Mis sesiones
         </RouterLink>
 
-        <div v-if="!session" class="text-sm text-slate-400 italic">Cargando...</div>
+        <div v-if="!session" role="status" class="bg-white border border-slate-200 rounded-lg p-3 sm:p-4">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="space-y-4">
+                <div class="space-y-2">
+                    <div class="h-5 w-2/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-3 w-1/2 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div v-for="n in 4" :key="n" class="bg-slate-50 rounded p-2 space-y-2">
+                        <div class="h-6 w-10 mx-auto rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-2.5 w-16 mx-auto rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div v-else class="space-y-3 sm:space-y-4">
             <!-- Cabecera -->

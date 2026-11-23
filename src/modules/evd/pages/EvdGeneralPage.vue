@@ -5,6 +5,7 @@ import { API } from '@/shared/api'
 import EvdPeriodSelect from '@/modules/evd/components/EvdPeriodSelect.vue'
 import EvdReportDrawer from '@/modules/evd/components/EvdReportDrawer.vue'
 import { ReportCode } from '@/modules/reports/types/reportCodes'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface PeriodOption { id: number; status?: string | null; academicPeriod?: { name?: string | null; shortName?: string | null } | null }
 interface GeneralRow {
@@ -157,7 +158,7 @@ onMounted(loadCaps)
                     </tr>
                 </thead>
                 <tbody class="divide-y">
-                    <tr v-if="loading"><td colspan="14" class="px-4 py-6 text-center text-slate-400">Cargando…</td></tr>
+                    <tr v-if="loading"><td colspan="14" class="p-3"><SkeletonTable :rows="5" :cols="8" /></td></tr>
                     <tr v-else-if="!rows.length"><td colspan="14" class="px-4 py-6 text-center text-slate-400 italic">No hay resultados para los filtros seleccionados.</td></tr>
                     <tr v-for="(r, idx) in rows" :key="r.teacher_id" class="hover:bg-slate-50">
                         <td class="px-3 py-2 text-slate-400 tabular-nums">{{ idx + 1 }}</td>

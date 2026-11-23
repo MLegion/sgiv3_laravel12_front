@@ -5,7 +5,21 @@
             <p class="text-xs text-slate-400">Personal externo propuesto por los residentes, pendiente de aprobación.</p>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
+        <div v-if="loading" role="status">
+            <span class="sr-only">Cargando…</span>
+            <ul aria-hidden="true" class="space-y-2">
+                <li v-for="i in 4" :key="i" class="rounded-xl border bg-white p-4 flex items-center justify-between gap-3">
+                    <div class="space-y-2 min-w-0">
+                        <div class="h-4 w-44 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-3 w-60 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <div class="h-7 w-20 rounded-md bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-7 w-20 rounded-md bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
         <div v-else-if="!rows.length" class="text-sm text-slate-400 italic">No hay personal pendiente.</div>
 
         <ul v-else class="space-y-2">

@@ -59,7 +59,7 @@
 
         <!-- Tabla -->
         <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div v-if="loading" class="p-6 text-sm text-slate-400 italic text-center">Cargando...</div>
+            <div v-if="loading" class="p-4"><SkeletonTable :rows="6" :cols="6" /></div>
             <div v-else-if="items.length === 0" class="p-6 text-sm text-slate-400 italic text-center">Sin resultados.</div>
             <div v-else class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Historial de notificaciones">
                 <table class="w-full text-xs">
@@ -113,6 +113,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { NotificationItem } from '@/modules/notifications/types/notification.type'

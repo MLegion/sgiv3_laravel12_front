@@ -14,8 +14,14 @@
             </button>
         </div>
 
-        <div v-if="store.loadingActive && store.active.length === 0" class="flex justify-center p-10">
-            <ArrowPathIcon class="w-8 h-8 animate-spin text-slate-400" />
+        <div v-if="store.loadingActive && store.active.length === 0" role="status" class="grid grid-cols-12 gap-4">
+            <span class="sr-only">Cargando…</span>
+            <div class="col-span-12 sm:col-span-6 lg:col-span-3"><SkeletonStat /></div>
+            <div class="col-span-12 sm:col-span-6 lg:col-span-3"><SkeletonStat /></div>
+            <div class="col-span-12 sm:col-span-6 lg:col-span-3"><SkeletonStat /></div>
+            <div class="col-span-12 sm:col-span-6 lg:col-span-3"><SkeletonStat /></div>
+            <div class="col-span-12 lg:col-span-6"><SkeletonChart :height="256" /></div>
+            <div class="col-span-12 lg:col-span-6"><SkeletonChart :height="256" /></div>
         </div>
 
         <div
@@ -60,7 +66,9 @@ import { useAuthStore } from '@/modules/auth/stores/auth.store'
 import { useDashboardStore } from '@/modules/dashboard/stores/dashboard.store'
 import WidgetCard from '@/modules/dashboard/components/WidgetCard.vue'
 import WidgetCatalogModal from '@/modules/dashboard/components/WidgetCatalogModal.vue'
-import { PlusIcon, ArrowPathIcon, Squares2X2Icon } from '@heroicons/vue/24/outline'
+import { PlusIcon, Squares2X2Icon } from '@heroicons/vue/24/outline'
+import SkeletonStat from '@/app/components/ui/SkeletonStat.vue'
+import SkeletonChart from '@/app/components/ui/SkeletonChart.vue'
 
 const auth        = useAuthStore()
 const store       = useDashboardStore()

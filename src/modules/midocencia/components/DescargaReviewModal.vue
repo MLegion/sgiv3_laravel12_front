@@ -14,7 +14,7 @@
                     <span class="px-2 py-0.5 rounded text-xs font-semibold" :class="statusClass(request.status)">{{ statusLabel(request.status) }}</span>
                 </div>
 
-                <div v-if="loadingTree" class="text-center py-6 text-slate-400 text-sm">Cargando detalle…</div>
+                <SkeletonText v-if="loadingTree" :lines="4" />
 
                 <!-- Detalle agrupado por rubro -->
                 <div v-else class="space-y-4">
@@ -97,6 +97,7 @@ import { useToast } from '@/app/composables/useToast'
 import { usePrompt } from '@/app/composables/usePrompt'
 import SignDocumentModal from '@/modules/signatures/modals/SignDocumentModal.vue'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import type { DistributionRequest } from '@/modules/midocencia/types/distribution.type'
 

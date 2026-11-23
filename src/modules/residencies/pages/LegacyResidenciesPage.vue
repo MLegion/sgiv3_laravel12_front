@@ -27,7 +27,7 @@
             </div>
         </div>
 
-        <div v-if="loading && !rows.length" class="rounded-xl border bg-white p-8 text-center text-sm text-slate-400">Cargando…</div>
+        <SkeletonTable v-if="loading && !rows.length" :rows="5" :cols="6" />
         <div v-else-if="!rows.length" class="rounded-xl border bg-white p-8 text-center text-sm text-slate-400 italic">Sin registros.</div>
 
         <div v-else class="overflow-x-auto rounded-xl border bg-white relative focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Histórico de Residencias">
@@ -177,6 +177,7 @@ import { API } from '@/shared/api'
 import type { LegacyResidencyRow, LegacyResidencyDetail, LegacyFilterOption } from '@/modules/residencies/types/residency.type'
 import UserAvatar from '@/app/components/ui/UserAvatar.vue'
 import BaseDrawer from '@/app/components/ui/modal/BaseDrawer.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 const R = API.RESIDENCIES_API
 

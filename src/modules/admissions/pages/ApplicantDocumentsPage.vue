@@ -29,7 +29,7 @@
 
         <!-- Table -->
         <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
-            <div v-if="loading" class="py-10 text-center text-sm text-slate-400">Cargando documentos...</div>
+            <SkeletonTable v-if="loading" :rows="5" :cols="6" />
 
             <div v-else-if="documents.length === 0" class="py-10 text-center text-sm text-slate-400 italic">
                 Sin documentos registrados para este aspirante.
@@ -119,6 +119,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import type { ApplicantDocument } from '@/modules/admissions/types/applicant-document.type'
 import { DOC_STATUS_OPTIONS, DOC_STATUS_CLASSES } from '@/modules/admissions/types/applicant-document.type'
 

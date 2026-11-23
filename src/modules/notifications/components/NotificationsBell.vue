@@ -65,8 +65,15 @@
                 </p>
 
                 <div class="max-h-96 overflow-y-auto">
-                    <div v-if="store.loading && store.items.length === 0" class="p-6 text-center text-xs text-slate-400 italic">
-                        Cargando...
+                    <div v-if="store.loading && store.items.length === 0" role="status" class="divide-y divide-slate-100">
+                        <span class="sr-only">Cargando…</span>
+                        <div v-for="n in 4" :key="n" aria-hidden="true" class="px-4 py-3 flex items-start gap-2.5">
+                            <div class="mt-0.5 w-7 h-7 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none flex-shrink-0"></div>
+                            <div class="min-w-0 flex-1 space-y-2">
+                                <div class="h-3.5 w-3/5 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-2.5 w-4/5 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                        </div>
                     </div>
                     <div v-else-if="store.items.length === 0" class="p-6 text-center text-xs text-slate-400 italic">
                         No hay notificaciones.

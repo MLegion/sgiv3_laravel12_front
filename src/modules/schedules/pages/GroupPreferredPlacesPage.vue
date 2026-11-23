@@ -166,7 +166,7 @@
             </table></div>
         </section>
 
-        <div v-if="loading" class="text-center text-sm text-slate-400 italic py-8">Cargando...</div>
+        <SkeletonTable v-if="loading" :rows="5" :cols="7" />
 
         <!-- Flash global -->
         <div v-if="msg.message" class="fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg text-sm font-semibold"
@@ -182,6 +182,7 @@ import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface GroupRow {
     groupId: number

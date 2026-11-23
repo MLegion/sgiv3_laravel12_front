@@ -18,7 +18,7 @@
             <span>{{ head.con_puntaje }}/{{ head.total_tutorados }} con diagnóstico capturado</span>
         </p>
 
-        <div v-if="loading" class="text-sm text-slate-500">Cargando…</div>
+        <SkeletonTable v-if="loading" :rows="6" :cols="8" />
         <div v-else-if="!rows.length" class="text-sm text-slate-500">
             Este grupo no tiene tutorados con cédula/diagnóstico capturado.
         </div>
@@ -80,6 +80,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, h, defineComponent } from 'vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'

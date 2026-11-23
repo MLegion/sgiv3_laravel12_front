@@ -4,7 +4,9 @@
         <PortalStepper />
             <h1 class="text-xl font-semibold text-slate-800">CARGA DE DOCUMENTOS</h1>
 
-        <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
+        <div v-if="loading" class="bg-white border rounded-xl shadow-sm p-6">
+            <SkeletonText :lines="5" />
+        </div>
 
         <!-- Sin preficha: bloquear acceso -->
         <div
@@ -171,7 +173,21 @@
                     </div>
                 </div>
 
-                <div v-if="loadingDocs" class="text-sm text-slate-400 py-4 text-center">Cargando documentos...</div>
+                <div v-if="loadingDocs" role="status">
+                    <span class="sr-only">Cargando documentos…</span>
+                    <div aria-hidden="true" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div v-for="n in 4" :key="n" class="border rounded-xl overflow-hidden shadow-sm">
+                            <div class="h-10 bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="flex justify-center py-1.5 border-b border-slate-100">
+                                <div class="h-4 w-20 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                            <div class="bg-white p-4 flex flex-col items-center gap-3">
+                                <div class="h-10 w-full rounded-lg bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-8 w-24 rounded-lg bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div v-else-if="docSlots.length === 0" class="text-sm text-slate-400 italic text-center py-4">
                     No hay documentos requeridos configurados.
                 </div>
@@ -348,6 +364,7 @@
 
 <script setup lang="ts">
 import PortalStepper from '@/modules/admissions/components/PortalStepper.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'

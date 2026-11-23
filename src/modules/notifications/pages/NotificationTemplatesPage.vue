@@ -5,7 +5,7 @@
             <p class="text-xs text-slate-500">Listado de plantillas activas resueltas para tu college (override + defaults globales).</p>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400 italic">Cargando...</div>
+        <SkeletonTable v-if="loading" :rows="6" :cols="6" />
 
         <div v-else class="bg-white border border-slate-200 rounded-lg overflow-hidden">
             <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Plantillas de notificación"><table class="w-full text-xs">
@@ -72,6 +72,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { NotificationTemplate } from '@/modules/notifications/types/notification.type'

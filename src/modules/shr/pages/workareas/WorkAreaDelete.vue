@@ -17,14 +17,27 @@
 
         <!-- Card -->
         <div class="bg-white border rounded-xl shadow-sm p-6 space-y-8 relative">
-            <!-- Overlay -->
+            <!-- Overlay: carga inicial (skeleton) -->
             <div
-                v-if="loading || submitting"
+                v-if="loading"
+                class="absolute inset-0 bg-white/80 z-10 p-6 space-y-3"
+                role="status"
+            >
+                <span class="sr-only">Cargando información…</span>
+                <div v-for="i in 3" :key="i" class="space-y-2">
+                    <div class="h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none" />
+                    <div class="h-4 w-48 rounded bg-slate-200 animate-pulse motion-reduce:animate-none" />
+                </div>
+            </div>
+
+            <!-- Overlay: eliminando (acción en curso) -->
+            <div
+                v-else-if="submitting"
                 class="absolute inset-0 bg-white/70 z-10
                        flex items-center justify-center"
             >
                 <span class="text-sm text-slate-500">
-                    {{ submitting ? 'Eliminando área…' : 'Cargando información…' }}
+                    Eliminando área…
                 </span>
             </div>
 

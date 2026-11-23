@@ -11,7 +11,16 @@
             </div>
         </div>
 
-        <div v-if="loading" class="bg-white border rounded-xl p-6 text-center text-slate-400">Cargando...</div>
+        <div v-if="loading" role="status" class="bg-white border rounded-xl shadow-sm p-6 space-y-4">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="grid grid-cols-2 gap-4">
+                <div v-for="n in 4" :key="n" class="space-y-2">
+                    <div class="h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-4 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+            </div>
+            <div aria-hidden="true" class="h-24 w-full rounded-lg bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+        </div>
 
         <template v-else-if="dao">
             <!-- ═════ Info general ═════ -->

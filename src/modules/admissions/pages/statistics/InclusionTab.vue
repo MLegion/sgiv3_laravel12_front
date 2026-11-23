@@ -1,6 +1,8 @@
 <template>
     <div class="space-y-6">
-        <div v-if="loading" class="py-12 text-center text-slate-400 text-sm">Cargando...</div>
+        <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SkeletonStat v-for="n in 4" :key="n" />
+        </div>
 
         <template v-else-if="data">
             <p class="text-sm text-slate-500">
@@ -22,6 +24,7 @@ import { ref, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import InclusionCategory from './InclusionCategory.vue'
+import SkeletonStat from '@/app/components/ui/SkeletonStat.vue'
 
 interface BreakdownItem { id: number; name: string; count: number }
 interface CategoryStats { withCount: number; withoutCount: number; percentage: number; breakdown: BreakdownItem[] }

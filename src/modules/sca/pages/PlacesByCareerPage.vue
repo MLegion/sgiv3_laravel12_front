@@ -57,8 +57,15 @@
                     </div>
                 </div>
                 <div class="divide-y min-h-[300px]">
-                    <div v-if="availableLoading" class="flex justify-center py-12">
-                        <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <div v-if="availableLoading" role="status" aria-busy="true">
+                        <span class="sr-only">Cargando…</span>
+                        <div v-for="n in 5" :key="n" class="flex items-center justify-between px-4 py-3">
+                            <div class="flex-1 space-y-1.5">
+                                <div class="h-4 w-1/2 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-2.5 w-1/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                            <div class="h-7 w-7 rounded-md bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
                     </div>
                     <template v-else>
                         <div
@@ -126,8 +133,15 @@
                     </div>
                 </div>
                 <div class="divide-y min-h-[300px]">
-                    <div v-if="assignedLoading" class="flex justify-center py-12">
-                        <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <div v-if="assignedLoading" role="status" aria-busy="true">
+                        <span class="sr-only">Cargando…</span>
+                        <div v-for="n in 5" :key="n" class="flex items-center justify-between px-4 py-3">
+                            <div class="h-7 w-7 rounded-md bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="flex-1 ml-2 space-y-1.5 flex flex-col items-end">
+                                <div class="h-4 w-1/2 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-2.5 w-1/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                        </div>
                     </div>
                     <template v-else>
                         <div

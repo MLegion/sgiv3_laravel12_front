@@ -5,7 +5,25 @@
             <p class="text-sm text-slate-500">Documentos de cualquier trámite que requieren tu firma. Solo ves lo que te corresponde.</p>
         </div>
 
-        <div v-if="loading" class="text-center text-slate-400 py-10">Cargando…</div>
+        <div v-if="loading" role="status" class="space-y-3">
+            <span class="sr-only">Cargando…</span>
+            <div v-for="n in 3" :key="n" aria-hidden="true" class="rounded-xl border border-slate-200 p-4">
+                <div class="flex items-center gap-2">
+                    <div class="h-5 w-24 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-4 w-16 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+                <div class="mt-2 space-y-2">
+                    <div class="h-4 w-2/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-3 w-1/2 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+                <div class="mt-3 border-t border-slate-100 pt-3">
+                    <div class="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2">
+                        <div class="h-4 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-8 w-20 rounded-lg bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div v-else-if="!rows.length" class="rounded-xl border border-dashed border-slate-200 py-12 text-center text-slate-400">
             No tienes documentos pendientes de firma.

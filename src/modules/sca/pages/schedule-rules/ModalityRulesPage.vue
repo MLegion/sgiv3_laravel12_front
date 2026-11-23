@@ -12,8 +12,20 @@
             {{ globalMsg.message }}
         </div>
 
-        <div v-if="loading" class="bg-white border rounded-xl p-8 text-center text-sm text-slate-400 italic">
-            Cargando modalidades…
+        <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-4" role="status" aria-busy="true">
+            <span class="sr-only">Cargando…</span>
+            <section v-for="n in 2" :key="n" class="bg-white border rounded-xl shadow-sm overflow-hidden">
+                <header class="px-5 py-3 bg-slate-50 border-b">
+                    <div class="h-4 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="mt-1.5 h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </header>
+                <div class="p-5 space-y-4">
+                    <div v-for="r in 3" :key="r" class="space-y-1.5">
+                        <div class="h-2.5 w-2/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-9 w-full rounded-md bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <div v-else-if="modalityTypes.length === 0" class="bg-white border rounded-xl p-8 text-center text-sm text-slate-400 italic">

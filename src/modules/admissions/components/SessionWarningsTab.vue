@@ -24,7 +24,23 @@
             {{ lastRegenSummary }}
         </p>
 
-        <div v-if="loading" class="text-xs text-slate-400 italic">Cargando...</div>
+        <div v-if="loading" role="status">
+            <span class="sr-only">Cargando…</span>
+            <ul aria-hidden="true" class="space-y-1">
+                <li
+                    v-for="n in 3"
+                    :key="n"
+                    class="border border-slate-200 rounded-md p-3 bg-slate-50 flex items-start justify-between gap-3"
+                >
+                    <div class="space-y-1.5 flex-1">
+                        <div class="h-3.5 w-2/5 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-3 w-1/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-3 w-1/4 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                    <div class="h-5 w-16 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </li>
+            </ul>
+        </div>
         <ul v-else-if="warnings.length > 0" class="space-y-1">
             <li
                 v-for="w in warnings"

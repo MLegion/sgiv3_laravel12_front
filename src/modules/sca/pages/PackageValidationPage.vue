@@ -75,8 +75,19 @@
         <template v-if="resolvedConfigId && !configError">
 
             <!-- Estado: cargando -->
-            <div v-if="loadingSummary" class="flex justify-center py-12">
-                <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div v-if="loadingSummary" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3" role="status" aria-busy="true">
+                <span class="sr-only">Cargando…</span>
+                <div v-for="n in 6" :key="n" class="bg-white border-2 border-slate-200 rounded-xl shadow-sm p-4 space-y-3">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1 space-y-1.5">
+                            <div class="h-4 w-3/4 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-2.5 w-1/2 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
+                        <div class="ml-3 h-5 w-16 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                    <div class="h-1.5 w-full rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-2.5 w-1/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
             </div>
 
             <!-- Vista de resumen (sin plan seleccionado o "TODOS") -->
@@ -199,8 +210,8 @@
                     </div>
 
                     <!-- Loading detalle -->
-                    <div v-if="loadingDetail" class="flex justify-center py-12">
-                        <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <div v-if="loadingDetail" class="p-4">
+                        <SkeletonTable :rows="5" :cols="6" />
                     </div>
 
                     <!-- Lista de materias -->
@@ -304,6 +315,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { useQueryFilter, QueryFilters } from '@/shared/composables/useQueryFilter'
 
 /* ── State: Filtros (persistidos en query string vía useQueryFilter) ─ */

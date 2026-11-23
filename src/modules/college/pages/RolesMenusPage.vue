@@ -24,9 +24,8 @@
             </div>
         </header>
 
-        <div v-if="loading" class="flex items-center gap-2 text-sm text-slate-400 px-1">
-            <span class="inline-block w-3 h-3 rounded-full border-2 border-slate-300 border-t-blue-500 animate-spin"></span>
-            Cargando roles…
+        <div v-if="loading" class="px-1">
+            <SkeletonText :lines="5" />
         </div>
 
         <div v-else class="roles-layout">
@@ -163,6 +162,7 @@ import {
     FolderIcon, MagnifyingGlassIcon, XMarkIcon, GlobeAltIcon,
     Squares2X2Icon, CursorArrowRaysIcon,
 } from '@heroicons/vue/24/outline'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 interface RoleContext { alias: string; is_required: boolean; is_multiple: boolean }
 interface RoleMenuItem { path: string; label: string; route: string; permission: string | null; itemContext: string[]; excludeRoles: string[] }

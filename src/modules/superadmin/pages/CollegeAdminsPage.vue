@@ -41,7 +41,7 @@
                 <span class="text-xs text-gray-500 ml-auto">{{ filteredRows.length }} empleados</span>
             </div>
 
-            <div v-if="loading" class="p-8 text-center text-sm text-gray-500">Cargando…</div>
+            <div v-if="loading" class="p-4"><SkeletonTable :rows="5" :cols="5" /></div>
             <div v-else-if="filteredRows.length === 0" class="p-8 text-center text-sm text-gray-500">
                 Sin resultados.
             </div>
@@ -122,6 +122,7 @@ import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface Employee {
     user_id: number

@@ -44,8 +44,8 @@
             </div>
 
             <!-- Cargando -->
-            <div v-if="loadingVacancies" class="flex justify-center py-12">
-                <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div v-if="loadingVacancies" class="bg-white border rounded-xl shadow-sm p-4">
+                <SkeletonTable :rows="5" :cols="5" />
             </div>
 
             <!-- Sin config -->
@@ -115,6 +115,7 @@ import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useConfirm } from '@/app/composables/useConfirm'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 /* ── Period (compartido SCA) ───────────────────────────────────── */
 const selectedPeriodId   = ref<number | null>(null)

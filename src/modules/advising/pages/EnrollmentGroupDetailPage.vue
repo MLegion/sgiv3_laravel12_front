@@ -34,7 +34,7 @@
                 </thead>
                 <tbody class="divide-y">
                     <tr v-if="loading">
-                        <td colspan="6" class="px-4 py-6 text-center text-slate-400 text-sm">Cargando…</td>
+                        <td colspan="6" class="p-3"><SkeletonTable :rows="5" :cols="6" /></td>
                     </tr>
                     <tr v-else-if="!assignments.length">
                         <td colspan="6" class="px-4 py-6 text-center text-slate-400 text-sm italic">
@@ -73,6 +73,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { GroupAssignmentRow } from '@/modules/advising/types/advising.type'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 const route  = useRoute()
 const router = useRouter()

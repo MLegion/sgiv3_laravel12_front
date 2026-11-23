@@ -133,7 +133,7 @@
                         </form>
 
                         <!-- ── Lista de ventanas ── -->
-                        <div v-if="loadingAvailabilities" class="p-4 text-sm text-slate-400 text-center">Cargando…</div>
+                        <div v-if="loadingAvailabilities" class="p-4"><SkeletonTable :rows="5" :cols="6" /></div>
                         <div v-else-if="availabilities.length" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Ventanas de disponibilidad"><table class="w-full text-xs">
                             <caption class="sr-only">Ventanas de disponibilidad</caption>
                             <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
@@ -189,6 +189,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface Teacher { id: number; name: string; customId: string | null; isVacancy: boolean }
 interface ModalityType {

@@ -28,7 +28,9 @@
             </div>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-500">Cargando…</div>
+        <div v-if="loading">
+            <SkeletonText :lines="4" />
+        </div>
 
         <div v-else class="flex flex-col lg:flex-row gap-4">
             <div class="flex-1 min-w-0">
@@ -241,6 +243,7 @@ import { QuestionMarkCircleIcon, ArrowLeftIcon } from '@heroicons/vue/24/outline
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormTextarea from '@/app/components/ui/form/FormTextarea.vue'
 import Tabs from '@/app/components/ui/Tabs.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import { useFormErrors } from '@/app/components/ui/form/useFormErrors'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'

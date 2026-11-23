@@ -10,7 +10,7 @@
             </span>
         </div>
 
-        <div v-if="loading && !data" class="text-slate-400 italic">Cargando…</div>
+        <SkeletonText v-if="loading && !data" :lines="3" />
 
         <div v-else-if="data?.teacherId === null" class="text-slate-500 italic text-[11px]">
             No estás registrado como docente.
@@ -95,6 +95,7 @@ import { computed, reactive, ref } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 interface ActaItem {
     teacherAssignmentId: number

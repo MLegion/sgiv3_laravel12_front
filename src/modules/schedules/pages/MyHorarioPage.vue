@@ -5,8 +5,23 @@
             <p v-if="groupsLabel" class="text-sm text-slate-500 mt-0.5">Grupo: <strong>{{ groupsLabel }}</strong></p>
         </div>
 
-        <div v-if="loading" class="bg-white border rounded-xl p-10 text-center text-slate-400 text-sm">
-            Cargando...
+        <div v-if="loading" role="status" class="space-y-5">
+            <span class="sr-only">Cargando…</span>
+            <div v-for="d in 2" :key="d" aria-hidden="true" class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                <div class="bg-slate-50 border-b border-slate-200 px-4 py-2.5">
+                    <div class="h-3.5 w-28 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+                <ul class="divide-y divide-slate-100">
+                    <li v-for="s in 3" :key="s" class="flex items-start gap-4 px-4 py-3">
+                        <div class="shrink-0 w-28 h-4 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="min-w-0 flex-1 space-y-2">
+                            <div class="h-4 w-2/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-2.5 w-1/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
+                        <div class="shrink-0 h-4 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <div v-else-if="allSlots.length === 0" class="bg-white border rounded-xl p-10 text-center text-slate-400 text-sm">

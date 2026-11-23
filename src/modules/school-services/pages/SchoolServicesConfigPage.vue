@@ -9,11 +9,14 @@
 
         <p v-if="error" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">{{ error }}</p>
 
-        <div v-if="loading" class="flex justify-center py-12">
-            <svg class="animate-spin w-8 h-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
+        <div v-if="loading" role="status" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="md:col-span-2 bg-white border rounded-xl shadow-sm p-6">
+                <SkeletonText :lines="6" />
+            </div>
+            <div aria-hidden="true" class="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl shadow-sm p-5">
+                <SkeletonText :lines="5" />
+            </div>
         </div>
 
         <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -95,6 +98,7 @@
 import { reactive, ref, computed, onMounted, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 const loading    = ref(true)
 const submitting = ref(false)

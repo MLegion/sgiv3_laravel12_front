@@ -60,9 +60,7 @@
                 Selecciona un período para ver los aspirantes admitidos.
             </div>
 
-            <div v-else-if="loading" class="text-center py-10 text-slate-400 text-sm">
-                Cargando aspirantes...
-            </div>
+            <SkeletonTable v-else-if="loading" :rows="5" :cols="5" />
 
             <div v-else-if="items.length === 0" class="text-center py-10 text-slate-400 text-sm">
                 No hay aspirantes admitidos en este período.
@@ -362,6 +360,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import {

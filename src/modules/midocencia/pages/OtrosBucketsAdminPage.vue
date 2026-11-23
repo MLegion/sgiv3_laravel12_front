@@ -30,7 +30,7 @@
             </button>
         </div>
 
-        <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
+        <SkeletonTable v-if="loading" :rows="5" :cols="4" />
         <div v-else-if="!periodId" class="text-center py-8 text-slate-400">Selecciona un periodo.</div>
 
         <template v-else>
@@ -102,6 +102,7 @@ import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useConfirm } from '@/app/composables/useConfirm'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface Bucket { id: number; name: string; sortOrder: number; status: boolean }
 

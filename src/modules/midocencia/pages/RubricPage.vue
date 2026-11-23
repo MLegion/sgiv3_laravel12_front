@@ -76,7 +76,7 @@
         </div>
 
         <!-- Estados -->
-        <div v-if="loadingTree" class="text-center py-12 text-slate-400">Cargando rúbrica…</div>
+        <SkeletonText v-if="loadingTree" :lines="6" />
         <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">{{ error }}</div>
         <div v-else-if="!current" class="text-center py-12 text-slate-400">
             No hay ninguna versión de rúbrica para mostrar.
@@ -192,6 +192,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import type { RubricVersion, RubricRubro, RubricCriterion, RubricTree } from '@/modules/midocencia/types/rubric.type'
 
 const toast = useToast()

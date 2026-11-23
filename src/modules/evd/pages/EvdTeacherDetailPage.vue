@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { EvdLevel, EvdTeacherDetail } from '@/modules/evd/types/evd.type'
+import SkeletonStat from '@/app/components/ui/SkeletonStat.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 const route   = useRoute()
 const router  = useRouter()
@@ -104,7 +106,12 @@ onMounted(load)
             </p>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400 text-center py-12">Cargando…</div>
+        <div v-if="loading" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <SkeletonStat v-for="n in 3" :key="n" />
+            </div>
+            <SkeletonTable :rows="5" :cols="5" />
+        </div>
         <div v-if="error" class="bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded px-3 py-2">{{ error }}</div>
 
         <template v-if="data?.teacher">

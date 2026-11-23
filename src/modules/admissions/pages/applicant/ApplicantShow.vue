@@ -106,7 +106,25 @@
             <section>
                 <h3 class="text-[11px] font-bold text-slate-400 mb-4 uppercase tracking-widest">DOCUMENTOS</h3>
 
-                <div v-if="loadingDocs" class="text-xs text-slate-400">Cargando documentos...</div>
+                <div v-if="loadingDocs" role="status">
+                    <span class="sr-only">Cargando documentos…</span>
+                    <ul aria-hidden="true" class="divide-y rounded-xl border overflow-hidden">
+                        <li
+                            v-for="n in 3"
+                            :key="n"
+                            class="flex items-center justify-between px-4 py-3 bg-white"
+                        >
+                            <div class="space-y-1.5">
+                                <div class="h-4 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-2.5 w-28 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="h-4 w-16 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-7 w-7 rounded border bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
 
                 <div v-else-if="documents.length === 0" class="text-xs text-slate-400 italic">
                     Sin documentos subidos.

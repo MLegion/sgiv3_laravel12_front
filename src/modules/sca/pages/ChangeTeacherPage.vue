@@ -44,8 +44,8 @@
             </div>
 
             <!-- Loading -->
-            <div v-if="loadingAssigned" class="flex justify-center py-12">
-                <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div v-if="loadingAssigned" class="bg-white border rounded-xl shadow-sm p-4">
+                <SkeletonTable :rows="5" :cols="6" />
             </div>
 
             <!-- Config error -->
@@ -122,6 +122,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 /* ── Period ─────────────────────────────────────────────────────── */
 const selectedPeriodId   = ref<number | null>(null)

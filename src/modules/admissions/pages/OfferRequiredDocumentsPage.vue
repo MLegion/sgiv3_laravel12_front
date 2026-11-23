@@ -4,7 +4,21 @@
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Documentos Requeridos por Oferta</h1>
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando ofertas...</div>
+        <div v-if="loading" role="status" class="space-y-3">
+            <span class="sr-only">Cargando…</span>
+            <div
+                v-for="n in 4"
+                :key="n"
+                aria-hidden="true"
+                class="bg-white border rounded-xl shadow-sm flex items-center justify-between px-6 py-4"
+            >
+                <div class="space-y-2">
+                    <div class="h-4 w-48 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-3 w-32 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+                <div class="h-5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+            </div>
+        </div>
 
         <div v-else-if="offers.length === 0" class="bg-white border rounded-xl p-8 text-center text-sm text-slate-400 italic">
             No hay ofertas académicas registradas.

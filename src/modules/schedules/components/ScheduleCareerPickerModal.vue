@@ -15,8 +15,15 @@
                 </header>
 
                 <div class="flex-1 overflow-y-auto">
-                    <div v-if="loading" class="p-8 text-center text-sm text-slate-400 italic">
-                        Cargando carreras…
+                    <div v-if="loading" role="status" class="divide-y">
+                        <span class="sr-only">Cargando carreras…</span>
+                        <div v-for="n in 4" :key="n" aria-hidden="true" class="px-6 py-4 flex items-center justify-between gap-4">
+                            <div class="space-y-2">
+                                <div class="h-4 w-48 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                <div class="h-2.5 w-28 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                            <div class="h-5 w-20 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
                     </div>
 
                     <div v-else-if="error" class="p-6 bg-red-50 border-b border-red-200 text-sm text-red-700">

@@ -6,8 +6,16 @@
             Los estados son fijos del sistema. Solo puedes editar la etiqueta, descripción y color de cada uno.
         </p>
 
-        <div v-if="loading" class="flex justify-center py-12">
-            <div class="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+        <div v-if="loading" role="status" class="divide-y border rounded-xl overflow-hidden bg-white shadow-sm">
+            <span class="sr-only">Cargando…</span>
+            <div v-for="n in 5" :key="n" aria-hidden="true" class="flex items-start gap-4 px-6 py-4">
+                <div class="shrink-0 h-6 w-24 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                <div class="flex-1 min-w-0 space-y-2">
+                    <div class="h-3 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-4 w-3/4 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+                <div class="shrink-0 h-8 w-8 rounded-md bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+            </div>
         </div>
 
         <div v-else class="divide-y border rounded-xl overflow-hidden bg-white shadow-sm">

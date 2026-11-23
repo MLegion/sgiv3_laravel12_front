@@ -4,7 +4,18 @@
             ← Sesiones de Examen
         </RouterLink>
 
-        <div v-if="!session" class="text-sm text-slate-400 italic">Cargando...</div>
+        <div v-if="!session" role="status" class="bg-white border border-slate-200 rounded-lg p-4">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="space-y-4">
+                <div class="h-5 w-2/3 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div v-for="n in 4" :key="n" class="space-y-2">
+                        <div class="h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-4 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div v-else class="space-y-4">
             <!-- Cabecera -->

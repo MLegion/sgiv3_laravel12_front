@@ -29,12 +29,24 @@
             <!-- Overlay -->
             <div
                 v-if="loading"
-                class="absolute inset-0 bg-white/70 z-10
-                       flex items-center justify-center"
+                class="absolute inset-0 bg-white/80 z-10 p-6 space-y-8"
+                role="status"
             >
-                <span class="text-sm text-slate-500">
-                    Cargando información…
-                </span>
+                <span class="sr-only">Cargando información…</span>
+
+                <!-- Encabezado -->
+                <div class="space-y-2">
+                    <div class="h-5 w-56 rounded bg-slate-200 animate-pulse motion-reduce:animate-none" />
+                    <div class="h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none" />
+                </div>
+
+                <!-- Información general -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div v-for="i in 3" :key="i" class="space-y-2">
+                        <div class="h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none" />
+                        <div class="h-4 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none" />
+                    </div>
+                </div>
             </div>
 
             <!-- Header info -->

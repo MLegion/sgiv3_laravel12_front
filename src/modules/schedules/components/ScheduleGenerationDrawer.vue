@@ -168,7 +168,18 @@
                             @click="() => loadRuns()">↻ Refrescar</button>
                     </div>
 
-                    <div v-if="loadingRuns" class="text-sm text-slate-400 italic">Cargando…</div>
+                    <div v-if="loadingRuns" role="status" class="space-y-3">
+                        <span class="sr-only">Cargando…</span>
+                        <div v-for="n in 3" :key="n" aria-hidden="true" class="bg-white border rounded-lg p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="space-y-2">
+                                    <div class="h-4 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                    <div class="h-2.5 w-56 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                                </div>
+                                <div class="h-7 w-24 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div v-else-if="runs.length === 0"
                         class="bg-slate-50 border border-dashed rounded-lg p-6 text-center text-sm text-slate-400 italic">

@@ -71,9 +71,16 @@
                             </div>
                         </td>
                     </tr>
-                    <tr v-if="loading">
-                        <td colspan="5" class="px-3 py-6 text-center text-slate-400 text-sm">Cargando…</td>
-                    </tr>
+                    <template v-if="loading">
+                        <tr v-for="n in 5" :key="'sk-'+n" class="border-t border-slate-100" role="status">
+                            <td class="sr-only">Cargando…</td>
+                            <td aria-hidden="true" class="px-3 py-3"><div class="h-4 w-16 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div></td>
+                            <td aria-hidden="true" class="px-3 py-3"><div class="h-4 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div></td>
+                            <td aria-hidden="true" class="px-3 py-3"><div class="h-4 w-10 mx-auto rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div></td>
+                            <td aria-hidden="true" class="px-3 py-3"><div class="h-4 w-28 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div></td>
+                            <td aria-hidden="true" class="px-3 py-3"><div class="h-4 w-20 ml-auto rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div></td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>

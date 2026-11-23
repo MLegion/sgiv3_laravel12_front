@@ -35,7 +35,9 @@
                 @click="tab = t.key; load()">{{ t.label }}</button>
         </div>
 
-        <div class="rounded-xl border border-slate-200 overflow-hidden">
+        <SkeletonTable v-if="loading" :rows="5" :cols="6" />
+
+        <div v-else class="rounded-xl border border-slate-200 overflow-hidden">
             <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Expedientes de movilidad"><table class="w-full text-sm">
                 <caption class="sr-only">Expedientes de movilidad</caption>
                 <thead class="bg-slate-50 text-slate-500">
@@ -49,8 +51,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-if="loading"><td colspan="6" class="px-4 py-8 text-center text-slate-400">Cargando…</td></tr>
-                    <tr v-else-if="!rows.length"><td colspan="6" class="px-4 py-8 text-center text-slate-400">Sin expedientes.</td></tr>
+                    <tr v-if="!rows.length"><td colspan="6" class="px-4 py-8 text-center text-slate-400">Sin expedientes.</td></tr>
                     <tr v-for="r in rows" :key="r.id" class="border-t border-slate-100 hover:bg-slate-50">
                         <td class="px-4 py-2 text-slate-500">{{ r.id }}</td>
                         <td class="px-4 py-2">
@@ -240,6 +241,7 @@ import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useConfirm } from '@/app/composables/useConfirm'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import InstitutionPicker from '@/modules/school-services/components/InstitutionPicker.vue'
 import { statusClass, statusLabel } from '@/modules/school-services/mobility.status'

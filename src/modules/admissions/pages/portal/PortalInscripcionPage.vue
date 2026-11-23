@@ -3,7 +3,9 @@
         <PortalStepper />
         <h2 class="text-lg font-bold text-slate-700 uppercase tracking-widest">PREFICHA</h2>
 
-        <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando...</div>
+        <div v-if="loading" class="bg-white border rounded-xl shadow-sm p-6">
+            <SkeletonText :lines="6" />
+        </div>
 
         <template v-else>
             <!-- ── STATUS: POR VERIFICAR ─────────────────────────────────────── -->
@@ -185,6 +187,7 @@
 
 <script setup lang="ts">
 import PortalStepper from '@/modules/admissions/components/PortalStepper.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { apiUrl } from '@/shared/api/config'

@@ -13,7 +13,7 @@
             </div>
         </div>
 
-        <div v-if="loading" class="text-center py-12 text-slate-400">Cargando…</div>
+        <SkeletonText v-if="loading" :lines="5" />
         <div v-else-if="fatal" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">{{ fatal }}</div>
 
         <template v-else>
@@ -145,6 +145,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useConfirm } from '@/app/composables/useConfirm'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import type { RubricVersion, RubroOption } from '@/modules/midocencia/types/rubric.type'
 
 interface EditProduct { id: number; name: string; hoursMin: number | null; hoursMax: number | null }

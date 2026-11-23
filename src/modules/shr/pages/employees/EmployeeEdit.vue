@@ -31,12 +31,11 @@
             <!-- Overlay -->
             <div
                 v-if="loading"
-                class="absolute inset-0 bg-white/70 z-10
-                       flex items-center justify-center"
+                class="absolute inset-0 bg-white/80 z-10 p-6"
+                role="status"
             >
-                <span class="text-sm text-slate-500">
-                    Cargando información…
-                </span>
+                <span class="sr-only">Cargando información…</span>
+                <SkeletonText :lines="6" />
             </div>
 
             <!-- Avatar -->
@@ -161,6 +160,7 @@ import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import FormCURPInput from '@/app/components/ui/form/FormCURPInput.vue'
 import FormRFCInput from '@/app/components/ui/form/FormRFCInput.vue'
 import FormPhoneInput from '@/app/components/ui/form/FormPhoneInput.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 /* -------------------------------------------------------------------------- */
 /* ROUTER */

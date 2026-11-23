@@ -28,7 +28,7 @@
             <span class="font-medium text-slate-700">{{ data?.currentPeriod?.shortName ?? '—' }}</span>
         </div>
 
-        <div v-if="loading && !data" class="text-slate-400 italic">Cargando…</div>
+        <SkeletonText v-if="loading && !data" :lines="2" />
 
         <div v-else class="flex-1 flex flex-col">
             <div class="flex items-baseline gap-2 mt-1">
@@ -61,6 +61,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 interface PeriodRef { id: number; name: string; shortName: string | null }
 interface Payload {

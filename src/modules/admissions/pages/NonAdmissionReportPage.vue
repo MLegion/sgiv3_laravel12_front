@@ -37,7 +37,12 @@
             </span>
         </div>
 
-        <div v-if="loading" class="py-12 text-center text-sm text-slate-400">Cargando reporte…</div>
+        <template v-if="loading">
+            <div class="bg-white border rounded-xl shadow-sm p-4">
+                <SkeletonText :lines="5" />
+            </div>
+            <SkeletonTable :rows="5" :cols="6" />
+        </template>
 
         <template v-else-if="data">
             <!-- Resumen por razón -->
@@ -139,6 +144,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface Payload {
     period: { id: number; name: string; shortName: string | null } | null

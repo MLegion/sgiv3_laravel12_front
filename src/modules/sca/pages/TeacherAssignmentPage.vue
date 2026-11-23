@@ -114,8 +114,8 @@
             </table></div>
         </div>
 
-        <div v-if="loadingPackages && !packageItems.length" class="flex justify-center py-12">
-            <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div v-if="loadingPackages && !packageItems.length" class="bg-white border rounded-xl shadow-sm p-4">
+            <SkeletonTable :rows="5" :cols="9" />
         </div>
 
         <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
@@ -537,11 +537,13 @@
                         {{ teacherDrawer.error }}
                     </div>
 
-                    <div v-if="teacherDrawer.loading" class="flex-1 flex items-center justify-center text-sm text-slate-400">
-                        <div class="flex items-center gap-2">
-                            <span class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></span>
-                            Cargando carga del docente…
-                        </div>
+                    <div v-if="teacherDrawer.loading" class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-6 overflow-y-auto flex-1">
+                        <section class="bg-white border rounded-xl p-4">
+                            <SkeletonTable :rows="5" :cols="6" />
+                        </section>
+                        <section class="bg-white border rounded-xl p-4">
+                            <SkeletonTable :rows="5" :cols="8" />
+                        </section>
                     </div>
 
                     <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-6 overflow-y-auto flex-1">
@@ -652,6 +654,7 @@ import { ref, computed, reactive, onMounted, nextTick, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PeriodSelector from '@/app/components/ui/form/PeriodSelector.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { useQueryFilter, QueryFilters } from '@/shared/composables/useQueryFilter'
 
 /* ── Filtros (persistidos en query string vía useQueryFilter) ────── */

@@ -77,7 +77,7 @@
                         </div>
                         <p class="text-xs text-slate-400 pb-2">Marca las clases a las que NO podrá asistir.</p>
                     </div>
-                    <div v-if="scheduleLoading" class="text-sm text-slate-500">Cargando horario…</div>
+                    <SkeletonText v-if="scheduleLoading" :lines="3" line-height="h-9" />
                     <div v-else-if="schedule.length" class="space-y-1.5">
                         <label v-for="(b, i) in schedule" :key="i"
                             class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer"
@@ -220,6 +220,7 @@ import DataTable from '@/app/components/ui/datatable/DataTable.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import BaseDrawer from '@/app/components/ui/modal/BaseDrawer.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import { useDataTableFetch } from '@/app/components/ui/datatable/useDataTableFetch'
 import type { DataTableColumn, DataTableChangeEvent } from '@/app/components/ui/datatable/types'
 

@@ -77,8 +77,16 @@
                     </div>
                 </div>
 
-                <div v-if="loadingRequests" class="flex justify-center py-12">
-                    <div class="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <div v-if="loadingRequests" class="divide-y" role="status" aria-busy="true">
+                    <span class="sr-only">Cargando…</span>
+                    <div v-for="n in 3" :key="n" class="px-4 py-4 space-y-2">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <div class="h-4 w-40 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-2.5 w-24 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                            <div class="h-3.5 w-16 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        </div>
+                        <div class="h-2.5 w-3/4 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
                 </div>
 
                 <div v-else-if="requests.length === 0" class="px-4 py-8 text-center text-xs text-slate-400 uppercase font-bold">

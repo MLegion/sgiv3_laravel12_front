@@ -4,7 +4,15 @@
             <router-link to="/school-services/mobility" class="text-slate-400 hover:text-slate-600 text-sm">← Movilidad</router-link>
         </div>
 
-        <div v-if="loading" class="py-16 text-center text-slate-400">Cargando…</div>
+        <div v-if="loading" role="status" class="space-y-5">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="rounded-xl border border-slate-200 p-5">
+                <SkeletonText :lines="3" />
+            </div>
+            <div aria-hidden="true" class="rounded-xl border border-slate-200 p-5">
+                <SkeletonText :lines="5" />
+            </div>
+        </div>
 
         <template v-else-if="c">
             <!-- Encabezado -->
@@ -294,6 +302,7 @@ import ReportGenerateButton from '@/modules/reports/components/ReportGenerateBut
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import { statusClass, statusLabel } from '@/modules/school-services/mobility.status'
 import { mobilityKind } from '@/modules/school-services/mobility.labels'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -12,7 +12,7 @@
             <strong>Configuración de Admisión → Modalidad del Examen</strong>.
         </div>
 
-        <div v-if="loading" class="text-sm text-slate-400 py-8 text-center">Cargando modalidades...</div>
+        <SkeletonTable v-if="loading" :rows="5" :cols="2" />
 
         <div v-else-if="!rows.length" class="bg-white border rounded-xl shadow-sm p-10 text-center text-sm text-slate-400">
             No hay modalidades activas registradas para este plantel.
@@ -63,6 +63,7 @@
 import { onMounted, ref } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface OverrideRow {
     modalityId: number

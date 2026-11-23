@@ -75,7 +75,18 @@
         </transition>
 
         <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div v-if="loading" class="p-6 text-sm text-slate-400 italic text-center">Cargando...</div>
+            <div v-if="loading" role="status" class="divide-y divide-slate-100">
+                <span class="sr-only">Cargando…</span>
+                <div v-for="n in 4" :key="n" aria-hidden="true" class="px-4 py-3 flex items-start gap-3">
+                    <div class="mt-1 w-4 h-4 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="mt-1.5 w-2 h-2 rounded-full bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="min-w-0 flex-1 space-y-2">
+                        <div class="h-4 w-2/5 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-3 w-4/5 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                        <div class="h-2.5 w-24 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    </div>
+                </div>
+            </div>
             <div v-else-if="items.length === 0" class="p-6 text-sm text-slate-400 italic text-center">Sin notificaciones que coincidan.</div>
             <template v-else>
                 <!-- Header con checkbox "seleccionar todo" -->

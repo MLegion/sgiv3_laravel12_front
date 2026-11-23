@@ -2,7 +2,19 @@
   <div class="max-w-lg mx-auto mt-10 p-6 bg-white rounded-xl shadow">
     <h2 class="text-xl font-bold text-gray-800 mb-2">Eliminar Plan de Estudios</h2>
 
-    <div v-if="loading" class="text-gray-500 py-6 text-center">Cargando...</div>
+    <div v-if="loading" role="status" class="py-2">
+      <span class="sr-only">Cargando…</span>
+      <div aria-hidden="true" class="space-y-2">
+        <div class="h-4 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+        <div class="h-4 w-11/12 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+        <div class="bg-gray-50 rounded-lg p-4 mt-4 space-y-3">
+          <div v-for="n in 4" :key="n" class="flex items-center gap-3">
+            <div class="h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+            <div class="h-4 flex-1 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <template v-else-if="plan">
       <p class="text-gray-600 mb-4">

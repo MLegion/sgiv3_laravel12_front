@@ -2,7 +2,15 @@
     <div class="space-y-5">
         <h1 class="text-xl font-semibold text-slate-800 uppercase">Mi Servicio Social</h1>
 
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
+        <div v-if="loading" role="status">
+            <span class="sr-only">Cargando…</span>
+            <div aria-hidden="true" class="rounded-xl border bg-white p-5 grid sm:grid-cols-3 gap-4">
+                <div v-for="i in 3" :key="i" class="space-y-1.5">
+                    <div class="h-2.5 w-20 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                    <div class="h-4 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div>
+                </div>
+            </div>
+        </div>
 
         <div v-else-if="!record" class="rounded-lg border bg-amber-50 border-amber-200 px-4 py-6 text-sm text-amber-800">
             No tienes un servicio social registrado. El Depto. de Gestión Tecnológica te dará de alta cuando corresponda.

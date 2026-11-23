@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-5">
         <button v-if="!embedded" @click="$router.back()" class="text-sm text-slate-500 hover:text-slate-700">← Volver</button>
-        <div v-if="loading" class="text-sm text-slate-400">Cargando…</div>
+        <SkeletonText v-if="loading" :lines="6" />
         <template v-else-if="a">
             <div v-if="!embedded" class="flex items-center justify-between">
                 <div>
@@ -337,6 +337,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { REFERRAL_STATUS_LABELS, type TutoringAssignment, type TutoringSession, type TutoringReferral, type ReferralArea, type TutoringTutee, type TuteeCedula } from '@/modules/tutoring/types/tutoring.type'

@@ -113,7 +113,7 @@
                 </form>
 
                 <!-- Lista -->
-                <div v-if="loading" class="p-4 text-sm text-slate-400 text-center">Cargando…</div>
+                <div v-if="loading" class="p-4"><SkeletonTable :rows="5" :cols="6" /></div>
                 <div v-else-if="restrictions.length" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Restricciones configuradas"><table class="w-full text-xs">
                     <caption class="sr-only">Restricciones configuradas</caption>
                     <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
@@ -163,6 +163,7 @@ import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 
 interface ModalityType {
     id: number

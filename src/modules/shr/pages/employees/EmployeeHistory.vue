@@ -19,12 +19,11 @@
             <!-- Overlay -->
             <div
                 v-if="loading"
-                class="absolute inset-0 bg-white/70 z-10
-                       flex items-center justify-center"
+                class="absolute inset-0 bg-white/80 z-10 p-6"
+                role="status"
             >
-                <span class="text-sm text-slate-500">
-                    Cargando historial…
-                </span>
+                <span class="sr-only">Cargando historial…</span>
+                <SkeletonText :lines="5" />
             </div>
 
             <!-- Employee -->
@@ -160,6 +159,7 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 
 import FormSearchSelect from '@/app/components/ui/form/FormSearchSelect.vue'
+import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import type { EmployeeShowType } from '@/modules/shr/types/employee.show.type'
 
 /* -------------------------------------------------------------------------- */
