@@ -29,7 +29,7 @@
 
             <!-- ═════ Sección: Filtros ═════ -->
             <section class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <header class="px-4 py-2 bg-slate-50 border-b flex items-center justify-between gap-2">
+                <header class="px-4 py-2 bg-slate-50 border-b flex flex-wrap items-center justify-between gap-2">
                     <h2 class="text-[11px] font-black text-slate-600 uppercase tracking-widest">Filtros</h2>
                     <button :aria-label="'Vaciar los horarios de la carrera ' + (selectedCareerObj?.shortName ?? selectedCareerObj?.name ?? '')" v-if="selectedCareerFilter && resolvedConfigId && phaseActive"
                         type="button"

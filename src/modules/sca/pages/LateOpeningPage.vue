@@ -63,7 +63,7 @@
 
             <!-- Lista de solicitudes -->
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <div class="bg-slate-50 border-b px-4 py-3 flex items-center justify-between">
+                <div class="bg-slate-50 border-b px-4 py-3 flex flex-wrap items-center justify-between gap-2">
                     <h2 class="text-sm font-bold text-slate-700 uppercase">
                         {{ isAdmin ? 'Solicitudes de Apertura Tardía' : 'Mis Solicitudes' }}
                     </h2>

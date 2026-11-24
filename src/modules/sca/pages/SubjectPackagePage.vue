@@ -117,7 +117,7 @@
 
                 <!-- Materias del curriculum -->
                 <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                    <div class="bg-slate-50 border-b px-4 py-3 flex items-center justify-between">
+                    <div class="bg-slate-50 border-b px-4 py-3 flex flex-wrap items-center justify-between gap-2">
                         <h2 class="text-sm font-bold text-slate-700 uppercase">Materias del Curriculum</h2>
                         <div class="flex items-center gap-3">
                             <span class="text-xs text-slate-400">{{ curriculumSubjects.length }} materias</span>
