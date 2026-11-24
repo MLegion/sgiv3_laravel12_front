@@ -310,8 +310,15 @@
             <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
                 <h3 class="text-sm font-bold text-slate-700 uppercase">Reasignar tutor</h3>
                 <p class="text-[11px] text-slate-400">Los tutorados y la bitácora se mueven con la asignación.</p>
-                <label for="reassign-tutor" class="block text-xs font-semibold text-slate-500">ID de usuario del nuevo tutor</label>
-                <input id="reassign-tutor" v-model="reassign.tutor" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm" placeholder="tutor_user_id" />
+                <FormRemoteSelect
+                    v-model="reassign.tutor"
+                    :endpoint="T.determination.personnel"
+                    :endpoint-by-id="T.determination.personnelById"
+                    item-value="user_id"
+                    item-label="full_name"
+                    :item-searchs="['full_name']"
+                    label="Nuevo tutor"
+                    placeholder="Buscar al tutor por nombre…" />
                 <label for="reassign-reason" class="block text-xs font-semibold text-slate-500">Motivo (opcional)</label>
                 <textarea id="reassign-reason" v-model="reassign.reason" rows="2" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
                 <div class="flex justify-end gap-2">
@@ -348,6 +355,7 @@ import { ClipboardDocumentListIcon, ArrowRightCircleIcon, TrashIcon } from '@her
 import UserAvatar from '@/app/components/ui/UserAvatar.vue'
 import BaseDrawer from '@/app/components/ui/modal/BaseDrawer.vue'
 import { usePrompt } from '@/app/composables/usePrompt'
+import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import { useConfirm } from '@/app/composables/useConfirm'
 import FormatDeliveriesPanel from '@/modules/tutoring/components/FormatDeliveriesPanel.vue'
 
@@ -368,7 +376,7 @@ const areas = ref<ReferralArea[]>([])
 const plan = ref('')
 
 const showSession = ref(false), showRefer = ref(false), showCedula = ref(false), showAddTutee = ref(false), showReassign = ref(false)
-const reassign = reactive<{ tutor: string; reason: string }>({ tutor: '', reason: '' })
+const reassign = reactive<{ tutor: number | null; reason: string }>({ tutor: null, reason: '' })
 const sf = reactive<{ type: string; student_id: number | null; session_date: string; topic: string; notes: string; attendance: number[] }>({ type: 'grupal', student_id: null, session_date: '', topic: '', notes: '', attendance: [] })
 const rf = reactive<{ student_id: number | null; referral_area_id: number | null; reason: string }>({ student_id: null, referral_area_id: null, reason: '' })
 const referTutee = ref<TutoringTutee | null>(null)
@@ -580,7 +588,7 @@ async function close() { if (!await confirm({ title: 'Cerrar asignación', messa
 async function doReassign() {
     try {
         await api.post(T.assignments.reassign(props.id), { tutor_user_id: Number(reassign.tutor), reason: reassign.reason || null })
-        showReassign.value = false; reassign.tutor = ''; reassign.reason = ''
+        showReassign.value = false; reassign.tutor = null; reassign.reason = ''
         await load(); flash('Tutor reasignado.')
     } catch (e: any) { flash(e?.response?.data?.message ?? 'Error', true) }
 }

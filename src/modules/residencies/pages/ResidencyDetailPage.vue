@@ -281,7 +281,7 @@ async function generateAndStore(item: ResidencyDocumentChecklistItem) {
         useToast().success(`"${item.name}" generado y guardado.`)
     } catch (e: any) {
         if (e instanceof ReportFormatUnavailableError) {
-            useToast().error('La plantilla del reporte aún no está disponible. Autórala en el módulo de Reportes.')
+            useToast().error('La plantilla del reporte aún no está disponible. Actívala en el módulo de Reportes.')
         } else {
             useToast().error(e?.response?.data?.message ?? e?.message ?? 'No se pudo generar el documento.')
         }

@@ -57,7 +57,7 @@
                                 </div>
                             </div>
                             <div v-else-if="!detail?.assignments?.length" class="text-sm text-slate-400 py-3 italic">
-                                Sin roles asignados en este college.
+                                Sin roles asignados en este plantel.
                             </div>
                             <ul v-else class="space-y-2">
                                 <li
@@ -90,7 +90,7 @@
                                     <span
                                         v-else-if="isProtectedRole(a.role_code)"
                                         class="shrink-0 inline-flex items-center gap-1 text-[10px] text-slate-400"
-                                        title="Este rol no puede revocarse desde el college"
+                                        title="Este rol no puede revocarse desde el plantel"
                                     >
                                         <LockClosedIcon class="w-3.5 h-3.5" /> No revocable
                                     </span>
@@ -181,7 +181,7 @@
                                         <template v-for="ctx in orderedContexts" :key="`empty-${ctx.alias}`">
                                             <p v-if="!isDependentCareer(ctx.alias) && !(contextOptions[ctx.alias] || []).length && !loadingContexts[ctx.alias]"
                                                class="text-[11px] text-amber-600 mt-1">
-                                                No hay opciones de {{ aliasLabel(ctx.alias) }} en este college.
+                                                No hay opciones de {{ aliasLabel(ctx.alias) }} en este plantel.
                                             </p>
                                         </template>
                                     </div>
@@ -426,7 +426,7 @@ function aliasLabel(alias: string): string {
         career:   'Carrera',
         modality: 'Modalidad',
         campus:   'Campus',
-        college:  'College',
+        college:  'Plantel',
     }
     return labels[alias] || alias
 }

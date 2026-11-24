@@ -182,7 +182,7 @@ const columns: DataTableColumn<UserRow>[] = [
     { key: 'name',      label: 'NOMBRE',     field: 'name',  sortable: true, searchable: true },
     { key: 'email',     label: 'CORREO',     field: 'email', sortable: true, searchable: true },
     { key: 'type',      label: 'TIPO'                                       },
-    { key: 'college',   label: 'COLLEGE'                                    },
+    { key: 'college',   label: 'PLANTEL'                                    },
     { key: 'acciones',  label: 'ACCIONES' },
 ]
 

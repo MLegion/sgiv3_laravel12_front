@@ -1,9 +1,9 @@
 <template>
     <div class="space-y-4">
         <div>
-            <h1 class="text-xl font-semibold text-slate-800">USUARIOS DEL COLLEGE</h1>
+            <h1 class="text-xl font-semibold text-slate-800">USUARIOS DEL PLANTEL</h1>
             <p class="text-sm text-slate-500 mt-1">
-                Asigna roles y sus contextos (carreras, modalidades) a los empleados del college.
+                Asigna roles y sus contextos (carreras, modalidades) a los empleados del plantel.
             </p>
         </div>
 

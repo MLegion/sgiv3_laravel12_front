@@ -145,7 +145,7 @@ onMounted(loadCaps)
                     </tr>
                     <tr v-else-if="!rows.length">
                         <td colspan="5" class="px-3 py-6 text-center text-sm text-slate-400 italic">
-                            No hay alumnos con assignments en este periodo.
+                            No hay alumnos registrados en este periodo.
                         </td>
                     </tr>
                     <tr v-for="r in rows" :key="r.student.id" class="hover:bg-slate-50">

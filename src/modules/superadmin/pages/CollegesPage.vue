@@ -28,7 +28,7 @@
                     />
                 </svg>
 
-                REGISTRAR INSTITUTO EDUCATIVA CON ADMINISTRADOR
+                REGISTRAR INSTITUCIÓN CON ADMINISTRADOR
             </button>
         </div>
 

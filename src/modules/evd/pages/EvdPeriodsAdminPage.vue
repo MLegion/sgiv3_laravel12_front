@@ -308,7 +308,7 @@ onMounted(load)
                         </p>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label for="evd-apertura-slug" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Cuestionario (slug)</label>
+                        <label for="evd-apertura-slug" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Cuestionario</label>
                         <input id="evd-apertura-slug" v-model="aperturaForm.formSlug" type="text"
                                class="border border-slate-300 rounded px-2 py-1.5 text-sm font-mono" />
                     </div>

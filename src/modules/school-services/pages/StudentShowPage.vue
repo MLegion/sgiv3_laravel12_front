@@ -283,7 +283,7 @@
                         class="flex items-center gap-1.5 px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-semibold uppercase"
                         @click="openGradeForm(null)"
                     >
-                        + Agregar Calificacion
+                        + Agregar Calificación
                     </button>
                 </div>
 
@@ -297,7 +297,7 @@
                             <tr>
                                 <th scope="col" class="px-3 py-3 text-left">Materia</th>
                                 <th scope="col" class="px-3 py-3 text-left">Tipo Aprob.</th>
-                                <th scope="col" class="px-3 py-3 text-center">Calificacion</th>
+                                <th scope="col" class="px-3 py-3 text-center">Calificación</th>
                                 <th scope="col" class="px-3 py-3 text-center">No. Per. 1</th>
                                 <th scope="col" class="px-3 py-3 text-center">No. Per. 2</th>
                                 <th scope="col" class="px-3 py-3 text-center">No. Per. 3</th>
@@ -346,7 +346,7 @@
                 </div>
 
                 <!-- Modal crear/editar calificacion -->
-                <BaseModal v-model="gradeModal" :title="editingGrade?.id ? 'Editar Calificacion' : 'Nueva Calificacion'" size="lg">
+                <BaseModal v-model="gradeModal" :title="editingGrade?.id ? 'Editar Calificación' : 'Nueva Calificación'" size="lg">
                     <div class="space-y-5">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>

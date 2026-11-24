@@ -38,7 +38,7 @@
                         </p>
                         <ul class="text-xs text-amber-800 space-y-1 list-disc list-inside">
                             <li v-for="c in report.scolarized" :key="`s-${c.scheduleId}`">
-                                <span class="font-medium">{{ c.label || `Schedule #${c.scheduleId}` }}</span>
+                                <span class="font-medium">{{ c.label || `Horario #${c.scheduleId}` }}</span>
                                 <span class="text-amber-600">— {{ c.startTime }} a {{ c.endTime }}</span>
                                 <span v-if="c.modalityName" class="text-amber-600"> · {{ c.modalityName }}</span>
                             </li>
@@ -56,7 +56,7 @@
 
                         <div v-for="c in report.semiSchoolarized" :key="`ss-${c.scheduleId}`" class="bg-white border border-purple-100 rounded-md p-3 space-y-2">
                             <div class="text-xs font-medium text-purple-900">
-                                {{ c.label || `Schedule #${c.scheduleId}` }}
+                                {{ c.label || `Horario #${c.scheduleId}` }}
                                 <span class="text-purple-500 ml-2">{{ c.date }} · {{ c.startTime }} a {{ c.endTime }}</span>
                             </div>
                             <div class="grid grid-cols-2 gap-2">

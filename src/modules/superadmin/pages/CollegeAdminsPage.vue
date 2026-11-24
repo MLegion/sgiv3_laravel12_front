@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-4">
-        <h1 class="text-xl font-semibold text-slate-800">ADMINISTRADORES DE COLLEGE</h1>
+        <h1 class="text-xl font-semibold text-slate-800">ADMINISTRADORES DEL PLANTEL</h1>
 
         <!-- Filtro college -->
         <div class="bg-white rounded-lg shadow p-4 flex items-end gap-4">
@@ -11,7 +11,7 @@
                     @change="loadEmployees"
                     class="mt-1 w-full h-10 border rounded-md px-3 text-sm"
                 >
-                    <option :value="null" disabled>Selecciona un college…</option>
+                    <option :value="null" disabled>Selecciona un plantel…</option>
                     <option v-for="c in colleges" :key="c.id" :value="c.id">
                         {{ c.name }}
                     </option>
@@ -46,8 +46,8 @@
                 Sin resultados.
             </div>
 
-            <div v-else tabindex="0" role="region" aria-label="Administradores del college" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                <caption class="sr-only">Administradores del college</caption>
+            <div v-else tabindex="0" role="region" aria-label="Administradores del plantel" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
+                <caption class="sr-only">Administradores del plantel</caption>
                 <thead class="bg-gray-50 text-xs uppercase text-gray-600">
                     <tr>
                         <th scope="col" class="px-4 py-2 text-left">Empleado</th>

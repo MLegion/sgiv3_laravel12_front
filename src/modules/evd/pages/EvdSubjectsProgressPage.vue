@@ -104,7 +104,7 @@ onMounted(loadCaps)
 <template>
     <div class="space-y-4">
         <div class="flex items-center justify-between flex-wrap gap-2">
-            <h1 class="text-xl font-semibold text-slate-800 uppercase">Avance por Grupos · EVD</h1>
+            <h1 class="text-xl font-semibold text-slate-800 uppercase">Avance por Materia · EVD</h1>
             <span v-if="!canToggle"
                   class="text-[10px] text-slate-400 italic">
                 (modo lectura · solo el Encargado de Evaluación Docente edita visibilidad)
@@ -126,8 +126,8 @@ onMounted(loadCaps)
 
         <!-- Tabla -->
         <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Avance por grupos"><table class="w-full text-sm">
-                <caption class="sr-only">Avance por grupos</caption>
+            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Avance por materia"><table class="w-full text-sm">
+                <caption class="sr-only">Avance por materia</caption>
                 <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
                     <tr>
                         <th scope="col" class="text-left  px-3 py-2">MATERIA</th>
@@ -145,7 +145,7 @@ onMounted(loadCaps)
                     </tr>
                     <tr v-else-if="!rows.length">
                         <td colspan="7" class="px-3 py-6 text-center text-sm text-slate-400 italic">
-                            No hay assignments en este periodo.
+                            No hay materias registradas en este periodo.
                         </td>
                     </tr>
                     <tr v-for="r in rows" :key="r.teacher_assignment_id" class="hover:bg-slate-50">

@@ -92,7 +92,7 @@
                     <div class="col-span-2">
                         <label for="ac-window-max-per-period" class="block text-[10px] uppercase text-slate-400 mb-1">Máx. actividades por alumno en el periodo</label>
                         <input id="ac-window-max-per-period" v-model.number="windowForm.max_per_period" type="number" min="0" max="50" class="w-full rounded-lg border-slate-300 text-sm" />
-                        <p class="text-[10px] text-slate-400 mt-0.5">0 = sin límite. (SGIv2 usaba 3.)</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">0 = sin límite.</p>
                     </div>
                 </div>
             </div>
