@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-5">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Requisitos de Documentos</h1>
             <button @click="openNew" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">+ Versión</button>
         </div>
@@ -39,7 +39,7 @@
 
         <!-- Editor de versión -->
         <div v-if="editing" class="rounded-xl border bg-white p-5 space-y-4">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">{{ editing.name }} <span class="text-slate-400">({{ statusLabel(editing.status) }})</span></h2>
                 <button @click="editing = null" class="text-xs text-slate-400">Cerrar</button>
             </div>

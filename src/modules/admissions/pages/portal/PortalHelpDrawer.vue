@@ -21,7 +21,7 @@
                     tabindex="-1"
                     class="relative w-full max-w-md bg-white h-full shadow-xl overflow-y-auto focus:outline-none"
                 >
-                    <div class="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-white">
+                    <div class="flex flex-wrap items-center justify-between px-5 py-4 border-b sticky top-0 bg-white gap-2">
                         <h3 class="text-sm font-bold text-slate-800 uppercase">{{ title }}</h3>
                         <button type="button" aria-label="Cerrar" class="text-slate-400 hover:text-slate-700 text-xl leading-none" @click="open = false">&times;</button>
                     </div>

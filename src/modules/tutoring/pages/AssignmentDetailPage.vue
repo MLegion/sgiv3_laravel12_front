@@ -132,7 +132,7 @@
 
             <!-- Tutorados -->
             <div v-else-if="activeTab === 'tutorados'" class="space-y-2">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-center justify-between gap-2">
                     <h2 class="text-sm font-bold text-slate-700 uppercase">Tutorados ({{ a.tutees.length }})</h2>
                     <button v-if="a.scope === 'individual'" @click="showAddTutee = true" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold">+ Agregar</button>
                     <button v-else-if="a.scope === 'grupal'" @click="syncRoster" :disabled="syncingRoster"
@@ -173,7 +173,7 @@
 
             <!-- Sesiones -->
             <div v-else-if="activeTab === 'sesiones'" class="space-y-2">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-center justify-between gap-2">
                     <h2 class="text-sm font-bold text-slate-700 uppercase">Sesiones</h2>
                     <button @click="openSession" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold">+ Registrar sesión</button>
                 </div>
@@ -200,7 +200,7 @@
 
             <!-- Evaluación de desempeño al término (T-C, sólo grupal) -->
             <div v-else-if="activeTab === 'evaluacion' && ev && ev.applicable" class="space-y-3">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-center justify-between gap-2">
                     <h2 class="text-sm font-bold text-slate-700 uppercase">Evaluación de desempeño</h2>
                     <div class="flex items-center gap-2">
                         <button @click="downloadOficial" :disabled="evGenerating || !ev.tutees.length"

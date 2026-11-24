@@ -1,6 +1,6 @@
 <template>
     <div class="max-w-4xl space-y-6">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">
                 EDITAR MATERIA
             </h1>

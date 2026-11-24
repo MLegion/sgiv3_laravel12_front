@@ -14,7 +14,7 @@
         </div>
 
         <section class="rounded-xl border bg-white p-4 space-y-3">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-sm font-bold uppercase text-slate-500">Lugares ({{ selectedCount }} / {{ places.length }})</h2>
                 <div class="flex items-center gap-2">
                     <button @click="toggleAll(true)" class="text-xs text-emerald-600 hover:underline">Todos</button>

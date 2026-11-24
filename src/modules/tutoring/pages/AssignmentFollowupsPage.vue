@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-5">
-        <div v-if="!embedded" class="flex items-center justify-between">
+        <div v-if="!embedded" class="flex flex-wrap items-center justify-between gap-2">
             <div>
                 <h1 class="text-xl font-semibold text-slate-800 uppercase">Seguimientos del PAT</h1>
                 <p class="text-xs text-slate-400" v-if="data">{{ data.assignment.tutor_name }} · {{ data.assignment.scope === 'grupal' ? 'Grupal' : 'Individual' }} · {{ data.assignment.period_name }}</p>

@@ -90,7 +90,7 @@
             <div v-if="selected" class="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <div class="absolute inset-0 bg-black/40" @click="selected = null" />
                 <div class="relative bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">
-                    <div class="flex items-center justify-between px-4 py-3 border-b">
+                    <div class="flex flex-wrap items-center justify-between px-4 py-3 border-b gap-2">
                         <div>
                             <h3 class="text-sm font-bold text-slate-800">Vista previa — {{ CHANNEL_LABELS[selected.channel] || selected.channel }}</h3>
                             <p class="text-[11px] text-slate-500">Así se vería al enviarse (capturado, no enviado).</p>

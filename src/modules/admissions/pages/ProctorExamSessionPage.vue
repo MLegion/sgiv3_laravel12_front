@@ -114,7 +114,7 @@
 
             <!-- Scanner (sólo IN_PROGRESS) -->
             <div v-if="session.status === 'IN_PROGRESS'" class="bg-white border border-slate-200 rounded-lg p-3 sm:p-4 space-y-3">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-center justify-between gap-2">
                     <h2 class="text-xs sm:text-sm font-bold uppercase tracking-widest text-slate-700">Scanner QR</h2>
                     <button
                         v-if="!scannerActive"

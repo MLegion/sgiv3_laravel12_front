@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Oferta Académica</h1>
             <div class="flex gap-2">
                 <button class="px-3 py-2 text-sm border rounded-lg hover:bg-slate-50" @click="router.back()">REGRESAR</button>
@@ -36,7 +36,7 @@
 
             <!-- Planes de estudio vinculados -->
             <div class="bg-white border rounded-xl shadow-sm p-6 space-y-4">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-center justify-between gap-2">
                     <h2 class="text-sm font-semibold text-slate-500 uppercase">Planes de Estudio Vinculados</h2>
                     <button
                         class="flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg bg-blue-600 text-white hover:bg-blue-700"

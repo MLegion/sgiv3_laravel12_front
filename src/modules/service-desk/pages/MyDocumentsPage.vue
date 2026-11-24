@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-5 max-w-3xl">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Bandeja de documentos</h1>
             <router-link :to="{ name: 'service-desk.request' }" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold">+ Solicitar</router-link>
         </div>

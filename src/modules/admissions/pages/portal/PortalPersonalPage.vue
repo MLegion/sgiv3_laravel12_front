@@ -98,7 +98,7 @@
             <div v-if="helpOpen" class="fixed inset-0 z-50 flex justify-end">
                 <div class="absolute inset-0 bg-black/40" @click="helpOpen = false" />
                 <aside class="relative w-full max-w-md bg-white h-full shadow-xl overflow-y-auto">
-                    <div class="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-white">
+                    <div class="flex flex-wrap items-center justify-between px-5 py-4 border-b sticky top-0 bg-white gap-2">
                         <h3 class="text-sm font-bold text-slate-800 uppercase">Cómo llenar Información General</h3>
                         <button type="button" aria-label="Cerrar" class="text-slate-400 hover:text-slate-700 text-xl leading-none" @click="helpOpen = false">&times;</button>
                     </div>

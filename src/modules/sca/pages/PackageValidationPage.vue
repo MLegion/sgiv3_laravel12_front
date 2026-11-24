@@ -161,7 +161,7 @@
                 <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
                     <!-- Header con info del plan y acciones masivas -->
                     <div class="bg-slate-50 border-b px-4 py-3">
-                        <div class="flex items-center justify-between">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
                             <div>
                                 <button @click="collapsePlan" class="text-blue-600 hover:text-blue-800 text-xs font-bold uppercase mb-1">
                                     ← Volver al Resumen

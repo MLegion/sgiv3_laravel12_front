@@ -1,6 +1,6 @@
 <template>
     <div class="bg-white border rounded-xl shadow-sm p-5 space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="text-sm font-black uppercase text-slate-700">Gráficas</h2>
             <button type="button" class="text-xs px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700" @click="addChart">
                 + Agregar gráfica

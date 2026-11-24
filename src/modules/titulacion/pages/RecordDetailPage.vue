@@ -1,6 +1,6 @@
 <template>
     <div v-if="rec" class="space-y-5">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
                 <button @click="$router.back()" class="text-sm text-slate-400 hover:text-slate-600">&larr; Volver</button>
                 <h1 class="text-xl font-semibold text-slate-800">{{ rec.student_name }}</h1>
@@ -63,7 +63,7 @@
 
         <!-- Actos -->
         <div class="rounded-xl border bg-white p-5 space-y-3">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Actos de recepción profesional</h2>
                 <button @click="openSchedule" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold">+ Programar acto</button>
             </div>

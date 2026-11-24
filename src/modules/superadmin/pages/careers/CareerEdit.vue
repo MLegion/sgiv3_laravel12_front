@@ -1,6 +1,6 @@
 <template>
     <!-- Header -->
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex flex-wrap items-center justify-between mb-4 gap-2">
         <h1 class="text-xl font-semibold text-slate-800">
             ACTUALIZAR - CARRERA PROFESIONAL
         </h1>

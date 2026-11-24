@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-xl font-semibold text-slate-800">
                 {{ isEdit ? 'Editar programa de estudio' : 'Nuevo programa de estudio' }}
             </h1>
@@ -186,7 +186,7 @@
                     <!-- FUENTES -->
                     <template v-else-if="activeTab === 'fuentes'">
                         <div class="space-y-2">
-                            <div class="flex items-center justify-between">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
                                 <h2 class="text-sm font-semibold text-slate-700">Fuentes de información</h2>
                                 <button type="button" class="text-sm text-blue-600 hover:text-blue-800" @click="form.sources.push({ reference: '', type: '' })">+ Fuente</button>
                             </div>

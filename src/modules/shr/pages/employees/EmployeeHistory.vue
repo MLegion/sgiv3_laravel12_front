@@ -1,7 +1,7 @@
 <template>
     <div class="max-w-5xl space-y-6 relative">
         <!-- Header -->
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-xl font-semibold text-slate-800">
                 Historial laboral
             </h1>

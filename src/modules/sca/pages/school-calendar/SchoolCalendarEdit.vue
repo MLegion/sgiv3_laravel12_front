@@ -16,7 +16,7 @@
         <template v-if="!loading && calendar">
             <!-- SECTION 1: Header bar (sticky top) -->
             <div class="sticky top-0 z-50 bg-white border-b shadow-sm px-6 py-3">
-                <div class="flex items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center justify-between gap-4">
                     <div class="flex items-center gap-4">
                         <h1 class="text-sm font-black uppercase text-slate-800 tracking-wider">CALENDARIO ESCOLAR</h1>
                         <button

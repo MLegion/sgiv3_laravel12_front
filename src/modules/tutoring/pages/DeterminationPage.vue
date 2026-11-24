@@ -22,7 +22,7 @@
         </div>
 
         <!-- Propuestas registradas -->
-        <div class="flex items-center justify-between pt-2">
+        <div class="flex flex-wrap items-center justify-between pt-2 gap-2">
             <h2 class="text-sm font-bold uppercase text-slate-500">Propuestas registradas</h2>
             <button @click="fetchProposals" class="text-xs text-slate-400 hover:text-slate-600">Actualizar</button>
         </div>

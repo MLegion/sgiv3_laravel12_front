@@ -1,6 +1,6 @@
 <template>
     <div class="p-4 md:p-6 max-w-[1600px] mx-auto">
-        <div class="flex items-center justify-between gap-3 mb-1">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-1">
             <h1 class="text-xl font-semibold text-slate-800">Seguimiento de la trayectoria académica</h1>
             <div class="flex items-center gap-2">
                 <button @click="$router.back()" class="px-3 py-2 rounded-lg border border-slate-300 text-slate-600 text-sm hover:bg-slate-50">← Volver</button>

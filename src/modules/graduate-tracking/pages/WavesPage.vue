@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-5">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Seguimiento de Egresados</h1>
             <button @click="openNew" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">+ Nueva oleada</button>
         </div>

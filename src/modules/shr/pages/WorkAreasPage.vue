@@ -47,7 +47,7 @@
             @click.self="closeImport"
         >
             <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4">
-                <div class="flex items-start justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-2">
                     <div>
                         <h2 class="text-lg font-semibold text-slate-800">Importar áreas de trabajo</h2>
                         <p class="text-sm text-slate-500">Sube el archivo CSV con el formato descargado.</p>

@@ -1,6 +1,6 @@
 <template>
     <div class="max-w-2xl space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-xl font-semibold text-slate-800">CAMBIAR CONTRASEÑA</h1>
             <button
                 v-if="!editing"
