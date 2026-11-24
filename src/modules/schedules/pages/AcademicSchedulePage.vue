@@ -2,7 +2,7 @@
     <div class="space-y-4">
 
         <!-- ═════ Periodo + Lock ═════ -->
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <PeriodSelector v-show="!periodLocked" ref="periodSelectorRef" v-model="selectedPeriodId" @update:model-value="onPeriodChange" @auto-selected="onPeriodAutoSelected" label="" placeholder="SELECCIONE UN PERIODO" class="flex-1" :auto-select-status="['planned', 'draft', 'active']" />
             <div v-show="periodLocked" class="flex-1 border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold uppercase bg-slate-50 text-slate-700">{{ lockedPeriodName }}</div>
             <button :aria-label="periodLocked ? 'Desbloquear periodo' : 'Bloquear periodo'" class="w-12 h-[46px] border-2 rounded-xl flex items-center justify-center transition"
@@ -253,10 +253,10 @@
 
             <!-- ═════ Body: panel + grid ═════ -->
             <template v-if="resolvedConfigId && !configError && filterValue && !comparisonMode && !listMode">
-                <div class="flex gap-0">
+                <div class="flex flex-col md:flex-row gap-0">
 
                     <!-- ── Panel izquierdo (asignaturas) ── -->
-                    <div class="w-60 min-w-[240px] flex-shrink-0 border-2 border-slate-800 border-r-0 bg-white overflow-hidden" style="width: 240px;">
+                    <div class="w-full md:w-[240px] md:min-w-[240px] flex-shrink-0 border-2 border-slate-800 md:border-r-0 bg-white overflow-hidden">
                         <div class="px-3 py-3 bg-white border-b-2 border-slate-800 text-center">
                             <h2 class="text-[13px] font-black uppercase text-slate-800 tracking-tight leading-tight">ASIGN. / H.<br />DESC.</h2>
                         </div>
@@ -676,10 +676,10 @@
 
             <!-- ═════ Vista: Comparación ═════ -->
             <template v-if="resolvedConfigId && !configError && filterValue && comparisonMode">
-                <div class="flex gap-0">
+                <div class="flex flex-col md:flex-row gap-0">
 
                     <!-- ── Panel izquierdo: selector de items a comparar ── -->
-                    <div class="w-72 flex-shrink-0 border-2 border-violet-800 border-r-0 bg-white overflow-hidden">
+                    <div class="w-full md:w-72 flex-shrink-0 border-2 border-violet-800 md:border-r-0 bg-white overflow-hidden">
                         <div class="px-3 py-3 bg-violet-50 border-b-2 border-violet-800 text-center">
                             <h2 class="text-[13px] font-black uppercase text-violet-800 tracking-tight">COMPARAR</h2>
                         </div>

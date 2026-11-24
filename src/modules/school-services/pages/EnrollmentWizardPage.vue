@@ -8,7 +8,7 @@
             </p>
         </div>
 
-        <ol class="flex items-center gap-3 text-xs">
+        <ol class="flex flex-wrap items-center gap-3 gap-y-2 text-xs">
             <li v-for="(label, idx) in stepLabels" :key="idx"
                 class="flex items-center gap-2"
                 :aria-current="(idx + 1) === step ? 'step' : undefined"

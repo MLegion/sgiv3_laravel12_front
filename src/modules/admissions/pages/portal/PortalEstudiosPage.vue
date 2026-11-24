@@ -86,7 +86,7 @@
                 </div>
             </template>
             <template v-else>
-                <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     <ReadField label="ESCUELA DE PROCEDENCIA" :value="originSchoolName" highlight class="sm:col-span-2" />
                     <ReadField label="AÑO DE EGRESO" :value="form.graduation_year" />
                     <ReadField label="PROMEDIO" :value="form.academic_average" />

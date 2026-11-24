@@ -101,10 +101,10 @@
             :subtitle="`${detail.numControl ?? '—'} · ${detail.source} #${detail.externalId}`"
             @update:model-value="closeDetail">
                     <!-- Cuerpo en dos columnas -->
-                    <div class="flex-1 flex min-h-0">
+                    <div class="flex-1 flex flex-col md:flex-row min-h-0">
                         <!-- Columna izquierda: datos + lista de documentos -->
-                        <div class="w-[360px] shrink-0 border-r overflow-y-auto p-5 space-y-4">
-                            <dl class="grid grid-cols-3 gap-y-2 text-sm">
+                        <div class="w-full md:w-[360px] shrink-0 border-r overflow-y-auto p-5 space-y-4">
+                            <dl class="grid grid-cols-1 sm:grid-cols-3 gap-y-2 text-sm">
                                 <dt class="text-[11px] font-bold text-slate-400 uppercase col-span-1 self-center">Empresa</dt>
                                 <dd class="col-span-2 text-slate-700">{{ detail.companyName ?? '—' }}<span v-if="detail.companyRfc" class="text-xs text-slate-400"> · {{ detail.companyRfc }}</span></dd>
                                 <dt class="text-[11px] font-bold text-slate-400 uppercase col-span-1 self-center">Lugar</dt>
@@ -153,7 +153,7 @@
                         </div>
 
                         <!-- Columna derecha: visor PDF embebido -->
-                        <div class="flex-1 min-w-0 bg-slate-100 relative flex items-center justify-center">
+                        <div class="flex-1 min-w-0 min-h-[50vh] bg-slate-100 relative flex items-center justify-center">
                             <div v-if="previewLoading" class="absolute inset-0 flex items-center justify-center">
                                 <div class="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
                             </div>

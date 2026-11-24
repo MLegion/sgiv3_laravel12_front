@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap gap-2 items-center justify-between">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Reportes</h1>
             <button
                 type="button"

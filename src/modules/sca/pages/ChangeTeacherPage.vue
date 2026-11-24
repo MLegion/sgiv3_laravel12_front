@@ -3,7 +3,7 @@
         <h1 class="text-xl font-semibold text-slate-800 uppercase">Cambiar Docente de Asignatura</h1>
 
         <!-- Periodo compartido -->
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <PeriodSelector v-if="!periodLocked" ref="periodSelectorRef" v-model="selectedPeriodId" @update:model-value="onPeriodChange" label="" placeholder="SELECCIONE UN PERIODO" class="flex-1" />
             <div v-else class="flex-1 border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold uppercase bg-slate-50 text-slate-700">{{ lockedPeriodName }}</div>
             <button :aria-label="periodLocked ? 'Desbloquear' : 'Bloquear'" class="w-12 h-[46px] border-2 rounded-xl flex items-center justify-center transition"

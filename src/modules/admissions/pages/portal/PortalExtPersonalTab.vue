@@ -38,7 +38,7 @@
             </div>
         </template>
         <template v-else>
-            <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <ReadField label="RFC" :value="form.rfc" />
                 <ReadField label="FECHA DE NACIMIENTO" :value="form.birth_date" />
                 <ReadField label="ESTADO CIVIL" :value="MARITAL_LABELS[form.marital_status] ?? form.marital_status" />

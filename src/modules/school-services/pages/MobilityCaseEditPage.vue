@@ -79,10 +79,10 @@
 
             <!-- Convalidación / dictamen -->
             <div v-if="!isOutbound" class="rounded-xl border border-slate-200 p-5 space-y-4">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-center justify-between gap-2">
                     <h2 class="font-semibold text-slate-800">Dictamen ({{ items.length }} materias · {{ recognizedCount }} reconocidas)</h2>
-                    <div v-if="canEdit && !isExternal" class="flex items-end gap-2">
-                        <div class="w-64">
+                    <div v-if="canEdit && !isExternal" class="flex flex-wrap items-end gap-2">
+                        <div class="w-full sm:w-64">
                             <FormRemoteSelect
                                 :key="c.destination_college_id"
                                 v-model="destPlanId"

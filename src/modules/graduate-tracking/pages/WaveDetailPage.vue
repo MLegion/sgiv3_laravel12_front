@@ -1,6 +1,6 @@
 <template>
     <div v-if="wave" class="space-y-5">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap gap-2 items-center justify-between">
             <div>
                 <button @click="$router.back()" class="text-sm text-slate-400 hover:text-slate-600">&larr; Volver</button>
                 <h1 class="text-xl font-semibold text-slate-800">{{ wave.name }}</h1>

@@ -1,10 +1,10 @@
 <template>
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-xl font-semibold text-slate-800">
                 Organigrama institucional
             </h1>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 <button
                     type="button"
                     class="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-md border border-slate-300 text-slate-600 bg-white hover:border-blue-400 hover:text-blue-600 transition"

@@ -312,7 +312,7 @@ onMounted(load)
                         <input id="evd-apertura-slug" v-model="aperturaForm.formSlug" type="text"
                                class="border border-slate-300 rounded px-2 py-1.5 text-sm font-mono" />
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div class="flex flex-col gap-1">
                             <label for="evd-apertura-starts" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Apertura</label>
                             <input id="evd-apertura-starts" v-model="aperturaForm.startsAt" type="datetime-local"

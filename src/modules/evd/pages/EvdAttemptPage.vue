@@ -350,7 +350,7 @@ onMounted(load)
                 </section>
 
                 <!-- Navegación -->
-                <div class="flex items-center justify-between gap-3 pb-8">
+                <div class="flex flex-wrap items-center justify-between gap-3 pb-8">
                     <button
                         type="button"
                         class="px-4 py-2 rounded-md text-sm font-semibold border border-slate-300 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"

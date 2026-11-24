@@ -41,7 +41,7 @@
             </div>
         </template>
         <template v-else>
-            <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <ReadField label="NOMBRE(S)" :value="form.names" />
                 <ReadField label="PRIMER APELLIDO" :value="form.first_surname" />
                 <ReadField label="SEGUNDO APELLIDO" :value="form.second_surname" />

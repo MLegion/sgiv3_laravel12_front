@@ -9,7 +9,7 @@
         </div>
         <template v-else>
             <div class="flex items-baseline gap-3">
-                <p class="text-3xl font-bold text-slate-800">{{ data.total }}</p>
+                <p class="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800">{{ data.total }}</p>
                 <p class="text-sm text-slate-500">asignaciones a examen presencial</p>
             </div>
 

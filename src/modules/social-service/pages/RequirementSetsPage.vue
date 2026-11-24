@@ -45,7 +45,7 @@
             </div>
 
             <div class="space-y-2">
-                <div v-for="(it, idx) in editing.items" :key="idx" class="grid grid-cols-12 gap-2 items-center">
+                <div v-for="(it, idx) in editing.items" :key="idx" class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
                     <input v-model="it.code" :disabled="readonly" placeholder="CODE" aria-label="Código del documento" class="col-span-2 rounded-lg border-slate-300 text-xs uppercase" />
                     <input v-model="it.name" :disabled="readonly" placeholder="Nombre" aria-label="Nombre del documento" class="col-span-4 rounded-lg border-slate-300 text-xs" />
                     <select v-model="it.kind" :disabled="readonly" aria-label="Tipo de documento" class="col-span-2 rounded-lg border-slate-300 text-xs">

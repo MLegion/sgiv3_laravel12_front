@@ -77,7 +77,7 @@
 
                     <div v-if="selectedDoc?.is_controlled" class="border-t pt-3">
                         <span class="text-xs font-semibold text-slate-500">Datos de control del certificado (opcional)</span>
-                        <div class="grid grid-cols-3 gap-2 mt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
                             <input v-model="control.number" @input="debouncedPreview" placeholder="No. de certificado" aria-label="No. de certificado" class="rounded-lg border-slate-300 text-sm" />
                             <input v-model="control.book" @input="debouncedPreview" placeholder="Libro" aria-label="Libro" class="rounded-lg border-slate-300 text-sm" />
                             <input v-model="control.sheet" @input="debouncedPreview" placeholder="Foja" aria-label="Foja" class="rounded-lg border-slate-300 text-sm" />

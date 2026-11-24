@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-y-2">
             <div class="flex-1 min-w-0">
                 <p class="text-[11px] uppercase tracking-wider text-slate-400">Instrumentación didáctica</p>
                 <input
@@ -13,7 +13,7 @@
                     {{ header.studyProgram.claveNormalized }} · {{ header.studyProgram.name }}
                 </p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-3 shrink-0">
                 <!-- Estado de la instrumentación -->
                 <span class="text-xs font-semibold px-2 py-1 rounded-full"
                     :class="{
@@ -117,16 +117,16 @@
                         <h3 class="text-sm font-semibold text-slate-700">Unidad {{ activeUnit.number }} — Frente</h3>
                         <button type="button" class="text-xs text-red-500 hover:text-red-700" @click="removeUnit(activeUnitIndex)">✕ Eliminar unidad</button>
                     </div>
-                    <div class="grid grid-cols-12 gap-3">
-                        <div class="col-span-2"><FormInput label="Competencia N°" type="number" v-model="activeUnit.number" /></div>
-                        <div class="col-span-10"><FormInput label="Nombre de la competencia" v-model="activeUnit.title" /></div>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                        <div class="md:col-span-2"><FormInput label="Competencia N°" type="number" v-model="activeUnit.number" /></div>
+                        <div class="md:col-span-10"><FormInput label="Nombre de la competencia" v-model="activeUnit.title" /></div>
                     </div>
                     <Field label="Descripción"><textarea v-model="activeUnit.competenciaDescripcion" rows="2" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></textarea></Field>
-                    <div class="grid grid-cols-12 gap-3">
-                        <div class="col-span-6">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                        <div class="md:col-span-6">
                             <Field label="Temas y subtemas"><textarea v-model="activeUnit.temasSubtemas" rows="8" class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs"></textarea></Field>
                         </div>
-                        <div class="col-span-6">
+                        <div class="md:col-span-6">
                             <Field label="Desarrollo de competencias genéricas">
                                 <!-- Se seleccionan del catálogo de la materia (modal), conservando la estructura -->
                                 <template v-if="programGenericas.length">
@@ -140,18 +140,18 @@
                             </Field>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <ActivityList title="Actividades de aprendizaje" :items="activeUnit.learningActivities" />
                         <ActivityList title="Actividades de enseñanza" :items="activeUnit.teachingActivities" />
                     </div>
-                    <div class="grid grid-cols-12 gap-3 items-end">
-                        <div class="col-span-2">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                        <div class="md:col-span-2">
                             <FormInput label="Horas teóricas" type="number" v-model="activeUnit.hoursT" />
                         </div>
-                        <div class="col-span-2">
+                        <div class="md:col-span-2">
                             <FormInput label="Horas prácticas" type="number" v-model="activeUnit.hoursP" />
                         </div>
-                        <div class="col-span-8">
+                        <div class="md:col-span-8">
                             <label class="block text-[11px] uppercase tracking-wider text-slate-500 mb-1">Fechas de la unidad (según el horario)</label>
                             <div class="flex items-center gap-2">
                                 <div class="flex-1 px-2 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded text-slate-700">
@@ -443,8 +443,8 @@
 
             <!-- FUENTES -->
             <template v-else-if="activeTab === 'fuentes'">
-                <div class="grid grid-cols-12 gap-4">
-                    <div class="col-span-8 space-y-2">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div class="md:col-span-8 space-y-2">
                         <div class="flex items-center justify-between">
                             <h3 class="text-sm font-semibold text-slate-700">Fuentes de información</h3>
                             <button type="button" class="text-xs text-blue-600" @click="header.fuentes.push({ reference: '', type: null })">+ Fuente</button>
@@ -454,7 +454,7 @@
                             <button type="button" class="text-red-400 hover:text-red-600 text-xs" @click="header.fuentes.splice(fi, 1)">✕</button>
                         </div>
                     </div>
-                    <div class="col-span-4 space-y-2">
+                    <div class="md:col-span-4 space-y-2">
                         <div class="flex items-center justify-between">
                             <h3 class="text-sm font-semibold text-slate-700">Apoyos didácticos</h3>
                         </div>

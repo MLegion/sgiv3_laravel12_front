@@ -75,7 +75,7 @@
             </div>
         </template>
         <template v-else>
-            <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <ReadField label="1ª OPCIÓN" :value="offerLabel(form.offer_option_1_id)" />
                 <ReadField label="2ª OPCIÓN" :value="offerLabel(form.offer_option_2_id)" />
                 <ReadField label="3ª OPCIÓN" :value="offerLabel(form.offer_option_3_id)" />

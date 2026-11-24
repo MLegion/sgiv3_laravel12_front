@@ -12,7 +12,7 @@
         </div>
 
         <!-- Pestañas -->
-        <div class="flex gap-1 border-b border-slate-200">
+        <div class="flex gap-1 border-b border-slate-200 overflow-x-auto">
             <button @click="tab = 'general'" :class="tabClass('general')">Información general</button>
             <button @click="tab = 'horario'" :class="tabClass('horario')">Horario</button>
         </div>
@@ -288,7 +288,7 @@
                             </option>
                         </select>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label for="ac-assign-start-hour" class="block text-[10px] uppercase text-slate-400 mb-1">Hora inicio</label>
                             <select id="ac-assign-start-hour" v-model.number="assign.startHour" @change="onAssignRange" class="w-full rounded-lg border-slate-300 text-sm">

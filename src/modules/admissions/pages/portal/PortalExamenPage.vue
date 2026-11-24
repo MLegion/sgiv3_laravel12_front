@@ -129,7 +129,7 @@
                         </p>
                     </div>
                     <hr class="border-slate-100" />
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-0.5">Fecha</p>
                             <p class="font-bold text-slate-800">{{ formatLongDate(pass.session.date) }}</p>

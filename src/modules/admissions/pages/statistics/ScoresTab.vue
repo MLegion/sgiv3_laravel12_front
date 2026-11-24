@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-4">
         <template v-if="loading">
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
                 <SkeletonStat v-for="n in 5" :key="n" />
             </div>
             <SkeletonChart :height="360" />
@@ -13,7 +13,7 @@
 
         <template v-else>
             <!-- Estadísticas -->
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
                 <StatCard label="Total" :value="data.stats.count" color="slate" />
                 <StatCard label="Mínima" :value="data.stats.min" color="red" />
                 <StatCard label="Máxima" :value="data.stats.max" color="green" />

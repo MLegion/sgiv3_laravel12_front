@@ -21,7 +21,7 @@
                     <option v-for="t in types" :key="t.value" :value="t.value">{{ t.label }}</option>
                 </select>
             </div>
-            <div class="sm:col-span-2 text-right flex gap-2 justify-end">
+            <div class="sm:col-span-2 text-right flex flex-wrap gap-2 justify-end">
                 <button @click="openWindow" :disabled="!periodId" class="px-4 py-2 rounded-lg border text-slate-600 text-sm font-semibold disabled:opacity-50">Ventana de inscripción</button>
                 <button @click="openResultWindow" :disabled="!periodId" class="px-4 py-2 rounded-lg border text-slate-600 text-sm font-semibold disabled:opacity-50">Ventana de cierre</button>
                 <button @click="openCreate" :disabled="!periodId" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50">Nueva actividad</button>
@@ -80,7 +80,7 @@
             <div class="space-y-3">
                 <p class="text-[11px] text-slate-500">Periodo: <strong>{{ selectedPeriodName }}</strong></p>
                 <p class="text-[11px] text-slate-400">Aplica a TODAS las actividades de ESTE periodo (el seleccionado arriba). Una actividad puede fijar su propia ventana que pisa ésta.</p>
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label for="ac-window-opens-at" class="block text-[10px] uppercase text-slate-400 mb-1">Abre</label>
                         <input id="ac-window-opens-at" v-model="windowForm.opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />
@@ -107,7 +107,7 @@
             <div class="space-y-3">
                 <p class="text-[11px] text-slate-500">Periodo: <strong>{{ selectedPeriodName }}</strong></p>
                 <p class="text-[11px] text-slate-400">Tiempo en que el instructor/encargado puede marcar acreditó/no acreditó. Aplica a TODAS las actividades de este periodo; una actividad puede fijar su propia ventana que pisa ésta. Vacío = sin límite de tiempo.</p>
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label for="ac-result-window-opens-at" class="block text-[10px] uppercase text-slate-400 mb-1">Abre</label>
                         <input id="ac-result-window-opens-at" v-model="resultWindowForm.opens_at" type="datetime-local" class="w-full rounded-lg border-slate-300 text-sm" />

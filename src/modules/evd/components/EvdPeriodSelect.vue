@@ -6,7 +6,7 @@
                 :id="id"
                 :value="modelValue"
                 :disabled="disabled"
-                class="border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 min-w-[16rem] disabled:opacity-60"
+                class="border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 w-full sm:min-w-[16rem] disabled:opacity-60"
                 @change="onChange"
             >
                 <option :value="null" disabled>Selecciona un periodo…</option>

@@ -149,7 +149,7 @@
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Documentos</h2>
                 <ul class="space-y-2">
                     <li v-for="item in checklist" :key="item.code"
-                        class="flex items-center justify-between rounded-lg border px-4 py-3"
+                        class="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-4 py-3"
                         :class="item.document ? 'bg-slate-50' : 'bg-white'">
                         <div class="space-y-0.5">
                             <p class="text-sm font-medium text-slate-700">{{ item.name }}
@@ -162,7 +162,7 @@
                                 Rechazado: {{ item.document.rejectionReason }}
                             </p>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
                             <span v-if="item.document" class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="approvalClass(item.document.status)">
                                 {{ approvalLabel(item.document.status) }}
                             </span>

@@ -24,7 +24,7 @@
         </div>
 
         <!-- Cabecera del reporte -->
-        <div v-if="current" class="bg-white border border-slate-200 rounded-xl p-4 grid grid-cols-2 gap-y-1 text-sm">
+        <div v-if="current" class="bg-white border border-slate-200 rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-y-1 text-sm">
             <div><span class="font-semibold text-slate-600">CAMPUS:</span> <span class="text-blue-700">{{ current.campusName ?? '—' }}</span></div>
             <div><span class="font-semibold text-slate-600">MODALIDAD:</span> <span class="text-blue-700">{{ current.modalityName ?? '—' }}</span></div>
             <div><span class="font-semibold text-slate-600">MATERIA:</span> <span class="text-blue-700">{{ current.subjectCode }}/{{ current.subjectName }}</span></div>

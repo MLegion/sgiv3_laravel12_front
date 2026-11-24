@@ -61,7 +61,7 @@
 
                     <div class="p-5 space-y-6">
                         <!-- ── Formulario: nueva ventana ── -->
-                        <form class="grid grid-cols-1 md:grid-cols-6 gap-3 p-4 border rounded-lg bg-slate-50" @submit.prevent="createRule">
+                        <form class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 p-4 border rounded-lg bg-slate-50" @submit.prevent="createRule">
                             <label class="md:col-span-2 block">
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Tipo de modalidad <span class="text-red-500">*</span></span>
                                 <select v-model="form.modalityTypeId" @change="onModalityTypeChange" required

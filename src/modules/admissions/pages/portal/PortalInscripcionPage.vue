@@ -29,7 +29,7 @@
             <template v-else-if="applicantStatus === STATUS_PREFICHA">
                 <!-- Info general -->
                 <div class="bg-white border rounded-xl shadow-sm p-6 space-y-3">
-                    <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                         <div>
                             <p class="text-xs text-slate-400">PERÍODO ACADÉMICO</p>
                             <p class="font-medium text-slate-700">{{ activePeriodLabel ?? '—' }}</p>
@@ -130,7 +130,7 @@
                 </div>
 
                 <!-- Resumen de opciones de oferta -->
-                <div class="grid grid-cols-2 gap-3 text-sm border-t pt-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm border-t pt-4">
                     <ReadField label="CAMPUS" :value="readCampus" />
                     <ReadField label="TIPO DE MODALIDAD" :value="readModalityType" />
                     <ReadField label="1ª OPCIÓN" :value="offerLabel(savedOffer1)" />

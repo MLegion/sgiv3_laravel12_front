@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Sesiones de Examen de Admisión</h1>
             <div class="flex gap-2">
                 <RouterLink
@@ -133,7 +133,7 @@
                                 />
                             </div>
 
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div>
                                     <label for="es-date" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha</label>
                                     <input id="es-date" v-model="form.date" type="date" class="field" />
@@ -144,7 +144,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div>
                                     <label for="es-duration-minutes" class="block text-xs font-semibold text-slate-600 uppercase mb-1">
                                         Duración (min)

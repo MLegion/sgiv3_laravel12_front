@@ -12,7 +12,7 @@
         </div>
 
         <!-- Filtro por rol -->
-        <div class="bg-white rounded-lg shadow p-4 flex items-center gap-4">
+        <div class="bg-white rounded-lg shadow p-4 flex flex-wrap items-center gap-4">
             <label class="flex-1 block max-w-md">
                 <span class="text-sm text-gray-700">Filtrar por rol</span>
                 <select

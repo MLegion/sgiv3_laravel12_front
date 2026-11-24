@@ -115,7 +115,7 @@
                 </div>
 
                 <!-- Nuevo reporte -->
-                <div v-if="canEdit" class="border-t pt-4 grid sm:grid-cols-5 gap-3 items-end">
+                <div v-if="canEdit" class="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
                     <label class="block">
                         <span class="text-xs font-semibold text-slate-500">Reporte #</span>
                         <input v-model.number="reportForm.report_number" type="number" min="1" class="mt-1 w-full rounded-lg border-slate-300 text-sm" />
@@ -143,9 +143,9 @@
             <!-- Documentos -->
             <div class="rounded-xl border bg-white p-5 space-y-3">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Documentos</h2>
-                <div v-for="d in documents" :key="d.code" class="flex items-center justify-between border-b last:border-0 py-2">
-                    <div>
-                        <p class="text-sm font-semibold text-slate-700">{{ d.name }}
+                <div v-for="d in documents" :key="d.code" class="flex flex-wrap items-center justify-between gap-2 border-b last:border-0 py-2">
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-slate-700 min-w-0 truncate">{{ d.name }}
                             <span v-if="d.kind === 'generated'" class="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-700">lo genera el sistema</span>
                         </p>
                         <p v-if="d.document" class="text-xs">

@@ -29,7 +29,7 @@
             </div>
         </template>
         <template v-else>
-            <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <ReadField label="NSS / NÚMERO IMSS" :value="form.nss" />
                 <ReadField label="CLÍNICA DE ATENCIÓN" :value="form.medical_clinic" />
                 <ReadField label="TIPO DE SANGRE" :value="form.blood_type" />

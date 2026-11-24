@@ -80,7 +80,7 @@
         <!-- Vista alterna cuando la asesoría está APROBADA.
              La reinscripción y altas/bajas viven en sus propios menús. -->
         <div v-if="session && session.status === 'approved'" class="space-y-4">
-            <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-6 flex items-start gap-4">
+            <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-6 flex flex-wrap items-start gap-4">
                 <div class="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8 text-emerald-600">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -165,19 +165,19 @@
         </div>
 
         <!-- Tabs (sólo si la asesoría NO está aprobada — el flujo de edición/revisión sigue activo) -->
-        <div v-else-if="session" class="flex gap-1 border-b">
+        <div v-else-if="session" class="flex gap-1 border-b overflow-x-auto">
             <button
-                class="px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 -mb-px transition"
+                class="px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 -mb-px transition whitespace-nowrap shrink-0"
                 :class="view === 'kardex' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'"
                 @click="view = 'kardex'"
             >Mi Kardex</button>
             <button
-                class="px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 -mb-px transition"
+                class="px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 -mb-px transition whitespace-nowrap shrink-0"
                 :class="view === 'avance' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'"
                 @click="view = 'avance'"
             >Mi Avance</button>
             <button
-                class="px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 -mb-px transition"
+                class="px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 -mb-px transition whitespace-nowrap shrink-0"
                 :class="view === 'datos' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'"
                 @click="view = 'datos'"
             >
@@ -186,7 +186,7 @@
                 <span v-else class="ml-1 text-[10px] bg-emerald-600 text-white rounded-full px-1.5 py-0.5">✓</span>
             </button>
             <button
-                class="px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 -mb-px transition"
+                class="px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 -mb-px transition whitespace-nowrap shrink-0"
                 :class="view === 'apertura' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'"
                 @click="view = 'apertura'"
             >

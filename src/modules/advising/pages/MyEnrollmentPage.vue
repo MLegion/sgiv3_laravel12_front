@@ -39,7 +39,7 @@
 
         <!-- Estado A: reinscripción confirmada -->
         <template v-if="session && session.status === 'approved' && enrollments.length > 0">
-            <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-6 flex items-start gap-4">
+            <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-6 flex flex-wrap items-start gap-4">
                 <div class="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8 text-emerald-600">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>

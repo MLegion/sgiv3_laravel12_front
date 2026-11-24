@@ -116,7 +116,7 @@ onMounted(load)
 
         <template v-if="data?.teacher">
             <!-- Header con promedio general -->
-            <div class="bg-white border border-slate-200 rounded-xl p-5 flex items-center gap-6">
+            <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-wrap items-center gap-6">
                 <div class="text-center">
                     <div class="text-[10px] uppercase font-black text-slate-400 tracking-wider">Promedio general</div>
                     <div class="text-5xl font-bold tabular-nums mt-1" :class="avgClass(data.overall?.avg ?? null)">

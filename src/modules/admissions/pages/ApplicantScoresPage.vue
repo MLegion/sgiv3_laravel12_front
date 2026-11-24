@@ -37,7 +37,7 @@
         </div>
 
         <!-- Tira de estado del proceso -->
-        <div v-if="overview" class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div v-if="overview" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
             <div class="rounded-lg border border-slate-200 bg-white p-3 text-center">
                 <p class="text-2xl font-bold text-amber-600">{{ overview.pendingEvaluation }}</p>
                 <p class="text-[11px] text-slate-500 uppercase mt-0.5">Por evaluar</p>

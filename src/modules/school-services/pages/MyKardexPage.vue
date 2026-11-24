@@ -8,7 +8,7 @@
         </div>
 
         <template v-if="loading">
-            <div class="grid grid-cols-3 gap-3 max-w-md">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-md">
                 <SkeletonStat v-for="n in 3" :key="n" />
             </div>
             <SkeletonTable :rows="5" :cols="5" />
@@ -16,7 +16,7 @@
 
         <template v-else>
             <!-- Resumen -->
-            <div class="grid grid-cols-3 gap-3 max-w-md">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-md">
                 <div class="rounded-lg border border-slate-200 bg-white p-3 text-center">
                     <p class="text-2xl font-bold text-slate-800">{{ kardex.length }}</p>
                     <p class="text-[11px] text-slate-500 uppercase mt-0.5">Materias</p>

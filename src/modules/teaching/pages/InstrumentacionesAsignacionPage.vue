@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-y-2">
             <div>
                 <button class="text-sm text-slate-500 hover:text-slate-700 mb-1" @click="router.push({ name: 'teaching.planeacion' })">← Mis asignaturas</button>
                 <h1 class="text-xl font-semibold text-slate-800">Instrumentación</h1>

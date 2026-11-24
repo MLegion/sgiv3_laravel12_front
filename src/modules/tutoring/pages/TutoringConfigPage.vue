@@ -6,7 +6,7 @@
         </div>
 
         <!-- Pestañas -->
-        <div class="border-b border-slate-200 flex gap-1">
+        <div class="border-b border-slate-200 flex gap-1 overflow-x-auto">
             <button v-for="t in TABS" :key="t.k" @click="tab = t.k" :class="tabClass(t.k)">{{ t.label }}</button>
         </div>
 
@@ -125,7 +125,7 @@ const TABS = [
 ] as const
 const tab = ref<'window' | 'limits' | 'schedule'>('window')
 const tabClass = (t: string) => [
-    'px-4 py-2 text-sm font-semibold border-b-2 -mb-px',
+    'px-4 py-2 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap shrink-0',
     tab.value === t ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-400 hover:text-slate-600',
 ]
 

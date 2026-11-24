@@ -115,9 +115,9 @@
             <!-- Documentos -->
             <div class="rounded-xl border bg-white p-5 space-y-2">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Documentos</h2>
-                <div v-for="d in documents" :key="d.code" class="flex items-center justify-between border-b last:border-0 py-2">
-                    <div>
-                        <p class="text-sm font-semibold text-slate-700">{{ d.name }}
+                <div v-for="d in documents" :key="d.code" class="flex flex-wrap items-center justify-between gap-2 border-b last:border-0 py-2">
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-slate-700 min-w-0 truncate">{{ d.name }}
                             <span v-if="d.kind === 'generated'" class="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-700">generado</span>
                         </p>
                         <p v-if="d.document" class="text-xs">

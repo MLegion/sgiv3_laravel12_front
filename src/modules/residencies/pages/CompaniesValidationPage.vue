@@ -2,8 +2,8 @@
     <div class="space-y-4">
         <div class="flex items-center justify-between flex-wrap gap-3">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Empresas</h1>
-            <div class="flex items-center gap-2">
-                <input v-model="search" placeholder="Buscar…" aria-label="Buscar empresa" class="border rounded-md px-2 py-1 text-xs" @keyup.enter="reload" />
+            <div class="flex flex-wrap items-center gap-2">
+                <input v-model="search" placeholder="Buscar…" aria-label="Buscar empresa" class="w-full sm:w-auto border rounded-md px-2 py-1 text-xs" @keyup.enter="reload" />
                 <select v-model="statusFilter" aria-label="Filtrar por estado" class="border rounded-md px-2 py-1 text-xs" @change="reload">
                     <option value="pending">PENDIENTES</option>
                     <option value="approved">APROBADAS</option>

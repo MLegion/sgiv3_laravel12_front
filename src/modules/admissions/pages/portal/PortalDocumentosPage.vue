@@ -71,7 +71,7 @@
                 </div>
                 <div class="p-6 space-y-4 text-sm">
                     <!-- Fila 1 -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-0.5">Periodo</p>
                             <p class="font-semibold text-slate-800">{{ applicantData?.academicPeriod?.shortName ?? applicantData?.academicPeriod?.name ?? '—' }}</p>

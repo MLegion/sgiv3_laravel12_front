@@ -2,8 +2,8 @@
     <div class="space-y-4">
         <div class="flex items-center justify-between flex-wrap gap-3">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Banco de Proyectos</h1>
-            <div class="flex items-center gap-2">
-                <input v-model="search" placeholder="Buscar…" aria-label="Buscar proyecto" class="border rounded-md px-2 py-1 text-xs" @keyup.enter="fetchData" />
+            <div class="flex flex-wrap items-center gap-2">
+                <input v-model="search" placeholder="Buscar…" aria-label="Buscar proyecto" class="w-full sm:w-auto border rounded-md px-2 py-1 text-xs" @keyup.enter="fetchData" />
                 <select v-model="statusFilter" aria-label="Filtrar por estado" class="border rounded-md px-2 py-1 text-xs" @change="fetchData">
                     <option value="">Todos</option>
                     <option value="draft">BORRADOR</option>

@@ -202,7 +202,7 @@ onMounted(async () => {
             </label>
             <label v-if="careers.length >= 1" class="flex flex-col gap-1">
                 <span class="text-xs text-slate-500">Carrera</span>
-                <select v-if="careers.length > 1" v-model="careerFilter" class="border border-slate-300 rounded px-2 py-1.5 text-sm min-w-72">
+                <select v-if="careers.length > 1" v-model="careerFilter" class="border border-slate-300 rounded px-2 py-1.5 text-sm w-full sm:min-w-72">
                     <option :value="null">Todas</option>
                     <option v-for="c in careers" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
@@ -228,7 +228,7 @@ onMounted(async () => {
             </div>
             <input v-model="search" @keyup.enter="load" type="text" placeholder="Buscar materia, grupo o docente…"
                    aria-label="Buscar materia, grupo o docente"
-                   class="border border-slate-300 rounded px-2 py-1.5 text-sm w-64" />
+                   class="border border-slate-300 rounded px-2 py-1.5 text-sm w-full sm:w-64" />
         </div>
 
         <div v-if="error" class="bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded px-3 py-2">{{ error }}</div>

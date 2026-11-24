@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-xl font-semibold text-slate-800">
                 TIPOS DE MODALIDAD
             </h1>

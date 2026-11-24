@@ -66,7 +66,7 @@
 
             <!-- Detalle del slot propuesto -->
             <div v-if="proposed" class="rounded-lg border bg-slate-50 p-3 space-y-3">
-                <div class="grid grid-cols-4 gap-3 items-end">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 items-end">
                     <div><span class="text-xs font-semibold text-slate-500">Fecha</span>
                         <div class="text-sm font-semibold text-slate-700">{{ proposed.date }}</div></div>
                     <label class="block"><span class="text-xs font-semibold text-slate-500">Inicio</span>

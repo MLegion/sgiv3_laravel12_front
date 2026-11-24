@@ -81,7 +81,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import AppNavbar from '@/app/components/AppNavbar.vue';
 import AppSidebar from '@/app/components/AppSidebar.vue';
 import Breadcrumbs from '@/app/components/Breadcrumbs.vue';
@@ -94,6 +95,12 @@ import { useBrandingStore } from '@/modules/auth/stores/branding.store';
 
 const layout = useLayoutStore();
 const branding = useBrandingStore();
+const route = useRoute();
+
+// Cerrar el drawer móvil al navegar (si no, queda abierto sobre la nueva vista).
+watch(() => route.fullPath, () => {
+    if (layout.isMobileSidebarOpen) layout.closeMobileSidebar();
+});
 
 // Cerrar sidebar móvil si se redimensiona a pantalla grande
 const handleResize = () => {

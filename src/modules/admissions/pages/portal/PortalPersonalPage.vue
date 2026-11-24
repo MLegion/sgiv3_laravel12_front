@@ -30,7 +30,7 @@
             <!-- Datos institucionales (siempre solo lectura) -->
             <div class="bg-white border rounded-xl shadow-sm p-6">
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Datos Institucionales</p>
-                <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     <ReadField label="PERÍODO" :value="info.periodo" />
                     <ReadField label="PREFICHA" value="—" />
                     <ReadField label="CAMPUS" :value="info.campus" />
@@ -82,7 +82,7 @@
                             </span>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                         <div class="col-span-2">
                             <ReadField label="NOMBRE(S)" :value="form.names" highlight />
                         </div>

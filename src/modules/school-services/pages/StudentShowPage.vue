@@ -16,11 +16,11 @@
         </div>
 
         <!-- Tabs -->
-        <div class="flex gap-1 border-b">
+        <div class="flex gap-1 border-b overflow-x-auto">
             <button
                 v-for="tab in tabs"
                 :key="tab.key"
-                class="px-4 py-2.5 text-sm font-semibold uppercase border-b-2 transition"
+                class="px-4 py-2.5 text-sm font-semibold uppercase border-b-2 transition whitespace-nowrap shrink-0"
                 :class="activeTab === tab.key
                     ? 'border-blue-600 text-blue-600'
                     : 'border-transparent text-slate-500 hover:text-slate-700'"

@@ -147,9 +147,9 @@
 
                             <!-- Unidad actual -->
                             <div v-if="currentUnidad" class="border border-slate-200 rounded-lg p-3 space-y-3 bg-slate-50">
-                                <div class="grid grid-cols-12 gap-3 items-start">
-                                    <div class="col-span-3"><FormInput label="Unidad N°" type="number" v-model="currentUnidad.number" /></div>
-                                    <div class="col-span-9"><FormInput label="Nombre de la unidad / competencia" v-model="currentUnidad.title" /></div>
+                                <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
+                                    <div class="sm:col-span-3"><FormInput label="Unidad N°" type="number" v-model="currentUnidad.number" /></div>
+                                    <div class="sm:col-span-9"><FormInput label="Nombre de la unidad / competencia" v-model="currentUnidad.title" /></div>
                                 </div>
                                 <FormTextarea label="Descripción de la competencia específica de la unidad" v-model="currentUnidad.competenciaEspecifica" :rows="2" />
 
@@ -159,8 +159,8 @@
                                         <span class="text-xs font-medium text-slate-500">Temas y subtemas</span>
                                         <button type="button" class="text-xs text-blue-600" @click="addSubtema(currentUnidad)">+ Subtema</button>
                                     </div>
-                                    <div v-for="(sub, j) in currentUnidad.subtemas" :key="j" class="flex gap-2 items-center">
-                                        <input v-model="sub.number" aria-label="Número del subtema" class="w-20 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="1.1" />
+                                    <div v-for="(sub, j) in currentUnidad.subtemas" :key="j" class="flex flex-wrap gap-2 items-center">
+                                        <input v-model="sub.number" aria-label="Número del subtema" class="w-full sm:w-20 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="1.1" />
                                         <input v-model="sub.title" aria-label="Título del subtema" class="flex-1 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="Título del subtema" />
                                         <button type="button" aria-label="Quitar subtema" class="text-red-400 hover:text-red-600 text-xs" @click="currentUnidad.subtemas.splice(j, 1)">✕</button>
                                     </div>
@@ -173,7 +173,7 @@
                                         <span class="text-xs font-medium text-slate-500">Actividades de aprendizaje</span>
                                         <button type="button" class="text-xs text-blue-600" @click="currentUnidad.learningActivities.push({ description: '' })">+ Actividad</button>
                                     </div>
-                                    <div v-for="(act, k) in currentUnidad.learningActivities" :key="k" class="flex gap-2 items-center">
+                                    <div v-for="(act, k) in currentUnidad.learningActivities" :key="k" class="flex flex-wrap gap-2 items-center">
                                         <input v-model="act.description" aria-label="Actividad de aprendizaje" class="flex-1 px-2 py-1 text-xs border border-slate-300 rounded" placeholder="Describe la actividad de aprendizaje" />
                                         <button type="button" aria-label="Quitar actividad de aprendizaje" class="text-red-400 hover:text-red-600 text-xs" @click="currentUnidad.learningActivities.splice(k, 1)">✕</button>
                                     </div>
@@ -190,8 +190,8 @@
                                 <h2 class="text-sm font-semibold text-slate-700">Fuentes de información</h2>
                                 <button type="button" class="text-sm text-blue-600 hover:text-blue-800" @click="form.sources.push({ reference: '', type: '' })">+ Fuente</button>
                             </div>
-                            <div v-for="(src, i) in form.sources" :key="i" class="flex gap-2 items-center">
-                                <input v-model="src.type" list="source-type-options" aria-label="Tipo de fuente" class="w-44 px-2 py-1 text-sm border border-slate-300 rounded" placeholder="Tipo (ej. CONSULTA BÁSICA)" />
+                            <div v-for="(src, i) in form.sources" :key="i" class="flex flex-wrap gap-2 items-center">
+                                <input v-model="src.type" list="source-type-options" aria-label="Tipo de fuente" class="w-full sm:w-44 px-2 py-1 text-sm border border-slate-300 rounded" placeholder="Tipo (ej. CONSULTA BÁSICA)" />
                                 <input v-model="src.reference" aria-label="Referencia bibliográfica" class="flex-1 px-2 py-1 text-sm border border-slate-300 rounded" placeholder="Referencia bibliográfica" />
                                 <button type="button" aria-label="Quitar fuente" class="text-red-400 hover:text-red-600 text-xs" @click="form.sources.splice(i, 1)">✕</button>
                             </div>

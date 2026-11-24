@@ -294,7 +294,7 @@
 
                 <!-- ── Pestaña: Usuario ── -->
                 <div v-show="activeTab === 'usuario'" class="p-6 space-y-5">
-                    <div v-if="userId" class="flex items-center justify-between gap-3">
+                    <div v-if="userId" class="flex flex-wrap items-center justify-between gap-3">
                         <div class="flex items-center gap-3 text-sm">
                             <span class="w-2 h-2 rounded-full bg-green-500 shrink-0"></span>
                             <div>

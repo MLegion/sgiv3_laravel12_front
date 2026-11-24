@@ -1,6 +1,6 @@
 <template>
     <div class="p-6 space-y-5">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h1 class="text-xl font-semibold text-slate-800">Movilidad estudiantil</h1>
                 <p class="text-sm text-slate-500">Traslado, equivalencia y revalidación de estudios.</p>

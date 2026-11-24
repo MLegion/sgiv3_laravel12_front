@@ -1,6 +1,6 @@
 <template>
     <div class="max-w-7xl mx-auto p-6 space-y-6">
-        <div class="flex items-start justify-between gap-4">
+        <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-semibold text-gray-900">Imagen del Colegio</h1>
                 <p class="text-sm text-gray-600 mt-1">
@@ -208,7 +208,7 @@
 
           <!-- Personalización avanzada del login -->
           <div class="bg-white rounded-lg shadow p-6 space-y-4">
-              <div class="flex items-start justify-between gap-4">
+              <div class="flex flex-wrap items-start justify-between gap-4">
                   <div>
                       <h2 class="text-lg font-semibold text-gray-900">Personalización del login</h2>
                       <p class="text-sm text-gray-600">Elige una plantilla y ajústala: fondo, formulario, colores, tipografía o HTML libre.</p>
@@ -232,7 +232,7 @@
 
           <!-- Tema de la app autenticada -->
           <div class="bg-white rounded-lg shadow p-6 space-y-4">
-              <div class="flex items-start justify-between gap-4">
+              <div class="flex flex-wrap items-start justify-between gap-4">
                   <div>
                       <h2 class="text-lg font-semibold text-gray-900">Tema de la aplicación</h2>
                       <p class="text-sm text-gray-600">Personaliza la barra superior, el menú lateral y el fondo del contenido.</p>

@@ -88,7 +88,7 @@
                     class="border rounded-xl px-4 py-3 bg-white"
                     :class="c.isEmergencyContact ? 'border-amber-300 ring-1 ring-amber-100' : 'border-slate-200'"
                 >
-                    <div class="flex items-start justify-between gap-2">
+                    <div class="flex flex-wrap items-start justify-between gap-2">
                         <div class="min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <p class="text-sm font-medium text-slate-700">{{ c.name }} {{ c.firstSurname }} {{ c.secondSurname ?? '' }}</p>

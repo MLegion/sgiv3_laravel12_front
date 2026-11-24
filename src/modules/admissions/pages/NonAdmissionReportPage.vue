@@ -8,7 +8,7 @@
         </div>
 
         <!-- Selector de periodo -->
-        <div class="bg-white border rounded-xl shadow-sm p-4 flex items-center gap-3">
+        <div class="bg-white border rounded-xl shadow-sm p-4 flex flex-wrap items-center gap-3">
             <label for="nar-period-id" class="text-xs font-semibold text-slate-600 uppercase">Periodo</label>
             <select
                 id="nar-period-id"
@@ -23,7 +23,7 @@
                 </option>
             </select>
 
-            <span v-if="data?.canChooseScope" class="ml-auto inline-flex items-center gap-2">
+            <span v-if="data?.canChooseScope" class="w-full sm:w-auto sm:ml-auto inline-flex items-center gap-2">
                 <span class="text-xs text-slate-500">Vista:</span>
                 <button
                     v-for="opt in ['campus','career']"

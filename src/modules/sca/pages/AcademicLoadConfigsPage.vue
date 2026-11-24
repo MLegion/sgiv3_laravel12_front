@@ -1,6 +1,6 @@
 <template>
     <div class="space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap gap-3 items-center justify-between">
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Configuración de Carga Académica</h1>
             <button
                 type="button"

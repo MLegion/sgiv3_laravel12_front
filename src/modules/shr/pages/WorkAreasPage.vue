@@ -1,12 +1,12 @@
 <template>
     <div class="space-y-4">
         <!-- Header -->
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-xl font-semibold text-slate-800">
                 Áreas de trabajo
             </h1>
 
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 <button
                     type="button"
                     class="inline-flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg

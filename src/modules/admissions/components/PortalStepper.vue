@@ -5,7 +5,7 @@
         class="bg-white border border-slate-200 rounded-xl shadow-sm p-3 sm:p-4 print:hidden max-w-4xl"
     >
         <!-- Cabecera: paso actual + navegación -->
-        <div class="flex items-center justify-between gap-3 mb-3">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
             <p class="text-xs font-semibold text-slate-600">
                 Paso <span class="text-blue-600">{{ currentIndex + 1 }}</span> de {{ steps.length }}
                 <span class="text-slate-400 font-normal">— {{ steps[currentIndex].label }}</span>

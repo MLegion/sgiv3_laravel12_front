@@ -54,7 +54,7 @@
                 <!-- Cumplimiento del tutor -->
                 <section class="rounded-xl border p-4 space-y-3">
                     <h3 class="text-xs font-bold uppercase text-slate-500">Constancia del tutor</h3>
-                    <div class="flex items-center gap-4 text-sm">
+                    <div class="flex flex-wrap items-center gap-4 gap-y-2 text-sm">
                         <span>PAT: <b :class="detail.has_pat ? 'text-emerald-600' : 'text-rose-500'">{{ detail.has_pat ? 'entregado' : 'faltante' }}</b></span>
                         <span>Sesiones: <b>{{ detail.session_count }}</b></span>
                         <span>Hitos: <b :class="detail.followups_done >= detail.followups_required && detail.followups_required > 0 ? 'text-emerald-600' : 'text-slate-600'">{{ detail.followups_done }}/{{ detail.followups_required }}</b></span>

@@ -37,7 +37,7 @@
             </div>
         </template>
         <template v-else>
-            <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <ReadField label="GRUPO INDÍGENA" :value="indigenousGroups.find(g => g.id === form.indigenous_group_id)?.name ?? '—'" />
                 <ReadField label="LENGUA INDÍGENA" :value="indigenousLanguages.find(l => l.id === form.indigenous_language_id)?.name ?? '—'" />
                 <ReadField label="PUEBLO AFROMEXICANO" :value="form.is_afromexican === null || form.is_afromexican === undefined ? '—' : (form.is_afromexican ? 'Sí' : 'No')" />

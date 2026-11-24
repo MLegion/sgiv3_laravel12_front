@@ -38,7 +38,7 @@
                 <button @click="editing = null" class="text-xs text-slate-400">Cerrar</button>
             </div>
             <div class="space-y-2">
-                <div v-for="(f, i) in editing.fields" :key="i" class="grid grid-cols-12 gap-2 items-center">
+                <div v-for="(f, i) in editing.fields" :key="i" class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
                     <input v-model="f.code" :disabled="readonly" placeholder="CODE" aria-label="Código del campo" class="col-span-2 rounded-lg border-slate-300 text-xs uppercase" />
                     <input v-model="f.label" :disabled="readonly" placeholder="Etiqueta" aria-label="Etiqueta del campo" class="col-span-4 rounded-lg border-slate-300 text-xs" />
                     <select v-model="f.type" :disabled="readonly" aria-label="Tipo de campo" class="col-span-2 rounded-lg border-slate-300 text-xs">

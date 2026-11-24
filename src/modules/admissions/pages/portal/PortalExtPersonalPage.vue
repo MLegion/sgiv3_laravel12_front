@@ -117,7 +117,7 @@
                 </div>
             </template>
             <template v-else>
-                <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     <div class="col-span-2"><ReadField label="CALLE Y NÚMERO" :value="form.address" /></div>
                     <ReadField label="CÓDIGO POSTAL" :value="geoSettlementInfo?.postalCode ?? null" highlight />
                     <ReadField label="COLONIA" :value="geoSettlementInfo?.colony ?? null" highlight />
