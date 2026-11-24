@@ -3,7 +3,7 @@
         <div>
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Reglas de Horario por Modalidad</h1>
             <p class="text-sm text-slate-500 mt-1">
-                Define para cada tipo de modalidad los límites que el validador aplicará al crear/editar horarios académicos en este college.
+                Define para cada tipo de modalidad los límites que el validador aplicará al crear/editar horarios académicos en este plantel.
             </p>
         </div>
 

@@ -107,7 +107,7 @@
                 Espera {{ cooldownRemaining }}s antes de mandar otra notificación.
             </p>
             <p v-if="selectedChannel && !currentChannelConfigured" class="text-xs text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1.5">
-                El canal <span class="font-mono font-bold">{{ selectedChannel }}</span> no está configurado para tu college. Pide al administrador que cargue las credenciales en AppConfig (<code>notifications.{{ selectedChannel }}</code>).
+                El canal <span class="font-mono font-bold">{{ selectedChannel }}</span> no está configurado para tu plantel. Pide al administrador que cargue las credenciales en AppConfig (<code>notifications.{{ selectedChannel }}</code>).
             </p>
 
             <div class="flex justify-end gap-2 pt-2">

@@ -1,11 +1,11 @@
 <template>
     <div class="max-w-3xl mx-auto p-6 space-y-6">
         <div>
-            <h1 class="text-2xl font-semibold text-gray-900">Login por defecto</h1>
+            <h1 class="text-2xl font-semibold text-gray-900">Inicio de sesión por defecto</h1>
             <p class="text-sm text-gray-600 mt-1">
                 Define qué se muestra cuando alguien entra a
                 <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">/auth/login</code>
-                sin especificar un colegio en la URL.
+                sin especificar una institución en la URL.
             </p>
         </div>
 
@@ -15,7 +15,7 @@
 
         <div v-else class="bg-white rounded-lg shadow p-6 space-y-5">
             <div>
-                <label for="login-default-college" class="block text-sm font-medium text-gray-700 mb-1">Colegio a mostrar</label>
+                <label for="login-default-college" class="block text-sm font-medium text-gray-700 mb-1">Institución a mostrar</label>
                 <select
                     id="login-default-college"
                     v-model="selected"
@@ -31,10 +31,10 @@
                     </option>
                 </select>
                 <p class="text-xs text-gray-500 mt-2">
-                    Si eliges un colegio, <code class="bg-gray-100 px-1 rounded">/auth/login</code>
+                    Si eliges una institución, <code class="bg-gray-100 px-1 rounded">/auth/login</code>
                     se comportará como
                     <code class="bg-gray-100 px-1 rounded">/auth/login/{{ selectedShortname || 'shortname' }}</code>
-                    — aplica el branding y oculta el selector. Los demás colegios siguen accesibles vía
+                    — aplica el branding y oculta el selector. Las demás instituciones siguen accesibles vía
                     <code class="bg-gray-100 px-1 rounded">/auth/login/&lt;short_name&gt;</code>.
                 </p>
             </div>
@@ -117,7 +117,7 @@ async function save() {
         )
         persisted.value = data.default_college_id
         savedMessage.value = data.default_college_id
-            ? 'Listo. /auth/login ahora muestra el colegio seleccionado.'
+            ? 'Listo. /auth/login ahora muestra la institución seleccionada.'
             : 'Listo. /auth/login vuelve al selector original.'
     } finally {
         saving.value = false

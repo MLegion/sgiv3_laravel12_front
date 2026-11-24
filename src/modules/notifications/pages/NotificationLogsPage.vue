@@ -2,7 +2,7 @@
     <div class="space-y-4">
         <div>
             <h1 class="text-lg font-bold text-slate-800">Historial de notificaciones</h1>
-            <p class="text-xs text-slate-500">Auditoría cross-canal del college. Filtra por canal, estado, fechas, evento o búsqueda libre.</p>
+            <p class="text-xs text-slate-500">Auditoría cross-canal del plantel. Filtra por canal, estado, fechas, evento o búsqueda libre.</p>
         </div>
 
         <!-- Resumen por estado -->

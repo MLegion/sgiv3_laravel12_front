@@ -127,7 +127,7 @@
                     <!-- Legend -->
                     <div class="border-t pt-3 mt-3 space-y-1">
                         <div class="flex items-center gap-1.5 text-[9px] text-slate-400">
-                            <span class="w-2 h-2 rounded-full bg-red-500"></span> FERIADO (is_holiday)
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span> FERIADO
                         </div>
                         <div class="flex items-center gap-1.5 text-[9px] text-slate-400">
                             <span class="text-[8px] px-1 py-0.5 bg-red-100 text-red-500 rounded font-bold">EC</span> EXCLUYE CLASES

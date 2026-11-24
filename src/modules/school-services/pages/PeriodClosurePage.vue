@@ -210,8 +210,8 @@
                             <tr>
                                 <th scope="col" class="text-left px-3 py-2">Núm. control</th>
                                 <th scope="col" class="text-left px-3 py-2">Alumno</th>
-                                <th scope="col" class="text-left px-3 py-2">Status actual</th>
-                                <th scope="col" class="text-left px-3 py-2">Status nuevo</th>
+                                <th scope="col" class="text-left px-3 py-2">Estado actual</th>
+                                <th scope="col" class="text-left px-3 py-2">Estado nuevo</th>
                                 <th scope="col" class="text-left px-3 py-2">Regla</th>
                                 <th scope="col" class="text-right px-3 py-2">Sem.</th>
                             </tr>

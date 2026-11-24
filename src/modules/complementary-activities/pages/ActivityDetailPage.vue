@@ -276,7 +276,7 @@
                         <div><span class="uppercase font-semibold">Actividad:</span> {{ activity.name }}</div>
                         <div v-if="activity.instructor_name"><span class="uppercase font-semibold">Instructor:</span> {{ activity.instructor_name }}</div>
                         <div v-if="activity.group_name"><span class="uppercase font-semibold">Grupo:</span> {{ activity.group_name }}</div>
-                        <div><span class="uppercase font-semibold">Slot:</span> {{ dayLabel(assign.day).toUpperCase() }} · {{ hh(assign.startHour) }} – {{ hh(assign.endHour) }}</div>
+                        <div><span class="uppercase font-semibold">Horario:</span> {{ dayLabel(assign.day).toUpperCase() }} · {{ hh(assign.startHour) }} – {{ hh(assign.endHour) }}</div>
                     </dl>
 
                     <div>

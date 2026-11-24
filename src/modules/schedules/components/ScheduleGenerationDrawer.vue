@@ -970,7 +970,7 @@ async function generate() {
         const serverMsg = e?.response?.data?.message
         if (status === 429) {
             // F7.e — rate limit del college
-            flash(false, serverMsg || 'Límite de corridas alcanzado para este college.')
+            flash(false, serverMsg || 'Límite de corridas alcanzado para este plantel.')
         } else {
             flash(false, serverMsg || 'Error al disparar la generación.')
         }

@@ -3,7 +3,7 @@
         <div>
             <h1 class="text-xl font-semibold text-slate-800 uppercase">Restricciones de Horario por Materia</h1>
             <p class="text-sm text-slate-500 mt-1">
-                Bloquea ventanas horarias en las que una materia específica no debe impartirse en este college
+                Bloquea ventanas horarias en las que una materia específica no debe impartirse en este plantel
                 (p. ej. "no dar CALC. INTEGRAL antes de las 10:00" o "no viernes por la tarde").
             </p>
         </div>

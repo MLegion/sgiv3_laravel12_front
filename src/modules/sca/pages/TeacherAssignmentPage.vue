@@ -265,7 +265,7 @@
                                             </span>
                                         </div>
                                     </template>
-                                    <span v-else class="text-xs text-slate-400">VACIO</span>
+                                    <span v-else class="text-xs text-slate-400">VACÍO</span>
                                 </td>
 
                                 <!-- Capacidad -->

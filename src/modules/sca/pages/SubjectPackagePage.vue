@@ -405,7 +405,7 @@
                         </template>
 
                         <div v-if="packageItems.length === 0" class="px-4 py-8 text-center text-xs text-slate-400 uppercase font-bold">
-                            El paquete esta vacio. Selecciona materias del curriculum.
+                            El paquete está vacío. Selecciona materias del currículo.
                         </div>
                     </div>
                 </div>

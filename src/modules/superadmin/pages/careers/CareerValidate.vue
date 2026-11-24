@@ -64,7 +64,7 @@
                         </h3>
 
                         <div class="space-y-4">
-                            <InfoItem label="INSTITUTO / FACULTAD" :value="career.college?.name" :loading="loading" />
+                            <InfoItem label="INSTITUCIÓN EDUCATIVA" :value="career.college?.name" :loading="loading" />
                             <InfoItem label="CREADO POR" :value="career.createdByUser?.name" :loading="loading" />
                             <InfoItem label="FECHA DE REGISTRO" :value="formatSimpleDate(career.createdAt)" :loading="loading" />
                         </div>

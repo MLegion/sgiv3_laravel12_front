@@ -41,7 +41,7 @@
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Nueva oleada</h2>
                 <label class="block"><span class="text-xs font-semibold text-slate-500">Nombre</span>
                     <input v-model="form.name" class="mt-1 w-full rounded-lg border-slate-300 text-sm" /></label>
-                <label class="block"><span class="text-xs font-semibold text-slate-500">Formulario en sgi_forms (slug)</span>
+                <label class="block"><span class="text-xs font-semibold text-slate-500">Identificador del formulario</span>
                     <input v-model="form.form_slug" placeholder="p. ej. seguimiento-egresados-2024" class="mt-1 w-full rounded-lg border-slate-300 text-sm" /></label>
                 <label class="block"><span class="text-xs font-semibold text-slate-500">Descripción (opcional)</span>
                     <textarea v-model="form.description" rows="2" class="mt-1 w-full rounded-lg border-slate-300 text-sm"></textarea></label>

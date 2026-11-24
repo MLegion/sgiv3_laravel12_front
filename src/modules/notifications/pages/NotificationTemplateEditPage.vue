@@ -128,7 +128,7 @@
                     <div class="p-6">
                         <h3 class="text-base font-bold text-slate-800">¿Volver al default?</h3>
                         <p class="text-sm text-slate-500 mt-1">
-                            Se eliminará el override del college y la plantilla volverá al valor global. Esto no afecta envíos pasados (siempre llevan snapshot).
+                            Se eliminará el override del plantel y la plantilla volverá al valor global. Esto no afecta envíos pasados (siempre llevan snapshot).
                         </p>
                     </div>
                     <div class="px-6 py-3 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-2">

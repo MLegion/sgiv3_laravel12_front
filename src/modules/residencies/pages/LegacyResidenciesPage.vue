@@ -3,7 +3,7 @@
         <div class="flex items-center justify-between flex-wrap gap-3">
             <div>
                 <h1 class="text-xl font-semibold text-slate-800 uppercase">Histórico de Residencias</h1>
-                <p class="text-xs text-slate-400">Expediente migrado del SGIv2 (solo lectura).</p>
+                <p class="text-xs text-slate-400">Expediente migrado del sistema anterior (solo lectura).</p>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
                 <input v-model="search" placeholder="Buscar por control, nombre o empresa…"

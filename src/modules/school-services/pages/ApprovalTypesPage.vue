@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2">
-            <h1 class="text-xl font-semibold text-slate-800 uppercase">Tipos de Aprobacion</h1>
+            <h1 class="text-xl font-semibold text-slate-800 uppercase">Tipos de Aprobación</h1>
             <button
                 type="button"
                 class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
@@ -48,7 +48,7 @@
 
         <BaseModal
             v-model="modalOpen"
-            :title="editing ? 'Editar Tipo de Aprobacion' : 'Registrar Tipo de Aprobacion'"
+            :title="editing ? 'Editar Tipo de Aprobación' : 'Registrar Tipo de Aprobación'"
             size="lg"
             persistent
         >

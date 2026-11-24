@@ -100,7 +100,7 @@
                             <th scope="col" class="py-2 pr-2">Razón</th>
                             <th scope="col" class="py-2 pr-2">Ofertas elegidas</th>
                             <th scope="col" class="py-2 pr-2">Nota</th>
-                            <th scope="col" class="py-2 pr-2 text-right">Score</th>
+                            <th scope="col" class="py-2 pr-2 text-right">Puntaje</th>
                         </tr>
                     </thead>
                     <tbody>

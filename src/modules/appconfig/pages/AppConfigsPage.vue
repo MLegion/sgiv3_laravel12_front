@@ -55,7 +55,7 @@ const scope = (route.meta.scope as 'college' | 'global') || 'college'
 const isGlobal = scope === 'global'
 const editRouteName = isGlobal ? 'superadmin.appconfig-global.edit' : 'appconfig.edit'
 
-const pageTitle = isGlobal ? 'Configuración Global del Sistema' : 'Configuración del College'
+const pageTitle = isGlobal ? 'Configuración Global del Sistema' : 'Configuración del Plantel'
 const pageDescription = isGlobal
     ? 'Configura los módulos con ajustes únicos para toda la plataforma (una sola configuración compartida por todos los colegios). Si un módulo no aparece, no expone configuración global.'
     : 'Configura los módulos que admiten personalización por college. Si un módulo no aparece, no tiene configuración dinámica o no está habilitado.'

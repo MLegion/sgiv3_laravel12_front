@@ -67,7 +67,7 @@
                             Asignación Institucional
                         </h3>
                         <div class="space-y-6">
-                            <InfoItem label="INSTITUTO / FACULTAD" :value="subject.college?.name" :loading="loading" />
+                            <InfoItem label="INSTITUCIÓN EDUCATIVA" :value="subject.college?.name" :loading="loading" />
                         </div>
                     </div>
 

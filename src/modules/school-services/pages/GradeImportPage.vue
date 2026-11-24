@@ -31,11 +31,11 @@ ABCD123456HDFXXX00,MAT101,ORD1,1,85,,,1
 EFGH789012MDFYYY01,FIS201,EXT,2,50,72,,1
 IJKL345678HDFZZZ02,QUI301,ORD1,3,0,,,0</pre>
             <p class="mt-1 text-slate-400">
-                <strong>student_identifier</strong>: CURP o folio de inscripcion.
+                <strong>student_identifier</strong>: CURP o folio de inscripción.
                 <strong>subject_code</strong>: clave oficial de la materia.
                 <strong>approval_type</strong>: clave corta (ORD1, ORD2, EXT, ESP, REP).
                 <strong>period_number</strong>: semestre (1, 2, 3...).
-                <strong>grade_1/2/3</strong>: calificacion por oportunidad (0 si reprobo, vacio si no aplica).
+                <strong>grade_1/2/3</strong>: calificación por oportunidad (0 si reprobó, vacío si no aplica).
                 <strong>passed</strong>: 1 si acreditó, 0 si no.
             </p>
         </div>
@@ -55,7 +55,7 @@ IJKL345678HDFZZZ02,QUI301,ORD1,3,0,,,0</pre>
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span class="text-sm" :class="csvFile ? 'text-green-700 font-medium' : 'text-slate-500'">
-                        {{ csvFile ? csvFile.name : 'Haz clic o arrastra tu archivo .csv aqui' }}
+                        {{ csvFile ? csvFile.name : 'Haz clic o arrastra tu archivo .csv aquí' }}
                     </span>
                     <input type="file" accept=".csv,text/csv" class="hidden" @change="onCsvSelected" />
                 </label>

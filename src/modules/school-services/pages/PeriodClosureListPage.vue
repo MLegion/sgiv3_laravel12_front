@@ -10,7 +10,7 @@
         </header>
 
         <p class="text-sm text-slate-600">
-            Listado de periodos de tu colegio con el progreso de cierre.
+            Listado de periodos de tu plantel con el progreso de cierre.
             Cada periodo se cierra cuando todas las actas docentes están cerradas y la cobertura de calificaciones es 100%.
         </p>
 
@@ -36,7 +36,7 @@
                 <thead class="bg-slate-100 text-slate-600">
                     <tr>
                         <th scope="col" class="text-left px-3 py-2">Periodo</th>
-                        <th scope="col" class="text-left px-3 py-2">Status</th>
+                        <th scope="col" class="text-left px-3 py-2">Estado</th>
                         <th scope="col" class="text-left px-3 py-2">Fechas</th>
                         <th scope="col" class="text-right px-3 py-2">Cobertura</th>
                         <th scope="col" class="text-right px-3 py-2">Actas</th>

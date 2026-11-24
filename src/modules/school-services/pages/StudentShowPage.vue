@@ -147,7 +147,7 @@
                         class="flex items-center gap-1.5 px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-semibold uppercase"
                         @click="openAffiliationForm()"
                     >
-                        + Agregar Afiliacion
+                        + Agregar Afiliación
                     </button>
                 </div>
 
@@ -197,7 +197,7 @@
                 </div>
 
                 <!-- Modal nueva afiliacion -->
-                <BaseModal v-model="affiliationModal" title="Nueva Afiliacion" size="lg">
+                <BaseModal v-model="affiliationModal" title="Nueva Afiliación" size="lg">
                     <div class="space-y-5">
                         <div class="space-y-4">
                             <div>
@@ -360,7 +360,7 @@
                             </div>
 
                             <div>
-                                <label for="grade-approval-type" class="block text-xs font-semibold text-slate-600 uppercase mb-1">TIPO DE APROBACION</label>
+                                <label for="grade-approval-type" class="block text-xs font-semibold text-slate-600 uppercase mb-1">TIPO DE APROBACIÓN</label>
                                 <select id="grade-approval-type" v-model="gradeForm.approval_type_id" class="w-full border rounded-lg px-3 py-2 text-sm" required>
                                     <option :value="null" disabled>Seleccionar tipo...</option>
                                     <option v-for="at in approvalTypesList" :key="at.id" :value="at.id">
@@ -404,7 +404,7 @@
 
                         <div v-if="editingGrade?.id" class="border-t pt-4">
                             <FormInput label="MOTIVO DEL CAMBIO" v-model="gradeForm.reason" required />
-                            <p class="text-xs text-slate-400 mt-1">Minimo 10 caracteres. Requerido para cambios.</p>
+                            <p class="text-xs text-slate-400 mt-1">Mínimo 10 caracteres. Requerido para cambios.</p>
                         </div>
 
                         <p v-if="gradeError" class="text-xs text-red-600">{{ gradeError }}</p>
@@ -432,7 +432,7 @@
                                 </div>
                                 <div class="flex gap-4">
                                     <span class="text-red-500">Antes: {{ a.oldValue ?? '—' }}</span>
-                                    <span class="text-green-600">Despues: {{ a.newValue ?? '—' }}</span>
+                                    <span class="text-green-600">Después: {{ a.newValue ?? '—' }}</span>
                                 </div>
                                 <div v-if="a.reason" class="text-slate-500 italic">Motivo: {{ a.reason }}</div>
                                 <div class="text-slate-400">Por: {{ a.changedByUserName ?? `User #${a.changedByUserId}` }}</div>

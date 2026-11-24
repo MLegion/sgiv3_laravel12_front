@@ -2,7 +2,7 @@
     <div class="space-y-4">
         <div>
             <h1 class="text-lg font-bold text-slate-800">Plantillas de notificación</h1>
-            <p class="text-xs text-slate-500">Listado de plantillas activas resueltas para tu college (override + defaults globales).</p>
+            <p class="text-xs text-slate-500">Listado de plantillas activas resueltas para tu plantel (override + defaults globales).</p>
         </div>
 
         <SkeletonTable v-if="loading" :rows="6" :cols="6" />
@@ -26,7 +26,7 @@
                         :key="i"
                         class="border-t border-slate-100"
                         :class="t.channelConfigured ? '' : 'bg-slate-50/50 opacity-60'"
-                        :title="t.channelConfigured ? '' : `Canal ${t.channel} no configurado para este college. Configura las credenciales antes de poder usarla.`"
+                        :title="t.channelConfigured ? '' : `Canal ${t.channel} no configurado para este plantel. Configura las credenciales antes de poder usarla.`"
                     >
                         <td class="px-3 py-2 font-mono text-slate-700">{{ t.key }}</td>
                         <td class="px-3 py-2">

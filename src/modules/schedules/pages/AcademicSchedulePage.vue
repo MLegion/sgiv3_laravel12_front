@@ -3716,7 +3716,7 @@ const generatorDisabledReason = computed<string | null>(() => {
     if (!generatorStatus.value) return null
     if (!generatorStatus.value.canSolve) {
         return generatorStatus.value.reason
-            || 'Este college no tiene configurado un generador automático de horarios.'
+            || 'Este plantel no tiene configurado un generador automático de horarios.'
     }
     return null
 })

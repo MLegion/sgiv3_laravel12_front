@@ -81,7 +81,7 @@
 
             <!-- Feedback visual en modo selección de requisitos -->
             <div v-if="isPotentialReq" class="bg-green-500 text-white text-[9px] py-1 text-center font-bold animate-pulse uppercase">
-                Click para asignar
+                Clic para asignar
             </div>
         </div>
     </div>

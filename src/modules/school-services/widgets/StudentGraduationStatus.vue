@@ -7,7 +7,7 @@
         </div>
 
         <div v-else-if="!data.isProspect" class="flex-1 flex items-center justify-center text-slate-500 italic text-center px-2">
-            Tu plan académico sigue en curso. Esta sección se activará cuando termines tu curriculum.
+            Tu plan académico sigue en curso. Esta sección se activará cuando termines tu currículum.
         </div>
 
         <div v-else-if="!data.hasDebts" class="flex-1 flex flex-col items-center justify-center text-center gap-2 px-2">

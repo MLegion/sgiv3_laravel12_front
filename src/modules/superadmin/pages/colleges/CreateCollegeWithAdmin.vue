@@ -45,7 +45,7 @@
                        flex items-center justify-center"
             >
                 <span class="text-sm text-slate-500">
-                    REGISTRANDO INFORMACIÓN..
+                    REGISTRANDO INFORMACIÓN...
                 </span>
             </div>
 

@@ -25,7 +25,7 @@
         <div><span class="font-semibold">Código oficial:</span> {{ career.officialCode }}</div>
         <div><span class="font-semibold">Abreviatura:</span> {{ career.shortName }}</div>
         <div v-if="career.college?.name">
-          <span class="font-semibold">Colegio:</span> {{ career.college.name }}
+          <span class="font-semibold">Institución educativa:</span> {{ career.college.name }}
         </div>
       </div>
 

@@ -4,7 +4,7 @@
             <div>
                 <h1 class="text-xl font-semibold text-slate-800 uppercase">Escuelas de Procedencia (Nacional)</h1>
                 <p class="text-sm text-slate-500 mt-1">
-                    Catálogo global compartido por todos los planteles. Los colegios lo ven en su propio listado (solo lectura).
+                    Catálogo global compartido por todos los planteles. Los planteles lo ven en su propio listado (solo lectura).
                 </p>
             </div>
             <button class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700" @click="openCreate">

@@ -335,7 +335,7 @@
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left">Aspirante</th>
                             <th scope="col" class="px-4 py-3 text-left">Núm. Control asignado</th>
-                            <th scope="col" class="px-4 py-3 text-left">Student ID</th>
+                            <th scope="col" class="px-4 py-3 text-left">ID de estudiante</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">

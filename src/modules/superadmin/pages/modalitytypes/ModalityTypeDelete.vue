@@ -1,12 +1,12 @@
 <template>
     <div class="max-w-md space-y-6">
         <h1 class="text-xl font-semibold text-slate-800">
-            ELIMINAR - TIPO DE MODADLIDAD
+            ELIMINAR - TIPO DE MODALIDAD
         </h1>
 
         <div class="bg-white border rounded-xl shadow-sm p-6 space-y-4">
             <p class="text-sm text-slate-600">
-                ¿ESTAS SEGURO DE ELIMINAR EL TIPO DE MODADLIDAD <strong>{{ name }}</strong>?
+                ¿ESTÁS SEGURO DE ELIMINAR EL TIPO DE MODALIDAD <strong>{{ name }}</strong>?
             </p>
 
             <p class="text-xs text-red-600">
