@@ -54,16 +54,17 @@
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import ReadField from './ReadField.vue'
 
+defineModel<{
+    indigenous_group_id: number | null
+    indigenous_language_id: number | null
+    is_afromexican: boolean | null
+    company: string
+    graduation_year: string | ''
+    academic_average: string | ''
+    academic_area_id: number | null
+}>('form', { required: true })
+
 defineProps<{
-    form: {
-        indigenous_group_id: number | null
-        indigenous_language_id: number | null
-        is_afromexican: boolean | null
-        company: string
-        graduation_year: string | ''
-        academic_average: string | ''
-        academic_area_id: number | null
-    }
     editing: boolean
     indigenousGroups: { id: number; name: string }[]
     indigenousLanguages: { id: number; name: string }[]

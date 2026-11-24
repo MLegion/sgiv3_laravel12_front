@@ -61,15 +61,16 @@ import FormInput from '@/app/components/ui/form/FormInput.vue'
 import PhotoUpload from '@/app/components/ui/form/PhotoUpload.vue'
 import ReadField from './ReadField.vue'
 
+defineModel<{
+    names: string
+    first_surname: string
+    second_surname: string
+    email: string
+    phone: string
+    curp: string
+}>('form', { required: true })
+
 const props = defineProps<{
-    form: {
-        names: string
-        first_surname: string
-        second_surname: string
-        email: string
-        phone: string
-        curp: string
-    }
     editing: boolean
     hasPhoto: boolean
 }>()

@@ -47,15 +47,16 @@ import ReadField from './ReadField.vue'
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 
+defineModel<{
+    nss: string
+    medical_clinic: string
+    blood_type: string
+    allergies: string
+    psychological_treatment: string
+    disability_id: number | null
+}>('form', { required: true })
+
 defineProps<{
-    form: {
-        nss: string
-        medical_clinic: string
-        blood_type: string
-        allergies: string
-        psychological_treatment: string
-        disability_id: number | null
-    }
     editing: boolean
     disabilities: { id: number; name: string }[]
 }>()

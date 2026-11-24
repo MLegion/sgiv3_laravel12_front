@@ -103,13 +103,14 @@ const STATUS_MAP: Record<number, { label: string; cls: string }> = {
 
 interface RawOffer { id: number; campusId: number; label: string }
 
+const form = defineModel<{
+    offer_option_1_id: number | ''
+    offer_option_2_id: number | ''
+    offer_option_3_id: number | ''
+    origin_school_id: number | null
+}>('form', { required: true })
+
 const props = defineProps<{
-    form: {
-        offer_option_1_id: number | ''
-        offer_option_2_id: number | ''
-        offer_option_3_id: number | ''
-        origin_school_id: number | null
-    }
     editing: boolean
     activePeriodLabel: string | null
     applicationFolio: string | null
@@ -133,26 +134,26 @@ const selectedCampusId = ref<number | ''>('')
 
 // Sync selectedCampusId from current offer when offers are loaded
 watch(() => props.allOffers, (offers) => {
-    if (props.form.offer_option_1_id && selectedCampusId.value === '') {
-        const offer = offers.find(o => o.id === props.form.offer_option_1_id)
+    if (form.value.offer_option_1_id && selectedCampusId.value === '') {
+        const offer = offers.find(o => o.id === form.value.offer_option_1_id)
         if (offer) selectedCampusId.value = offer.campusId
     }
 }, { immediate: true })
 
 watch(selectedCampusId, (newVal, oldVal) => {
     if (oldVal !== '' && newVal !== oldVal) {
-        props.form.offer_option_1_id = ''
-        props.form.offer_option_2_id = ''
-        props.form.offer_option_3_id = ''
+        form.value.offer_option_1_id = ''
+        form.value.offer_option_2_id = ''
+        form.value.offer_option_3_id = ''
     }
 })
 
 const filteredOffers = computed(() =>
     selectedCampusId.value ? props.allOffers.filter(o => o.campusId === selectedCampusId.value) : []
 )
-const offerOptions1 = computed(() => filteredOffers.value.filter(o => o.id !== props.form.offer_option_2_id && o.id !== props.form.offer_option_3_id))
-const offerOptions2 = computed(() => filteredOffers.value.filter(o => o.id !== props.form.offer_option_1_id && o.id !== props.form.offer_option_3_id))
-const offerOptions3 = computed(() => filteredOffers.value.filter(o => o.id !== props.form.offer_option_1_id && o.id !== props.form.offer_option_2_id))
+const offerOptions1 = computed(() => filteredOffers.value.filter(o => o.id !== form.value.offer_option_2_id && o.id !== form.value.offer_option_3_id))
+const offerOptions2 = computed(() => filteredOffers.value.filter(o => o.id !== form.value.offer_option_1_id && o.id !== form.value.offer_option_3_id))
+const offerOptions3 = computed(() => filteredOffers.value.filter(o => o.id !== form.value.offer_option_1_id && o.id !== form.value.offer_option_2_id))
 
 function offerLabel(id: number | null | ''): string | null {
     if (!id) return null

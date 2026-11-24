@@ -61,14 +61,15 @@ const MARITAL_LABELS: Record<string, string> = {
     viudo: 'Viudo/a', union_libre: 'Unión libre', otro: 'Otro',
 }
 
-const props = defineProps<{
-    form: {
-        rfc: string
-        birth_date: string
-        marital_status: string
-        birth_state_id: number | null
-        birth_municipality_id: number | null
-    }
+const form = defineModel<{
+    rfc: string
+    birth_date: string
+    marital_status: string
+    birth_state_id: number | null
+    birth_municipality_id: number | null
+}>('form', { required: true })
+
+defineProps<{
     editing: boolean
 }>()
 
@@ -79,16 +80,16 @@ const loadingStates       = ref(false)
 const loadingMunicipalities = ref(false)
 
 const stateName = computed(() =>
-    props.form.birth_state_id ? (states.value.find(s => s.id === props.form.birth_state_id)?.name ?? null) : null
+    form.value.birth_state_id ? (states.value.find(s => s.id === form.value.birth_state_id)?.name ?? null) : null
 )
 const municipalityName = computed(() =>
-    props.form.birth_municipality_id ? (municipalities.value.find(m => m.id === props.form.birth_municipality_id)?.name ?? null) : null
+    form.value.birth_municipality_id ? (municipalities.value.find(m => m.id === form.value.birth_municipality_id)?.name ?? null) : null
 )
 
-watch(() => props.form.birth_state_id, async (stateId, oldStateId) => {
+watch(() => form.value.birth_state_id, async (stateId, oldStateId) => {
     municipalities.value = []
     if (oldStateId !== null && oldStateId !== undefined && stateId !== oldStateId) {
-        props.form.birth_municipality_id = null
+        form.value.birth_municipality_id = null
     }
     if (!stateId) return
     loadingMunicipalities.value = true
@@ -116,6 +117,6 @@ async function loadMunicipalities(stateId: number) {
 
 onMounted(async () => {
     await loadStates()
-    if (props.form.birth_state_id) await loadMunicipalities(props.form.birth_state_id)
+    if (form.value.birth_state_id) await loadMunicipalities(form.value.birth_state_id)
 })
 </script>
