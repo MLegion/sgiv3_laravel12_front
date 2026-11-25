@@ -15,38 +15,27 @@
             </label>
         </div>
 
-        <div class="rounded-xl border bg-white overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Plazos de PAT">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Plazos de PAT</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th scope="col" class="px-4 py-2">Tutor</th><th scope="col">Grupo</th><th scope="col">Carrera</th><th scope="col">PAT</th><th scope="col">Extensión</th><th scope="col" class="text-right pr-4">Acciones</th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="r in visibleRows" :key="r.assignment_id" class="border-b last:border-0 align-top">
-                        <td class="px-4 py-2 font-semibold text-slate-700">{{ r.tutor_name }}</td>
-                        <td class="text-slate-600">{{ r.group_name ?? '—' }}</td>
-                        <td class="text-slate-500 max-w-xs truncate" :title="r.career_name">{{ r.career_name ?? '—' }}</td>
-                        <td><Badge :ok="r.pat_submitted" on="Entregado" off="Pendiente" /></td>
-                        <td>
-                            <div v-if="r.ext_status === 'requested'" class="text-amber-700">
-                                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100">Solicitada</span>
-                                <p v-if="r.tutor_reason" class="text-[11px] text-slate-500 mt-0.5 max-w-xs" :title="r.tutor_reason">“{{ r.tutor_reason }}”</p>
-                            </div>
-                            <div v-else-if="r.ext_status === 'granted'" class="text-emerald-700">
-                                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100">Plazo hasta {{ fmtDate(r.extended_until) }}</span>
-                            </div>
-                            <span v-else-if="r.ext_status === 'rejected'" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">Rechazada</span>
-                            <span v-else class="text-slate-300">—</span>
-                        </td>
-                        <td class="text-right pr-4 whitespace-nowrap">
-                            <button @click="openGrant(r)" class="px-2 py-1 rounded bg-emerald-600 text-white text-[11px] font-semibold">Otorgar plazo</button>
-                            <button v-if="r.ext_status === 'requested'" @click="act(() => reject(r))" class="px-2 py-1 rounded border text-[11px] text-slate-600 ml-1">Rechazar</button>
-                        </td>
-                    </tr>
-                    <tr v-if="!visibleRows.length"><td colspan="6" class="px-4 py-6 text-center text-slate-400">Sin asignaciones grupales.</td></tr>
-                </tbody>
-            </table>
-        </div>
+        <DataTable :columns="columns" :rows="visibleRows" hide-search caption="Plazos de PAT" empty-text="Sin asignaciones grupales.">
+            <template #cell-tutor_name="{ row }"><span class="font-semibold text-slate-700">{{ row.tutor_name }}</span></template>
+            <template #cell-group_name="{ row }"><span class="text-slate-600">{{ row.group_name ?? '—' }}</span></template>
+            <template #cell-career_name="{ row }"><span class="text-slate-500 max-w-xs truncate block" :title="row.career_name">{{ row.career_name ?? '—' }}</span></template>
+            <template #cell-pat="{ row }"><Badge :ok="row.pat_submitted" on="Entregado" off="Pendiente" /></template>
+            <template #cell-ext="{ row }">
+                <div v-if="row.ext_status === 'requested'" class="text-amber-700">
+                    <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100">Solicitada</span>
+                    <p v-if="row.tutor_reason" class="text-[11px] text-slate-500 mt-0.5 max-w-xs" :title="row.tutor_reason">“{{ row.tutor_reason }}”</p>
+                </div>
+                <div v-else-if="row.ext_status === 'granted'" class="text-emerald-700">
+                    <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100">Plazo hasta {{ fmtDate(row.extended_until) }}</span>
+                </div>
+                <span v-else-if="row.ext_status === 'rejected'" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">Rechazada</span>
+                <span v-else class="text-slate-300">—</span>
+            </template>
+            <template #cell-actions="{ row }">
+                <button @click="openGrant(row)" class="px-2 py-1 rounded bg-emerald-600 text-white text-[11px] font-semibold">Otorgar plazo</button>
+                <button v-if="row.ext_status === 'requested'" @click="act(() => reject(row))" class="px-2 py-1 rounded border text-[11px] text-slate-600 ml-1">Rechazar</button>
+            </template>
+        </DataTable>
 
         <!-- Modal otorgar plazo -->
         <BaseModal v-model="grant.open" :title="'Otorgar plazo de PAT: ' + (grant.row?.group_name ?? '')" size="md">
@@ -68,6 +57,17 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const columns: DataTableColumn<any>[] = [
+    { key: 'tutor_name', label: 'Tutor' },
+    { key: 'group_name', label: 'Grupo' },
+    { key: 'career_name', label: 'Carrera' },
+    { key: 'pat', label: 'PAT' },
+    { key: 'ext', label: 'Extensión' },
+    { key: 'actions', label: 'Acciones', align: 'right' },
+]
 
 const T = API.TUTORING_API
 const toast = useToast()

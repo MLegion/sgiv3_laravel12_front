@@ -47,52 +47,49 @@
                     </div>
                 </div>
 
-                <div role="region" aria-label="Clases afectadas por examen" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-xs">
-                    <caption class="sr-only">Clases afectadas por examen</caption>
-                    <thead class="bg-slate-50">
-                        <tr class="text-slate-600">
-                            <th scope="col" class="px-3 py-2 text-left">Materia</th>
-                            <th scope="col" class="px-3 py-2 text-left">Docente</th>
-                            <th scope="col" class="px-3 py-2 text-left">Carrera</th>
-                            <th scope="col" class="px-3 py-2 text-center">Estado</th>
-                            <th scope="col" class="px-3 py-2 text-center">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="w in group.items" :key="w.id" class="border-t border-slate-100 hover:bg-slate-50">
-                            <td class="px-3 py-2 text-slate-800 font-medium">{{ w.subject?.name ?? '—' }}</td>
-                            <td class="px-3 py-2 text-slate-700">{{ w.teacher?.fullName ?? '—' }}</td>
-                            <td class="px-3 py-2 text-slate-600">{{ w.career?.name ?? '—' }}</td>
-                            <td class="px-3 py-2 text-center">
-                                <span
-                                    v-if="w.acknowledgedAt"
-                                    class="text-[9px] px-1.5 py-0.5 rounded uppercase bg-emerald-100 text-emerald-700"
-                                >
-                                    Atendido
-                                </span>
-                                <span
-                                    v-else
-                                    class="text-[9px] px-1.5 py-0.5 rounded uppercase bg-amber-100 text-amber-700"
-                                >
-                                    Pendiente
-                                </span>
-                            </td>
-                            <td class="px-3 py-2 text-center">
-                                <button
-                                    v-if="!w.acknowledgedAt"
-                                    class="px-2 py-1 text-[11px] rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
-                                    :disabled="acking === w.id"
-                                    @click="acknowledge(w)"
-                                >
-                                    {{ acking === w.id ? 'GUARDANDO...' : 'MARCAR ATENDIDO' }}
-                                </button>
-                                <span v-else class="text-[10px] text-slate-400">
-                                    {{ formatDate(w.acknowledgedAt) }}
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
+                <DataTable
+                    :columns="columns"
+                    :rows="group.items"
+                    hide-search
+                    caption="Clases afectadas por examen"
+                >
+                    <template #cell-subject="{ row }">
+                        <span class="text-slate-800 font-medium">{{ row.subject?.name ?? '—' }}</span>
+                    </template>
+                    <template #cell-teacher="{ row }">
+                        <span class="text-slate-700">{{ row.teacher?.fullName ?? '—' }}</span>
+                    </template>
+                    <template #cell-career="{ row }">
+                        <span class="text-slate-600">{{ row.career?.name ?? '—' }}</span>
+                    </template>
+                    <template #cell-status="{ row }">
+                        <span
+                            v-if="row.acknowledgedAt"
+                            class="text-[9px] px-1.5 py-0.5 rounded uppercase bg-emerald-100 text-emerald-700"
+                        >
+                            Atendido
+                        </span>
+                        <span
+                            v-else
+                            class="text-[9px] px-1.5 py-0.5 rounded uppercase bg-amber-100 text-amber-700"
+                        >
+                            Pendiente
+                        </span>
+                    </template>
+                    <template #cell-action="{ row }">
+                        <button
+                            v-if="!row.acknowledgedAt"
+                            class="px-2 py-1 text-[11px] rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+                            :disabled="acking === row.id"
+                            @click="acknowledge(row)"
+                        >
+                            {{ acking === row.id ? 'GUARDANDO...' : 'MARCAR ATENDIDO' }}
+                        </button>
+                        <span v-else class="text-[10px] text-slate-400">
+                            {{ formatDate(row.acknowledgedAt) }}
+                        </span>
+                    </template>
+                </DataTable>
             </div>
         </div>
 
@@ -106,7 +103,17 @@ import { CheckCircleIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import type { ExamClassWarning } from '@/modules/admissions/types/exam-class-warning.type'
+
+const columns: DataTableColumn<ExamClassWarning>[] = [
+    { key: 'subject', label: 'Materia' },
+    { key: 'teacher', label: 'Docente' },
+    { key: 'career', label: 'Carrera' },
+    { key: 'status', label: 'Estado', align: 'center' },
+    { key: 'action', label: 'Acción', align: 'center' },
+]
 
 const warnings    = ref<ExamClassWarning[]>([])
 const loading     = ref(false)

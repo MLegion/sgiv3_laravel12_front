@@ -10,26 +10,23 @@
             <!-- Top escuelas -->
             <section>
                 <h2 class="text-base font-semibold text-slate-800 mb-2">Top escuelas de procedencia</h2>
-                <div v-if="data.topSchools.length === 0" class="text-sm text-slate-400 italic">Sin datos.</div>
-                <div v-else class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                    <div role="region" aria-label="Top escuelas de procedencia" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                        <caption class="sr-only">Top escuelas de procedencia</caption>
-                        <thead class="bg-slate-100 border-b border-slate-200">
-                            <tr>
-                                <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
-                                <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Escuela</th>
-                                <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Aspirantes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(s, idx) in data.topSchools" :key="s.schoolId" class="border-t border-slate-100">
-                                <td class="px-4 py-2 text-xs text-slate-400 font-mono">{{ idx + 1 }}</td>
-                                <td class="px-4 py-2 font-medium text-slate-700">{{ s.name }}</td>
-                                <td class="px-4 py-2 text-right tabular-nums font-semibold">{{ s.count }}</td>
-                            </tr>
-                        </tbody>
-                    </table></div>
-                </div>
+                <DataTable
+                    :columns="schoolColumns"
+                    :rows="data.topSchools"
+                    hide-search
+                    caption="Top escuelas de procedencia"
+                    empty-text="Sin datos."
+                >
+                    <template #cell-rank="{ index }">
+                        <span class="text-xs text-slate-400 font-mono">{{ index + 1 }}</span>
+                    </template>
+                    <template #cell-name="{ row }">
+                        <span class="font-medium text-slate-700">{{ row.name }}</span>
+                    </template>
+                    <template #cell-count="{ row }">
+                        <span class="tabular-nums font-semibold">{{ row.count }}</span>
+                    </template>
+                </DataTable>
             </section>
 
             <!-- Por estado -->
@@ -44,28 +41,26 @@
             <!-- Top municipios -->
             <section>
                 <h2 class="text-base font-semibold text-slate-800 mb-2">Top municipios de nacimiento</h2>
-                <div v-if="data.topMunicipalities.length === 0" class="text-sm text-slate-400 italic">Sin datos.</div>
-                <div v-else class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                    <div role="region" aria-label="Top municipios de nacimiento" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                        <caption class="sr-only">Top municipios de nacimiento</caption>
-                        <thead class="bg-slate-100 border-b border-slate-200">
-                            <tr>
-                                <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
-                                <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Municipio</th>
-                                <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Estado</th>
-                                <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Aspirantes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(m, idx) in data.topMunicipalities" :key="m.municipalityId" class="border-t border-slate-100">
-                                <td class="px-4 py-2 text-xs text-slate-400 font-mono">{{ idx + 1 }}</td>
-                                <td class="px-4 py-2 font-medium text-slate-700">{{ m.name }}</td>
-                                <td class="px-4 py-2 text-slate-500">{{ m.stateName ?? '—' }}</td>
-                                <td class="px-4 py-2 text-right tabular-nums font-semibold">{{ m.count }}</td>
-                            </tr>
-                        </tbody>
-                    </table></div>
-                </div>
+                <DataTable
+                    :columns="municipalityColumns"
+                    :rows="data.topMunicipalities"
+                    hide-search
+                    caption="Top municipios de nacimiento"
+                    empty-text="Sin datos."
+                >
+                    <template #cell-rank="{ index }">
+                        <span class="text-xs text-slate-400 font-mono">{{ index + 1 }}</span>
+                    </template>
+                    <template #cell-name="{ row }">
+                        <span class="font-medium text-slate-700">{{ row.name }}</span>
+                    </template>
+                    <template #cell-stateName="{ row }">
+                        <span class="text-slate-500">{{ row.stateName ?? '—' }}</span>
+                    </template>
+                    <template #cell-count="{ row }">
+                        <span class="tabular-nums font-semibold">{{ row.count }}</span>
+                    </template>
+                </DataTable>
             </section>
         </template>
     </div>
@@ -82,6 +77,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import SkeletonChart from '@/app/components/ui/SkeletonChart.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
@@ -93,6 +90,18 @@ interface OriginResponse {
     byState:    State[]
     topMunicipalities: Municipality[]
 }
+
+const schoolColumns: DataTableColumn<School>[] = [
+    { key: 'rank', label: '#', width: '3rem' },
+    { key: 'name', label: 'Escuela' },
+    { key: 'count', label: 'Aspirantes', align: 'right' },
+]
+const municipalityColumns: DataTableColumn<Municipality>[] = [
+    { key: 'rank', label: '#', width: '3rem' },
+    { key: 'name', label: 'Municipio' },
+    { key: 'stateName', label: 'Estado' },
+    { key: 'count', label: 'Aspirantes', align: 'right' },
+]
 
 const props = defineProps<{ periodId: number | null }>()
 

@@ -16,29 +16,28 @@
                 <Bar :data="chartData" :options="chartOptions" />
             </div>
 
-            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <div role="region" aria-label="Demanda de carreras" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                    <caption class="sr-only">Demanda de carreras</caption>
-                    <thead class="bg-slate-100 border-b border-slate-200">
-                        <tr>
-                            <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Carrera</th>
-                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">1ª opción</th>
-                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">2ª opción</th>
-                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">3ª opción</th>
-                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="c in data.careers" :key="c.careerId" class="border-t border-slate-100">
-                            <td class="px-4 py-2 font-medium text-slate-700">{{ c.name }}</td>
-                            <td class="px-4 py-2 text-right tabular-nums">{{ c.opt1 }}</td>
-                            <td class="px-4 py-2 text-right tabular-nums">{{ c.opt2 }}</td>
-                            <td class="px-4 py-2 text-right tabular-nums">{{ c.opt3 }}</td>
-                            <td class="px-4 py-2 text-right tabular-nums font-semibold text-slate-700">{{ c.total }}</td>
-                        </tr>
-                    </tbody>
-                </table></div>
-            </div>
+            <DataTable
+                :columns="columns"
+                :rows="data.careers"
+                hide-search
+                caption="Demanda de carreras"
+            >
+                <template #cell-name="{ row }">
+                    <span class="font-medium text-slate-700">{{ row.name }}</span>
+                </template>
+                <template #cell-opt1="{ row }">
+                    <span class="tabular-nums">{{ row.opt1 }}</span>
+                </template>
+                <template #cell-opt2="{ row }">
+                    <span class="tabular-nums">{{ row.opt2 }}</span>
+                </template>
+                <template #cell-opt3="{ row }">
+                    <span class="tabular-nums">{{ row.opt3 }}</span>
+                </template>
+                <template #cell-total="{ row }">
+                    <span class="tabular-nums font-semibold text-slate-700">{{ row.total }}</span>
+                </template>
+            </DataTable>
         </template>
     </div>
 </template>
@@ -54,11 +53,21 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import SkeletonChart from '@/app/components/ui/SkeletonChart.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 interface CareerRow { careerId: number; name: string; opt1: number; opt2: number; opt3: number; total: number }
 interface DemandResponse { careers: CareerRow[] }
+
+const columns: DataTableColumn<CareerRow>[] = [
+    { key: 'name', label: 'Carrera' },
+    { key: 'opt1', label: '1ª opción', align: 'right' },
+    { key: 'opt2', label: '2ª opción', align: 'right' },
+    { key: 'opt3', label: '3ª opción', align: 'right' },
+    { key: 'total', label: 'Total', align: 'right' },
+]
 
 const props = defineProps<{ periodId: number | null }>()
 

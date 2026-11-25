@@ -91,50 +91,44 @@
                     <span class="text-[10px] text-slate-400 uppercase">los más recientes</span>
                 </div>
 
-                <div role="region" aria-label="Aspirantes no admitidos" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                    <caption class="sr-only">Aspirantes no admitidos</caption>
-                    <thead>
-                        <tr class="text-left text-[10px] text-slate-500 uppercase tracking-wider border-b">
-                            <th scope="col" class="py-2 pr-2">#</th>
-                            <th scope="col" class="py-2 pr-2">Nombre</th>
-                            <th scope="col" class="py-2 pr-2">Razón</th>
-                            <th scope="col" class="py-2 pr-2">Ofertas elegidas</th>
-                            <th scope="col" class="py-2 pr-2">Nota</th>
-                            <th scope="col" class="py-2 pr-2 text-right">Puntaje</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="s in data.sample" :key="s.id" class="border-b border-slate-50 hover:bg-slate-50 align-top">
-                            <td class="py-2 pr-2 font-mono text-xs text-slate-400">{{ s.id }}</td>
-                            <td class="py-2 pr-2 font-medium text-slate-700">{{ s.name }}</td>
-                            <td class="py-2 pr-2">
-                                <span class="inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full"
-                                    :class="badgeColor(s.reason)">
-                                    {{ s.reasonLabel }}
-                                </span>
-                            </td>
-                            <td class="py-2 pr-2 max-w-md">
-                                <ol v-if="s.offers.length" class="space-y-0.5 text-[11px] text-slate-600 list-decimal list-inside">
-                                    <li v-for="o in s.offers" :key="o.offerId" class="leading-tight">
-                                        <span class="font-medium text-slate-700">{{ o.careerShort ?? o.careerName ?? 'CARRERA?' }}</span>
-                                        <span class="text-slate-400"> · </span>
-                                        <span class="text-slate-600">{{ o.modalityTypeShort ?? o.modalityTypeName ?? 'MOD?' }}</span>
-                                        <span class="text-slate-400"> · </span>
-                                        <span class="text-slate-500">{{ o.campusShort ?? o.campusName ?? 'CAMPUS?' }}</span>
-                                    </li>
-                                </ol>
-                                <span v-else class="text-slate-300 text-xs">— sin opción elegida —</span>
-                            </td>
-                            <td class="py-2 pr-2 text-xs text-slate-600 max-w-xs">
-                                <span v-if="s.note" :title="s.note" class="line-clamp-2">{{ s.note }}</span>
-                                <span v-else class="text-slate-300">—</span>
-                            </td>
-                            <td class="py-2 pr-2 text-right font-mono text-xs">
-                                {{ s.score !== null ? s.score.toFixed(2) : '—' }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
+                <DataTable
+                    :columns="columns"
+                    :rows="data.sample"
+                    hide-search
+                    caption="Aspirantes no admitidos"
+                >
+                    <template #cell-id="{ row }">
+                        <span class="font-mono text-xs text-slate-400">{{ row.id }}</span>
+                    </template>
+                    <template #cell-name="{ row }">
+                        <span class="font-medium text-slate-700">{{ row.name }}</span>
+                    </template>
+                    <template #cell-reason="{ row }">
+                        <span class="inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full"
+                            :class="badgeColor(row.reason)">
+                            {{ row.reasonLabel }}
+                        </span>
+                    </template>
+                    <template #cell-offers="{ row }">
+                        <ol v-if="row.offers.length" class="space-y-0.5 text-[11px] text-slate-600 list-decimal list-inside">
+                            <li v-for="o in row.offers" :key="o.offerId" class="leading-tight">
+                                <span class="font-medium text-slate-700">{{ o.careerShort ?? o.careerName ?? 'CARRERA?' }}</span>
+                                <span class="text-slate-400"> · </span>
+                                <span class="text-slate-600">{{ o.modalityTypeShort ?? o.modalityTypeName ?? 'MOD?' }}</span>
+                                <span class="text-slate-400"> · </span>
+                                <span class="text-slate-500">{{ o.campusShort ?? o.campusName ?? 'CAMPUS?' }}</span>
+                            </li>
+                        </ol>
+                        <span v-else class="text-slate-300 text-xs">— sin opción elegida —</span>
+                    </template>
+                    <template #cell-note="{ row }">
+                        <span v-if="row.note" :title="row.note" class="text-xs text-slate-600 line-clamp-2">{{ row.note }}</span>
+                        <span v-else class="text-slate-300">—</span>
+                    </template>
+                    <template #cell-score="{ row }">
+                        <span class="font-mono text-xs">{{ row.score !== null ? row.score.toFixed(2) : '—' }}</span>
+                    </template>
+                </DataTable>
             </div>
         </template>
     </div>
@@ -146,6 +140,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface Payload {
     period: { id: number; name: string; shortName: string | null } | null
@@ -174,6 +170,17 @@ interface Payload {
     canChooseScope: boolean
     availablePeriods?: Array<{ id: number; name: string; shortName: string | null }>
 }
+
+type SampleRow = Payload['sample'][number]
+
+const columns: DataTableColumn<SampleRow>[] = [
+    { key: 'id', label: '#' },
+    { key: 'name', label: 'Nombre' },
+    { key: 'reason', label: 'Razón' },
+    { key: 'offers', label: 'Ofertas elegidas' },
+    { key: 'note', label: 'Nota' },
+    { key: 'score', label: 'Puntaje', align: 'right' },
+]
 
 const data    = ref<Payload | null>(null)
 const loading = ref(false)

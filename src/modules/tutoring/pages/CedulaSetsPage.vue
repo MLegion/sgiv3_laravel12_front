@@ -6,31 +6,20 @@
         </div>
         <p v-if="msg" class="text-sm px-4 py-2.5 rounded-lg" :class="msgError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'">{{ msg }}</p>
 
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Versiones de cédula" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Versiones de cédula</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b"><th scope="col" class="px-4 py-2">Versión</th><th scope="col">Ámbito</th><th scope="col">Vigente</th><th scope="col">Campos</th><th scope="col">Estado</th><th scope="col"></th></tr></thead>
-                <tbody>
-                    <tr v-for="s in sets" :key="s.id" class="border-b last:border-0">
-                        <td class="px-4 py-2 font-semibold text-slate-700">{{ s.name }}</td>
-                        <td><span class="text-xs px-2 py-0.5 rounded-full" :class="s.is_global ? 'bg-slate-100 text-slate-500' : 'bg-sky-100 text-sky-700'">{{ s.is_global ? 'Global' : 'Plantel' }}</span></td>
-                        <td class="text-slate-500">{{ s.effective_from ?? '—' }}</td>
-                        <td class="text-slate-600">{{ s.fields_count }}</td>
-                        <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="statusClass(s.status)">{{ statusLabel(s.status) }}</span></td>
-                        <td class="text-right px-4 whitespace-nowrap">
-                            <button @click="edit(s.id)" class="text-xs text-slate-500 font-semibold mr-2">{{ s.is_global ? 'Ver' : 'Editar' }}</button>
-                            <button @click="clone(s.id)" class="text-xs text-blue-600 font-semibold mr-2">Clonar</button>
-                            <button v-if="!s.is_global && s.status === 'draft'" @click="publish(s.id)" class="text-xs text-emerald-600 font-semibold mr-2">Publicar</button>
-                            <button v-if="!s.is_global && s.status === 'published'" @click="archive(s.id)" class="text-xs text-amber-600 font-semibold mr-2">Archivar</button>
-                            <button v-if="!s.is_global && s.status === 'draft'" @click="destroy(s.id)" class="text-xs text-red-600 font-semibold">Eliminar</button>
-                        </td>
-                    </tr>
-                    <tr v-if="!sets.length"><td colspan="6" class="px-4 py-6 text-center text-slate-400">Sin versiones.</td></tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable :columns="columns" :rows="sets" hide-search caption="Versiones de cédula" empty-text="Sin versiones.">
+            <template #cell-name="{ row }"><span class="font-semibold text-slate-700">{{ row.name }}</span></template>
+            <template #cell-scope="{ row }"><span class="text-xs px-2 py-0.5 rounded-full" :class="row.is_global ? 'bg-slate-100 text-slate-500' : 'bg-sky-100 text-sky-700'">{{ row.is_global ? 'Global' : 'Plantel' }}</span></template>
+            <template #cell-effective_from="{ row }"><span class="text-slate-500">{{ row.effective_from ?? '—' }}</span></template>
+            <template #cell-fields_count="{ row }"><span class="text-slate-600">{{ row.fields_count }}</span></template>
+            <template #cell-status="{ row }"><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="statusClass(row.status)">{{ statusLabel(row.status) }}</span></template>
+            <template #cell-actions="{ row }">
+                <button @click="edit(row.id)" class="text-xs text-slate-500 font-semibold mr-2">{{ row.is_global ? 'Ver' : 'Editar' }}</button>
+                <button @click="clone(row.id)" class="text-xs text-blue-600 font-semibold mr-2">Clonar</button>
+                <button v-if="!row.is_global && row.status === 'draft'" @click="publish(row.id)" class="text-xs text-emerald-600 font-semibold mr-2">Publicar</button>
+                <button v-if="!row.is_global && row.status === 'published'" @click="archive(row.id)" class="text-xs text-amber-600 font-semibold mr-2">Archivar</button>
+                <button v-if="!row.is_global && row.status === 'draft'" @click="destroy(row.id)" class="text-xs text-red-600 font-semibold">Eliminar</button>
+            </template>
+        </DataTable>
 
         <div v-if="editing" class="rounded-xl border bg-white p-5 space-y-3">
             <div class="flex flex-wrap items-center justify-between gap-2">
@@ -77,6 +66,17 @@ import type { CedulaSetSummary } from '@/modules/tutoring/types/tutoring.type'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import { usePrompt } from '@/app/composables/usePrompt'
 import { useConfirm } from '@/app/composables/useConfirm'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const columns: DataTableColumn<CedulaSetSummary>[] = [
+    { key: 'name', label: 'Versión' },
+    { key: 'scope', label: 'Ámbito' },
+    { key: 'effective_from', label: 'Vigente' },
+    { key: 'fields_count', label: 'Campos' },
+    { key: 'status', label: 'Estado' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 const T = API.TUTORING_API
 const { prompt } = usePrompt()

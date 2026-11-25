@@ -42,27 +42,16 @@
             <!-- Cumplimiento por tutor -->
             <div class="rounded-xl border bg-white overflow-hidden">
                 <h3 class="text-xs font-bold uppercase text-slate-500 px-4 pt-3">Cumplimiento por tutor</h3>
-                <div role="region" aria-label="Cumplimiento por tutor" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                <table class="w-full text-sm mt-2">
-                    <caption class="sr-only">Cumplimiento por tutor</caption>
-                    <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                        <th scope="col" class="px-4 py-2">Tutor</th><th scope="col">Ámbito</th><th scope="col">Carrera</th><th scope="col">PAT</th><th scope="col">Tutorados</th><th scope="col">Sesiones</th><th scope="col">Seguim. (E/R)</th><th scope="col">Cumpl.</th>
-                    </tr></thead>
-                    <tbody>
-                        <tr v-for="r in d.tutor_compliance" :key="r.assignment_id" class="border-b last:border-0">
-                            <td class="px-4 py-2 font-semibold text-slate-700">{{ r.tutor_name }}</td>
-                            <td class="text-slate-600">{{ r.scope === 'grupal' ? 'Grupal' : 'Individual' }}</td>
-                            <td class="text-slate-600">{{ r.career_name ?? '—' }}</td>
-                            <td><span :class="r.has_pat ? 'text-emerald-600' : 'text-rose-500'">{{ r.has_pat ? 'Sí' : 'No' }}</span></td>
-                            <td class="text-slate-600">{{ r.tutees_total }}</td>
-                            <td class="text-slate-600">{{ r.session_count }}</td>
-                            <td class="text-slate-600">{{ r.followups_submitted }}/{{ r.followups_reviewed }}</td>
-                            <td><span class="px-2 py-0.5 rounded-full text-[11px] font-bold" :class="r.completion_status === 'confirmed' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'">{{ r.completion_status === 'confirmed' ? 'Confirmado' : 'Pendiente' }}</span></td>
-                        </tr>
-                        <tr v-if="!d.tutor_compliance.length"><td colspan="8" class="px-4 py-6 text-center text-slate-400">Sin asignaciones.</td></tr>
-                    </tbody>
-                </table>
-                </div>
+                <DataTable :columns="columns" :rows="d.tutor_compliance" hide-search caption="Cumplimiento por tutor" empty-text="Sin asignaciones." class="mt-2">
+                    <template #cell-tutor_name="{ row }"><span class="font-semibold text-slate-700">{{ row.tutor_name }}</span></template>
+                    <template #cell-scope="{ row }"><span class="text-slate-600">{{ row.scope === 'grupal' ? 'Grupal' : 'Individual' }}</span></template>
+                    <template #cell-career_name="{ row }"><span class="text-slate-600">{{ row.career_name ?? '—' }}</span></template>
+                    <template #cell-has_pat="{ row }"><span :class="row.has_pat ? 'text-emerald-600' : 'text-rose-500'">{{ row.has_pat ? 'Sí' : 'No' }}</span></template>
+                    <template #cell-tutees_total="{ row }"><span class="text-slate-600">{{ row.tutees_total }}</span></template>
+                    <template #cell-session_count="{ row }"><span class="text-slate-600">{{ row.session_count }}</span></template>
+                    <template #cell-followups="{ row }"><span class="text-slate-600">{{ row.followups_submitted }}/{{ row.followups_reviewed }}</span></template>
+                    <template #cell-completion_status="{ row }"><span class="px-2 py-0.5 rounded-full text-[11px] font-bold" :class="row.completion_status === 'confirmed' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'">{{ row.completion_status === 'confirmed' ? 'Confirmado' : 'Pendiente' }}</span></template>
+                </DataTable>
             </div>
         </template>
     </div>
@@ -74,10 +63,23 @@ import { Doughnut, Bar } from 'vue-chartjs'
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, BarElement, CategoryScale, LinearScale } from 'chart.js'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement, BarElement, CategoryScale, LinearScale)
 
 const T = API.TUTORING_API
+
+const columns: DataTableColumn<any>[] = [
+    { key: 'tutor_name', label: 'Tutor' },
+    { key: 'scope', label: 'Ámbito' },
+    { key: 'career_name', label: 'Carrera' },
+    { key: 'has_pat', label: 'PAT' },
+    { key: 'tutees_total', label: 'Tutorados' },
+    { key: 'session_count', label: 'Sesiones' },
+    { key: 'followups', label: 'Seguim. (E/R)' },
+    { key: 'completion_status', label: 'Cumpl.' },
+]
 
 const Stat = defineComponent({
     props: { label: String, value: [Number, String], color: { type: String, default: 'slate' } },

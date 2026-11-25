@@ -25,43 +25,19 @@
 
         <template v-else>
             <!-- Tabla consolidada -->
-            <div role="region" aria-label="Diagnóstico por grupo" tabindex="0" class="overflow-x-auto rounded-xl border border-slate-200 mb-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                <table class="min-w-full text-xs">
-                    <caption class="sr-only">Diagnóstico por grupo</caption>
-                    <thead class="bg-slate-50 text-slate-600">
-                        <tr>
-                            <th scope="col" class="px-2 py-2 text-left">No. Control</th>
-                            <th scope="col" class="px-2 py-2 text-left">Estudiante</th>
-                            <th scope="col" class="px-2 py-2 text-center">Sexo</th>
-                            <th scope="col" class="px-2 py-2 text-center">Edad</th>
-                            <th scope="col" class="px-2 py-2 text-center">Prom. bach.</th>
-                            <th scope="col" class="px-2 py-2 text-center">Organización</th>
-                            <th scope="col" class="px-2 py-2 text-center">Técnicas</th>
-                            <th scope="col" class="px-2 py-2 text-center">Motivación</th>
-                            <th scope="col" class="px-2 py-2 text-center">Habilidades (total)</th>
-                            <th scope="col" class="px-2 py-2 text-center">Asertividad</th>
-                            <th scope="col" class="px-2 py-2 text-center">Autoestima</th>
-                            <th scope="col" class="px-2 py-2 text-center">Estilo</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <tr v-for="r in rows" :key="r.num_control" class="hover:bg-slate-50/60">
-                            <td class="px-2 py-1.5 font-mono">{{ r.num_control }}</td>
-                            <td class="px-2 py-1.5">{{ r.nombre }}</td>
-                            <td class="px-2 py-1.5 text-center">{{ r.sexo || '—' }}</td>
-                            <td class="px-2 py-1.5 text-center">{{ r.edad ?? '—' }}</td>
-                            <td class="px-2 py-1.5 text-center">{{ r.promedio_bach ?? '—' }}</td>
-                            <td class="px-2 py-1.5 text-center"><ScoreCell :score="r.hab_org" :cat="r.hab_org_cat" /></td>
-                            <td class="px-2 py-1.5 text-center"><ScoreCell :score="r.hab_tec" :cat="r.hab_tec_cat" /></td>
-                            <td class="px-2 py-1.5 text-center"><ScoreCell :score="r.hab_mot" :cat="r.hab_mot_cat" /></td>
-                            <td class="px-2 py-1.5 text-center"><ScoreCell :score="r.hab_total" :cat="r.hab_total_cat" strong /></td>
-                            <td class="px-2 py-1.5 text-center">{{ r.asertividad || '—' }}</td>
-                            <td class="px-2 py-1.5 text-center">{{ r.autoestima || '—' }}</td>
-                            <td class="px-2 py-1.5 text-center">{{ r.estilo || '—' }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <DataTable :columns="columns" :rows="rows" hide-search caption="Diagnóstico por grupo" empty-text="Este grupo no tiene tutorados con cédula/diagnóstico capturado." class="mb-6">
+                <template #cell-num_control="{ row }"><span class="font-mono">{{ row.num_control }}</span></template>
+                <template #cell-sexo="{ row }">{{ row.sexo || '—' }}</template>
+                <template #cell-edad="{ row }">{{ row.edad ?? '—' }}</template>
+                <template #cell-promedio_bach="{ row }">{{ row.promedio_bach ?? '—' }}</template>
+                <template #cell-hab_org="{ row }"><ScoreCell :score="row.hab_org" :cat="row.hab_org_cat" /></template>
+                <template #cell-hab_tec="{ row }"><ScoreCell :score="row.hab_tec" :cat="row.hab_tec_cat" /></template>
+                <template #cell-hab_mot="{ row }"><ScoreCell :score="row.hab_mot" :cat="row.hab_mot_cat" /></template>
+                <template #cell-hab_total="{ row }"><ScoreCell :score="row.hab_total" :cat="row.hab_total_cat" strong /></template>
+                <template #cell-asertividad="{ row }">{{ row.asertividad || '—' }}</template>
+                <template #cell-autoestima="{ row }">{{ row.autoestima || '—' }}</template>
+                <template #cell-estilo="{ row }">{{ row.estilo || '—' }}</template>
+            </DataTable>
 
             <!-- Porcentajes por categoría (total de Habilidades) -->
             <h2 class="text-sm font-semibold text-slate-700 mb-2">Distribución por nivel de Habilidades de Estudio</h2>
@@ -84,6 +60,8 @@ import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const props = defineProps<{ id: string | number }>()
 const toast = useToast()
@@ -96,6 +74,21 @@ interface Row {
     asertividad?: string | null; autoestima?: string | null; estilo?: string | null
 }
 interface Pct { categoria: string; n: number; pct: number }
+
+const columns: DataTableColumn<Row>[] = [
+    { key: 'num_control', label: 'No. Control' },
+    { key: 'nombre', label: 'Estudiante', field: 'nombre' },
+    { key: 'sexo', label: 'Sexo', align: 'center' },
+    { key: 'edad', label: 'Edad', align: 'center' },
+    { key: 'promedio_bach', label: 'Prom. bach.', align: 'center' },
+    { key: 'hab_org', label: 'Organización', align: 'center' },
+    { key: 'hab_tec', label: 'Técnicas', align: 'center' },
+    { key: 'hab_mot', label: 'Motivación', align: 'center' },
+    { key: 'hab_total', label: 'Habilidades (total)', align: 'center' },
+    { key: 'asertividad', label: 'Asertividad', align: 'center' },
+    { key: 'autoestima', label: 'Autoestima', align: 'center' },
+    { key: 'estilo', label: 'Estilo', align: 'center' },
+]
 
 const loading = ref(false)
 const exporting = ref(false)

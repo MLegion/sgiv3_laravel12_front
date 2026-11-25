@@ -9,32 +9,20 @@
         </div>
 
         <!-- Línea de hitos -->
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Seguimientos del PAT" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Seguimientos del PAT</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th scope="col" class="px-4 py-2">Hito</th><th scope="col">Estado</th><th scope="col">Entregado</th><th scope="col">Revisado</th><th scope="col"></th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="s in (data?.stages ?? [])" :key="s.stage" class="border-b last:border-0 hover:bg-slate-50">
-                        <td class="px-4 py-2 font-semibold text-slate-700">
-                            {{ s.label }}
-                            <span v-if="s.overdue" class="ml-1 text-[10px] text-rose-500 font-bold">· vencido</span>
-                        </td>
-                        <td><FStatus :status="s.status" /></td>
-                        <td class="text-slate-500 text-xs">{{ fmt(s.submitted_at) }}</td>
-                        <td class="text-slate-500 text-xs">{{ fmt(s.reviewed_at) }}</td>
-                        <td class="pr-3 text-right">
-                            <button @click="openSubmit(s)" class="px-3 py-1 rounded-lg border text-xs font-semibold text-slate-600 hover:bg-slate-100">
-                                {{ s.status === 'pending' ? 'Entregar' : 'Actualizar' }}
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable :columns="columns" :rows="data?.stages ?? []" hide-search caption="Seguimientos del PAT" empty-text="Sin hitos.">
+            <template #cell-label="{ row }">
+                <span class="font-semibold text-slate-700">{{ row.label }}</span>
+                <span v-if="row.overdue" class="ml-1 text-[10px] text-rose-500 font-bold">· vencido</span>
+            </template>
+            <template #cell-status="{ row }"><FStatus :status="row.status" /></template>
+            <template #cell-submitted_at="{ row }"><span class="text-slate-500 text-xs">{{ fmt(row.submitted_at) }}</span></template>
+            <template #cell-reviewed_at="{ row }"><span class="text-slate-500 text-xs">{{ fmt(row.reviewed_at) }}</span></template>
+            <template #cell-actions="{ row }">
+                <button @click="openSubmit(row)" class="px-3 py-1 rounded-lg border text-xs font-semibold text-slate-600 hover:bg-slate-100">
+                    {{ row.status === 'pending' ? 'Entregar' : 'Actualizar' }}
+                </button>
+            </template>
+        </DataTable>
 
         <!-- Modal entregar hito -->
         <div v-if="submit.open" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="submit.open = false">
@@ -59,6 +47,16 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { computed } from 'vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const columns: DataTableColumn<any>[] = [
+    { key: 'label', label: 'Hito' },
+    { key: 'status', label: 'Estado' },
+    { key: 'submitted_at', label: 'Entregado' },
+    { key: 'reviewed_at', label: 'Revisado' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 const props = defineProps<{ id: string | number; embedded?: boolean }>()
 const embedded = computed(() => !!props.embedded)

@@ -22,29 +22,25 @@
             </div>
 
             <!-- Tabla con porcentajes -->
-            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <div role="region" aria-label="Embudo de admisión" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                    <caption class="sr-only">Embudo de admisión</caption>
-                    <thead class="bg-slate-100 border-b border-slate-200">
-                        <tr>
-                            <th scope="col" class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">Etapa</th>
-                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Aspirantes en esta etapa</th>
-                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">% del total</th>
-                            <th scope="col" class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase">Conversión vs etapa anterior</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(s, idx) in data.stages" :key="s.key" class="border-t border-slate-100">
-                            <td class="px-4 py-2 font-medium text-slate-700">{{ s.label }}</td>
-                            <td class="px-4 py-2 text-right tabular-nums">{{ s.count }}</td>
-                            <td class="px-4 py-2 text-right tabular-nums">{{ s.percentage.toFixed(2) }}%</td>
-                            <td class="px-4 py-2 text-right tabular-nums text-slate-500">
-                                {{ idx === 0 ? '—' : conversionFromPrev(idx) }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
-            </div>
+            <DataTable
+                :columns="columns"
+                :rows="data.stages"
+                hide-search
+                caption="Embudo de admisión"
+            >
+                <template #cell-label="{ row }">
+                    <span class="font-medium text-slate-700">{{ row.label }}</span>
+                </template>
+                <template #cell-count="{ row }">
+                    <span class="tabular-nums">{{ row.count }}</span>
+                </template>
+                <template #cell-percentage="{ row }">
+                    <span class="tabular-nums">{{ row.percentage.toFixed(2) }}%</span>
+                </template>
+                <template #cell-conversion="{ index }">
+                    <span class="tabular-nums text-slate-500">{{ index === 0 ? '—' : conversionFromPrev(index) }}</span>
+                </template>
+            </DataTable>
         </template>
     </div>
 </template>
@@ -60,11 +56,20 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import SkeletonChart from '@/app/components/ui/SkeletonChart.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 interface Stage { key: string; label: string; count: number; reached: number; percentage: number }
 interface FunnelResponse { stages: Stage[]; total: number }
+
+const columns: DataTableColumn<Stage>[] = [
+    { key: 'label', label: 'Etapa' },
+    { key: 'count', label: 'Aspirantes en esta etapa', align: 'right' },
+    { key: 'percentage', label: '% del total', align: 'right' },
+    { key: 'conversion', label: 'Conversión vs etapa anterior', align: 'right' },
+]
 
 const props = defineProps<{ periodId: number | null }>()
 

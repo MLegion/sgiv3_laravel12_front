@@ -57,53 +57,51 @@
 
         <!-- Lista -->
         <SkeletonTable v-if="loading" :rows="5" :cols="7" />
-        <div v-else-if="assignments.length > 0" role="region" aria-label="Aspirantes asignados" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-xs border border-slate-200 rounded-md overflow-hidden">
-            <caption class="sr-only">Aspirantes asignados</caption>
-            <thead class="bg-slate-50">
-                <tr class="text-slate-600">
-                    <th scope="col" class="px-2 py-1 text-left">#</th>
-                    <th scope="col" class="px-2 py-1 text-left">Aspirante</th>
-                    <th scope="col" class="px-2 py-1 text-left">Folio</th>
-                    <th scope="col" class="px-2 py-1 text-left">Asignación</th>
-                    <th scope="col" class="px-2 py-1 text-center">Asiento</th>
-                    <th scope="col" class="px-2 py-1 text-center">Asistencia</th>
-                    <th scope="col" class="px-2 py-1 text-center">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(a, idx) in assignments" :key="a.id" class="border-t border-slate-100 hover:bg-slate-50">
-                    <td class="px-2 py-1 text-slate-500">{{ idx + 1 }}</td>
-                    <td class="px-2 py-1 text-slate-800">
-                        {{ a.applicant?.firstSurname }} {{ a.applicant?.secondSurname || '' }} {{ a.applicant?.names }}
-                    </td>
-                    <td class="px-2 py-1 text-slate-600">{{ a.applicant?.preApplicationFolio || '—' }}</td>
-                    <td class="px-2 py-1">
-                        <span
-                            class="text-[9px] px-1.5 py-0.5 rounded uppercase"
-                            :class="a.assignmentMethod === 'AUTO' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700'"
-                        >
-                            {{ a.assignmentMethod }}
-                        </span>
-                    </td>
-                    <td class="px-2 py-1 text-center text-slate-600">{{ a.seatNumber ?? '—' }}</td>
-                    <td class="px-2 py-1 text-center">
-                        <span :class="attendanceClass(a.attendanceStatus || 'PENDING')" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded">
-                            {{ attendanceLabel(a.attendanceStatus || 'PENDING') }}
-                        </span>
-                    </td>
-                    <td class="px-2 py-1 text-center">
-                        <button aria-label="Quitar"
-                            class="border p-1 rounded text-slate-500 hover:text-red-600 hover:bg-red-50"
-                            title="Quitar"
-                            @click="unassign(a)"
-                        >
-                            <TrashIcon class="w-3.5 h-3.5" />
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table></div>
-        <p v-else class="text-xs text-slate-400 italic">Aún no hay aspirantes asignados.</p>
+        <DataTable
+            v-else
+            :columns="columns"
+            :rows="assignments"
+            hide-search
+            caption="Aspirantes asignados"
+            empty-text="Aún no hay aspirantes asignados."
+        >
+            <template #cell-index="{ index }">
+                <span class="text-slate-500">{{ index + 1 }}</span>
+            </template>
+            <template #cell-applicant="{ row }">
+                <span class="text-slate-800">
+                    {{ row.applicant?.firstSurname }} {{ row.applicant?.secondSurname || '' }} {{ row.applicant?.names }}
+                </span>
+            </template>
+            <template #cell-folio="{ row }">
+                <span class="text-slate-600">{{ row.applicant?.preApplicationFolio || '—' }}</span>
+            </template>
+            <template #cell-assignmentMethod="{ row }">
+                <span
+                    class="text-[9px] px-1.5 py-0.5 rounded uppercase"
+                    :class="row.assignmentMethod === 'AUTO' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700'"
+                >
+                    {{ row.assignmentMethod }}
+                </span>
+            </template>
+            <template #cell-seatNumber="{ row }">
+                <span class="text-slate-600">{{ row.seatNumber ?? '—' }}</span>
+            </template>
+            <template #cell-attendanceStatus="{ row }">
+                <span :class="attendanceClass(row.attendanceStatus || 'PENDING')" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded">
+                    {{ attendanceLabel(row.attendanceStatus || 'PENDING') }}
+                </span>
+            </template>
+            <template #cell-actions="{ row }">
+                <button aria-label="Quitar"
+                    class="border p-1 rounded text-slate-500 hover:text-red-600 hover:bg-red-50"
+                    title="Quitar"
+                    @click="unassign(row)"
+                >
+                    <TrashIcon class="w-3.5 h-3.5" />
+                </button>
+            </template>
+        </DataTable>
     </div>
 </template>
 
@@ -113,10 +111,22 @@ import { useConfirm } from '@/app/composables/useConfirm'
 import { PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { ExamSession } from '@/modules/admissions/types/exam-session.type'
 import type { ApplicantExamAssignment } from '@/modules/admissions/types/applicant-exam-assignment.type'
+
+const columns: DataTableColumn<ApplicantExamAssignment>[] = [
+    { key: 'index', label: '#' },
+    { key: 'applicant', label: 'Aspirante' },
+    { key: 'folio', label: 'Folio' },
+    { key: 'assignmentMethod', label: 'Asignación' },
+    { key: 'seatNumber', label: 'Asiento', align: 'center' },
+    { key: 'attendanceStatus', label: 'Asistencia', align: 'center' },
+    { key: 'actions', label: 'Acciones', align: 'center' },
+]
 
 interface ApplicantResult {
     id: number

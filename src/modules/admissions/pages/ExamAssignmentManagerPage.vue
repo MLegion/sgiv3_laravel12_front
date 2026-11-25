@@ -63,50 +63,42 @@
             </h2>
 
             <SkeletonTable v-if="loadingSessions" :rows="5" :cols="7" />
-            <div v-else-if="sessions.length > 0" role="region" aria-label="Estado de sesiones del periodo" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-xs border border-slate-200 rounded-md overflow-hidden">
-                <caption class="sr-only">Estado de sesiones del periodo</caption>
-                <thead class="bg-slate-50">
-                    <tr class="text-slate-600">
-                        <th scope="col" class="px-2 py-1 text-left">#</th>
-                        <th scope="col" class="px-2 py-1 text-left">Fecha</th>
-                        <th scope="col" class="px-2 py-1 text-left">Horario</th>
-                        <th scope="col" class="px-2 py-1 text-left">Aula</th>
-                        <th scope="col" class="px-2 py-1 text-left">Ocupación</th>
-                        <th scope="col" class="px-2 py-1 text-center">Estado</th>
-                        <th scope="col" class="px-2 py-1 text-center"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="s in sessions" :key="s.id" class="border-t border-slate-100 hover:bg-slate-50">
-                        <td class="px-2 py-1 text-slate-500">#{{ s.id }}</td>
-                        <td class="px-2 py-1">{{ formatDate(s.date) }}</td>
-                        <td class="px-2 py-1">{{ s.startTime?.slice(0, 5) }} – {{ s.endTime?.slice(0, 5) }}</td>
-                        <td class="px-2 py-1">{{ s.place?.name ?? '—' }}</td>
-                        <td class="px-2 py-1">
-                            <div class="flex items-center gap-2">
-                                <span>{{ s.assignedCount }} / {{ s.capacity }}</span>
-                                <div class="flex-1 max-w-[120px] h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                                    <div class="h-full bg-blue-500" :style="{ width: occupancyPct(s) + '%' }" />
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-2 py-1 text-center">
-                            <span :class="statusClass(s.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">
-                                {{ s.status }}
-                            </span>
-                        </td>
-                        <td class="px-2 py-1 text-center">
-                            <RouterLink
-                                :to="{ name: 'admissions.exam-sessions.detail', params: { id: s.id } }"
-                                class="text-blue-600 hover:underline text-[11px]"
-                            >
-                                Detalle
-                            </RouterLink>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></div>
-            <p v-else class="text-xs text-slate-400 italic">Sin sesiones en este periodo.</p>
+            <DataTable
+                v-else
+                :columns="columns"
+                :rows="sessions"
+                hide-search
+                caption="Estado de sesiones del periodo"
+                empty-text="Sin sesiones en este periodo."
+            >
+                <template #cell-id="{ row }">
+                    <span class="text-slate-500">#{{ row.id }}</span>
+                </template>
+                <template #cell-date="{ row }">{{ formatDate(row.date) }}</template>
+                <template #cell-time="{ row }">{{ row.startTime?.slice(0, 5) }} – {{ row.endTime?.slice(0, 5) }}</template>
+                <template #cell-place="{ row }">{{ row.place?.name ?? '—' }}</template>
+                <template #cell-occupancy="{ row }">
+                    <div class="flex items-center gap-2">
+                        <span>{{ row.assignedCount }} / {{ row.capacity }}</span>
+                        <div class="flex-1 max-w-[120px] h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-blue-500" :style="{ width: occupancyPct(row) + '%' }" />
+                        </div>
+                    </div>
+                </template>
+                <template #cell-status="{ row }">
+                    <span :class="statusClass(row.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">
+                        {{ row.status }}
+                    </span>
+                </template>
+                <template #cell-actions="{ row }">
+                    <RouterLink
+                        :to="{ name: 'admissions.exam-sessions.detail', params: { id: row.id } }"
+                        class="text-blue-600 hover:underline text-[11px]"
+                    >
+                        Detalle
+                    </RouterLink>
+                </template>
+            </DataTable>
         </div>
     </div>
 </template>
@@ -118,8 +110,20 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import type { ExamSession } from '@/modules/admissions/types/exam-session.type'
 import type { AutoDistributeStrategy } from '@/modules/admissions/types/applicant-exam-assignment.type'
+
+const columns: DataTableColumn<ExamSession>[] = [
+    { key: 'id', label: '#' },
+    { key: 'date', label: 'Fecha' },
+    { key: 'time', label: 'Horario' },
+    { key: 'place', label: 'Aula' },
+    { key: 'occupancy', label: 'Ocupación' },
+    { key: 'status', label: 'Estado', align: 'center' },
+    { key: 'actions', label: '', align: 'center' },
+]
 
 const route = useRoute()
 

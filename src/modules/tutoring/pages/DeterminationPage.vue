@@ -26,36 +26,23 @@
             <h2 class="text-sm font-bold uppercase text-slate-500">Propuestas registradas</h2>
             <button @click="fetchProposals" class="text-xs text-slate-400 hover:text-slate-600">Actualizar</button>
         </div>
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Propuestas registradas" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Propuestas registradas</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th scope="col" class="px-4 py-2">Alumno</th><th scope="col">Motivo</th><th scope="col">Origen</th><th scope="col">Estado</th><th scope="col">Tutor</th><th scope="col"></th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="p in proposals" :key="p.id" class="border-b last:border-0">
-                        <td class="px-4 py-2"><span class="font-semibold text-slate-700">{{ p.num_control }}</span> <span class="text-slate-500">{{ p.full_name }}</span></td>
-                        <td class="text-slate-600 max-w-xs truncate" :title="p.reason">{{ p.reason }}</td>
-                        <td><Sig :t="p.source === 'system' ? 'Riesgo' : 'Academia'" :tone="p.source === 'system' ? 'emerald' : 'slate'" /></td>
-                        <td><PStatus :status="p.status" /></td>
-                        <td class="text-slate-600">{{ p.tutor_name ?? '—' }}</td>
-                        <td class="pr-3 text-right whitespace-nowrap">
-                            <template v-if="p.status === 'open'">
-                                <button @click="openConfirm(p)" class="px-2 py-1 rounded bg-emerald-600 text-white text-[11px] font-semibold">Confirmar</button>
-                                <button @click="act(() => reject(p))" class="px-2 py-1 rounded border text-[11px] text-slate-600 ml-1">Rechazar</button>
-                                <button @click="act(() => withdraw(p))" class="px-2 py-1 rounded border text-[11px] text-slate-600 ml-1">Retirar</button>
-                            </template>
-                            <button v-else-if="p.status === 'confirmed'" @click="openChangeTutor(p)"
-                                class="px-2 py-1 rounded border text-[11px] text-slate-600 hover:bg-slate-100">Cambiar tutor</button>
-                            <span v-else class="text-[11px] text-slate-400">—</span>
-                        </td>
-                    </tr>
-                    <tr v-if="!proposals.length"><td colspan="6" class="px-4 py-6 text-center text-slate-400">Sin propuestas.</td></tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable :columns="proposalColumns" :rows="proposals" hide-search caption="Propuestas registradas" empty-text="Sin propuestas.">
+            <template #cell-alumno="{ row }"><span class="font-semibold text-slate-700">{{ row.num_control }}</span> <span class="text-slate-500">{{ row.full_name }}</span></template>
+            <template #cell-reason="{ row }"><span class="text-slate-600 max-w-xs truncate block" :title="row.reason">{{ row.reason }}</span></template>
+            <template #cell-source="{ row }"><Sig :t="row.source === 'system' ? 'Riesgo' : 'Academia'" :tone="row.source === 'system' ? 'emerald' : 'slate'" /></template>
+            <template #cell-status="{ row }"><PStatus :status="row.status" /></template>
+            <template #cell-tutor_name="{ row }"><span class="text-slate-600">{{ row.tutor_name ?? '—' }}</span></template>
+            <template #cell-actions="{ row }">
+                <template v-if="row.status === 'open'">
+                    <button @click="openConfirm(row)" class="px-2 py-1 rounded bg-emerald-600 text-white text-[11px] font-semibold">Confirmar</button>
+                    <button @click="act(() => reject(row))" class="px-2 py-1 rounded border text-[11px] text-slate-600 ml-1">Rechazar</button>
+                    <button @click="act(() => withdraw(row))" class="px-2 py-1 rounded border text-[11px] text-slate-600 ml-1">Retirar</button>
+                </template>
+                <button v-else-if="row.status === 'confirmed'" @click="openChangeTutor(row)"
+                    class="px-2 py-1 rounded border text-[11px] text-slate-600 hover:bg-slate-100">Cambiar tutor</button>
+                <span v-else class="text-[11px] text-slate-400">—</span>
+            </template>
+        </DataTable>
 
         <!-- Modal: BUSCADOR de candidatos (filtros + datatable) -->
         <BaseModal v-model="searchOpen" title="Buscar candidatos a tutoría individual" size="xl">
@@ -232,6 +219,14 @@ const riskColumns: DataTableColumn[] = [
     { key: 'signals', label: 'Señales' },
     { key: 'suggested', label: 'Sugerido', align: 'center', width: '100px' },
     { key: 'acciones', label: '', align: 'right', width: '130px' },
+]
+const proposalColumns: DataTableColumn[] = [
+    { key: 'alumno', label: 'Alumno' },
+    { key: 'reason', label: 'Motivo' },
+    { key: 'source', label: 'Origen' },
+    { key: 'status', label: 'Estado' },
+    { key: 'tutor_name', label: 'Tutor' },
+    { key: 'actions', label: '', align: 'right' },
 ]
 const tablePage = ref(1)
 const tablePerPage = ref(10)

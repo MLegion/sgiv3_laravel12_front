@@ -28,27 +28,14 @@
             <button @click="fetchList" class="px-4 py-2 rounded-lg border text-sm font-semibold text-slate-600">Filtrar</button>
         </div>
 
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Asignaciones de tutoría" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Asignaciones de tutoría</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th scope="col" class="px-4 py-2">Tutor</th><th scope="col">Ámbito</th><th scope="col">Carrera</th><th scope="col">Periodo</th><th scope="col">Tutorados</th><th scope="col">Estado</th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="r in rows" :key="r.id" @click="goDetail(r.id)" class="border-b last:border-0 hover:bg-slate-50 cursor-pointer">
-                        <td class="px-4 py-2 font-semibold text-slate-700">{{ r.tutor_name }}</td>
-                        <td>{{ r.scope === 'grupal' ? ('Grupal ' + (r.group_name ?? '')) : 'Individual' }}</td>
-                        <td class="text-slate-600">{{ r.career_name ?? '—' }}</td>
-                        <td class="text-slate-600">{{ r.period_name }}</td>
-                        <td class="text-slate-600">{{ r.tutees_count }}</td>
-                        <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="r.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'">{{ r.status === 'active' ? 'Activa' : 'Cerrada' }}</span></td>
-                    </tr>
-                    <tr v-if="!rows.length"><td colspan="6" class="px-4 py-6 text-center text-slate-400">Sin asignaciones.</td></tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable :columns="columns" :rows="rows" hide-search caption="Asignaciones de tutoría" empty-text="Sin asignaciones.">
+            <template #cell-tutor_name="{ row }"><span @click="goDetail(row.id)" class="font-semibold text-slate-700 cursor-pointer">{{ row.tutor_name }}</span></template>
+            <template #cell-scope="{ row }"><span @click="goDetail(row.id)" class="cursor-pointer">{{ row.scope === 'grupal' ? ('Grupal ' + (row.group_name ?? '')) : 'Individual' }}</span></template>
+            <template #cell-career_name="{ row }"><span @click="goDetail(row.id)" class="text-slate-600 cursor-pointer">{{ row.career_name ?? '—' }}</span></template>
+            <template #cell-period_name="{ row }"><span @click="goDetail(row.id)" class="text-slate-600 cursor-pointer">{{ row.period_name }}</span></template>
+            <template #cell-tutees_count="{ row }"><span @click="goDetail(row.id)" class="text-slate-600 cursor-pointer">{{ row.tutees_count }}</span></template>
+            <template #cell-status="{ row }"><span @click="goDetail(row.id)" class="px-2 py-0.5 rounded-full text-xs font-bold cursor-pointer" :class="row.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'">{{ row.status === 'active' ? 'Activa' : 'Cerrada' }}</span></template>
+        </DataTable>
 
         <div v-if="showNew" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showNew = false">
             <div class="bg-white rounded-xl p-5 w-full max-w-md space-y-3">
@@ -121,6 +108,17 @@ import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { TutoringAssignmentRow } from '@/modules/tutoring/types/tutoring.type'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const columns: DataTableColumn<TutoringAssignmentRow>[] = [
+    { key: 'tutor_name', label: 'Tutor' },
+    { key: 'scope', label: 'Ámbito' },
+    { key: 'career_name', label: 'Carrera' },
+    { key: 'period_name', label: 'Periodo' },
+    { key: 'tutees_count', label: 'Tutorados' },
+    { key: 'status', label: 'Estado' },
+]
 
 const T = API.TUTORING_API
 const SS = API.SCHOOL_SERVICES_API

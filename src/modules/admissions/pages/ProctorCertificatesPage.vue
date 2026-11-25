@@ -20,44 +20,37 @@
             ✓ No hay constancias pendientes de validación. Cerrar el proceso de admisión genera esta lista.
         </div>
 
-        <div v-else class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div role="region" aria-label="Constancias de cuidadores" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                <caption class="sr-only">Constancias de cuidadores</caption>
-                <thead class="bg-slate-100 text-slate-600 text-xs">
-                    <tr>
-                        <th scope="col" class="text-left px-3 py-2">Empleado</th>
-                        <th scope="col" class="text-left px-3 py-2">Periodo</th>
-                        <th scope="col" class="text-right px-3 py-2">Sesiones</th>
-                        <th scope="col" class="text-right px-3 py-2">Aspirantes</th>
-                        <th scope="col" class="text-left px-3 py-2">Cerrado</th>
-                        <th scope="col" class="text-right px-3 py-2"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="it in items" :key="it.id" class="hover:bg-slate-50">
-                        <td class="px-3 py-2">
-                            <div class="font-medium">{{ it.employeeFullName ?? '—' }}</div>
-                            <div v-if="it.employeeEmail" class="text-xs text-slate-500">{{ it.employeeEmail }}</div>
-                        </td>
-                        <td class="px-3 py-2 text-slate-700">
-                            {{ it.academicPeriodShortName ?? it.academicPeriodName }}
-                        </td>
-                        <td class="px-3 py-2 text-right font-semibold">{{ it.sessionsCount }}</td>
-                        <td class="px-3 py-2 text-right">{{ it.applicantsCount }}</td>
-                        <td class="px-3 py-2 text-slate-500 text-xs">{{ formatDate(it.closedAt) }}</td>
-                        <td class="px-3 py-2 text-right">
-                            <button
-                                :disabled="busyIds.has(it.id)"
-                                class="text-xs px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-slate-300"
-                                @click="confirmValidate(it)"
-                            >
-                                {{ busyIds.has(it.id) ? 'Validando…' : 'Validar' }}
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></div>
-        </div>
+        <DataTable
+            v-else
+            :columns="columns"
+            :rows="items"
+            hide-search
+            caption="Constancias de cuidadores"
+        >
+            <template #cell-employee="{ row }">
+                <div class="font-medium">{{ row.employeeFullName ?? '—' }}</div>
+                <div v-if="row.employeeEmail" class="text-xs text-slate-500">{{ row.employeeEmail }}</div>
+            </template>
+            <template #cell-period="{ row }">
+                <span class="text-slate-700">{{ row.academicPeriodShortName ?? row.academicPeriodName }}</span>
+            </template>
+            <template #cell-sessionsCount="{ row }">
+                <span class="font-semibold">{{ row.sessionsCount }}</span>
+            </template>
+            <template #cell-applicantsCount="{ row }">{{ row.applicantsCount }}</template>
+            <template #cell-closedAt="{ row }">
+                <span class="text-slate-500 text-xs">{{ formatDate(row.closedAt) }}</span>
+            </template>
+            <template #cell-actions="{ row }">
+                <button
+                    :disabled="busyIds.has(row.id)"
+                    class="text-xs px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-slate-300"
+                    @click="confirmValidate(row)"
+                >
+                    {{ busyIds.has(row.id) ? 'Validando…' : 'Validar' }}
+                </button>
+            </template>
+        </DataTable>
 
         <p v-if="error" class="text-sm text-rose-700">{{ error }}</p>
 
@@ -78,6 +71,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface PendingItem {
     id:                       number
@@ -92,6 +87,15 @@ interface PendingItem {
     applicantsCount:          number
     closedAt:                 string
 }
+
+const columns: DataTableColumn<PendingItem>[] = [
+    { key: 'employee', label: 'Empleado' },
+    { key: 'period', label: 'Periodo' },
+    { key: 'sessionsCount', label: 'Sesiones', align: 'right' },
+    { key: 'applicantsCount', label: 'Aspirantes', align: 'right' },
+    { key: 'closedAt', label: 'Cerrado' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 const items   = ref<PendingItem[]>([])
 const loading = ref(false)

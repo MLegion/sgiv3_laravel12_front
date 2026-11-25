@@ -19,33 +19,19 @@
         </div>
 
         <!-- Tabla de asignaciones -->
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Asignaciones para cierre" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Asignaciones para cierre</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th scope="col" class="px-4 py-2">Tutor</th><th scope="col">Periodo</th><th scope="col">PAT</th><th scope="col">Sesiones</th><th scope="col">Hitos</th>
-                    <th scope="col">Sugerido</th><th scope="col">Cumplimiento</th><th scope="col">Tutorados</th><th scope="col"></th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="r in rows" :key="r.id" class="border-b last:border-0 hover:bg-slate-50">
-                        <td class="px-4 py-2 font-semibold text-slate-700">{{ r.tutor_name }}</td>
-                        <td class="text-slate-600">{{ r.period_name ?? '—' }}</td>
-                        <td><span :class="r.has_pat ? 'text-emerald-600' : 'text-rose-500'">{{ r.has_pat ? 'Sí' : 'No' }}</span></td>
-                        <td class="text-slate-600">{{ r.session_count }}</td>
-                        <td class="text-slate-600">{{ r.followups_done }}/{{ r.followups_required }}</td>
-                        <td><Badge :ok="r.tutor_suggested" :on="'Cumple'" :off="'Insuf.'" /></td>
-                        <td><StatusBadge :status="r.completion_status" /></td>
-                        <td class="text-slate-600">{{ r.tutees_confirmed }}/{{ r.tutees_total }}</td>
-                        <td class="pr-3 text-right">
-                            <button @click="openDrawer(r)" class="px-3 py-1 rounded-lg border text-xs font-semibold text-slate-600 hover:bg-slate-100">Revisar</button>
-                        </td>
-                    </tr>
-                    <tr v-if="!rows.length"><td colspan="9" class="px-4 py-6 text-center text-slate-400">Sin asignaciones en el periodo.</td></tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable :columns="columns" :rows="rows" hide-search caption="Asignaciones para cierre" empty-text="Sin asignaciones en el periodo.">
+            <template #cell-tutor_name="{ row }"><span class="font-semibold text-slate-700">{{ row.tutor_name }}</span></template>
+            <template #cell-period_name="{ row }"><span class="text-slate-600">{{ row.period_name ?? '—' }}</span></template>
+            <template #cell-has_pat="{ row }"><span :class="row.has_pat ? 'text-emerald-600' : 'text-rose-500'">{{ row.has_pat ? 'Sí' : 'No' }}</span></template>
+            <template #cell-session_count="{ row }"><span class="text-slate-600">{{ row.session_count }}</span></template>
+            <template #cell-followups="{ row }"><span class="text-slate-600">{{ row.followups_done }}/{{ row.followups_required }}</span></template>
+            <template #cell-tutor_suggested="{ row }"><Badge :ok="row.tutor_suggested" :on="'Cumple'" :off="'Insuf.'" /></template>
+            <template #cell-completion_status="{ row }"><StatusBadge :status="row.completion_status" /></template>
+            <template #cell-tutees="{ row }"><span class="text-slate-600">{{ row.tutees_confirmed }}/{{ row.tutees_total }}</span></template>
+            <template #cell-actions="{ row }">
+                <button @click="openDrawer(row)" class="px-3 py-1 rounded-lg border text-xs font-semibold text-slate-600 hover:bg-slate-100">Revisar</button>
+            </template>
+        </DataTable>
 
         <!-- Drawer de detalle -->
         <BaseDrawer v-model="drawer.open" :title="drawer.row?.tutor_name" :subtitle="drawer.row?.period_name" size="xl">
@@ -76,31 +62,20 @@
                 <!-- Tutorados -->
                 <section class="rounded-xl border overflow-hidden">
                     <h3 class="text-xs font-bold uppercase text-slate-500 px-4 pt-3">Constancias de tutorados</h3>
-                    <div role="region" aria-label="Constancias de tutorados" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                    <table class="w-full text-sm mt-2">
-                        <caption class="sr-only">Constancias de tutorados</caption>
-                        <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                            <th scope="col" class="px-4 py-2">Alumno</th><th scope="col">Asist.</th><th scope="col">Sugerido</th><th scope="col">Cumpl.</th><th scope="col"></th>
-                        </tr></thead>
-                        <tbody>
-                            <tr v-for="t in detail.tutees" :key="t.id" class="border-b last:border-0">
-                                <td class="px-4 py-2"><span class="font-semibold text-slate-700">{{ t.num_control }}</span> <span class="text-slate-500">{{ t.student_name }}</span></td>
-                                <td class="text-slate-600">{{ t.attended_count }}</td>
-                                <td><Badge :ok="t.tutee_suggested" :on="'Cumple'" :off="'Insuf.'" /></td>
-                                <td><StatusBadge :status="t.completion_status" /></td>
-                                <td class="pr-3 text-right whitespace-nowrap">
-                                    <button v-if="t.completion_status !== 'confirmed'" @click="confirmTutee(t)" :disabled="busy"
-                                        class="px-2 py-1 rounded bg-emerald-600 text-white text-[11px] font-semibold disabled:opacity-50">Confirmar</button>
-                                    <template v-else>
-                                        <button @click="revertTutee(t)" :disabled="busy" class="px-2 py-1 rounded border text-[11px] text-slate-600">Revertir</button>
-                                        <button @click="openConstancia('alumno', t.id, 'Constancia de ' + t.num_control)" class="px-2 py-1 rounded bg-blue-600 text-white text-[11px] font-semibold ml-1">Firmar</button>
-                                    </template>
-                                </td>
-                            </tr>
-                            <tr v-if="!detail.tutees.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin tutorados.</td></tr>
-                        </tbody>
-                    </table>
-                    </div>
+                    <DataTable :columns="tuteeColumns" :rows="detail.tutees" hide-search caption="Constancias de tutorados" empty-text="Sin tutorados." class="mt-2">
+                        <template #cell-student="{ row }"><span class="font-semibold text-slate-700">{{ row.num_control }}</span> <span class="text-slate-500">{{ row.student_name }}</span></template>
+                        <template #cell-attended_count="{ row }"><span class="text-slate-600">{{ row.attended_count }}</span></template>
+                        <template #cell-tutee_suggested="{ row }"><Badge :ok="row.tutee_suggested" :on="'Cumple'" :off="'Insuf.'" /></template>
+                        <template #cell-completion_status="{ row }"><StatusBadge :status="row.completion_status" /></template>
+                        <template #cell-actions="{ row }">
+                            <button v-if="row.completion_status !== 'confirmed'" @click="confirmTutee(row)" :disabled="busy"
+                                class="px-2 py-1 rounded bg-emerald-600 text-white text-[11px] font-semibold disabled:opacity-50">Confirmar</button>
+                            <template v-else>
+                                <button @click="revertTutee(row)" :disabled="busy" class="px-2 py-1 rounded border text-[11px] text-slate-600">Revertir</button>
+                                <button @click="openConstancia('alumno', row.id, 'Constancia de ' + row.num_control)" class="px-2 py-1 rounded bg-blue-600 text-white text-[11px] font-semibold ml-1">Firmar</button>
+                            </template>
+                        </template>
+                    </DataTable>
                 </section>
             </div>
         </BaseDrawer>
@@ -146,6 +121,27 @@ import { useToast } from '@/app/composables/useToast'
 import SignDocumentModal from '@/modules/signatures/modals/SignDocumentModal.vue'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import BaseDrawer from '@/app/components/ui/modal/BaseDrawer.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const columns: DataTableColumn<any>[] = [
+    { key: 'tutor_name', label: 'Tutor' },
+    { key: 'period_name', label: 'Periodo' },
+    { key: 'has_pat', label: 'PAT' },
+    { key: 'session_count', label: 'Sesiones' },
+    { key: 'followups', label: 'Hitos' },
+    { key: 'tutor_suggested', label: 'Sugerido' },
+    { key: 'completion_status', label: 'Cumplimiento' },
+    { key: 'tutees', label: 'Tutorados' },
+    { key: 'actions', label: '', align: 'right' },
+]
+const tuteeColumns: DataTableColumn<any>[] = [
+    { key: 'student', label: 'Alumno' },
+    { key: 'attended_count', label: 'Asist.' },
+    { key: 'tutee_suggested', label: 'Sugerido' },
+    { key: 'completion_status', label: 'Cumpl.' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 const T = API.TUTORING_API
 const toast = useToast()

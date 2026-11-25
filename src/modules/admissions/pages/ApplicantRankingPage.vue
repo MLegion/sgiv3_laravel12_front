@@ -142,115 +142,78 @@
             </div>
 
             <!-- Tabla ranking (con resultado) -->
-            <div v-if="tab === 'ranking'" class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <div role="region" aria-label="Cuadro de resultados" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                    <caption class="sr-only">Cuadro de resultados</caption>
-                    <thead class="bg-slate-100 border-b border-slate-200">
-                        <tr>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nombre Completo</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-44">CURP</th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase w-24">Puntaje</th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase w-28">{{ includeAdmitted ? 'Estado' : '¿Admitido?' }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                            v-for="(item, idx) in items"
-                            :key="item.id"
-                            class="border-t border-slate-100 transition-colors"
-                            :class="excludedIds.has(item.id) ? 'bg-red-50' : 'bg-white hover:bg-slate-50'"
+            <DataTable
+                v-if="tab === 'ranking'"
+                :columns="rankingColumns"
+                :rows="items"
+                hide-search
+                caption="Cuadro de resultados"
+            >
+                <template #cell-rank="{ index }">
+                    <span class="text-xs font-mono text-slate-400 font-semibold">{{ globalRank(index) }}</span>
+                </template>
+                <template #cell-name="{ row }">
+                    <p class="font-medium text-slate-800">{{ fullName(row) }}</p>
+                    <p class="text-xs text-slate-400">{{ row.email }}</p>
+                </template>
+                <template #cell-curp="{ row }">
+                    <span class="font-mono text-xs text-slate-600 uppercase">{{ row.curp || '—' }}</span>
+                </template>
+                <template #cell-entranceScore="{ row }">
+                    <span class="inline-block px-2.5 py-1 rounded-full text-xs font-bold" :class="scoreBadgeClass(row.entranceScore)">
+                        {{ row.entranceScore ?? '—' }}
+                    </span>
+                </template>
+                <template #cell-admitted="{ row }">
+                    <template v-if="!includeAdmitted">
+                        <button
+                            type="button"
+                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+                            :class="excludedIds.has(row.id) ? 'bg-slate-300' : 'bg-green-500'"
+                            :aria-pressed="!excludedIds.has(row.id)"
+                            @click="toggleAdmitted(row.id)"
                         >
-                            <!-- Número progresivo global -->
-                            <td class="px-4 py-3 text-xs font-mono text-slate-400 font-semibold">
-                                {{ globalRank(idx) }}
-                            </td>
-
-                            <!-- Nombre -->
-                            <td class="px-4 py-3">
-                                <p class="font-medium text-slate-800">{{ fullName(item) }}</p>
-                                <p class="text-xs text-slate-400">{{ item.email }}</p>
-                            </td>
-
-                            <!-- CURP -->
-                            <td class="px-4 py-3 font-mono text-xs text-slate-600 uppercase">
-                                {{ item.curp || '—' }}
-                            </td>
-
-                            <!-- Puntaje -->
-                            <td class="px-4 py-3 text-center">
-                                <span class="inline-block px-2.5 py-1 rounded-full text-xs font-bold" :class="scoreBadgeClass(item.entranceScore)">
-                                    {{ item.entranceScore ?? '—' }}
-                                </span>
-                            </td>
-
-                            <!-- Switch admitido / Estado (consulta) -->
-                            <td class="px-4 py-3 text-center">
-                                <template v-if="!includeAdmitted">
-                                    <button
-                                        type="button"
-                                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
-                                        :class="excludedIds.has(item.id) ? 'bg-slate-300' : 'bg-green-500'"
-                                        :aria-pressed="!excludedIds.has(item.id)"
-                                        @click="toggleAdmitted(item.id)"
-                                    >
-                                        <span
-                                            class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
-                                            :class="excludedIds.has(item.id) ? 'translate-x-1' : 'translate-x-6'"
-                                        />
-                                    </button>
-                                    <p class="text-[10px] mt-0.5" :class="excludedIds.has(item.id) ? 'text-red-500 font-semibold' : 'text-green-600'">
-                                        {{ excludedIds.has(item.id) ? 'NO' : 'SÍ' }}
-                                    </p>
-                                </template>
-                                <span
-                                    v-else
-                                    class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold"
-                                    :class="statusBadgeClass(item.status)"
-                                >
-                                    {{ statusLabel(item.status) }}
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
-            </div>
+                            <span
+                                class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
+                                :class="excludedIds.has(row.id) ? 'translate-x-1' : 'translate-x-6'"
+                            />
+                        </button>
+                        <p class="text-[10px] mt-0.5" :class="excludedIds.has(row.id) ? 'text-red-500 font-semibold' : 'text-green-600'">
+                            {{ excludedIds.has(row.id) ? 'NO' : 'SÍ' }}
+                        </p>
+                    </template>
+                    <span
+                        v-else
+                        class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold"
+                        :class="statusBadgeClass(row.status)"
+                    >
+                        {{ statusLabel(row.status) }}
+                    </span>
+                </template>
+            </DataTable>
 
             <!-- Tabla pendientes (sin score) -->
-            <div v-else class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <div role="region" aria-label="Aspirantes pendientes de evaluar" tabindex="0" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                    <caption class="sr-only">Aspirantes pendientes de evaluar</caption>
-                    <thead class="bg-slate-100 border-b border-slate-200">
-                        <tr>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-12">#</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nombre Completo</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-44">CURP</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-36">Folio Preficha</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                            v-for="(item, idx) in items"
-                            :key="item.id"
-                            class="border-t border-slate-100 bg-white hover:bg-amber-50/40 transition-colors"
-                        >
-                            <td class="px-4 py-3 text-xs font-mono text-slate-400 font-semibold">
-                                {{ globalRank(idx) }}
-                            </td>
-                            <td class="px-4 py-3">
-                                <p class="font-medium text-slate-800">{{ fullName(item) }}</p>
-                                <p class="text-xs text-slate-400">{{ item.email }}</p>
-                            </td>
-                            <td class="px-4 py-3 font-mono text-xs text-slate-600 uppercase">
-                                {{ item.curp || '—' }}
-                            </td>
-                            <td class="px-4 py-3 font-mono text-xs text-slate-600">
-                                {{ item.preApplicationFolio || item.applicationFolio || '—' }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
-            </div>
+            <DataTable
+                v-else
+                :columns="pendingColumns"
+                :rows="items"
+                hide-search
+                caption="Aspirantes pendientes de evaluar"
+            >
+                <template #cell-rank="{ index }">
+                    <span class="text-xs font-mono text-slate-400 font-semibold">{{ globalRank(index) }}</span>
+                </template>
+                <template #cell-name="{ row }">
+                    <p class="font-medium text-slate-800">{{ fullName(row) }}</p>
+                    <p class="text-xs text-slate-400">{{ row.email }}</p>
+                </template>
+                <template #cell-curp="{ row }">
+                    <span class="font-mono text-xs text-slate-600 uppercase">{{ row.curp || '—' }}</span>
+                </template>
+                <template #cell-folio="{ row }">
+                    <span class="font-mono text-xs text-slate-600">{{ row.preApplicationFolio || row.applicationFolio || '—' }}</span>
+                </template>
+            </DataTable>
 
             <!-- Paginación -->
             <div v-if="totalPages > 1" class="flex items-center justify-between text-xs text-slate-500">
@@ -424,6 +387,8 @@ import { computed, ref, watch } from 'vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 
@@ -451,6 +416,20 @@ const periodId    = ref<number | null>(null)
 // "Incluir admitidos": vista de consulta histórica (status >= CON_RESULTADO),
 // solo lectura — no permite admitir/excluir.
 const includeAdmitted = ref(false)
+
+const rankingColumns = computed<DataTableColumn<ApplicantRow>[]>(() => [
+    { key: 'rank', label: '#', width: '3rem' },
+    { key: 'name', label: 'Nombre Completo' },
+    { key: 'curp', label: 'CURP', width: '11rem' },
+    { key: 'entranceScore', label: 'Puntaje', align: 'center', width: '6rem' },
+    { key: 'admitted', label: includeAdmitted.value ? 'Estado' : '¿Admitido?', align: 'center', width: '7rem' },
+])
+const pendingColumns: DataTableColumn<ApplicantRow>[] = [
+    { key: 'rank', label: '#', width: '3rem' },
+    { key: 'name', label: 'Nombre Completo' },
+    { key: 'curp', label: 'CURP', width: '11rem' },
+    { key: 'folio', label: 'Folio Preficha', width: '9rem' },
+]
 
 const loading     = ref(false)
 const items       = ref<ApplicantRow[]>([])
