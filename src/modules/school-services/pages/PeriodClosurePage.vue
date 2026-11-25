@@ -104,70 +104,53 @@
                 <header class="px-3 py-2 bg-slate-50 border-b border-slate-200">
                     <h2 class="text-sm font-semibold text-slate-700">Actas docentes</h2>
                 </header>
-                <div v-if="data.actas.length === 0" class="px-3 py-4 text-sm text-slate-500 italic">
-                    No hay asignaciones docentes con inscripciones para este periodo.
-                </div>
-                <div v-else class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Actas docentes"><table class="w-full text-xs">
-                    <caption class="sr-only">Actas docentes</caption>
-                    <thead class="bg-slate-100 text-slate-600">
-                        <tr>
-                            <th scope="col" class="text-left px-3 py-2">Grupo</th>
-                            <th scope="col" class="text-left px-3 py-2">Materia</th>
-                            <th scope="col" class="text-left px-3 py-2">Docente</th>
-                            <th scope="col" class="text-right px-3 py-2">Inscritos</th>
-                            <th scope="col" class="text-right px-3 py-2">Calificados</th>
-                            <th scope="col" class="text-right px-3 py-2">Faltan</th>
-                            <th scope="col" class="text-center px-3 py-2">Estado</th>
-                            <th scope="col" class="text-right px-3 py-2">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                            v-for="a in data.actas"
-                            :key="a.teacherAssignmentId"
-                            :class="a.actaClosedAt ? 'bg-emerald-50/50' : ''"
+                <DataTable
+                    :columns="actaColumns"
+                    :rows="data.actas"
+                    :row-class="(a) => a.actaClosedAt ? 'bg-emerald-50/50' : ''"
+                    hide-search
+                    caption="Actas docentes"
+                    empty-text="No hay asignaciones docentes con inscripciones para este periodo."
+                >
+                    <template #cell-groupName="{ row: a }"><span class="font-mono">{{ a.groupName }}</span></template>
+                    <template #cell-subjectName="{ row: a }">{{ a.subjectName }}</template>
+                    <template #cell-teacherName="{ row: a }"><span class="text-slate-600">{{ a.teacherName ?? '—' }}</span></template>
+                    <template #cell-enrolled="{ row: a }">{{ a.enrolled }}</template>
+                    <template #cell-graded="{ row: a }"><span class="text-emerald-700">{{ a.graded }}</span></template>
+                    <template #cell-missing="{ row: a }">
+                        <span :class="a.missing > 0 ? 'text-rose-600 font-semibold' : 'text-slate-400'">{{ a.missing }}</span>
+                    </template>
+                    <template #cell-status="{ row: a }">
+                        <span
+                            v-if="a.actaClosedAt"
+                            class="text-[9px] uppercase font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700"
+                        >cerrada</span>
+                        <span
+                            v-else
+                            class="text-[9px] uppercase font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700"
+                        >abierta</span>
+                    </template>
+                    <template #cell-actions="{ row: a }">
+                        <button
+                            v-if="!a.actaClosedAt"
+                            :aria-label="`Cerrar acta de ${a.subjectName}`"
+                            :disabled="busyActaIds.has(a.teacherAssignmentId)"
+                            class="text-[10px] px-2 py-0.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-slate-300"
+                            @click="closeActa(a.teacherAssignmentId, a.subjectName)"
                         >
-                            <td class="px-3 py-2 font-mono">{{ a.groupName }}</td>
-                            <td class="px-3 py-2">{{ a.subjectName }}</td>
-                            <td class="px-3 py-2 text-slate-600">{{ a.teacherName ?? '—' }}</td>
-                            <td class="px-3 py-2 text-right">{{ a.enrolled }}</td>
-                            <td class="px-3 py-2 text-right text-emerald-700">{{ a.graded }}</td>
-                            <td class="px-3 py-2 text-right" :class="a.missing > 0 ? 'text-rose-600 font-semibold' : 'text-slate-400'">
-                                {{ a.missing }}
-                            </td>
-                            <td class="px-3 py-2 text-center">
-                                <span
-                                    v-if="a.actaClosedAt"
-                                    class="text-[9px] uppercase font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700"
-                                >cerrada</span>
-                                <span
-                                    v-else
-                                    class="text-[9px] uppercase font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700"
-                                >abierta</span>
-                            </td>
-                            <td class="px-3 py-2 text-right">
-                                <button
-                                    v-if="!a.actaClosedAt"
-                                    :aria-label="`Cerrar acta de ${a.subjectName}`"
-                                    :disabled="busyActaIds.has(a.teacherAssignmentId)"
-                                    class="text-[10px] px-2 py-0.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-slate-300"
-                                    @click="closeActa(a.teacherAssignmentId, a.subjectName)"
-                                >
-                                    Cerrar
-                                </button>
-                                <button
-                                    v-else
-                                    :aria-label="`Reabrir acta de ${a.subjectName}`"
-                                    :disabled="busyActaIds.has(a.teacherAssignmentId) || !!data?.gradesLoadedAt"
-                                    class="text-[10px] px-2 py-0.5 rounded bg-amber-100 text-amber-800 hover:bg-amber-200 disabled:bg-slate-100 disabled:text-slate-400"
-                                    @click="reopenActa(a.teacherAssignmentId)"
-                                >
-                                    Reabrir
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
+                            Cerrar
+                        </button>
+                        <button
+                            v-else
+                            :aria-label="`Reabrir acta de ${a.subjectName}`"
+                            :disabled="busyActaIds.has(a.teacherAssignmentId) || !!data?.gradesLoadedAt"
+                            class="text-[10px] px-2 py-0.5 rounded bg-amber-100 text-amber-800 hover:bg-amber-200 disabled:bg-slate-100 disabled:text-slate-400"
+                            @click="reopenActa(a.teacherAssignmentId)"
+                        >
+                            Reabrir
+                        </button>
+                    </template>
+                </DataTable>
             </div>
 
             <!-- Reclasificación de estudiantes -->
@@ -268,6 +251,8 @@ import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 import SkeletonStat from '@/app/components/ui/SkeletonStat.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface ActaRow {
     teacherAssignmentId: number
@@ -309,6 +294,17 @@ const capId = String(route.params.capId)
 
 const loading = ref(false)
 const data    = ref<PeriodClosureData | { found: false } | null>(null)
+
+const actaColumns: DataTableColumn<ActaRow>[] = [
+    { key: 'groupName',   label: 'Grupo' },
+    { key: 'subjectName', label: 'Materia' },
+    { key: 'teacherName', label: 'Docente' },
+    { key: 'enrolled',    label: 'Inscritos',   align: 'right' },
+    { key: 'graded',      label: 'Calificados', align: 'right' },
+    { key: 'missing',     label: 'Faltan',      align: 'right' },
+    { key: 'status',      label: 'Estado',      align: 'center' },
+    { key: 'actions',     label: 'Acción',      align: 'right' },
+]
 
 const markingLoaded = ref(false)
 const busyActaIds   = ref<Set<number>>(new Set())

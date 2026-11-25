@@ -58,45 +58,29 @@
                         </div>
 
                         <!-- Materias con cupos -->
-                        <div v-if="preview.subjects.length > 0" class="mb-4 bg-white border rounded-xl overflow-hidden">
-                            <div class="px-4 py-2 border-b bg-slate-50">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Materias del semestre</p>
-                            </div>
-                            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias del semestre"><table class="w-full text-xs">
-                                <caption class="sr-only">Materias del semestre</caption>
-                                <thead class="text-slate-500">
-                                    <tr>
-                                        <th scope="col" class="px-3 py-2 text-left">Código</th>
-                                        <th scope="col" class="px-3 py-2 text-left">Materia</th>
-                                        <th scope="col" class="px-3 py-2 text-left">Docente</th>
-                                        <th scope="col" class="px-3 py-2 text-center">Cupo</th>
-                                        <th scope="col" class="px-3 py-2 text-center">Ocupado</th>
-                                        <th scope="col" class="px-3 py-2 text-center">Disponible</th>
-                                        <th scope="col" class="px-3 py-2 text-center">A inscribir</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-100">
-                                    <tr v-for="s in preview.subjects" :key="s.teacher_assignment_id"
-                                        :class="{ 'bg-rose-50': s.short_by > 0 }">
-                                        <td class="px-3 py-2 font-mono text-slate-500">{{ s.subject_code }}</td>
-                                        <td class="px-3 py-2 text-slate-700">{{ s.subject_name }}</td>
-                                        <td class="px-3 py-2 text-slate-500">{{ s.teacher_name }}</td>
-                                        <td class="px-3 py-2 text-center">{{ s.capacity }}</td>
-                                        <td class="px-3 py-2 text-center text-slate-500">{{ s.occupied }}</td>
-                                        <td class="px-3 py-2 text-center" :class="s.available < s.will_enroll ? 'text-rose-700 font-bold' : 'text-slate-500'">
-                                            {{ s.available }}
-                                        </td>
-                                        <td class="px-3 py-2 text-center font-semibold">
-                                            <span :class="s.short_by > 0 ? 'text-rose-700' : 'text-emerald-700'">
-                                                {{ s.will_enroll }}
-                                            </span>
-                                            <span v-if="s.short_by > 0" class="text-[10px] text-rose-600 ml-1">
-                                                (faltan {{ s.short_by }})
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table></div>
+                        <div v-if="preview.subjects.length > 0" class="mb-4">
+                            <p class="text-xs font-bold text-slate-600 uppercase mb-2">Materias del semestre</p>
+                            <DataTable
+                                :columns="subjectColumns"
+                                :rows="preview.subjects"
+                                :row-class="(s) => s.short_by > 0 ? 'bg-rose-50' : ''"
+                                hide-search
+                                caption="Materias del semestre"
+                                empty-text="Sin materias."
+                            >
+                                <template #cell-subject_code="{ row: s }"><span class="font-mono text-slate-500">{{ s.subject_code }}</span></template>
+                                <template #cell-subject_name="{ row: s }"><span class="text-slate-700">{{ s.subject_name }}</span></template>
+                                <template #cell-teacher_name="{ row: s }"><span class="text-slate-500">{{ s.teacher_name }}</span></template>
+                                <template #cell-capacity="{ row: s }">{{ s.capacity }}</template>
+                                <template #cell-occupied="{ row: s }"><span class="text-slate-500">{{ s.occupied }}</span></template>
+                                <template #cell-available="{ row: s }">
+                                    <span :class="s.available < s.will_enroll ? 'text-rose-700 font-bold' : 'text-slate-500'">{{ s.available }}</span>
+                                </template>
+                                <template #cell-will_enroll="{ row: s }">
+                                    <span class="font-semibold" :class="s.short_by > 0 ? 'text-rose-700' : 'text-emerald-700'">{{ s.will_enroll }}</span>
+                                    <span v-if="s.short_by > 0" class="text-[10px] text-rose-600 ml-1">(faltan {{ s.short_by }})</span>
+                                </template>
+                            </DataTable>
                         </div>
 
                         <!-- Alumnos -->
@@ -159,6 +143,8 @@ import {
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface Blocker { type: string; message: string; data?: any }
 interface SubjectRow {
@@ -196,6 +182,16 @@ const modelValueProxy = computed({
     get: () => props.modelValue,
     set: (v: boolean) => emit('update:modelValue', v),
 })
+
+const subjectColumns: DataTableColumn<SubjectRow>[] = [
+    { key: 'subject_code', label: 'Código' },
+    { key: 'subject_name', label: 'Materia' },
+    { key: 'teacher_name', label: 'Docente' },
+    { key: 'capacity',     label: 'Cupo',       align: 'center' },
+    { key: 'occupied',     label: 'Ocupado',    align: 'center' },
+    { key: 'available',    label: 'Disponible', align: 'center' },
+    { key: 'will_enroll',  label: 'A inscribir', align: 'center' },
+]
 
 const loadingPreview = ref(false)
 const confirming     = ref(false)

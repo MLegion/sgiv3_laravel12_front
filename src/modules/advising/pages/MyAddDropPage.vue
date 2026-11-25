@@ -49,41 +49,27 @@
                     <h3 class="text-sm font-bold text-slate-700 uppercase">Historial de movimientos</h3>
                     <span class="text-[10px] text-slate-400 uppercase tracking-wide">Solicitud #{{ historySource?.id }}</span>
                 </div>
-                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Historial de movimientos"><table class="w-full text-sm">
-                    <caption class="sr-only">Historial de movimientos</caption>
-                    <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
-                        <tr>
-                            <th scope="col" class="px-4 py-2 text-left w-28">MOVIMIENTO</th>
-                            <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
-                            <th scope="col" class="px-4 py-2 text-left">GRUPO</th>
-                            <th scope="col" class="px-4 py-2 text-left">DOCENTE</th>
-                            <th scope="col" class="px-4 py-2 text-right w-28">ESTADO</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        <tr v-for="it in movements" :key="`mv-${it.id}`"
-                            :class="it.type === 'drop' ? 'bg-red-50/40' : 'bg-emerald-50/40'">
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full"
-                                    :class="it.type === 'drop' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'">
-                                    {{ it.type === 'drop' ? 'BAJA' : 'ALTA' }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-2">
-                                <span class="font-bold text-slate-700" :class="{ 'line-through text-red-600': it.type === 'drop' }">{{ it.subject?.name ?? '—' }}</span>
-                                <span v-if="it.subject?.officialCode" class="ml-2 text-[10px] font-mono text-slate-400">{{ it.subject?.officialCode }}</span>
-                            </td>
-                            <td class="px-4 py-2 text-xs font-mono text-slate-600">{{ it.teacherAssignment?.groupName ?? '—' }}</td>
-                            <td class="px-4 py-2 text-xs text-slate-600">{{ it.teacherAssignment?.teacherName ?? '—' }}</td>
-                            <td class="px-4 py-2 text-right">
-                                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full"
-                                    :class="it.applied ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'">
-                                    {{ it.applied ? 'APLICADA' : 'PENDIENTE' }}
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
+                <DataTable :columns="movementColumns" :rows="movements" hide-search caption="Historial de movimientos" empty-text="Sin movimientos."
+                    :row-class="(row) => row.type === 'drop' ? 'bg-red-50/40' : 'bg-emerald-50/40'">
+                    <template #cell-movimiento="{ row }">
+                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full"
+                            :class="row.type === 'drop' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'">
+                            {{ row.type === 'drop' ? 'BAJA' : 'ALTA' }}
+                        </span>
+                    </template>
+                    <template #cell-subject="{ row }">
+                        <span class="font-bold text-slate-700" :class="{ 'line-through text-red-600': row.type === 'drop' }">{{ row.subject?.name ?? '—' }}</span>
+                        <span v-if="row.subject?.officialCode" class="ml-2 text-[10px] font-mono text-slate-400">{{ row.subject?.officialCode }}</span>
+                    </template>
+                    <template #cell-group="{ row }"><span class="text-xs font-mono text-slate-600">{{ row.teacherAssignment?.groupName ?? '—' }}</span></template>
+                    <template #cell-teacher="{ row }"><span class="text-xs text-slate-600">{{ row.teacherAssignment?.teacherName ?? '—' }}</span></template>
+                    <template #cell-estado="{ row }">
+                        <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full"
+                            :class="row.applied ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'">
+                            {{ row.applied ? 'APLICADA' : 'PENDIENTE' }}
+                        </span>
+                    </template>
+                </DataTable>
             </div>
 
             <!-- Mi carga actual -->
@@ -96,53 +82,37 @@
                         <span class="inline-flex items-center gap-1 text-emerald-600"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-200"></span>Alta</span>
                     </div>
                 </div>
-                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Mi carga actual"><table class="w-full text-sm">
-                    <caption class="sr-only">Mi carga actual</caption>
-                    <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
-                        <tr>
-                            <th scope="col" class="px-4 py-2 text-left w-28">ESTADO</th>
-                            <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
-                            <th scope="col" class="px-4 py-2 text-left">GRUPO</th>
-                            <th scope="col" class="px-4 py-2 text-left">DOCENTE</th>
-                            <th scope="col" class="px-4 py-2 text-right">ACCIÓN</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        <tr v-for="e in currentLoad" :key="e.id" :class="isDropped(e.id) ? 'bg-red-50/60' : ''">
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full"
-                                    :class="isDropped(e.id) ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-500'">
-                                    {{ isDropped(e.id) ? 'BAJA' : 'INSCRITA' }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-2">
-                                <div class="font-bold text-slate-700" :class="isDropped(e.id) ? 'line-through text-red-600' : ''">
-                                    {{ e.subject?.name ?? '—' }}
-                                </div>
-                                <div class="text-[10px] font-mono text-slate-400">{{ e.subject?.official_code }}</div>
-                            </td>
-                            <td class="px-4 py-2 text-xs font-mono font-semibold text-slate-700">{{ e.group?.name ?? '—' }}</td>
-                            <td class="px-4 py-2 text-xs text-slate-600">{{ e.teacher?.name ?? '— por asignar —' }}</td>
-                            <td class="px-4 py-2 text-right">
-                                <button v-if="isDropped(e.id)" type="button"
-                                    :disabled="!editable || busy"
-                                    class="px-3 py-1 text-xs rounded-md border text-slate-600 hover:bg-slate-50 disabled:opacity-40"
-                                    @click="removeItem('drop', e.subject!.id)">
-                                    Deshacer baja
-                                </button>
-                                <button v-else type="button"
-                                    :disabled="!editable || busy"
-                                    class="px-3 py-1 text-xs rounded-md border text-red-600 border-red-200 hover:bg-red-50 disabled:opacity-40"
-                                    @click="dropEnrollment(e.id)">
-                                    Dar de baja
-                                </button>
-                            </td>
-                        </tr>
-                        <tr v-if="!currentLoad.length">
-                            <td colspan="5" class="px-4 py-6 text-center text-sm text-slate-400">No tienes materias inscritas.</td>
-                        </tr>
-                    </tbody>
-                </table></div>
+                <DataTable :columns="currentLoadColumns" :rows="currentLoad" hide-search caption="Mi carga actual" empty-text="No tienes materias inscritas."
+                    :row-class="(row) => isDropped(row.id) ? 'bg-red-50/60' : ''">
+                    <template #cell-estado="{ row }">
+                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full"
+                            :class="isDropped(row.id) ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-500'">
+                            {{ isDropped(row.id) ? 'BAJA' : 'INSCRITA' }}
+                        </span>
+                    </template>
+                    <template #cell-subject="{ row }">
+                        <div class="font-bold text-slate-700" :class="isDropped(row.id) ? 'line-through text-red-600' : ''">
+                            {{ row.subject?.name ?? '—' }}
+                        </div>
+                        <div class="text-[10px] font-mono text-slate-400">{{ row.subject?.official_code }}</div>
+                    </template>
+                    <template #cell-group="{ row }"><span class="text-xs font-mono font-semibold text-slate-700">{{ row.group?.name ?? '—' }}</span></template>
+                    <template #cell-teacher="{ row }"><span class="text-xs text-slate-600">{{ row.teacher?.name ?? '— por asignar —' }}</span></template>
+                    <template #cell-actions="{ row }">
+                        <button v-if="isDropped(row.id)" type="button"
+                            :disabled="!editable || busy"
+                            class="px-3 py-1 text-xs rounded-md border text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                            @click="removeItem('drop', row.subject!.id)">
+                            Deshacer baja
+                        </button>
+                        <button v-else type="button"
+                            :disabled="!editable || busy"
+                            class="px-3 py-1 text-xs rounded-md border text-red-600 border-red-200 hover:bg-red-50 disabled:opacity-40"
+                            @click="dropEnrollment(row.id)">
+                            Dar de baja
+                        </button>
+                    </template>
+                </DataTable>
             </div>
 
             <!-- Altas propuestas -->
@@ -150,35 +120,22 @@
                 <div class="border-b px-4 py-3">
                     <h3 class="text-sm font-bold text-emerald-700 uppercase">Altas solicitadas</h3>
                 </div>
-                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Altas solicitadas"><table class="w-full text-sm">
-                    <caption class="sr-only">Altas solicitadas</caption>
-                    <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
-                        <tr>
-                            <th scope="col" class="px-4 py-2 text-left w-28">ESTADO</th>
-                            <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
-                            <th scope="col" class="px-4 py-2 text-left">GRUPO</th>
-                            <th scope="col" class="px-4 py-2 text-left">DOCENTE</th>
-                            <th scope="col" class="px-4 py-2 text-right">ACCIÓN</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        <tr v-for="it in pendingAddedItems" :key="it.id" class="bg-emerald-50/60">
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700">ALTA</span>
-                            </td>
-                            <td class="px-4 py-2 font-bold text-slate-700">{{ it.subject?.name ?? '—' }}</td>
-                            <td class="px-4 py-2 text-xs font-mono">{{ it.teacherAssignment?.groupName ?? '—' }}</td>
-                            <td class="px-4 py-2 text-xs text-slate-600">{{ it.teacherAssignment?.teacherName ?? '—' }}</td>
-                            <td class="px-4 py-2 text-right">
-                                <button type="button" :disabled="!editable || busy"
-                                    class="px-3 py-1 text-xs rounded-md border text-slate-600 hover:bg-slate-50 disabled:opacity-40"
-                                    @click="removeItem('add', it.subjectId)">
-                                    Quitar
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
+                <DataTable :columns="pendingAddColumns" :rows="pendingAddedItems" hide-search caption="Altas solicitadas" empty-text="Sin altas."
+                    :row-class="() => 'bg-emerald-50/60'">
+                    <template #cell-estado>
+                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700">ALTA</span>
+                    </template>
+                    <template #cell-subject="{ row }"><span class="font-bold text-slate-700">{{ row.subject?.name ?? '—' }}</span></template>
+                    <template #cell-group="{ row }"><span class="text-xs font-mono">{{ row.teacherAssignment?.groupName ?? '—' }}</span></template>
+                    <template #cell-teacher="{ row }"><span class="text-xs text-slate-600">{{ row.teacherAssignment?.teacherName ?? '—' }}</span></template>
+                    <template #cell-actions="{ row }">
+                        <button type="button" :disabled="!editable || busy"
+                            class="px-3 py-1 text-xs rounded-md border text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                            @click="removeItem('add', row.subjectId)">
+                            Quitar
+                        </button>
+                    </template>
+                </DataTable>
             </div>
 
             <!-- Agregar materia -->
@@ -243,10 +200,35 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import PhaseUnavailable from '@/app/components/ui/PhaseUnavailable.vue'
 import SkeletonText from '@/app/components/ui/SkeletonText.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import type {
     AddDropActivePeriod, AddDropRequest, AddDropItemType,
     CurriculumStatus, CurriculumStatusEntry, EnrolledCourse, PolicyViolation, AdvisingStatus,
 } from '@/modules/advising/types/advising.type'
+
+type MovementRow = NonNullable<AddDropRequest['items']>[number]
+const movementColumns: DataTableColumn<MovementRow>[] = [
+    { key: 'movimiento', label: 'Movimiento', width: '7rem' },
+    { key: 'subject', label: 'Materia' },
+    { key: 'group', label: 'Grupo' },
+    { key: 'teacher', label: 'Docente' },
+    { key: 'estado', label: 'Estado', align: 'right', width: '7rem' },
+]
+const currentLoadColumns: DataTableColumn<EnrolledCourse>[] = [
+    { key: 'estado', label: 'Estado', width: '7rem' },
+    { key: 'subject', label: 'Materia' },
+    { key: 'group', label: 'Grupo' },
+    { key: 'teacher', label: 'Docente' },
+    { key: 'actions', label: 'Acción', align: 'right' },
+]
+const pendingAddColumns: DataTableColumn<MovementRow>[] = [
+    { key: 'estado', label: 'Estado', width: '7rem' },
+    { key: 'subject', label: 'Materia' },
+    { key: 'group', label: 'Grupo' },
+    { key: 'teacher', label: 'Docente' },
+    { key: 'actions', label: 'Acción', align: 'right' },
+]
 
 const loading = ref(true)
 const busy    = ref(false)

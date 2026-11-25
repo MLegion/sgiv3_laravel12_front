@@ -74,42 +74,27 @@ IJKL345678HDFZZZ02,QUI301,ORD1,3,0,,,0</pre>
                         </span>
                     </div>
                 </div>
-                <div class="max-h-72 overflow-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Vista previa de calificaciones">
-                    <table class="w-full text-xs">
-                        <caption class="sr-only">Vista previa de calificaciones</caption>
-                        <thead class="bg-slate-100 text-slate-500 sticky top-0">
-                            <tr>
-                                <th scope="col" class="text-left px-2 py-1.5 font-medium">#</th>
-                                <th scope="col" class="text-left px-2 py-1.5 font-medium">Identificador</th>
-                                <th scope="col" class="text-left px-2 py-1.5 font-medium">Materia</th>
-                                <th scope="col" class="text-left px-2 py-1.5 font-medium">Tipo</th>
-                                <th scope="col" class="text-left px-2 py-1.5 font-medium">Sem.</th>
-                                <th scope="col" class="text-left px-2 py-1.5 font-medium">G1/G2/G3</th>
-                                <th scope="col" class="text-left px-2 py-1.5 font-medium">Acr.</th>
-                                <th scope="col" class="text-left px-2 py-1.5 font-medium">Validación</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr
-                                v-for="r in csvPreview"
-                                :key="r.line"
-                                class="border-t"
-                                :class="r.error ? 'bg-red-50' : 'odd:bg-white even:bg-slate-50'"
-                            >
-                                <td class="px-2 py-1 text-slate-400 font-mono">{{ r.line }}</td>
-                                <td class="px-2 py-1 font-mono">{{ r.identifier || '—' }}</td>
-                                <td class="px-2 py-1 font-mono">{{ r.subject || '—' }}</td>
-                                <td class="px-2 py-1 font-mono">{{ r.approval || '—' }}</td>
-                                <td class="px-2 py-1 font-mono">{{ r.period || '—' }}</td>
-                                <td class="px-2 py-1 font-mono">{{ r.grades }}</td>
-                                <td class="px-2 py-1 font-mono">{{ r.passed }}</td>
-                                <td class="px-2 py-1">
-                                    <span v-if="r.error" class="text-red-600">{{ r.error }}</span>
-                                    <span v-else class="text-green-600">✓</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="max-h-72 overflow-auto">
+                    <DataTable
+                        :columns="previewColumns"
+                        :rows="csvPreview"
+                        :row-class="(r) => r.error ? 'bg-red-50' : 'odd:bg-white even:bg-slate-50'"
+                        hide-search
+                        caption="Vista previa de calificaciones"
+                        empty-text="Sin filas."
+                    >
+                        <template #cell-line="{ row: r }"><span class="text-slate-400 font-mono">{{ r.line }}</span></template>
+                        <template #cell-identifier="{ row: r }"><span class="font-mono">{{ r.identifier || '—' }}</span></template>
+                        <template #cell-subject="{ row: r }"><span class="font-mono">{{ r.subject || '—' }}</span></template>
+                        <template #cell-approval="{ row: r }"><span class="font-mono">{{ r.approval || '—' }}</span></template>
+                        <template #cell-period="{ row: r }"><span class="font-mono">{{ r.period || '—' }}</span></template>
+                        <template #cell-grades="{ row: r }"><span class="font-mono">{{ r.grades }}</span></template>
+                        <template #cell-passed="{ row: r }"><span class="font-mono">{{ r.passed }}</span></template>
+                        <template #cell-validation="{ row: r }">
+                            <span v-if="r.error" class="text-red-600">{{ r.error }}</span>
+                            <span v-else class="text-green-600">✓</span>
+                        </template>
+                    </DataTable>
                 </div>
                 <p v-if="csvErrorCount" class="px-4 py-2 text-[11px] text-amber-700 bg-amber-50 border-t">
                     Las filas con error se enviarán igual; el servidor las rechazará y aparecerán en el reporte de abajo.
@@ -165,6 +150,8 @@ IJKL345678HDFZZZ02,QUI301,ORD1,3,0,,,0</pre>
 import { ref, computed } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const csvFile    = ref<File | null>(null)
 const submitting = ref(false)
@@ -183,6 +170,18 @@ interface CsvPreviewRow {
 }
 
 const csvPreview     = ref<CsvPreviewRow[]>([])
+
+const previewColumns: DataTableColumn<CsvPreviewRow>[] = [
+    { key: 'line',       label: '#' },
+    { key: 'identifier', label: 'Identificador' },
+    { key: 'subject',    label: 'Materia' },
+    { key: 'approval',   label: 'Tipo' },
+    { key: 'period',     label: 'Sem.' },
+    { key: 'grades',     label: 'G1/G2/G3' },
+    { key: 'passed',     label: 'Acr.' },
+    { key: 'validation', label: 'Validación' },
+]
+
 const csvValidCount  = computed(() => csvPreview.value.filter(r => !r.error).length)
 const csvErrorCount  = computed(() => csvPreview.value.filter(r => r.error).length)
 

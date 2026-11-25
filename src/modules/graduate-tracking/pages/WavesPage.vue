@@ -13,27 +13,27 @@
             <button @click="fetchList" class="px-4 py-2 rounded-lg border text-sm font-semibold text-slate-600">Filtrar</button>
         </div>
 
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Oleadas de seguimiento de egresados" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Oleadas de seguimiento de egresados</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th scope="col" class="px-4 py-2">Oleada</th><th scope="col">Carrera</th><th scope="col">Invitadas</th><th scope="col">Enviadas</th><th scope="col">Respondidas</th><th scope="col">Estado</th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="w in rows" :key="w.id" @click="goDetail(w.id)" class="border-b last:border-0 hover:bg-slate-50 cursor-pointer">
-                        <td class="px-4 py-2"><div class="font-semibold text-slate-700">{{ w.name }}</div><div class="text-xs text-slate-400">{{ w.form_slug }}</div></td>
-                        <td class="text-slate-600">{{ w.career_name ?? 'Todas' }}</td>
-                        <td class="text-slate-600">{{ w.counts?.invited ?? 0 }}</td>
-                        <td class="text-slate-600">{{ w.counts?.sent ?? 0 }}</td>
-                        <td class="text-slate-600">{{ w.counts?.responded ?? 0 }}</td>
-                        <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="statusClass(w.status)">{{ statusLabel(w.status) }}</span></td>
-                    </tr>
-                    <tr v-if="!rows.length"><td colspan="6" class="px-4 py-6 text-center text-slate-400">Sin oleadas.</td></tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable
+            :columns="columns"
+            :rows="rows"
+            :row-clickable="true"
+            hide-search
+            caption="Oleadas de seguimiento de egresados"
+            empty-text="Sin oleadas."
+            @row-click="(w) => goDetail(w.id)"
+        >
+            <template #cell-name="{ row: w }">
+                <div class="font-semibold text-slate-700">{{ w.name }}</div>
+                <div class="text-xs text-slate-400">{{ w.form_slug }}</div>
+            </template>
+            <template #cell-career_name="{ row: w }"><span class="text-slate-600">{{ w.career_name ?? 'Todas' }}</span></template>
+            <template #cell-invited="{ row: w }"><span class="text-slate-600">{{ w.counts?.invited ?? 0 }}</span></template>
+            <template #cell-sent="{ row: w }"><span class="text-slate-600">{{ w.counts?.sent ?? 0 }}</span></template>
+            <template #cell-responded="{ row: w }"><span class="text-slate-600">{{ w.counts?.responded ?? 0 }}</span></template>
+            <template #cell-status="{ row: w }">
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="statusClass(w.status)">{{ statusLabel(w.status) }}</span>
+            </template>
+        </DataTable>
 
         <!-- Modal nueva oleada -->
         <div v-if="showNew" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showNew = false">
@@ -89,11 +89,21 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { GraduateWave, CohortPreview } from '@/modules/graduate-tracking/types/graduate-tracking.type'
 import { statusLabel, statusClass } from '@/modules/graduate-tracking/pages/status'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const G = API.GRADUATE_TRACKING_API
 const router = useRouter()
 
 const rows = ref<GraduateWave[]>([])
+const columns: DataTableColumn<GraduateWave>[] = [
+    { key: 'name',        label: 'Oleada' },
+    { key: 'career_name', label: 'Carrera' },
+    { key: 'invited',     label: 'Invitadas' },
+    { key: 'sent',        label: 'Enviadas' },
+    { key: 'responded',   label: 'Respondidas' },
+    { key: 'status',      label: 'Estado' },
+]
 const options = reactive<{ careers: any[]; periods: any[]; statuses: any[] }>({ careers: [], periods: [], statuses: [] })
 const filters = reactive({ status: '' })
 

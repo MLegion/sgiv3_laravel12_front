@@ -555,122 +555,103 @@
             </div>
 
             <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias ofertadas"><table class="min-w-full text-sm">
-                    <caption class="sr-only">Materias ofertadas</caption>
-                    <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
-                        <tr>
-                            <th scope="col" class="px-3 py-2 text-left">Clave</th>
-                            <th scope="col" class="px-3 py-2 text-left">Materia</th>
-                            <th scope="col" class="px-3 py-2 text-center">Sem.</th>
-                            <th scope="col" class="px-3 py-2 text-center">Créd.</th>
-                            <th scope="col" class="px-3 py-2 text-center">Tipo</th>
-                            <th scope="col" class="px-3 py-2 text-left">Grupo · Docente · Horario</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <tr v-for="entry in offeredForTarget" :key="entry.curriculumId"
-                            class="align-top"
-                            :class="[
-                                conflictingSubjects.has(entry.subjectId) ? 'bg-red-50'
-                                    : subjectErrors.has(entry.subjectId) ? 'bg-amber-50'
-                                    : 'hover:bg-slate-50'
-                            ]">
-                            <td class="px-3 py-2 font-mono text-xs pt-3">{{ entry.subject?.code ?? '—' }}</td>
-                            <td class="px-3 py-2 pt-3">
-                                <div class="font-medium text-slate-800 flex items-center gap-1.5 flex-wrap">
-                                    {{ entry.subject?.name ?? '—' }}
-                                    <span v-if="addedByAdvisor(entry.subjectId)"
-                                          class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-purple-100 text-purple-700 cursor-help"
-                                          :title="advisorAddedTooltip(entry.subjectId)">
-                                        Por asesor
-                                    </span>
-                                </div>
-                            </td>
-                            <td class="px-3 py-2 text-center text-xs pt-3">{{ entry.period }}°</td>
-                            <td class="px-3 py-2 text-center font-bold pt-3">{{ entry.subject?.credits ?? 0 }}</td>
-                            <td class="px-3 py-2 text-center pt-3">
-                                <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold" :class="attemptBadge(entry.attempt)">
-                                    {{ attemptLabel(entry.attempt) }}
-                                </span>
-                            </td>
-                            <td class="px-3 py-2 text-xs">
-                                <div v-if="entry.offer && entry.offer.assignments.length" class="space-y-1">
-                                    <div
-                                        v-for="a in entry.offer.assignments"
-                                        :key="a.id"
-                                        class="flex items-start gap-2 rounded px-1.5 py-1 transition"
-                                        :class="[
-                                            proposed.get(entry.subjectId)?.teacherAssignmentId === a.id
-                                                ? 'bg-emerald-50 ring-1 ring-emerald-200'
-                                                : (proposed.has(entry.subjectId) ? 'opacity-60' : ''),
-                                        ]"
+                <DataTable :columns="offeredColumns" :rows="offeredForTarget" hide-search
+                    caption="Materias ofertadas"
+                    empty-text="No hay materias aperturadas para tu siguiente semestre. Si crees que es un error, contacta a tu jefe de carrera."
+                    :row-class="(row) => [
+                        'align-top',
+                        conflictingSubjects.has(row.subjectId) ? 'bg-red-50'
+                            : subjectErrors.has(row.subjectId) ? 'bg-amber-50'
+                            : 'hover:bg-slate-50',
+                    ]">
+                    <template #cell-code="{ row }"><span class="font-mono text-xs">{{ row.subject?.code ?? '—' }}</span></template>
+                    <template #cell-subject="{ row }">
+                        <div class="font-medium text-slate-800 flex items-center gap-1.5 flex-wrap">
+                            {{ row.subject?.name ?? '—' }}
+                            <span v-if="addedByAdvisor(row.subjectId)"
+                                  class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-purple-100 text-purple-700 cursor-help"
+                                  :title="advisorAddedTooltip(row.subjectId)">
+                                Por asesor
+                            </span>
+                        </div>
+                    </template>
+                    <template #cell-period="{ row }"><span class="text-xs">{{ row.period }}°</span></template>
+                    <template #cell-credits="{ row }"><span class="font-bold">{{ row.subject?.credits ?? 0 }}</span></template>
+                    <template #cell-attempt="{ row }">
+                        <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold" :class="attemptBadge(row.attempt)">
+                            {{ attemptLabel(row.attempt) }}
+                        </span>
+                    </template>
+                    <template #cell-offer="{ row: entry }">
+                        <div v-if="entry.offer && entry.offer.assignments.length" class="space-y-1">
+                            <div
+                                v-for="a in entry.offer.assignments"
+                                :key="a.id"
+                                class="flex items-start gap-2 rounded px-1.5 py-1 transition"
+                                :class="[
+                                    proposed.get(entry.subjectId)?.teacherAssignmentId === a.id
+                                        ? 'bg-emerald-50 ring-1 ring-emerald-200'
+                                        : (proposed.has(entry.subjectId) ? 'opacity-60' : ''),
+                                ]"
+                            >
+                                <!-- Estado: ✓ inscrito / — no permitido (otro grupo elegido) / botón inscribir -->
+                                <template v-if="proposed.get(entry.subjectId)?.teacherAssignmentId === a.id">
+                                    <button :aria-label="canEdit ? 'Quitar materia' : 'Inscrita'"
+                                        type="button"
+                                        class="mt-0.5 w-5 h-5 rounded-full bg-emerald-600 text-white text-[11px] font-bold flex items-center justify-center hover:bg-red-600 disabled:opacity-50"
+                                        :disabled="!canEdit || inFlightSubjects.has(entry.subjectId)"
+                                        :title="canEdit ? 'Quitar materia' : 'Inscrita'"
+                                        @click="removeEnrollment(entry)"
                                     >
-                                        <!-- Estado: ✓ inscrito / — no permitido (otro grupo elegido) / botón inscribir -->
-                                        <template v-if="proposed.get(entry.subjectId)?.teacherAssignmentId === a.id">
-                                            <button :aria-label="canEdit ? 'Quitar materia' : 'Inscrita'"
-                                                type="button"
-                                                class="mt-0.5 w-5 h-5 rounded-full bg-emerald-600 text-white text-[11px] font-bold flex items-center justify-center hover:bg-red-600 disabled:opacity-50"
-                                                :disabled="!canEdit || inFlightSubjects.has(entry.subjectId)"
-                                                :title="canEdit ? 'Quitar materia' : 'Inscrita'"
-                                                @click="removeEnrollment(entry)"
-                                            >
-                                                <span v-if="inFlightSubjects.has(entry.subjectId)">…</span>
-                                                <span v-else>✓</span>
-                                            </button>
-                                        </template>
-                                        <template v-else-if="proposed.has(entry.subjectId)">
-                                            <span class="mt-0.5 w-5 h-5 rounded-full bg-slate-200 text-slate-400 text-[11px] font-bold flex items-center justify-center" title="Ya elegiste otro grupo de esta materia">−</span>
-                                        </template>
-                                        <template v-else>
-                                            <button
-                                                type="button"
-                                                class="mt-0.5 px-2 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold hover:bg-blue-700 disabled:opacity-50"
-                                                :disabled="!canEdit || inFlightSubjects.has(entry.subjectId)"
-                                                @click="enrollAssignment(entry, a.id)"
-                                            >
-                                                {{ inFlightSubjects.has(entry.subjectId) ? '…' : 'Inscribir' }}
-                                            </button>
-                                        </template>
+                                        <span v-if="inFlightSubjects.has(entry.subjectId)">…</span>
+                                        <span v-else>✓</span>
+                                    </button>
+                                </template>
+                                <template v-else-if="proposed.has(entry.subjectId)">
+                                    <span class="mt-0.5 w-5 h-5 rounded-full bg-slate-200 text-slate-400 text-[11px] font-bold flex items-center justify-center" title="Ya elegiste otro grupo de esta materia">−</span>
+                                </template>
+                                <template v-else>
+                                    <button
+                                        type="button"
+                                        class="mt-0.5 px-2 h-5 rounded-full bg-blue-600 text-white text-[10px] font-semibold hover:bg-blue-700 disabled:opacity-50"
+                                        :disabled="!canEdit || inFlightSubjects.has(entry.subjectId)"
+                                        @click="enrollAssignment(entry, a.id)"
+                                    >
+                                        {{ inFlightSubjects.has(entry.subjectId) ? '…' : 'Inscribir' }}
+                                    </button>
+                                </template>
 
-                                        <div class="flex-1 min-w-0 leading-tight">
-                                            <div class="flex items-center gap-1.5 flex-wrap">
-                                                <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono font-semibold text-[10px] whitespace-nowrap">
-                                                    {{ a.groupName }}
-                                                </span>
-                                                <span v-if="a.shift" class="text-[9px] text-slate-400 uppercase tracking-wider">
-                                                    {{ shiftLabel(a.shift) }}
-                                                </span>
-                                                <span class="text-slate-700 truncate">{{ a.teacherName ?? 'Por asignar' }}</span>
-                                            </div>
-                                            <div v-if="a.schedule.length" class="mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] text-slate-500">
-                                                <span v-for="(b, i) in a.schedule" :key="i" class="whitespace-nowrap">
-                                                    {{ b.date ?? dayLabel(b.dayOfWeek) }} {{ b.startTime }}–{{ b.endTime }}
-                                                </span>
-                                            </div>
-                                            <div v-else class="mt-0.5 text-[10px] text-slate-400 italic">Horario por publicar</div>
-                                        </div>
+                                <div class="flex-1 min-w-0 leading-tight">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono font-semibold text-[10px] whitespace-nowrap">
+                                            {{ a.groupName }}
+                                        </span>
+                                        <span v-if="a.shift" class="text-[9px] text-slate-400 uppercase tracking-wider">
+                                            {{ shiftLabel(a.shift) }}
+                                        </span>
+                                        <span class="text-slate-700 truncate">{{ a.teacherName ?? 'Por asignar' }}</span>
                                     </div>
-
-                                    <!-- Errores específicos de esta materia -->
-                                    <div v-if="subjectErrors.has(entry.subjectId)" class="mt-1 px-2 py-1 rounded bg-amber-100 border border-amber-200 text-[11px] text-amber-800 space-y-0.5">
-                                        <div v-for="(v, i) in subjectErrors.get(entry.subjectId) ?? []" :key="i">
-                                            • {{ v.message }}
-                                        </div>
+                                    <div v-if="a.schedule.length" class="mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] text-slate-500">
+                                        <span v-for="(b, i) in a.schedule" :key="i" class="whitespace-nowrap">
+                                            {{ b.date ?? dayLabel(b.dayOfWeek) }} {{ b.startTime }}–{{ b.endTime }}
+                                        </span>
                                     </div>
+                                    <div v-else class="mt-0.5 text-[10px] text-slate-400 italic">Horario por publicar</div>
                                 </div>
-                                <span v-else class="text-slate-400 italic">
-                                    {{ entry.offer?.numGroups ?? 0 }} grupo(s) — sin asignación
-                                </span>
-                            </td>
-                        </tr>
-                        <tr v-if="offeredForTarget.length === 0">
-                            <td colspan="6" class="px-4 py-12 text-center text-xs text-slate-400">
-                                No hay materias aperturadas para tu siguiente semestre.
-                                Si crees que es un error, contacta a tu jefe de carrera.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
+                            </div>
+
+                            <!-- Errores específicos de esta materia -->
+                            <div v-if="subjectErrors.has(entry.subjectId)" class="mt-1 px-2 py-1 rounded bg-amber-100 border border-amber-200 text-[11px] text-amber-800 space-y-0.5">
+                                <div v-for="(v, i) in subjectErrors.get(entry.subjectId) ?? []" :key="i">
+                                    • {{ v.message }}
+                                </div>
+                            </div>
+                        </div>
+                        <span v-else class="text-slate-400 italic">
+                            {{ entry.offer?.numGroups ?? 0 }} grupo(s) — sin asignación
+                        </span>
+                    </template>
+                </DataTable>
             </div>
 
             <!-- Footer -->
@@ -801,6 +782,15 @@ const approvedLoadColumns: DataTableColumn<AdvisingSessionItem>[] = [
     { key: 'credits', label: 'Cr.' },
     { key: 'group', label: 'Grupo / Turno' },
     { key: 'teacher', label: 'Docente' },
+]
+
+const offeredColumns: DataTableColumn<CurriculumStatusEntry>[] = [
+    { key: 'code', label: 'Clave' },
+    { key: 'subject', label: 'Materia' },
+    { key: 'period', label: 'Sem.', align: 'center' },
+    { key: 'credits', label: 'Créd.', align: 'center' },
+    { key: 'attempt', label: 'Tipo', align: 'center' },
+    { key: 'offer', label: 'Grupo · Docente · Horario' },
 ]
 
 interface ActivePeriod {
