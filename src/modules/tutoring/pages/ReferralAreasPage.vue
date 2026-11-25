@@ -6,30 +6,26 @@
         </div>
         <p v-if="msg" class="text-sm px-4 py-2.5 rounded-lg" :class="msgError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'">{{ msg }}</p>
 
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Áreas de canalización" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Áreas de canalización</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b"><th scope="col" class="px-4 py-2">Área</th><th scope="col">Rol receptor</th><th scope="col">Ámbito</th><th scope="col">Activa</th><th scope="col"></th></tr></thead>
-                <tbody>
-                    <tr v-for="ar in areas" :key="ar.id" class="border-b last:border-0">
-                        <td class="px-4 py-2"><p class="font-semibold text-slate-700">{{ ar.name }}</p><p class="text-xs text-slate-400">{{ ar.description }}</p></td>
-                        <td class="text-slate-600 text-xs">{{ ar.handler_role_code ?? '— (genérico)' }}</td>
-                        <td><span class="text-xs px-2 py-0.5 rounded-full" :class="ar.is_global ? 'bg-slate-100 text-slate-500' : 'bg-sky-100 text-sky-700'">{{ ar.is_global ? 'Global' : 'Plantel' }}</span></td>
-                        <td>{{ ar.is_active ? 'Sí' : 'No' }}</td>
-                        <td class="text-right px-4 whitespace-nowrap">
-                            <template v-if="!ar.is_global">
-                                <button @click="edit(ar)" class="text-xs text-slate-500 font-semibold mr-2">Editar</button>
-                                <button @click="destroy(ar.id)" class="text-xs text-red-600 font-semibold">Eliminar</button>
-                            </template>
-                            <span v-else class="text-xs text-slate-300">solo lectura</span>
-                        </td>
-                    </tr>
-                    <tr v-if="!areas.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin áreas.</td></tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable :columns="columns" :rows="areas" hide-search caption="Áreas de canalización" empty-text="Sin áreas.">
+            <template #cell-name="{ row }">
+                <p class="font-semibold text-slate-700">{{ row.name }}</p>
+                <p class="text-xs text-slate-400">{{ row.description }}</p>
+            </template>
+            <template #cell-handler_role_code="{ row }">
+                <span class="text-slate-600 text-xs">{{ row.handler_role_code ?? '— (genérico)' }}</span>
+            </template>
+            <template #cell-scope="{ row }">
+                <span class="text-xs px-2 py-0.5 rounded-full" :class="row.is_global ? 'bg-slate-100 text-slate-500' : 'bg-sky-100 text-sky-700'">{{ row.is_global ? 'Global' : 'Plantel' }}</span>
+            </template>
+            <template #cell-is_active="{ row }">{{ row.is_active ? 'Sí' : 'No' }}</template>
+            <template #cell-actions="{ row }">
+                <template v-if="!row.is_global">
+                    <button @click="edit(row)" class="text-xs text-slate-500 font-semibold mr-2">Editar</button>
+                    <button @click="destroy(row.id)" class="text-xs text-red-600 font-semibold">Eliminar</button>
+                </template>
+                <span v-else class="text-xs text-slate-300">solo lectura</span>
+            </template>
+        </DataTable>
 
         <BaseModal v-model="showModal" :title="(form.id ? 'Editar' : 'Nueva') + ' área'" size="md">
             <div class="space-y-3">
@@ -54,11 +50,20 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { ReferralArea } from '@/modules/tutoring/types/tutoring.type'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { useConfirm } from '@/app/composables/useConfirm'
 
 const T = API.TUTORING_API
 const { confirm } = useConfirm()
 const areas = ref<ReferralArea[]>([])
+const columns: DataTableColumn<ReferralArea>[] = [
+    { key: 'name', label: 'Área' },
+    { key: 'handler_role_code', label: 'Rol receptor' },
+    { key: 'scope', label: 'Ámbito' },
+    { key: 'is_active', label: 'Activa' },
+    { key: 'actions', label: '', align: 'right' },
+]
 const showModal = ref(false), msg = ref(''), msgError = ref(false), modalMsg = ref('')
 const form = reactive<{ id: number | null; name: string; description: string; handler_role_code: string; is_active: boolean; sort_order: number }>({ id: null, name: '', description: '', handler_role_code: '', is_active: true, sort_order: 0 })
 
