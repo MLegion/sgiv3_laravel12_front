@@ -137,7 +137,7 @@ const onExport = (type: DataTableExportType) => {
         >
             <table class="min-w-full border-collapse text-left text-sm">
                 <caption class="sr-only">{{ caption || 'Tabla de datos' }}</caption>
-                <thead>
+                <thead class="hidden sm:table-header-group">
                 <tr class="bg-slate-50/50 border-b border-slate-200">
                     <th
                         v-for="col in visibleColumns" :key="col.key"
@@ -162,16 +162,17 @@ const onExport = (type: DataTableExportType) => {
                 </tr>
                 </thead>
 
-                <tbody class="divide-y divide-slate-100">
+                <tbody class="sm:divide-y divide-slate-100">
                 <template v-if="loading">
                     <TableSkeletonRow v-for="i in 5" :key="i" :columns="visibleColumns.length" />
                 </template>
 
                 <template v-else-if="rows.length > 0">
-                    <tr v-for="(row, rowIndex) in rows" :key="rowIndex" class="hover:bg-blue-50/30 transition-colors">
+                    <tr v-for="(row, rowIndex) in rows" :key="rowIndex" class="block border border-slate-200 rounded-lg mb-3 overflow-hidden sm:table-row sm:border-0 sm:rounded-none sm:mb-0 hover:bg-blue-50/30 transition-colors">
                         <td
                             v-for="col in visibleColumns" :key="col.key"
-                            class="px-4 py-3 text-slate-600 whitespace-nowrap"
+                            :data-label="col.label"
+                            class="flex items-center justify-between gap-3 px-4 py-2 border-b border-slate-100 text-slate-600 last:border-b-0 sm:table-cell sm:py-3 sm:border-b-0 sm:whitespace-nowrap before:content-[attr(data-label)] before:shrink-0 before:font-semibold before:uppercase before:text-[10px] before:tracking-wider before:text-slate-400 sm:before:hidden"
                             :class="[`text-${col.align || 'left'}`]"
                         >
                             <!-- SLOT IDENTIFIER: cell-key -->
