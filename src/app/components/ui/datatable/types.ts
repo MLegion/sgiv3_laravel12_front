@@ -170,6 +170,18 @@ export interface DataTableProps<T = any> {
      * un nombre genérico ("Tabla de datos").
      */
     caption?: string
+
+    /**
+     * Clase(s) CSS por fila, en función del registro (p. ej. resaltar filas de
+     * baja/alta/conflicto). Se concatena con las clases base de la fila.
+     */
+    rowClass?: (row: T, index: number) => string | string[] | Record<string, boolean>
+
+    /**
+     * Si es true, cada fila es clickable (cursor pointer) y emite `row-click`.
+     * Para filas con botones internos, usa `@click.stop` en esos botones.
+     */
+    rowClickable?: boolean
 }
 
 /**
@@ -185,4 +197,9 @@ export interface DataTableEmits<T = any> {
      * Exportación solicitada
      */
     (e: 'export', payload: DataTableExportEvent<T>): void
+
+    /**
+     * Click en una fila (solo si rowClickable=true)
+     */
+    (e: 'row-click', row: T, index: number): void
 }

@@ -168,7 +168,12 @@ const onExport = (type: DataTableExportType) => {
                 </template>
 
                 <template v-else-if="rows.length > 0">
-                    <tr v-for="(row, rowIndex) in rows" :key="rowIndex" class="block border border-slate-200 rounded-lg mb-3 overflow-hidden sm:table-row sm:border-0 sm:rounded-none sm:mb-0 hover:bg-blue-50/30 transition-colors">
+                    <tr
+                        v-for="(row, rowIndex) in rows" :key="rowIndex"
+                        class="block border border-slate-200 rounded-lg mb-3 overflow-hidden sm:table-row sm:border-0 sm:rounded-none sm:mb-0 hover:bg-blue-50/30 transition-colors"
+                        :class="[rowClass ? rowClass(row, rowIndex) : '', { 'cursor-pointer': !!rowClickable }]"
+                        @click="rowClickable && emit('row-click', row, rowIndex)"
+                    >
                         <td
                             v-for="col in visibleColumns" :key="col.key"
                             :data-label="col.label"
