@@ -25,27 +25,18 @@
             <button @click="fetchList" class="px-4 py-2 rounded-lg border text-sm font-semibold text-slate-600">Filtrar</button>
         </div>
 
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Expedientes de Titulación" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                <caption class="sr-only">Expedientes de Titulación</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th scope="col" class="px-4 py-2">Alumno</th><th scope="col">Carrera</th><th scope="col">Opción</th><th scope="col">Periodo</th><th scope="col">Estado</th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="r in rows" :key="r.id" @click="goDetail(r.id)" class="border-b last:border-0 hover:bg-slate-50 cursor-pointer">
-                        <td class="px-4 py-2">
-                            <div class="font-semibold text-slate-700">{{ r.student_name }}</div>
-                            <div class="text-xs text-slate-400">{{ r.num_control }}</div>
-                        </td>
-                        <td class="text-slate-600">{{ r.career_name ?? '—' }}</td>
-                        <td class="text-slate-600">{{ r.option_name ?? '—' }}</td>
-                        <td class="text-slate-600">{{ r.period_name ?? '—' }}</td>
-                        <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="statusClass(r.status)">{{ statusLabel(r.status) }}</span></td>
-                    </tr>
-                    <tr v-if="!rows.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin expedientes.</td></tr>
-                </tbody>
-            </table></div>
-        </div>
+        <DataTable :columns="columns" :rows="rows" hide-search caption="Expedientes de Titulación" empty-text="Sin expedientes.">
+            <template #cell-student="{ row: r }">
+                <div @click="goDetail(r.id)" class="cursor-pointer">
+                    <div class="font-semibold text-slate-700">{{ r.student_name }}</div>
+                    <div class="text-xs text-slate-400">{{ r.num_control }}</div>
+                </div>
+            </template>
+            <template #cell-career="{ row: r }"><span @click="goDetail(r.id)" class="text-slate-600 cursor-pointer">{{ r.career_name ?? '—' }}</span></template>
+            <template #cell-option="{ row: r }"><span @click="goDetail(r.id)" class="text-slate-600 cursor-pointer">{{ r.option_name ?? '—' }}</span></template>
+            <template #cell-period="{ row: r }"><span @click="goDetail(r.id)" class="text-slate-600 cursor-pointer">{{ r.period_name ?? '—' }}</span></template>
+            <template #cell-status="{ row: r }"><span @click="goDetail(r.id)" class="px-2 py-0.5 rounded-full text-xs font-bold cursor-pointer" :class="statusClass(r.status)">{{ statusLabel(r.status) }}</span></template>
+        </DataTable>
 
         <!-- Modal alta -->
         <BaseModal v-model="showNew" title="Registrar expediente" size="lg">
@@ -111,12 +102,21 @@ import { API } from '@/shared/api'
 import type { TitulacionRecord, TitulacionOption, EligibleResidency } from '@/modules/titulacion/types/titulacion.type'
 import { statusLabel, statusClass } from '@/modules/titulacion/pages/status'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const T = API.TITULACION_API
 const SS = API.SCHOOL_SERVICES_API
 const router = useRouter()
 
 const rows = ref<TitulacionRecord[]>([])
+const columns: DataTableColumn<TitulacionRecord>[] = [
+    { key: 'student', label: 'Alumno' },
+    { key: 'career', label: 'Carrera' },
+    { key: 'option', label: 'Opción' },
+    { key: 'period', label: 'Periodo' },
+    { key: 'status', label: 'Estado' },
+]
 const options = reactive<{ periods: any[]; careers: any[] }>({ periods: [], careers: [] })
 const opts = ref<TitulacionOption[]>([])
 const filters = reactive({ period_id: '', career_id: '', status: '' })

@@ -5,35 +5,26 @@
             <button @click="openNew" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">+ Programa</button>
         </div>
 
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Banco de Programas de Servicio Social" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Banco de Programas de Servicio Social</caption>
-                <thead>
-                    <tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                        <th scope="col" class="px-4 py-2">Programa</th><th scope="col">Dependencia</th><th scope="col">Carreras</th><th scope="col">Estado</th><th scope="col"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="p in programs" :key="p.id" class="border-b last:border-0">
-                        <td class="px-4 py-2">
-                            <p class="font-semibold text-slate-700">{{ p.title }}</p>
-                            <p class="text-xs text-slate-400">{{ p.is_internal ? 'Interno' : 'Externo' }}<span v-if="p.slots"> · {{ p.slots }} lugares</span></p>
-                        </td>
-                        <td class="text-slate-600">{{ p.company_name ?? '—' }}</td>
-                        <td class="text-slate-600 text-xs">{{ p.careers.map(c => c.name).join(', ') || '—' }}</td>
-                        <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="statusClass(p.status)">{{ statusLabel(p.status) }}</span></td>
-                        <td class="text-right px-4">
-                            <button @click="edit(p)" class="text-xs text-slate-500 font-semibold mr-2">Editar</button>
-                            <button v-if="p.status !== 'published'" @click="publish(p.id)" class="text-xs text-emerald-600 font-semibold mr-2">Publicar</button>
-                            <button v-if="p.status === 'published'" @click="close(p.id)" class="text-xs text-red-600 font-semibold">Cerrar</button>
-                        </td>
-                    </tr>
-                    <tr v-if="!programs.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin programas.</td></tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable :columns="columns" :rows="programs" hide-search caption="Banco de Programas de Servicio Social" empty-text="Sin programas.">
+            <template #cell-program="{ row: p }">
+                <p class="font-semibold text-slate-700">{{ p.title }}</p>
+                <p class="text-xs text-slate-400">{{ p.is_internal ? 'Interno' : 'Externo' }}<span v-if="p.slots"> · {{ p.slots }} lugares</span></p>
+            </template>
+            <template #cell-company="{ row: p }">
+                <span class="text-slate-600">{{ p.company_name ?? '—' }}</span>
+            </template>
+            <template #cell-careers="{ row: p }">
+                <span class="text-slate-600 text-xs">{{ p.careers.map(c => c.name).join(', ') || '—' }}</span>
+            </template>
+            <template #cell-status="{ row: p }">
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="statusClass(p.status)">{{ statusLabel(p.status) }}</span>
+            </template>
+            <template #cell-actions="{ row: p }">
+                <button @click="edit(p)" class="text-xs text-slate-500 font-semibold mr-2">Editar</button>
+                <button v-if="p.status !== 'published'" @click="publish(p.id)" class="text-xs text-emerald-600 font-semibold mr-2">Publicar</button>
+                <button v-if="p.status === 'published'" @click="close(p.id)" class="text-xs text-red-600 font-semibold">Cerrar</button>
+            </template>
+        </DataTable>
 
         <!-- Modal -->
         <div v-if="showModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showModal = false">
@@ -84,8 +75,18 @@ import { ref, reactive, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { SocialServiceProgram, DependencyOption } from '@/modules/social-service/types/social-service.type'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const S = API.SOCIAL_SERVICE_API
+
+const columns: DataTableColumn<SocialServiceProgram>[] = [
+    { key: 'program', label: 'Programa' },
+    { key: 'company', label: 'Dependencia' },
+    { key: 'careers', label: 'Carreras' },
+    { key: 'status', label: 'Estado' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 const programs = ref<SocialServiceProgram[]>([])
 const dependencies = ref<DependencyOption[]>([])

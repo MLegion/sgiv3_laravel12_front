@@ -23,33 +23,13 @@
                     <span class="ml-1 text-[10px] uppercase">{{ rows.length === 1 ? 'alumno' : 'alumnos' }}</span>
                 </span>
             </div>
-            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Alumnos inscritos"><table class="w-full text-sm">
-                <caption class="sr-only">Alumnos inscritos</caption>
-                <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
-                    <tr>
-                        <th scope="col" class="text-left px-4 py-2 w-12">#</th>
-                        <th scope="col" class="text-left px-4 py-2 w-36">NUM CONTROL</th>
-                        <th scope="col" class="text-left px-4 py-2">NOMBRE</th>
-                        <th scope="col" class="text-left px-4 py-2">CARRERA</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <tr v-if="loading">
-                        <td colspan="4" class="p-3"><SkeletonTable :rows="5" :cols="4" /></td>
-                    </tr>
-                    <tr v-else-if="!rows.length">
-                        <td colspan="4" class="px-4 py-6 text-center text-slate-400 text-sm italic">
-                            No hay alumnos inscritos en esta materia.
-                        </td>
-                    </tr>
-                    <tr v-for="(s, idx) in rows" :key="s.enrollment_id" class="hover:bg-slate-50">
-                        <td class="px-4 py-2 text-xs text-slate-400 tabular-nums">{{ idx + 1 }}</td>
-                        <td class="px-4 py-2 font-mono text-xs text-slate-700">{{ s.student.num_control ?? '—' }}</td>
-                        <td class="px-4 py-2 font-bold text-slate-700">{{ s.student.full_name }}</td>
-                        <td class="px-4 py-2 text-xs text-slate-600">{{ s.career?.short_name ?? s.career?.name ?? '—' }}</td>
-                    </tr>
-                </tbody>
-            </table></div>
+            <DataTable :columns="columns" :rows="rows" :loading="loading" hide-search caption="Alumnos inscritos"
+                empty-text="No hay alumnos inscritos en esta materia.">
+                <template #cell-index="{ index }"><span class="text-xs text-slate-400 tabular-nums">{{ index + 1 }}</span></template>
+                <template #cell-num_control="{ row }"><span class="font-mono text-xs text-slate-700">{{ row.student.num_control ?? '—' }}</span></template>
+                <template #cell-full_name="{ row }"><span class="font-bold text-slate-700">{{ row.student.full_name }}</span></template>
+                <template #cell-career="{ row }"><span class="text-xs text-slate-600">{{ row.career?.short_name ?? row.career?.name ?? '—' }}</span></template>
+            </DataTable>
         </div>
     </div>
 </template>
@@ -60,12 +40,19 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { AssignmentEnrolledStudentRow } from '@/modules/advising/types/advising.type'
-import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const route  = useRoute()
 const router = useRouter()
 
 const teacherAssignmentId = computed(() => Number(route.params.teacherAssignmentId))
+const columns: DataTableColumn<AssignmentEnrolledStudentRow>[] = [
+    { key: 'index', label: '#', width: '3rem' },
+    { key: 'num_control', label: 'Num control', width: '9rem' },
+    { key: 'full_name', label: 'Nombre' },
+    { key: 'career', label: 'Carrera' },
+]
 const rows    = ref<AssignmentEnrolledStudentRow[]>([])
 const loading = ref(false)
 const error   = ref('')

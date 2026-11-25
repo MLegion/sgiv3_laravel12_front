@@ -16,29 +16,22 @@
             <button @click="fetchList" class="px-4 py-2 rounded-lg border text-sm font-semibold text-slate-600">Filtrar</button>
         </div>
 
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Actos de Titulación" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                <caption class="sr-only">Actos de Titulación</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th scope="col" class="px-4 py-2">Fecha / Hora</th><th scope="col">Alumno</th><th scope="col">Aula</th><th scope="col">Opción</th><th scope="col">Estado</th><th scope="col">Resultado</th><th scope="col"></th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="a in rows" :key="a.id" class="border-b last:border-0 hover:bg-slate-50">
-                        <td class="px-4 py-2 font-semibold text-slate-700">{{ a.date }}<br><span class="text-xs text-slate-400">{{ a.start_time?.slice(0,5) }}–{{ a.end_time?.slice(0,5) }}</span></td>
-                        <td><div class="text-slate-700">{{ a.student_name }}</div><div class="text-xs text-slate-400">{{ a.num_control }}</div></td>
-                        <td class="text-slate-600">{{ a.place_name ?? '—' }}</td>
-                        <td class="text-slate-600">{{ a.option_name ?? '—' }}</td>
-                        <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="actStatusClass(a.status)">{{ actStatusLabel(a.status) }}</span></td>
-                        <td class="text-slate-600">{{ outcomeLabel(a.outcome) }}</td>
-                        <td class="text-right pr-4">
-                            <button v-if="a.status === 'scheduled'" @click="openConclude(a)" class="text-xs text-emerald-600 font-semibold">Concluir</button>
-                            <button v-if="a.status === 'scheduled'" @click="cancel(a)" class="text-xs text-red-500 ml-2">Cancelar</button>
-                        </td>
-                    </tr>
-                    <tr v-if="!rows.length"><td colspan="7" class="px-4 py-6 text-center text-slate-400">Sin actos.</td></tr>
-                </tbody>
-            </table></div>
-        </div>
+        <DataTable :columns="columns" :rows="rows" hide-search caption="Actos de Titulación" empty-text="Sin actos.">
+            <template #cell-date="{ row: a }">
+                <span class="font-semibold text-slate-700">{{ a.date }}</span><br><span class="text-xs text-slate-400">{{ a.start_time?.slice(0,5) }}–{{ a.end_time?.slice(0,5) }}</span>
+            </template>
+            <template #cell-student="{ row: a }">
+                <div class="text-slate-700">{{ a.student_name }}</div><div class="text-xs text-slate-400">{{ a.num_control }}</div>
+            </template>
+            <template #cell-place="{ row: a }"><span class="text-slate-600">{{ a.place_name ?? '—' }}</span></template>
+            <template #cell-option="{ row: a }"><span class="text-slate-600">{{ a.option_name ?? '—' }}</span></template>
+            <template #cell-status="{ row: a }"><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="actStatusClass(a.status)">{{ actStatusLabel(a.status) }}</span></template>
+            <template #cell-outcome="{ row: a }"><span class="text-slate-600">{{ outcomeLabel(a.outcome) }}</span></template>
+            <template #cell-actions="{ row: a }">
+                <button v-if="a.status === 'scheduled'" @click="openConclude(a)" class="text-xs text-emerald-600 font-semibold">Concluir</button>
+                <button v-if="a.status === 'scheduled'" @click="cancel(a)" class="text-xs text-red-500 ml-2">Cancelar</button>
+            </template>
+        </DataTable>
 
         <BaseModal :model-value="!!concludeAct" @update:model-value="concludeAct = null" title="Concluir acto" size="sm">
             <div v-if="concludeAct" class="space-y-3">
@@ -65,12 +58,23 @@ import { API } from '@/shared/api'
 import type { TitulacionAct } from '@/modules/titulacion/types/titulacion.type'
 import { actStatusLabel, actStatusClass, outcomeLabel } from '@/modules/titulacion/pages/status'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { useConfirm } from '@/app/composables/useConfirm'
 
 const { confirm } = useConfirm()
 
 const T = API.TITULACION_API
 const rows = ref<TitulacionAct[]>([])
+const columns: DataTableColumn<TitulacionAct>[] = [
+    { key: 'date', label: 'Fecha / Hora' },
+    { key: 'student', label: 'Alumno' },
+    { key: 'place', label: 'Aula' },
+    { key: 'option', label: 'Opción' },
+    { key: 'status', label: 'Estado' },
+    { key: 'outcome', label: 'Resultado' },
+    { key: 'actions', label: '', align: 'right' },
+]
 const options = reactive<{ careers: any[] }>({ careers: [] })
 const filters = reactive({ from: '', to: '', career_id: '', status: '' })
 

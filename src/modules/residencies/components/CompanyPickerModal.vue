@@ -20,41 +20,22 @@
                 </div>
 
                 <div class="overflow-y-auto flex-1">
-                    <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Empresas"><table class="w-full text-sm">
-                        <caption class="sr-only">Empresas</caption>
-                        <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500 sticky top-0">
-                            <tr>
-                                <th scope="col" class="px-4 py-2 text-left">Nombre</th>
-                                <th scope="col" class="px-4 py-2 text-left">Lugar</th>
-                                <th scope="col" class="px-4 py-2 text-left">RFC</th>
-                                <th scope="col" class="px-4 py-2"></th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y">
-                            <tr v-for="c in filtered" :key="c.id"
-                                class="hover:bg-blue-50/40" :class="c.id === selectedId ? 'bg-blue-50' : ''">
-                                <td class="px-4 py-2.5">
-                                    <p class="font-semibold text-slate-700">{{ c.name }}</p>
-                                    <p v-if="c.sector" class="text-[11px] text-slate-400">{{ c.sector.name }}</p>
-                                </td>
-                                <td class="px-4 py-2.5 text-xs text-slate-600">{{ c.address ?? '—' }}</td>
-                                <td class="px-4 py-2.5 text-xs font-mono text-slate-500">{{ c.rfc ?? '—' }}</td>
-                                <td class="px-4 py-2.5 text-right">
-                                    <button type="button"
-                                            class="text-xs px-3 py-1.5 rounded-md font-semibold"
-                                            :class="c.id === selectedId ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-600 text-white hover:bg-blue-700'"
-                                            @click="pick(c.id)">
-                                        {{ c.id === selectedId ? 'Seleccionada' : 'Seleccionar' }}
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr v-if="!filtered.length">
-                                <td colspan="4" class="px-4 py-8 text-center text-sm text-slate-400 italic">
-                                    {{ query ? 'Sin empresas que coincidan.' : 'No hay empresas aprobadas.' }}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table></div>
+                    <DataTable :columns="columns" :rows="filtered" hide-search caption="Empresas" :empty-text="query ? 'Sin empresas que coincidan.' : 'No hay empresas aprobadas.'">
+                        <template #cell-name="{ row: c }">
+                            <p class="font-semibold text-slate-700">{{ c.name }}</p>
+                            <p v-if="c.sector" class="text-[11px] text-slate-400">{{ c.sector.name }}</p>
+                        </template>
+                        <template #cell-address="{ row: c }"><span class="text-xs text-slate-600">{{ c.address ?? '—' }}</span></template>
+                        <template #cell-rfc="{ row: c }"><span class="text-xs font-mono text-slate-500">{{ c.rfc ?? '—' }}</span></template>
+                        <template #cell-actions="{ row: c }">
+                            <button type="button"
+                                    class="text-xs px-3 py-1.5 rounded-md font-semibold"
+                                    :class="c.id === selectedId ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-600 text-white hover:bg-blue-700'"
+                                    @click="pick(c.id)">
+                                {{ c.id === selectedId ? 'Seleccionada' : 'Seleccionar' }}
+                            </button>
+                        </template>
+                    </DataTable>
                 </div>
 
                 <footer class="px-5 py-3 border-t flex items-center justify-between">
@@ -70,6 +51,15 @@
 import { computed, ref, watch, nextTick } from 'vue'
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import type { Company } from '@/modules/residencies/types/residency.type'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const columns: DataTableColumn<Company>[] = [
+    { key: 'name', label: 'Nombre' },
+    { key: 'address', label: 'Lugar' },
+    { key: 'rfc', label: 'RFC' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 const props = defineProps<{
     modelValue: boolean

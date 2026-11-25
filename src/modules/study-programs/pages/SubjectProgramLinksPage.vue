@@ -28,62 +28,36 @@
             </span>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-xl overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Enlaces de programas de estudio">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Enlaces de programas de estudio</caption>
-                <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                    <tr>
-                        <th scope="col" class="text-left px-3 py-2">Clave</th>
-                        <th scope="col" class="text-left px-3 py-2">Materia</th>
-                        <th scope="col" class="text-center px-3 py-2">Alumnos</th>
-                        <th scope="col" class="text-left px-3 py-2">Programa oficial</th>
-                        <th scope="col" class="text-right px-3 py-2">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="r in filtered" :key="r.id" class="border-t border-slate-100 align-top">
-                        <td class="px-3 py-2 font-mono">{{ r.clave }}</td>
-                        <td class="px-3 py-2">{{ r.name }}</td>
-                        <td class="px-3 py-2 text-center">
-                            <span v-if="r.hasActiveStudents" class="px-2 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700">Sí</span>
-                            <span v-else class="text-slate-300">—</span>
-                        </td>
-                        <td class="px-3 py-2">
-                            <button v-if="r.programIsLocal" class="text-emerald-700 hover:underline" @click="view(r)">
-                                Ver PDF <span class="text-[10px] text-emerald-600">(respaldado)</span>
-                            </button>
-                            <a v-else-if="r.programUrl" :href="r.programUrl" target="_blank" rel="noopener" class="text-blue-600 hover:underline break-all">Abrir enlace</a>
-                            <span v-else-if="r.checked" class="text-amber-600 text-xs">Sin programa (revisado)</span>
-                            <span v-else class="text-slate-400 text-xs">Pendiente</span>
-                        </td>
-                        <td class="px-3 py-2">
-                            <div class="flex items-center justify-end gap-2">
-                                <a
-                                    :href="googleUrl(r)"
-                                    target="_blank"
-                                    rel="noopener"
-                                    class="px-2 py-1 text-xs rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"
-                                >Buscar en web</a>
-                                <button
-                                    class="px-2 py-1 text-xs rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-                                    @click="manage(r)"
-                                >Gestionar</button>
-                            </div>
-                        </td>
-                    </tr>
-                    <template v-if="loading">
-                        <tr v-for="n in 5" :key="'sk-'+n" class="border-t border-slate-100" role="status">
-                            <td class="sr-only">Cargando…</td>
-                            <td aria-hidden="true" class="px-3 py-3"><div class="h-4 w-16 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div></td>
-                            <td aria-hidden="true" class="px-3 py-3"><div class="h-4 w-full rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div></td>
-                            <td aria-hidden="true" class="px-3 py-3"><div class="h-4 w-10 mx-auto rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div></td>
-                            <td aria-hidden="true" class="px-3 py-3"><div class="h-4 w-28 rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div></td>
-                            <td aria-hidden="true" class="px-3 py-3"><div class="h-4 w-20 ml-auto rounded bg-slate-200 animate-pulse motion-reduce:animate-none"></div></td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
+        <DataTable :columns="linkColumns" :rows="filtered" :loading="loading" hide-search caption="Enlaces de programas de estudio" empty-text="No se encontraron materias.">
+            <template #cell-clave="{ row: r }"><span class="font-mono">{{ r.clave }}</span></template>
+            <template #cell-name="{ row: r }">{{ r.name }}</template>
+            <template #cell-students="{ row: r }">
+                <span v-if="r.hasActiveStudents" class="px-2 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700">Sí</span>
+                <span v-else class="text-slate-300">—</span>
+            </template>
+            <template #cell-program="{ row: r }">
+                <button v-if="r.programIsLocal" class="text-emerald-700 hover:underline" @click="view(r)">
+                    Ver PDF <span class="text-[10px] text-emerald-600">(respaldado)</span>
+                </button>
+                <a v-else-if="r.programUrl" :href="r.programUrl" target="_blank" rel="noopener" class="text-blue-600 hover:underline break-all">Abrir enlace</a>
+                <span v-else-if="r.checked" class="text-amber-600 text-xs">Sin programa (revisado)</span>
+                <span v-else class="text-slate-400 text-xs">Pendiente</span>
+            </template>
+            <template #cell-actions="{ row: r }">
+                <div class="flex items-center justify-end gap-2">
+                    <a
+                        :href="googleUrl(r)"
+                        target="_blank"
+                        rel="noopener"
+                        class="px-2 py-1 text-xs rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"
+                    >Buscar en web</a>
+                    <button
+                        class="px-2 py-1 text-xs rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                        @click="manage(r)"
+                    >Gestionar</button>
+                </div>
+            </template>
+        </DataTable>
 
         <SubjectProgramModal
             v-if="current"
@@ -104,6 +78,16 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import SubjectProgramModal from '@/modules/study-programs/components/SubjectProgramModal.vue'
 import { openSubjectProgram } from '@/modules/study-programs/composables/useSubjectProgram'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const linkColumns: DataTableColumn<any>[] = [
+    { key: 'clave', label: 'Clave' },
+    { key: 'name', label: 'Materia' },
+    { key: 'students', label: 'Alumnos', align: 'center' },
+    { key: 'program', label: 'Programa oficial' },
+    { key: 'actions', label: 'Acciones', align: 'right' },
+]
 
 const rows = ref<any[]>([])
 const loading = ref(false)

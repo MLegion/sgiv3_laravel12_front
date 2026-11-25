@@ -20,49 +20,27 @@
         </div>
 
         <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias del grupo"><table class="w-full text-sm">
-                <caption class="sr-only">Materias del grupo</caption>
-                <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
-                    <tr>
-                        <th scope="col" class="text-left px-4 py-2">MATERIA</th>
-                        <th scope="col" class="text-left px-4 py-2 w-20">CR.</th>
-                        <th scope="col" class="text-left px-4 py-2">DOCENTE</th>
-                        <th scope="col" class="text-right px-4 py-2 w-32">CUPO</th>
-                        <th scope="col" class="text-right px-4 py-2 w-32">INSCRITOS</th>
-                        <th scope="col" class="text-right px-4 py-2 w-24"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <tr v-if="loading">
-                        <td colspan="6" class="p-3"><SkeletonTable :rows="5" :cols="6" /></td>
-                    </tr>
-                    <tr v-else-if="!assignments.length">
-                        <td colspan="6" class="px-4 py-6 text-center text-slate-400 text-sm italic">
-                            Este grupo no tiene materias asignadas.
-                        </td>
-                    </tr>
-                    <tr v-for="a in assignments" :key="a.teacher_assignment_id" class="hover:bg-slate-50">
-                        <td class="px-4 py-2">
-                            <div class="font-bold text-slate-700">{{ a.subject.name }}</div>
-                            <div class="text-[10px] font-mono text-slate-400">{{ a.subject.official_code ?? '—' }}</div>
-                        </td>
-                        <td class="px-4 py-2 text-xs">{{ a.subject.credits ?? 0 }}</td>
-                        <td class="px-4 py-2 text-xs text-slate-600">{{ a.teacher?.name ?? '— por asignar —' }}</td>
-                        <td class="px-4 py-2 text-right text-xs text-slate-600 tabular-nums">{{ a.capacity ?? '—' }}</td>
-                        <td class="px-4 py-2 text-right">
-                            <span class="text-lg font-bold tabular-nums" :class="a.enrollment_count > 0 ? 'text-emerald-700' : 'text-slate-300'">
-                                {{ a.enrollment_count }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-2 text-right">
-                            <button class="text-blue-600 hover:underline text-sm"
-                                    @click="goToAssignment(a.teacher_assignment_id)">
-                                Lista →
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></div>
+            <DataTable :columns="columns" :rows="assignments" :loading="loading" hide-search caption="Materias del grupo"
+                empty-text="Este grupo no tiene materias asignadas.">
+                <template #cell-subject="{ row }">
+                    <div class="font-bold text-slate-700">{{ row.subject.name }}</div>
+                    <div class="text-[10px] font-mono text-slate-400">{{ row.subject.official_code ?? '—' }}</div>
+                </template>
+                <template #cell-credits="{ row }"><span class="text-xs">{{ row.subject.credits ?? 0 }}</span></template>
+                <template #cell-teacher="{ row }"><span class="text-xs text-slate-600">{{ row.teacher?.name ?? '— por asignar —' }}</span></template>
+                <template #cell-capacity="{ row }"><span class="text-xs text-slate-600 tabular-nums">{{ row.capacity ?? '—' }}</span></template>
+                <template #cell-enrollment_count="{ row }">
+                    <span class="text-lg font-bold tabular-nums" :class="row.enrollment_count > 0 ? 'text-emerald-700' : 'text-slate-300'">
+                        {{ row.enrollment_count }}
+                    </span>
+                </template>
+                <template #cell-actions="{ row }">
+                    <button class="text-blue-600 hover:underline text-sm"
+                            @click="goToAssignment(row.teacher_assignment_id)">
+                        Lista →
+                    </button>
+                </template>
+            </DataTable>
         </div>
     </div>
 </template>
@@ -73,12 +51,21 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { GroupAssignmentRow } from '@/modules/advising/types/advising.type'
-import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const route  = useRoute()
 const router = useRouter()
 
 const groupId = computed(() => Number(route.params.groupId))
+const columns: DataTableColumn<GroupAssignmentRow>[] = [
+    { key: 'subject', label: 'Materia' },
+    { key: 'credits', label: 'Cr.', width: '5rem' },
+    { key: 'teacher', label: 'Docente' },
+    { key: 'capacity', label: 'Cupo', align: 'right', width: '8rem' },
+    { key: 'enrollment_count', label: 'Inscritos', align: 'right', width: '8rem' },
+    { key: 'actions', label: '', align: 'right', width: '6rem' },
+]
 const assignments = ref<GroupAssignmentRow[]>([])
 const loading     = ref(false)
 const error       = ref('')

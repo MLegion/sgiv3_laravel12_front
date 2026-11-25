@@ -133,76 +133,45 @@
                         </div>
                     </div>
 
-                    <div tabindex="0" role="region" aria-label="Materias en el Grupo" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                        <table class="w-full text-left border-collapse">
-                            <caption class="sr-only">Materias en el Grupo</caption>
-                            <thead>
-                            <tr class="bg-slate-50/80 text-[10px] uppercase text-slate-400 font-black border-b border-slate-100">
-                                <th scope="col" class="px-6 py-4">Clave</th>
-                                <th scope="col" class="px-6 py-4">Asignatura Optativa</th>
-                                <th scope="col" class="px-6 py-4 text-center">Créditos</th>
-                                <th scope="col" class="px-6 py-4 text-center">Horas</th>
-                                <th scope="col" class="px-6 py-4 text-right">Gestión</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-50">
-                            <template v-if="loadingSubjects">
-                            <tr v-for="i in 3" :key="'loader-'+i" class="animate-pulse">
-                                <td colspan="5" class="px-6 py-6"><div class="h-4 bg-slate-100 rounded-lg w-full"></div></td>
-                            </tr>
-                            </template>
-                            <tr v-else-if="subjects.length === 0">
-                                <td colspan="5" class="px-6 py-16 text-center">
-                                    <div class="flex flex-col items-center gap-2">
-                                        <div class="p-3 bg-slate-50 rounded-full text-slate-300">
-                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                                            </svg>
-                                        </div>
-                                        <span class="text-[11px] text-slate-400 uppercase font-black tracking-widest">No hay materias en este grupo</span>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr v-for="subject in subjects" :key="subject.id" class="hover:bg-slate-50 transition-colors group">
-                                <td class="px-6 py-4 font-mono text-[11px] text-slate-500">{{ subject.officialCode }}</td>
-                                <td class="px-6 py-4">
-                                    <div class="flex flex-col">
-                                        <span class="font-black uppercase text-[11px] text-slate-700 leading-tight">{{ subject.name }}</span>
-                                        <span class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter mt-0.5">{{ subject.shortName }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <span class="px-2.5 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg text-[10px] font-black">{{ subject.credits }}</span>
-                                </td>
-                                <td class="px-6 py-4 text-center text-[11px] font-bold text-slate-500">
-                                    {{ subject.ht }}T - {{ subject.hp }}P
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button aria-label="Editar Materia"
-                                            @click="editSubject(subject.id)"
-                                            class="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all"
-                                            title="Editar Materia"
-                                        >
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                            </svg>
-                                        </button>
-                                        <button aria-label="Eliminar del Grupo"
-                                            @click="openUnlinkModal(subject)"
-                                            class="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all"
-                                            title="Eliminar del Grupo"
-                                        >
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <DataTable :columns="subjectColumns" :rows="subjects" :loading="loadingSubjects" hide-search caption="Materias en el Grupo" empty-text="No hay materias en este grupo">
+                        <template #cell-officialCode="{ row: subject }">
+                            <span class="font-mono text-[11px] text-slate-500">{{ subject.officialCode }}</span>
+                        </template>
+                        <template #cell-name="{ row: subject }">
+                            <div class="flex flex-col">
+                                <span class="font-black uppercase text-[11px] text-slate-700 leading-tight">{{ subject.name }}</span>
+                                <span class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter mt-0.5">{{ subject.shortName }}</span>
+                            </div>
+                        </template>
+                        <template #cell-credits="{ row: subject }">
+                            <span class="px-2.5 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg text-[10px] font-black">{{ subject.credits }}</span>
+                        </template>
+                        <template #cell-hours="{ row: subject }">
+                            <span class="text-[11px] font-bold text-slate-500">{{ subject.ht }}T - {{ subject.hp }}P</span>
+                        </template>
+                        <template #cell-actions="{ row: subject }">
+                            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button aria-label="Editar Materia"
+                                    @click="editSubject(subject.id)"
+                                    class="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all"
+                                    title="Editar Materia"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                </button>
+                                <button aria-label="Eliminar del Grupo"
+                                    @click="openUnlinkModal(subject)"
+                                    class="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all"
+                                    title="Eliminar del Grupo"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+                    </DataTable>
                 </div>
             </div>
         </div>
@@ -259,6 +228,16 @@ import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const subjectColumns: DataTableColumn<any>[] = [
+    { key: 'officialCode', label: 'Clave' },
+    { key: 'name', label: 'Asignatura Optativa' },
+    { key: 'credits', label: 'Créditos', align: 'center' },
+    { key: 'hours', label: 'Horas', align: 'center' },
+    { key: 'actions', label: 'Gestión', align: 'right' },
+]
 
 const route = useRoute()
 const router = useRouter()

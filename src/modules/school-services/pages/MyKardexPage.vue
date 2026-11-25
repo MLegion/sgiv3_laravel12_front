@@ -35,39 +35,29 @@
                 Aún no tienes calificaciones registradas.
             </div>
 
-            <div v-else class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Mi Kardex"><table class="w-full text-sm">
-                    <caption class="sr-only">Mi Kardex</caption>
-                    <thead class="bg-slate-100 border-b border-slate-200">
-                        <tr>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-28">Código</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Materia</th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase w-20">Créditos</th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase w-20">Calif.</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase w-40">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="row in kardex" :key="row.id" class="border-t border-slate-100 hover:bg-slate-50">
-                            <td class="px-4 py-3 font-mono text-xs text-slate-600">{{ row.subject?.code || '—' }}</td>
-                            <td class="px-4 py-3 text-slate-800">{{ row.subject?.name || '—' }}</td>
-                            <td class="px-4 py-3 text-center text-slate-600">{{ row.subject?.credits ?? '—' }}</td>
-                            <td class="px-4 py-3 text-center">
-                                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-bold" :class="gradeClass(row)">
-                                    {{ row.grade ?? '—' }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-3">
-                                <span
-                                    class="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold"
-                                    :class="row.passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'"
-                                >{{ row.passed ? 'Aprobada' : 'No aprobada' }}</span>
-                                <span v-if="row.approvalType?.code" class="ml-1 text-[10px] text-slate-400">{{ row.approvalType.code }}</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
-            </div>
+            <DataTable v-else :columns="columns" :rows="kardex" hide-search caption="Mi Kardex" empty-text="Aún no tienes calificaciones registradas.">
+                <template #cell-code="{ row }">
+                    <span class="font-mono text-xs text-slate-600">{{ row.subject?.code || '—' }}</span>
+                </template>
+                <template #cell-name="{ row }">
+                    <span class="text-slate-800">{{ row.subject?.name || '—' }}</span>
+                </template>
+                <template #cell-credits="{ row }">
+                    <span class="text-slate-600">{{ row.subject?.credits ?? '—' }}</span>
+                </template>
+                <template #cell-grade="{ row }">
+                    <span class="inline-block px-2 py-0.5 rounded-full text-xs font-bold" :class="gradeClass(row)">
+                        {{ row.grade ?? '—' }}
+                    </span>
+                </template>
+                <template #cell-status="{ row }">
+                    <span
+                        class="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                        :class="row.passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'"
+                    >{{ row.passed ? 'Aprobada' : 'No aprobada' }}</span>
+                    <span v-if="row.approvalType?.code" class="ml-1 text-[10px] text-slate-400">{{ row.approvalType.code }}</span>
+                </template>
+            </DataTable>
 
             <p v-if="error" class="text-xs text-red-600">{{ error }}</p>
         </template>
@@ -80,6 +70,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import SkeletonStat from '@/app/components/ui/SkeletonStat.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface KardexRow {
     id: number
@@ -95,6 +87,13 @@ const loading = ref(true)
 const error   = ref<string | null>(null)
 const student = ref<{ numControl: string | null; name: string } | null>(null)
 const kardex  = ref<KardexRow[]>([])
+const columns: DataTableColumn<KardexRow>[] = [
+    { key: 'code', label: 'Código', width: '7rem' },
+    { key: 'name', label: 'Materia' },
+    { key: 'credits', label: 'Créditos', align: 'center', width: '5rem' },
+    { key: 'grade', label: 'Calif.', align: 'center', width: '5rem' },
+    { key: 'status', label: 'Estado', width: '10rem' },
+]
 
 const approvedCount   = computed(() => kardex.value.filter(r => r.passed).length)
 const approvedCredits = computed(() =>

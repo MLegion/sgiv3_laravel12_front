@@ -38,41 +38,24 @@
             Aún no hay oficios emitidos en tu plantel.
         </div>
 
-        <div v-else-if="periodId" class="bg-white border rounded-xl shadow-sm p-4">
+        <div v-else-if="periodId">
             <SkeletonTable v-if="loading" :rows="5" :cols="5" />
-            <div v-else-if="!filtered.length" class="py-8 text-center text-slate-400">No hay oficios que mostrar.</div>
-            <div v-else role="region" aria-label="Oficios emitidos" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Oficios emitidos</caption>
-                <thead>
-                    <tr class="text-left text-xs font-semibold uppercase text-slate-500 border-b">
-                        <th scope="col" class="py-2 pr-3">Docente</th>
-                        <th scope="col" class="py-2 pr-3 w-32">Folio</th>
-                        <th scope="col" class="py-2 pr-3 w-20">Horas</th>
-                        <th scope="col" class="py-2 pr-3 w-32">Aprobado</th>
-                        <th scope="col" class="py-2 w-28"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="o in filtered" :key="o.id" class="border-b last:border-0">
-                        <td class="py-2 pr-3 font-medium text-slate-700">{{ o.teacherName ?? '—' }}</td>
-                        <td class="py-2 pr-3 font-mono text-slate-600">{{ o.folio ?? '—' }}</td>
-                        <td class="py-2 pr-3 text-slate-600">{{ o.hours }}</td>
-                        <td class="py-2 pr-3 text-slate-500">{{ fmtDate(o.approvedAt) }}</td>
-                        <td class="py-2 text-right">
-                            <button
-                                type="button"
-                                class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 hover:bg-slate-50 disabled:opacity-50"
-                                :disabled="busyId === o.id"
-                                @click="verOficio(o)"
-                            >
-                                {{ busyId === o.id ? 'Generando…' : 'Ver oficio' }}
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            </div>
+            <DataTable v-else :columns="columns" :rows="filtered" hide-search caption="Oficios emitidos" empty-text="No hay oficios que mostrar.">
+                <template #cell-teacher="{ row: o }"><span class="font-medium text-slate-700">{{ o.teacherName ?? '—' }}</span></template>
+                <template #cell-folio="{ row: o }"><span class="font-mono text-slate-600">{{ o.folio ?? '—' }}</span></template>
+                <template #cell-hours="{ row: o }"><span class="text-slate-600">{{ o.hours }}</span></template>
+                <template #cell-approved="{ row: o }"><span class="text-slate-500">{{ fmtDate(o.approvedAt) }}</span></template>
+                <template #cell-actions="{ row: o }">
+                    <button
+                        type="button"
+                        class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 hover:bg-slate-50 disabled:opacity-50"
+                        :disabled="busyId === o.id"
+                        @click="verOficio(o)"
+                    >
+                        {{ busyId === o.id ? 'Generando…' : 'Ver oficio' }}
+                    </button>
+                </template>
+            </DataTable>
         </div>
     </div>
 </template>
@@ -84,6 +67,8 @@ import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { useReportGenerator } from '@/modules/reports/composables/useReportGenerator'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface Period { id: number; name: string }
 interface Oficio {
@@ -98,6 +83,14 @@ interface Oficio {
 const toast = useToast()
 const A = API.MIDOCENCIA_API.oficios
 const { generateFromContext, convertToPdf } = useReportGenerator()
+
+const columns: DataTableColumn<Oficio>[] = [
+    { key: 'teacher', label: 'Docente' },
+    { key: 'folio', label: 'Folio', width: '8rem' },
+    { key: 'hours', label: 'Horas', width: '5rem' },
+    { key: 'approved', label: 'Aprobado', width: '8rem' },
+    { key: 'actions', label: '', align: 'right', width: '7rem' },
+]
 
 const periods = ref<Period[]>([])
 const periodId = ref<number | null>(null)

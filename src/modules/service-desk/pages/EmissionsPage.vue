@@ -11,35 +11,22 @@
             </select>
         </div>
 
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Emisiones de ventanilla" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Emisiones de ventanilla</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th scope="col" class="px-4 py-2">Folio</th><th scope="col">Estudiante</th><th scope="col">Documento</th><th scope="col">Firma</th><th scope="col">Estado</th><th scope="col"></th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="e in rows" :key="e.id" class="border-b last:border-0 hover:bg-slate-50">
-                        <td class="px-4 py-2 font-mono text-xs text-slate-600">{{ e.folio ?? 'S/F' }}</td>
-                        <td><div class="text-slate-700">{{ e.student_name }}</div><div class="text-xs text-slate-400">{{ e.num_control }}</div></td>
-                        <td class="text-slate-600">{{ e.document_name }}</td>
-                        <td>
-                            <span v-if="e.signed" class="text-xs font-bold text-emerald-600">✓ Firmado</span>
-                            <span v-else class="text-xs text-slate-400">Sin firmar</span>
-                        </td>
-                        <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="statusClass(e.status)">{{ statusLabel(e.status) }}</span></td>
-                        <td class="text-right pr-4 whitespace-nowrap">
-                            <button @click="open(e.id)" class="text-xs text-blue-600 font-semibold">Ver</button>
-                            <button v-if="!e.signed && e.status !== 'cancelled'" @click="openSign(e.id)" class="text-xs text-indigo-600 font-semibold ml-2">Firmar</button>
-                            <button v-if="e.status === 'issued'" @click="act(e.id, 'deliver')" class="text-xs text-emerald-600 ml-2">Entregar</button>
-                            <button v-if="e.status === 'issued'" @click="act(e.id, 'cancel')" class="text-xs text-red-500 ml-2">Cancelar</button>
-                        </td>
-                    </tr>
-                    <tr v-if="!rows.length"><td colspan="6" class="px-4 py-6 text-center text-slate-400">Sin emisiones.</td></tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable :columns="columns" :rows="rows" hide-search caption="Emisiones de ventanilla" empty-text="Sin emisiones.">
+            <template #cell-folio="{ row: e }"><span class="font-mono text-xs text-slate-600">{{ e.folio ?? 'S/F' }}</span></template>
+            <template #cell-student="{ row: e }"><div class="text-slate-700">{{ e.student_name }}</div><div class="text-xs text-slate-400">{{ e.num_control }}</div></template>
+            <template #cell-document="{ row: e }"><span class="text-slate-600">{{ e.document_name }}</span></template>
+            <template #cell-signed="{ row: e }">
+                <span v-if="e.signed" class="text-xs font-bold text-emerald-600">✓ Firmado</span>
+                <span v-else class="text-xs text-slate-400">Sin firmar</span>
+            </template>
+            <template #cell-status="{ row: e }"><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="statusClass(e.status)">{{ statusLabel(e.status) }}</span></template>
+            <template #cell-actions="{ row: e }">
+                <button @click="open(e.id)" class="text-xs text-blue-600 font-semibold">Ver</button>
+                <button v-if="!e.signed && e.status !== 'cancelled'" @click="openSign(e.id)" class="text-xs text-indigo-600 font-semibold ml-2">Firmar</button>
+                <button v-if="e.status === 'issued'" @click="act(e.id, 'deliver')" class="text-xs text-emerald-600 ml-2">Entregar</button>
+                <button v-if="e.status === 'issued'" @click="act(e.id, 'cancel')" class="text-xs text-red-500 ml-2">Cancelar</button>
+            </template>
+        </DataTable>
 
         <!-- Modal firmar -->
         <BaseModal v-model="signModalOpen" title="Firmar documento" size="sm">
@@ -63,12 +50,22 @@ import { API } from '@/shared/api'
 import type { Emission } from '@/modules/service-desk/types/service-desk.type'
 import { openDocument } from '@/modules/service-desk/pages/openDocument'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { useConfirm } from '@/app/composables/useConfirm'
 
 const { confirm } = useConfirm()
 
 const D = API.SERVICE_DESK_API
 const rows = ref<Emission[]>([])
+const columns: DataTableColumn<Emission>[] = [
+    { key: 'folio', label: 'Folio' },
+    { key: 'student', label: 'Estudiante' },
+    { key: 'document', label: 'Documento' },
+    { key: 'signed', label: 'Firma' },
+    { key: 'status', label: 'Estado' },
+    { key: 'actions', label: '', align: 'right' },
+]
 const filters = reactive({ status: '' })
 const signId = ref<number | null>(null)
 const signModalOpen = computed({

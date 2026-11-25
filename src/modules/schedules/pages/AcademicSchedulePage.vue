@@ -623,53 +623,29 @@
                         </span>
                     </div>
 
-                    <div role="region" aria-label="Horario completo" tabindex="0" class="overflow-x-auto max-h-[calc(100vh-380px)] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                        <table class="w-full text-xs border-collapse">
-                            <caption class="sr-only">Horario completo</caption>
-                            <thead class="sticky top-0 z-10">
-                                <tr class="bg-slate-100 border-b-2 border-slate-300">
-                                    <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">
-                                        {{ usesSpecificDates ? 'Fecha' : 'Día' }}
-                                    </th>
-                                    <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Hora</th>
-                                    <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Grupo</th>
-                                    <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Materia</th>
-                                    <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Docente</th>
-                                    <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase tracking-wider">Aula</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr
-                                    v-for="row in listRows"
-                                    :key="'lr-' + row.id"
-                                    class="border-b border-slate-100 hover:bg-sky-50/40 transition"
-                                >
-                                    <td class="px-3 py-1.5 font-bold text-slate-700 uppercase whitespace-nowrap">
-                                        {{ row.dayLabel }}
-                                    </td>
-                                    <td class="px-3 py-1.5 font-mono text-slate-700 whitespace-nowrap">
-                                        {{ row.startTime }} — {{ row.endTime }}
-                                    </td>
-                                    <td class="px-3 py-1.5 font-bold text-slate-700">{{ row.group || '—' }}</td>
-                                    <td class="px-3 py-1.5 uppercase text-slate-700" :title="row.subjectFullName || row.subject || ''">
-                                        <div class="font-bold">{{ row.subject || '—' }}</div>
-                                        <div v-if="row.subjectCode" class="text-[9px] text-slate-400 font-mono">{{ row.subjectCode }}</div>
-                                    </td>
-                                    <td class="px-3 py-1.5 uppercase text-slate-700">
-                                        <div class="flex items-center gap-1">
-                                            <span>{{ row.teacher || '—' }}</span>
-                                            <span v-if="row.isVacancy" class="text-[8px] font-bold uppercase px-1 rounded bg-amber-100 text-amber-700">VAC</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-3 py-1.5 text-slate-700 uppercase">{{ row.place || '—' }}</td>
-                                </tr>
-                                <tr v-if="listRows.length === 0">
-                                    <td colspan="6" class="px-4 py-12 text-center text-[11px] text-slate-400 uppercase">
-                                        Sin bloques asignados
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="max-h-[calc(100vh-380px)] overflow-y-auto">
+                        <DataTable :columns="listColumns" :rows="listRows" hide-search caption="Horario completo" empty-text="Sin bloques asignados">
+                            <template #cell-dayLabel="{ row }">
+                                <span class="font-bold text-slate-700 uppercase whitespace-nowrap">{{ row.dayLabel }}</span>
+                            </template>
+                            <template #cell-time="{ row }">
+                                <span class="font-mono text-slate-700 whitespace-nowrap">{{ row.startTime }} — {{ row.endTime }}</span>
+                            </template>
+                            <template #cell-group="{ row }"><span class="font-bold text-slate-700">{{ row.group || '—' }}</span></template>
+                            <template #cell-subject="{ row }">
+                                <div class="uppercase text-slate-700" :title="row.subjectFullName || row.subject || ''">
+                                    <div class="font-bold">{{ row.subject || '—' }}</div>
+                                    <div v-if="row.subjectCode" class="text-[9px] text-slate-400 font-mono">{{ row.subjectCode }}</div>
+                                </div>
+                            </template>
+                            <template #cell-teacher="{ row }">
+                                <div class="flex items-center gap-1 uppercase text-slate-700">
+                                    <span>{{ row.teacher || '—' }}</span>
+                                    <span v-if="row.isVacancy" class="text-[8px] font-bold uppercase px-1 rounded bg-amber-100 text-amber-700">VAC</span>
+                                </div>
+                            </template>
+                            <template #cell-place="{ row }"><span class="text-slate-700 uppercase">{{ row.place || '—' }}</span></template>
+                        </DataTable>
                     </div>
                 </div>
             </template>
@@ -1468,6 +1444,8 @@ import type {
     ComplementaryHourTypeRef,
     ComplementarySchedule,
 } from '@/modules/schedules/types/complementarySchedule.type'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const STORAGE_KEY = 'schedules_academic_period'
 
@@ -3519,6 +3497,15 @@ const listRows = computed<ListRow[]>(() => {
         return a.startMinutes - b.startMinutes
     })
 })
+
+const listColumns = computed<DataTableColumn<ListRow>[]>(() => [
+    { key: 'dayLabel', label: usesSpecificDates.value ? 'Fecha' : 'Día' },
+    { key: 'time', label: 'Hora' },
+    { key: 'group', label: 'Grupo' },
+    { key: 'subject', label: 'Materia' },
+    { key: 'teacher', label: 'Docente' },
+    { key: 'place', label: 'Aula' },
+])
 
 async function eraserDeleteAll(block: AcademicSchedule) {
     try {

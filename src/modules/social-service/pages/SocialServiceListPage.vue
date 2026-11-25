@@ -22,31 +22,26 @@
             <button @click="fetchList" class="px-4 py-2 rounded-lg border text-sm font-semibold text-slate-600">Filtrar</button>
         </div>
 
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Prestadores de Servicio Social" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Prestadores de Servicio Social</caption>
-                <thead>
-                    <tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                        <th scope="col" class="px-4 py-2">Prestador</th><th scope="col">Carrera</th><th scope="col">Dependencia</th><th scope="col">Horas</th><th scope="col">Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="r in rows" :key="r.id" @click="goDetail(r.id)" class="border-b last:border-0 hover:bg-slate-50 cursor-pointer">
-                        <td class="px-4 py-2">
-                            <p class="font-semibold text-slate-700">{{ r.student_name ?? '—' }}</p>
-                            <p class="text-xs font-mono text-slate-400">{{ r.num_control }}</p>
-                        </td>
-                        <td class="text-slate-600">{{ r.career_name ?? '—' }}</td>
-                        <td class="text-slate-600">{{ r.company_name ?? '—' }}</td>
-                        <td class="text-slate-600">{{ r.accumulated_hours }}/{{ r.required_hours }}</td>
-                        <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="statusClass(r.status)">{{ STATUS_LABELS[r.status] }}</span></td>
-                    </tr>
-                    <tr v-if="!rows.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin prestadores.</td></tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable :columns="columns" :rows="rows" hide-search caption="Prestadores de Servicio Social" empty-text="Sin prestadores.">
+            <template #cell-student="{ row: r }">
+                <div @click="goDetail(r.id)" class="cursor-pointer">
+                    <p class="font-semibold text-slate-700">{{ r.student_name ?? '—' }}</p>
+                    <p class="text-xs font-mono text-slate-400">{{ r.num_control }}</p>
+                </div>
+            </template>
+            <template #cell-career="{ row: r }">
+                <span @click="goDetail(r.id)" class="text-slate-600 cursor-pointer">{{ r.career_name ?? '—' }}</span>
+            </template>
+            <template #cell-company="{ row: r }">
+                <span @click="goDetail(r.id)" class="text-slate-600 cursor-pointer">{{ r.company_name ?? '—' }}</span>
+            </template>
+            <template #cell-hours="{ row: r }">
+                <span @click="goDetail(r.id)" class="text-slate-600 cursor-pointer">{{ r.accumulated_hours }}/{{ r.required_hours }}</span>
+            </template>
+            <template #cell-status="{ row: r }">
+                <span @click="goDetail(r.id)" class="px-2 py-0.5 rounded-full text-xs font-bold cursor-pointer" :class="statusClass(r.status)">{{ STATUS_LABELS[r.status] }}</span>
+            </template>
+        </DataTable>
 
         <!-- Modal de alta -->
         <div v-if="showRegister" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showRegister = false">
@@ -84,10 +79,20 @@ import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { STATUS_LABELS, type SocialServiceListRow } from '@/modules/social-service/types/social-service.type'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const S = API.SOCIAL_SERVICE_API
 const SS = API.SCHOOL_SERVICES_API
 const router = useRouter()
+
+const columns: DataTableColumn<SocialServiceListRow>[] = [
+    { key: 'student', label: 'Prestador' },
+    { key: 'career', label: 'Carrera' },
+    { key: 'company', label: 'Dependencia' },
+    { key: 'hours', label: 'Horas' },
+    { key: 'status', label: 'Estado' },
+]
 
 const rows = ref<SocialServiceListRow[]>([])
 const options = reactive<{ statuses: { value: string; label: string }[]; periods: any[]; careers: any[] }>({ statuses: [], periods: [], careers: [] })

@@ -120,68 +120,46 @@
                         </div>
                     </div>
 
-                    <div tabindex="0" role="region" aria-label="Materias Vinculadas" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                        <table class="w-full text-left border-collapse">
-                            <caption class="sr-only">Materias Vinculadas</caption>
-                            <thead>
-                            <tr class="bg-slate-50 text-[10px] uppercase text-slate-400 font-black border-b">
-                                <th scope="col" class="px-4 py-4 w-24">Clave</th>
-                                <th scope="col" class="px-4 py-4">Asignatura</th>
-                                <th scope="col" class="px-4 py-4 text-center">Créditos</th>
-                                <th scope="col" class="px-4 py-4 text-center">Horas (T-P)</th>
-                                <th scope="col" class="px-4 py-4 text-right">Opciones</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y text-sm">
-                            <template v-if="loadingSubjects">
-                            <tr v-for="i in 3" :key="'loader-'+i" class="animate-pulse">
-                                <td colspan="5" class="px-4 py-5"><div class="h-4 bg-slate-100 rounded"></div></td>
-                            </tr>
-                            </template>
-                            <tr v-else-if="subjects.length === 0">
-                                <td colspan="5" class="px-4 py-12 text-center text-slate-400 text-xs uppercase font-medium italic">No hay materias ligadas a esta especialidad</td>
-                            </tr>
-                            <tr v-for="subject in subjects" :key="subject.id" class="hover:bg-slate-50 transition-colors group">
-                                <td class="px-4 py-3 font-mono text-xs text-slate-500">{{ subject.officialCode }}</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold uppercase text-xs text-slate-700">{{ subject.name }}</span>
-                                        <span class="text-[9px] text-slate-400 uppercase tracking-tighter">{{ subject.shortName }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold">{{ subject.credits }}</span>
-                                </td>
-                                <td class="px-4 py-3 text-center text-xs text-slate-500">
-                                    {{ subject.ht }} - {{ subject.hp }}
-                                </td>
-                                <td class="px-4 py-3 text-right">
-                                    <div class="flex items-center justify-end gap-2">
-                                        <button aria-label="Editar Materia"
-                                            @click="editSubject(subject.id)"
-                                            class="flex items-center justify-center p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-100 transition-all"
-                                            title="Editar Materia"
-                                        >
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                        </button>
-                                        <button aria-label="Desvincular Materia"
-                                            @click="openUnlinkModal(subject)"
-                                            class="flex items-center justify-center p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-100 transition-all"
-                                            title="Desvincular Materia"
-                                        >
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <DataTable :columns="subjectColumns" :rows="subjects" :loading="loadingSubjects" hide-search caption="Materias Vinculadas" empty-text="No hay materias ligadas a esta especialidad">
+                        <template #cell-officialCode="{ row: subject }">
+                            <span class="font-mono text-xs text-slate-500">{{ subject.officialCode }}</span>
+                        </template>
+                        <template #cell-name="{ row: subject }">
+                            <div class="flex flex-col">
+                                <span class="font-bold uppercase text-xs text-slate-700">{{ subject.name }}</span>
+                                <span class="text-[9px] text-slate-400 uppercase tracking-tighter">{{ subject.shortName }}</span>
+                            </div>
+                        </template>
+                        <template #cell-credits="{ row: subject }">
+                            <span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold">{{ subject.credits }}</span>
+                        </template>
+                        <template #cell-hours="{ row: subject }">
+                            <span class="text-xs text-slate-500">{{ subject.ht }} - {{ subject.hp }}</span>
+                        </template>
+                        <template #cell-actions="{ row: subject }">
+                            <div class="flex items-center justify-end gap-2">
+                                <button aria-label="Editar Materia"
+                                    @click="editSubject(subject.id)"
+                                    class="flex items-center justify-center p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-100 transition-all"
+                                    title="Editar Materia"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button aria-label="Desvincular Materia"
+                                    @click="openUnlinkModal(subject)"
+                                    class="flex items-center justify-center p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-100 transition-all"
+                                    title="Desvincular Materia"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+                    </DataTable>
                 </div>
             </div>
         </div>
@@ -294,6 +272,16 @@ import { API } from '@/shared/api'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const subjectColumns: DataTableColumn<any>[] = [
+    { key: 'officialCode', label: 'Clave', width: '6rem' },
+    { key: 'name', label: 'Asignatura' },
+    { key: 'credits', label: 'Créditos', align: 'center' },
+    { key: 'hours', label: 'Horas (T-P)', align: 'center' },
+    { key: 'actions', label: 'Opciones', align: 'right' },
+]
 
 const route = useRoute()
 const router = useRouter()

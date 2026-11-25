@@ -37,37 +37,19 @@
 
         <SkeletonTable v-if="loading" :rows="5" :cols="6" />
 
-        <div v-else class="rounded-xl border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Expedientes de movilidad"><table class="w-full text-sm">
-                <caption class="sr-only">Expedientes de movilidad</caption>
-                <thead class="bg-slate-50 text-slate-500">
-                    <tr>
-                        <th scope="col" class="text-left px-4 py-2 font-medium">#</th>
-                        <th scope="col" class="text-left px-4 py-2 font-medium">Tipo de trámite</th>
-                        <th scope="col" class="text-left px-4 py-2 font-medium">Origen → Destino</th>
-                        <th scope="col" class="text-left px-4 py-2 font-medium">Dictamen</th>
-                        <th scope="col" class="text-left px-4 py-2 font-medium">Estado</th>
-                        <th scope="col" class="px-4 py-2"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-if="!rows.length"><td colspan="6" class="px-4 py-8 text-center text-slate-400">Sin expedientes.</td></tr>
-                    <tr v-for="r in rows" :key="r.id" class="border-t border-slate-100 hover:bg-slate-50">
-                        <td class="px-4 py-2 text-slate-500">{{ r.id }}</td>
-                        <td class="px-4 py-2">
-                            <span class="rounded-full px-2 py-0.5 text-xs font-semibold" :class="mobilityKind(r).cls" :title="mobilityKind(r).desc">{{ mobilityKind(r).label }}</span>
-                        </td>
-                        <td class="px-4 py-2 text-slate-600">C{{ r.origin_college_id ?? '—' }} → C{{ r.destination_college_id ?? '—' }}</td>
-                        <td class="px-4 py-2 text-slate-600">{{ r.dictamen_number || '—' }}</td>
-                        <td class="px-4 py-2"><span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusClass(r.status)">{{ statusLabel(r.status) }}</span></td>
-                        <td class="px-4 py-2 text-right space-x-3">
-                            <router-link :to="`/school-services/mobility/${r.id}`" class="text-slate-700 hover:text-slate-900 font-medium">Abrir</router-link>
-                            <button v-if="r.status !== 'applied'" class="text-red-500 hover:text-red-600 font-medium" @click="removeCase(r)">Eliminar</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></div>
-        </div>
+        <DataTable v-else :columns="columns" :rows="rows" hide-search caption="Expedientes de movilidad" empty-text="Sin expedientes.">
+            <template #cell-id="{ row: r }">{{ r.id }}</template>
+            <template #cell-kind="{ row: r }">
+                <span class="rounded-full px-2 py-0.5 text-xs font-semibold" :class="mobilityKind(r).cls" :title="mobilityKind(r).desc">{{ mobilityKind(r).label }}</span>
+            </template>
+            <template #cell-route="{ row: r }">C{{ r.origin_college_id ?? '—' }} → C{{ r.destination_college_id ?? '—' }}</template>
+            <template #cell-dictamen="{ row: r }">{{ r.dictamen_number || '—' }}</template>
+            <template #cell-status="{ row: r }"><span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusClass(r.status)">{{ statusLabel(r.status) }}</span></template>
+            <template #cell-actions="{ row: r }">
+                <router-link :to="`/school-services/mobility/${r.id}`" class="text-slate-700 hover:text-slate-900 font-medium">Abrir</router-link>
+                <button v-if="r.status !== 'applied'" class="text-red-500 hover:text-red-600 font-medium ml-3" @click="removeCase(r)">Eliminar</button>
+            </template>
+        </DataTable>
 
         <BaseModal v-model="openTransfer" title="Traslado externo (entrante)" size="md">
             <div class="space-y-3">
@@ -242,6 +224,8 @@ import { useToast } from '@/app/composables/useToast'
 import { useConfirm } from '@/app/composables/useConfirm'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import InstitutionPicker from '@/modules/school-services/components/InstitutionPicker.vue'
 import { statusClass, statusLabel } from '@/modules/school-services/mobility.status'
@@ -262,6 +246,14 @@ watch(() => route.query.tab, (t) => {
     if (next !== tab.value) { tab.value = next; load() }
 })
 const rows = ref<any[]>([])
+const columns: DataTableColumn<any>[] = [
+    { key: 'id', label: '#' },
+    { key: 'kind', label: 'Tipo de trámite' },
+    { key: 'route', label: 'Origen → Destino' },
+    { key: 'dictamen', label: 'Dictamen' },
+    { key: 'status', label: 'Estado' },
+    { key: 'actions', label: '', align: 'right' },
+]
 const loading = ref(false)
 const openExternal = ref(false)
 const openTransfer = ref(false)

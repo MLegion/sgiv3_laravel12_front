@@ -40,17 +40,11 @@
         <!-- Jurado -->
         <div class="rounded-xl border bg-white p-5 space-y-3">
             <h2 class="text-sm font-bold text-slate-700 uppercase">Jurado / sínodo</h2>
-            <div role="region" aria-label="Jurado / sínodo" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                <caption class="sr-only">Jurado / sínodo</caption>
-                <tbody>
-                    <tr v-for="j in rec.jury" :key="j.id" class="border-b last:border-0">
-                        <td class="py-2 font-semibold text-slate-700">{{ j.user_name }}</td>
-                        <td class="capitalize text-slate-600">{{ j.role }}</td>
-                        <td class="text-right"><button @click="removeJury(j.id)" class="text-xs text-red-500">quitar</button></td>
-                    </tr>
-                    <tr v-if="!rec.jury?.length"><td colspan="3" class="py-3 text-center text-slate-400">Sin jurado asignado.</td></tr>
-                </tbody>
-            </table></div>
+            <DataTable :columns="juryColumns" :rows="rec.jury ?? []" hide-search caption="Jurado / sínodo" empty-text="Sin jurado asignado.">
+                <template #cell-user_name="{ row: j }"><span class="font-semibold text-slate-700">{{ j.user_name }}</span></template>
+                <template #cell-role="{ row: j }"><span class="capitalize text-slate-600">{{ j.role }}</span></template>
+                <template #cell-actions="{ row: j }"><button @click="removeJury(j.id)" class="text-xs text-red-500">quitar</button></template>
+            </DataTable>
             <div class="grid sm:grid-cols-3 gap-2 pt-2">
                 <input v-model.number="juryForm.user_id" type="number" placeholder="ID usuario docente" aria-label="ID de usuario docente" class="rounded-lg border-slate-300 text-sm" />
                 <select v-model="juryForm.role" aria-label="Rol en el jurado" class="rounded-lg border-slate-300 text-sm">
@@ -67,18 +61,12 @@
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Actos de recepción profesional</h2>
                 <button @click="openSchedule" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold">+ Programar acto</button>
             </div>
-            <div role="region" aria-label="Actos de recepción profesional" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                <caption class="sr-only">Actos de recepción profesional</caption>
-                <tbody>
-                    <tr v-for="a in rec.acts" :key="a.id" class="border-b last:border-0">
-                        <td class="py-2">{{ a.date }} · {{ a.start_time?.slice(0,5) }}–{{ a.end_time?.slice(0,5) }}</td>
-                        <td class="text-slate-600">{{ a.place_name ?? '—' }}</td>
-                        <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="actStatusClass(a.status)">{{ actStatusLabel(a.status) }}</span></td>
-                        <td class="text-slate-600">{{ outcomeLabel(a.outcome) }}</td>
-                    </tr>
-                    <tr v-if="!rec.acts?.length"><td colspan="4" class="py-3 text-center text-slate-400">Sin actos programados.</td></tr>
-                </tbody>
-            </table></div>
+            <DataTable :columns="actsColumns" :rows="rec.acts ?? []" hide-search caption="Actos de recepción profesional" empty-text="Sin actos programados.">
+                <template #cell-date="{ row: a }">{{ a.date }} · {{ a.start_time?.slice(0,5) }}–{{ a.end_time?.slice(0,5) }}</template>
+                <template #cell-place="{ row: a }"><span class="text-slate-600">{{ a.place_name ?? '—' }}</span></template>
+                <template #cell-status="{ row: a }"><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="actStatusClass(a.status)">{{ actStatusLabel(a.status) }}</span></template>
+                <template #cell-outcome="{ row: a }"><span class="text-slate-600">{{ outcomeLabel(a.outcome) }}</span></template>
+            </DataTable>
         </div>
 
         <!-- Modal programar acto (calendario semanal del aula) -->
@@ -99,11 +87,25 @@ import { API } from '@/shared/api'
 import type { TitulacionRecord, TitulacionOption, EligibleResidency } from '@/modules/titulacion/types/titulacion.type'
 import { statusLabel, statusClass, actStatusLabel, actStatusClass, outcomeLabel } from '@/modules/titulacion/pages/status'
 import ActSchedulerModal from '@/modules/titulacion/pages/ActSchedulerModal.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { useConfirm } from '@/app/composables/useConfirm'
 import { useToast } from '@/app/composables/useToast'
 
 const { confirm } = useConfirm()
 const t = useToast()
+
+const juryColumns: DataTableColumn<any>[] = [
+    { key: 'user_name', label: 'Integrante' },
+    { key: 'role', label: 'Rol' },
+    { key: 'actions', label: '', align: 'right' },
+]
+const actsColumns: DataTableColumn<any>[] = [
+    { key: 'date', label: 'Fecha / Hora' },
+    { key: 'place', label: 'Aula' },
+    { key: 'status', label: 'Estado' },
+    { key: 'outcome', label: 'Resultado' },
+]
 
 const props = defineProps<{ id: string | number }>()
 const T = API.TITULACION_API

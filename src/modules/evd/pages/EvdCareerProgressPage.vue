@@ -4,6 +4,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import EvdPeriodSelect from '@/modules/evd/components/EvdPeriodSelect.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface CapOption { id: number; academicPeriod?: { name?: string | null; shortName?: string | null } | null }
 interface Career { id: number; name: string; short_name: string | null }
@@ -30,6 +32,13 @@ interface StudentRow {
     started_at: string | null
     completed_at: string | null
 }
+
+const studentColumns: DataTableColumn<StudentRow>[] = [
+    { key: 'num_control', label: 'N° Control', width: '7rem' },
+    { key: 'name', label: 'Estudiante' },
+    { key: 'status', label: 'Estado', width: '8rem' },
+    { key: 'fecha', label: 'Fecha', width: '9rem' },
+]
 
 const caps        = ref<CapOption[]>([])
 const selectedCap = ref<number | null>(null)
@@ -291,30 +300,24 @@ onMounted(async () => {
                     <div v-else-if="(students[g.teacher_assignment_id] ?? []).length === 0" class="text-xs text-slate-500 italic">
                         Sin estudiantes en esta materia.
                     </div>
-                    <div v-else class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Estudiantes del grupo"><table class="w-full text-sm">
-                        <caption class="sr-only">Estudiantes del grupo</caption>
-                        <thead class="text-[10px] uppercase tracking-wider text-slate-400 border-b">
-                            <tr>
-                                <th scope="col" class="text-left py-1.5 w-28">N° Control</th>
-                                <th scope="col" class="text-left py-1.5">Estudiante</th>
-                                <th scope="col" class="text-left py-1.5 w-32">Estado</th>
-                                <th scope="col" class="text-left py-1.5 w-36">Fecha</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-50">
-                            <tr v-for="s in students[g.teacher_assignment_id]" :key="s.assignment_id">
-                                <td class="py-1.5 font-mono text-xs text-slate-500">{{ s.num_control ?? '—' }}</td>
-                                <td class="py-1.5 text-slate-700">{{ s.name }}</td>
-                                <td class="py-1.5">
-                                    <span class="text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5"
-                                          :class="statusBadge(s.status).cls">
-                                        {{ statusBadge(s.status).label }}
-                                    </span>
-                                </td>
-                                <td class="py-1.5 text-xs text-slate-500">{{ s.completed_at ?? '—' }}</td>
-                            </tr>
-                        </tbody>
-                    </table></div>
+                    <DataTable v-else :columns="studentColumns" :rows="students[g.teacher_assignment_id]" hide-search
+                               caption="Estudiantes del grupo" empty-text="Sin estudiantes en esta materia.">
+                        <template #cell-num_control="{ row: s }">
+                            <span class="font-mono text-xs text-slate-500">{{ s.num_control ?? '—' }}</span>
+                        </template>
+                        <template #cell-name="{ row: s }">
+                            <span class="text-slate-700">{{ s.name }}</span>
+                        </template>
+                        <template #cell-status="{ row: s }">
+                            <span class="text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5"
+                                  :class="statusBadge(s.status).cls">
+                                {{ statusBadge(s.status).label }}
+                            </span>
+                        </template>
+                        <template #cell-fecha="{ row: s }">
+                            <span class="text-xs text-slate-500">{{ s.completed_at ?? '—' }}</span>
+                        </template>
+                    </DataTable>
                 </div>
             </li>
         </ul>

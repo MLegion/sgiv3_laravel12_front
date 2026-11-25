@@ -54,26 +54,13 @@
                     <option value="sent">Enviadas</option><option value="responded">Respondidas</option>
                 </select>
             </div>
-            <div class="rounded-xl border bg-white overflow-hidden">
-                <div role="region" aria-label="Seguimiento de invitaciones" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                <table class="w-full text-sm">
-                    <caption class="sr-only">Seguimiento de invitaciones</caption>
-                    <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                        <th scope="col" class="px-4 py-2">Egresado</th><th scope="col">Generación</th><th scope="col">Carrera</th><th scope="col">Correo</th><th scope="col">Estado</th>
-                    </tr></thead>
-                    <tbody>
-                        <tr v-for="i in invitations" :key="i.id" class="border-b last:border-0">
-                            <td class="px-4 py-2"><div class="text-slate-700">{{ i.student_name }}</div><div class="text-xs text-slate-400">{{ i.num_control }}</div></td>
-                            <td class="text-slate-600">{{ i.generation ?? '—' }}</td>
-                            <td class="text-slate-600">{{ i.career_name ?? '—' }}</td>
-                            <td class="text-slate-500 text-xs">{{ i.contact_email ?? '—' }}</td>
-                            <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="invStatusClass(i.status)">{{ invStatusLabel(i.status) }}</span></td>
-                        </tr>
-                        <tr v-if="!invitations.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin invitaciones. Usa "Generar invitaciones".</td></tr>
-                    </tbody>
-                </table>
-                </div>
-            </div>
+            <DataTable :columns="invColumns" :rows="invitations" hide-search caption="Seguimiento de invitaciones" empty-text="Sin invitaciones. Usa &quot;Generar invitaciones&quot;.">
+                <template #cell-student="{ row: i }"><div class="text-slate-700">{{ i.student_name }}</div><div class="text-xs text-slate-400">{{ i.num_control }}</div></template>
+                <template #cell-generation="{ row: i }"><span class="text-slate-600">{{ i.generation ?? '—' }}</span></template>
+                <template #cell-career="{ row: i }"><span class="text-slate-600">{{ i.career_name ?? '—' }}</span></template>
+                <template #cell-email="{ row: i }"><span class="text-slate-500 text-xs">{{ i.contact_email ?? '—' }}</span></template>
+                <template #cell-status="{ row: i }"><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="invStatusClass(i.status)">{{ invStatusLabel(i.status) }}</span></template>
+            </DataTable>
         </div>
 
         <!-- Estadísticas -->
@@ -132,6 +119,16 @@ import { API } from '@/shared/api'
 import { useConfirm } from '@/app/composables/useConfirm'
 import type { GraduateWave, WaveInvitation, WaveStatistics } from '@/modules/graduate-tracking/types/graduate-tracking.type'
 import { statusLabel, statusClass, invStatusLabel, invStatusClass } from '@/modules/graduate-tracking/pages/status'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const invColumns: DataTableColumn<WaveInvitation>[] = [
+    { key: 'student', label: 'Egresado' },
+    { key: 'generation', label: 'Generación' },
+    { key: 'career', label: 'Carrera' },
+    { key: 'email', label: 'Correo' },
+    { key: 'status', label: 'Estado' },
+]
 
 const props = defineProps<{ id: string | number }>()
 const G = API.GRADUATE_TRACKING_API

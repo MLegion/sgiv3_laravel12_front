@@ -91,28 +91,19 @@
                     <span class="text-xs text-slate-400" v-if="record.normativa">{{ record.normativa.report_count }} reportes previstos</span>
                 </div>
 
-                <div role="region" aria-label="Reportes de avance" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                <table class="w-full text-sm">
-                    <caption class="sr-only">Reportes de avance</caption>
-                    <thead>
-                        <tr class="text-left text-[10px] uppercase text-slate-400 border-b">
-                            <th scope="col" class="py-2">#</th><th scope="col">Periodo</th><th scope="col">Horas</th><th scope="col">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="r in reports" :key="r.id" class="border-b last:border-0">
-                            <td class="py-2 font-semibold">{{ r.report_number }}</td>
-                            <td class="text-slate-500">{{ r.period_start ?? '—' }} → {{ r.period_end ?? '—' }}</td>
-                            <td>{{ r.hours }} h</td>
-                            <td>
-                                <span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="reportClass(r.status)">{{ reportLabel(r.status) }}</span>
-                                <span v-if="r.status === 'rejected' && r.rejection_reason" class="ml-2 text-xs text-red-500">{{ r.rejection_reason }}</span>
-                            </td>
-                        </tr>
-                        <tr v-if="!reports.length"><td colspan="4" class="py-3 text-center text-slate-400">Sin reportes.</td></tr>
-                    </tbody>
-                </table>
-                </div>
+                <DataTable :columns="reportColumns" :rows="reports" hide-search caption="Reportes de avance" empty-text="Sin reportes.">
+                    <template #cell-report_number="{ row }">
+                        <span class="font-semibold">{{ row.report_number }}</span>
+                    </template>
+                    <template #cell-period="{ row }">
+                        <span class="text-slate-500">{{ row.period_start ?? '—' }} → {{ row.period_end ?? '—' }}</span>
+                    </template>
+                    <template #cell-hours="{ row }">{{ row.hours }} h</template>
+                    <template #cell-status="{ row }">
+                        <span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="reportClass(row.status)">{{ reportLabel(row.status) }}</span>
+                        <span v-if="row.status === 'rejected' && row.rejection_reason" class="ml-2 text-xs text-red-500">{{ row.rejection_reason }}</span>
+                    </template>
+                </DataTable>
 
                 <!-- Nuevo reporte -->
                 <div v-if="canEdit" class="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
@@ -173,8 +164,17 @@ import { ref, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { STATUS_LABELS, type SocialServiceRecord, type SocialServiceReport, type SocialServiceProgram, type DependencyOption, type DocumentChecklistItem } from '@/modules/social-service/types/social-service.type'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const S = API.SOCIAL_SERVICE_API
+
+const reportColumns: DataTableColumn<SocialServiceReport>[] = [
+    { key: 'report_number', label: '#' },
+    { key: 'period', label: 'Periodo' },
+    { key: 'hours', label: 'Horas' },
+    { key: 'status', label: 'Estado' },
+]
 
 const loading = ref(true)
 const saving = ref(false)

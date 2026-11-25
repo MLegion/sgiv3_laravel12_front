@@ -29,25 +29,12 @@
             </div>
 
             <!-- Archivos -->
-            <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <div role="region" aria-label="Archivos de evidencia" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                <table class="w-full text-sm">
-                    <caption class="sr-only">Archivos de evidencia</caption>
-                    <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                        <tr><th scope="col" class="text-left px-4 py-2">Archivo</th><th scope="col" class="text-left px-4 py-2">Categoría</th><th scope="col" class="text-left px-4 py-2">Etiqueta</th><th scope="col" class="px-4 py-2"></th></tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        <tr v-for="f in files" :key="f.id" class="hover:bg-slate-50">
-                            <td class="px-4 py-2"><button class="text-blue-600 hover:underline truncate" @click="download(f)">{{ f.originalName }}</button></td>
-                            <td class="px-4 py-2 text-slate-500">{{ bucketName(f.bucketId) }}</td>
-                            <td class="px-4 py-2 text-slate-500">{{ f.label || '—' }}</td>
-                            <td class="px-4 py-2 text-right"><button class="text-red-500 hover:text-red-700" @click="remove(f)">✕</button></td>
-                        </tr>
-                        <tr v-if="files.length === 0"><td colspan="4" class="px-4 py-4 text-center text-slate-400">Sin archivos.</td></tr>
-                    </tbody>
-                </table>
-                </div>
-            </div>
+            <DataTable :columns="columns" :rows="files" hide-search caption="Archivos de evidencia" empty-text="Sin archivos.">
+                <template #cell-file="{ row: f }"><button class="text-blue-600 hover:underline truncate" @click="download(f)">{{ f.originalName }}</button></template>
+                <template #cell-bucket="{ row: f }"><span class="text-slate-500">{{ bucketName(f.bucketId) }}</span></template>
+                <template #cell-label="{ row: f }"><span class="text-slate-500">{{ f.label || '—' }}</span></template>
+                <template #cell-actions="{ row: f }"><button class="text-red-500 hover:text-red-700" @click="remove(f)">✕</button></template>
+            </DataTable>
         </template>
     </div>
 </template>
@@ -59,9 +46,18 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface Bucket { id: number; name: string }
 interface OFile { id: number; bucketId: number | null; label: string | null; originalName: string; mime: string | null; size: number }
+
+const columns: DataTableColumn<OFile>[] = [
+    { key: 'file', label: 'Archivo' },
+    { key: 'bucket', label: 'Categoría' },
+    { key: 'label', label: 'Etiqueta' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 const router = useRouter()
 const toast = useToast()

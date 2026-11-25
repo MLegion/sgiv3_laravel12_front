@@ -10,31 +10,20 @@
         </div>
 
         <section class="rounded-xl border bg-white p-4">
-            <p v-if="!rows.length" class="text-sm text-slate-400">Sin constancias en este estado.</p>
-            <div v-else role="region" aria-label="Constancias MOOC por validar" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Constancias MOOC por validar</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                    <th scope="col" class="px-3 py-1">Alumno</th><th scope="col">Curso</th><th scope="col">Plataforma</th><th scope="col">Horas</th><th scope="col">Constancia</th><th scope="col"></th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="c in rows" :key="c.id" class="border-b last:border-0">
-                        <td class="px-3 py-2 text-slate-700">{{ c.student_name }}<span class="block text-[10px] text-slate-400">{{ c.num_control }}</span></td>
-                        <td class="text-slate-600">{{ c.course_name }}<span v-if="c.folio" class="block text-[10px] text-slate-400">Folio: {{ c.folio }}</span></td>
-                        <td class="text-slate-500">{{ c.platform_name }}</td>
-                        <td class="text-slate-500">{{ c.hours ?? '—' }}</td>
-                        <td><a v-if="c.certificate_path" :href="certUrl(c.certificate_path)" target="_blank" class="text-emerald-600 hover:underline">ver</a><span v-else class="text-slate-300">—</span></td>
-                        <td class="text-right whitespace-nowrap">
-                            <template v-if="status === 'submitted'">
-                                <button @click="openValidate(c)" class="text-xs text-emerald-600 hover:underline">validar</button>
-                                <button @click="reject(c)" class="ml-3 text-xs text-slate-400 hover:text-rose-500">rechazar</button>
-                            </template>
-                            <span v-else-if="status === 'validated'" class="text-[11px] text-emerald-600">{{ c.credits }} créditos</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            </div>
+            <DataTable :columns="moocColumns" :rows="rows" hide-search caption="Constancias MOOC por validar" empty-text="Sin constancias en este estado.">
+                <template #cell-student="{ row: c }"><span class="text-slate-700">{{ c.student_name }}<span class="block text-[10px] text-slate-400">{{ c.num_control }}</span></span></template>
+                <template #cell-course="{ row: c }"><span class="text-slate-600">{{ c.course_name }}<span v-if="c.folio" class="block text-[10px] text-slate-400">Folio: {{ c.folio }}</span></span></template>
+                <template #cell-platform="{ row: c }"><span class="text-slate-500">{{ c.platform_name }}</span></template>
+                <template #cell-hours="{ row: c }"><span class="text-slate-500">{{ c.hours ?? '—' }}</span></template>
+                <template #cell-certificate="{ row: c }"><a v-if="c.certificate_path" :href="certUrl(c.certificate_path)" target="_blank" class="text-emerald-600 hover:underline">ver</a><span v-else class="text-slate-300">—</span></template>
+                <template #cell-actions="{ row: c }">
+                    <template v-if="status === 'submitted'">
+                        <button @click="openValidate(c)" class="text-xs text-emerald-600 hover:underline">validar</button>
+                        <button @click="reject(c)" class="ml-3 text-xs text-slate-400 hover:text-rose-500">rechazar</button>
+                    </template>
+                    <span v-else-if="status === 'validated'" class="text-[11px] text-emerald-600">{{ c.credits }} créditos</span>
+                </template>
+            </DataTable>
         </section>
 
         <BaseModal v-if="validating" v-model="validatingOpen" title="Validar constancia" size="md">
@@ -64,11 +53,21 @@ import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import { usePrompt } from '@/app/composables/usePrompt'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const AC = API.AC_API
 const toast = useToast()
 const { prompt } = usePrompt()
 const rows = ref<any[]>([])
+const moocColumns: DataTableColumn<any>[] = [
+    { key: 'student', label: 'Alumno' },
+    { key: 'course', label: 'Curso' },
+    { key: 'platform', label: 'Plataforma' },
+    { key: 'hours', label: 'Horas' },
+    { key: 'certificate', label: 'Constancia' },
+    { key: 'actions', label: '', align: 'right' },
+]
 const status = ref('submitted')
 const busy = ref(false)
 const validating = ref<any>(null)

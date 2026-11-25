@@ -58,36 +58,16 @@
                         </span>
                     </div>
                 </div>
-                <div class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Sesiones Actuales">
-                    <table class="w-full text-sm">
-                        <caption class="sr-only">Sesiones Actuales</caption>
-                        <thead class="bg-slate-50 text-slate-500">
-                            <tr>
-                                <th scope="col" class="px-4 py-2 text-left text-[10px] font-black uppercase tracking-widest">#</th>
-                                <th scope="col" class="px-4 py-2 text-left text-[10px] font-black uppercase tracking-widest">Día</th>
-                                <th scope="col" class="px-4 py-2 text-left text-[10px] font-black uppercase tracking-widest">Fecha</th>
-                                <th scope="col" class="px-4 py-2 text-left text-[10px] font-black uppercase tracking-widest">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr
-                                v-for="s in analysis.sessions"
-                                :key="s.session"
-                                class="border-t border-slate-100"
-                                :class="s.hasConflict ? 'bg-red-50' : (!s.enabled ? 'bg-slate-50 text-slate-400' : '')"
-                            >
-                                <td class="px-4 py-2 font-mono font-bold">{{ s.session }}</td>
-                                <td class="px-4 py-2">{{ dayName(s.dayOfWeek) }}</td>
-                                <td class="px-4 py-2 font-mono">{{ s.date || '—' }}</td>
-                                <td class="px-4 py-2">
-                                    <span v-if="s.hasConflict" class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-red-100 text-red-700">Conflicto</span>
-                                    <span v-else-if="!s.enabled" class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-slate-100 text-slate-500">Deshabilitada</span>
-                                    <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-700">Habilitada</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <DataTable :columns="sessionColumns" :rows="analysis.sessions" hide-search caption="Sesiones Actuales" empty-text="Sin sesiones.">
+                    <template #cell-session="{ row }"><span class="font-mono font-bold">{{ row.session }}</span></template>
+                    <template #cell-dayOfWeek="{ row }">{{ dayName(row.dayOfWeek) }}</template>
+                    <template #cell-date="{ row }"><span class="font-mono">{{ row.date || '—' }}</span></template>
+                    <template #cell-status="{ row }">
+                        <span v-if="row.hasConflict" class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-red-100 text-red-700">Conflicto</span>
+                        <span v-else-if="!row.enabled" class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-slate-100 text-slate-500">Deshabilitada</span>
+                        <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-700">Habilitada</span>
+                    </template>
+                </DataTable>
             </div>
 
             <!-- Estrategia -->
@@ -169,6 +149,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 import StatCard from '@/modules/sca/components/StatCard.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface LoadConfig {
     id: number
@@ -194,6 +176,13 @@ interface Analysis {
     period_end_date: string | null
     last_session_date: string | null
 }
+
+const sessionColumns: DataTableColumn<Session>[] = [
+    { key: 'session', label: '#' },
+    { key: 'dayOfWeek', label: 'Día' },
+    { key: 'date', label: 'Fecha' },
+    { key: 'status', label: 'Estado' },
+]
 
 const configs = ref<LoadConfig[]>([])
 const loadingConfigs = ref(true)

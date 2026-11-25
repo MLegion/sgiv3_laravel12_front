@@ -200,46 +200,35 @@
                 registrado quién lo asignó. Al cerrar la actividad, lo que quede sin determinar se marca “no acreditó” por cierre.
             </p>
 
-            <div v-if="attendees.length" role="region" aria-label="Lista de alumnos" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Lista de alumnos</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                    <th scope="col" class="px-3 py-1">Control</th><th scope="col">Alumno</th><th scope="col">Resultado</th><th scope="col"></th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="s in attendees" :key="s.id" class="border-b last:border-0">
-                        <td class="px-3 py-2 text-slate-600">{{ s.num_control }}</td>
-                        <td class="text-slate-700">{{ s.full_name }}<span v-if="s.added_manually" class="ml-1 text-[10px] text-slate-400">(manual)</span></td>
-                        <td class="py-1">
-                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full"
-                                :class="s.result === 'passed' ? 'bg-emerald-100 text-emerald-700'
-                                    : s.result === 'not_passed' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-500'">
-                                {{ s.result === 'passed' ? 'Acreditó' : s.result === 'not_passed' ? 'No acreditó' : 'Sin determinar' }}
-                                <span v-if="s.result === 'not_passed' && s.result_source === 'auto_close'" class="font-normal">· por cierre</span>
-                            </span>
-                            <div v-if="s.result_by_name" class="text-[10px] text-slate-400 mt-0.5">
-                                {{ s.result_source === 'auto_close' ? 'Asentado al cerrar por' : 'Asignado por' }}
-                                {{ s.result_by_name }}<span v-if="s.result_at"> · {{ fmtDateTime(s.result_at) }}</span>
-                            </div>
-                        </td>
-                        <td class="text-right whitespace-nowrap">
-                            <template v-if="activity.status !== 'closed'">
-                                <button @click="setResult(s, 'passed')"
-                                    class="text-xs px-2 py-1 rounded font-semibold"
-                                    :class="s.result === 'passed' ? 'bg-emerald-600 text-white' : 'text-emerald-600 hover:bg-emerald-50'">Acreditó</button>
-                                <button @click="setResult(s, 'not_passed')"
-                                    class="ml-1 text-xs px-2 py-1 rounded font-semibold"
-                                    :class="s.result === 'not_passed' ? 'bg-rose-600 text-white' : 'text-rose-600 hover:bg-rose-50'">No acreditó</button>
-                                <button v-if="s.result" @click="setResult(s, null)" class="ml-1 text-xs text-slate-400 hover:text-slate-600">limpiar</button>
-                                <button @click="removeStudent(s)" class="ml-3 text-xs text-slate-400 hover:text-rose-500">quitar</button>
-                            </template>
-                            <span v-else class="text-[10px] text-slate-400">actividad cerrada</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            </div>
-            <p v-else class="text-sm text-slate-400">Sin alumnos en la lista.</p>
+            <DataTable :columns="attendeeColumns" :rows="attendees" hide-search caption="Lista de alumnos" empty-text="Sin alumnos en la lista.">
+                <template #cell-num_control="{ row: s }"><span class="text-slate-600">{{ s.num_control }}</span></template>
+                <template #cell-full_name="{ row: s }"><span class="text-slate-700">{{ s.full_name }}<span v-if="s.added_manually" class="ml-1 text-[10px] text-slate-400">(manual)</span></span></template>
+                <template #cell-result="{ row: s }">
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full"
+                        :class="s.result === 'passed' ? 'bg-emerald-100 text-emerald-700'
+                            : s.result === 'not_passed' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-500'">
+                        {{ s.result === 'passed' ? 'Acreditó' : s.result === 'not_passed' ? 'No acreditó' : 'Sin determinar' }}
+                        <span v-if="s.result === 'not_passed' && s.result_source === 'auto_close'" class="font-normal">· por cierre</span>
+                    </span>
+                    <div v-if="s.result_by_name" class="text-[10px] text-slate-400 mt-0.5">
+                        {{ s.result_source === 'auto_close' ? 'Asentado al cerrar por' : 'Asignado por' }}
+                        {{ s.result_by_name }}<span v-if="s.result_at"> · {{ fmtDateTime(s.result_at) }}</span>
+                    </div>
+                </template>
+                <template #cell-actions="{ row: s }">
+                    <template v-if="activity.status !== 'closed'">
+                        <button @click="setResult(s, 'passed')"
+                            class="text-xs px-2 py-1 rounded font-semibold"
+                            :class="s.result === 'passed' ? 'bg-emerald-600 text-white' : 'text-emerald-600 hover:bg-emerald-50'">Acreditó</button>
+                        <button @click="setResult(s, 'not_passed')"
+                            class="ml-1 text-xs px-2 py-1 rounded font-semibold"
+                            :class="s.result === 'not_passed' ? 'bg-rose-600 text-white' : 'text-rose-600 hover:bg-rose-50'">No acreditó</button>
+                        <button v-if="s.result" @click="setResult(s, null)" class="ml-1 text-xs text-slate-400 hover:text-slate-600">limpiar</button>
+                        <button @click="removeStudent(s)" class="ml-3 text-xs text-slate-400 hover:text-rose-500">quitar</button>
+                    </template>
+                    <span v-else class="text-[10px] text-slate-400">actividad cerrada</span>
+                </template>
+            </DataTable>
         </section>
 
         </div><!-- /Información general -->
@@ -343,6 +332,8 @@ import { useConfirm } from '@/app/composables/useConfirm'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import WeekScheduleGrid from '@/modules/schedules/components/WeekScheduleGrid.vue'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const props = defineProps<{ id: string | number }>()
 const route = useRoute()
@@ -352,6 +343,12 @@ const { confirm } = useConfirm()
 
 const activity = ref<any>(null)
 const attendees = ref<any[]>([])
+const attendeeColumns: DataTableColumn<any>[] = [
+    { key: 'num_control', label: 'Control' },
+    { key: 'full_name', label: 'Alumno' },
+    { key: 'result', label: 'Resultado' },
+    { key: 'actions', label: '', align: 'right' },
+]
 const studentSearch = ref('')
 const studentResults = ref<any[]>([])
 let studentTimer: any = null

@@ -115,44 +115,23 @@
                         </div>
                     </div>
 
-                    <div tabindex="0" role="region" aria-label="Materias Vinculadas" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                        <table class="w-full text-left border-collapse">
-                            <caption class="sr-only">Materias Vinculadas</caption>
-                            <thead>
-                            <tr class="bg-slate-50 text-[10px] uppercase text-slate-400 font-black border-b">
-                                <th scope="col" class="px-4 py-4 w-24">Clave</th>
-                                <th scope="col" class="px-4 py-4">Asignatura</th>
-                                <th scope="col" class="px-4 py-4 text-center">Créditos</th>
-                                <th scope="col" class="px-4 py-4 text-center">Horas (T-P)</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y text-sm">
-                            <template v-if="loadingSubjects">
-                            <tr v-for="i in 3" :key="'loader-'+i" class="animate-pulse">
-                                <td colspan="5" class="px-4 py-5"><div class="h-4 bg-slate-100 rounded"></div></td>
-                            </tr>
-                            </template>
-                            <tr v-else-if="subjects.length === 0">
-                                <td colspan="5" class="px-4 py-12 text-center text-slate-400 text-xs uppercase font-medium italic">No hay materias ligadas a esta especialidad</td>
-                            </tr>
-                            <tr v-for="subject in subjects" :key="subject.id" class="hover:bg-slate-50 transition-colors group">
-                                <td class="px-4 py-3 font-mono text-xs text-slate-500">{{ subject.officialCode }}</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold uppercase text-xs text-slate-700">{{ subject.name }}</span>
-                                        <span class="text-[9px] text-slate-400 uppercase tracking-tighter">{{ subject.shortName }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold">{{ subject.credits }}</span>
-                                </td>
-                                <td class="px-4 py-3 text-center text-xs text-slate-500">
-                                    {{ subject.ht }} - {{ subject.hp }}
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <DataTable :columns="subjectColumns" :rows="subjects" :loading="loadingSubjects" hide-search caption="Materias Vinculadas" empty-text="No hay materias ligadas a esta especialidad">
+                        <template #cell-officialCode="{ row: subject }">
+                            <span class="font-mono text-xs text-slate-500">{{ subject.officialCode }}</span>
+                        </template>
+                        <template #cell-name="{ row: subject }">
+                            <div class="flex flex-col">
+                                <span class="font-bold uppercase text-xs text-slate-700">{{ subject.name }}</span>
+                                <span class="text-[9px] text-slate-400 uppercase tracking-tighter">{{ subject.shortName }}</span>
+                            </div>
+                        </template>
+                        <template #cell-credits="{ row: subject }">
+                            <span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold">{{ subject.credits }}</span>
+                        </template>
+                        <template #cell-hours="{ row: subject }">
+                            <span class="text-xs text-slate-500">{{ subject.ht }} - {{ subject.hp }}</span>
+                        </template>
+                    </DataTable>
                 </div>
             </div>
         </div>
@@ -165,6 +144,15 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import InfoItem from '@/app/components/ui/InfoItem.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const subjectColumns: DataTableColumn<any>[] = [
+    { key: 'officialCode', label: 'Clave', width: '6rem' },
+    { key: 'name', label: 'Asignatura' },
+    { key: 'credits', label: 'Créditos', align: 'center' },
+    { key: 'hours', label: 'Horas (T-P)', align: 'center' },
+]
 
 interface SpecialtyType {
     id: number

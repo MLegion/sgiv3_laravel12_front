@@ -26,25 +26,12 @@
 
         <SkeletonTable v-if="loading" :rows="5" :cols="3" />
         <div v-else-if="!periodId" class="text-center py-8 text-slate-400">Selecciona un periodo.</div>
-        <div v-else-if="rows.length === 0" class="text-center py-8 text-slate-400">Sin horarios para este filtro.</div>
 
-        <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-            <div role="region" aria-label="Horarios de básicas por aprobar" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Horarios de básicas por aprobar</caption>
-                <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                    <tr><th scope="col" class="text-left px-4 py-2">Docente</th><th scope="col" class="px-4 py-2">Horario</th><th scope="col" class="px-4 py-2"></th></tr>
-                </thead>
-                <tbody class="divide-y">
-                    <tr v-for="r in rows" :key="r.id" class="hover:bg-slate-50">
-                        <td class="px-4 py-2 text-slate-800">{{ teacherName(r.teacherId) }}</td>
-                        <td class="px-4 py-2 text-center"><span class="px-2 py-0.5 rounded text-xs font-semibold" :class="sc(r.scheduleStatus)">{{ sl(r.scheduleStatus) }}</span></td>
-                        <td class="px-4 py-2 text-right"><button class="px-2.5 py-1 text-xs rounded-lg border border-slate-300 hover:bg-slate-100" @click="open(r)">Ver</button></td>
-                    </tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable v-else :columns="columns" :rows="rows" hide-search caption="Horarios de básicas por aprobar" empty-text="Sin horarios para este filtro.">
+            <template #cell-teacher="{ row: r }"><span class="text-slate-800">{{ teacherName(r.teacherId) }}</span></template>
+            <template #cell-schedule="{ row: r }"><span class="px-2 py-0.5 rounded text-xs font-semibold" :class="sc(r.scheduleStatus)">{{ sl(r.scheduleStatus) }}</span></template>
+            <template #cell-actions="{ row: r }"><button class="px-2.5 py-1 text-xs rounded-lg border border-slate-300 hover:bg-slate-100" @click="open(r)">Ver</button></template>
+        </DataTable>
 
         <!-- Detalle -->
         <BaseModal v-if="detail" v-model="detailOpen" :title="teacherName(detail.teacherId)" size="lg">
@@ -85,7 +72,15 @@ import { useReportGenerator } from '@/modules/reports/composables/useReportGener
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import type { DistributionRequest } from '@/modules/midocencia/types/distribution.type'
+
+const columns: DataTableColumn<DistributionRequest>[] = [
+    { key: 'teacher', label: 'Docente' },
+    { key: 'schedule', label: 'Horario', align: 'center' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 const toast = useToast()
 const { downloadFromContext } = useReportGenerator()

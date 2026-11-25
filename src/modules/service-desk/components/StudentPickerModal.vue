@@ -37,51 +37,18 @@
             </div>
 
             <!-- Lista -->
-            <div tabindex="0" role="region" aria-label="Estudiantes" class="flex-1 overflow-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                <table class="min-w-full text-sm">
-                    <caption class="sr-only">Estudiantes</caption>
-                    <thead class="bg-slate-50 border-b text-[10px] uppercase text-slate-400 font-semibold sticky top-0">
-                        <tr>
-                            <th scope="col" class="px-4 py-2 text-left">No. Control</th>
-                            <th scope="col" class="px-4 py-2 text-left">Nombre</th>
-                            <th scope="col" class="px-4 py-2 text-left">Carrera</th>
-                            <th scope="col" class="px-4 py-2 text-left">Estatus</th>
-                            <th scope="col" class="px-4 py-2"></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <!-- Skeleton por fila mientras carga (mantiene la estructura de la tabla) -->
-                        <template v-if="loading">
-                            <tr v-for="n in skeletonRows" :key="`sk-${n}`" class="animate-pulse">
-                                <td class="px-4 py-2.5"><div class="h-3 w-20 bg-slate-200 rounded"></div></td>
-                                <td class="px-4 py-2.5"><div class="h-3 w-48 bg-slate-200 rounded"></div></td>
-                                <td class="px-4 py-2.5"><div class="h-3 w-32 bg-slate-200 rounded"></div></td>
-                                <td class="px-4 py-2.5"><div class="h-4 w-16 bg-slate-200 rounded-full"></div></td>
-                                <td class="px-4 py-2.5"><div class="h-6 w-20 bg-slate-200 rounded-lg ml-auto"></div></td>
-                            </tr>
-                        </template>
-                        <!-- Resultados -->
-                        <template v-else-if="items.length">
-                            <tr v-for="s in items" :key="s.id" class="hover:bg-blue-50/50 cursor-pointer" @click="pick(s)">
-                                <td class="px-4 py-2 font-mono text-xs font-bold text-slate-700">{{ s.numControl ?? '—' }}</td>
-                                <td class="px-4 py-2 font-medium text-slate-800">{{ fullName(s) }}</td>
-                                <td class="px-4 py-2 text-xs text-slate-600">{{ careerOf(s) }}</td>
-                                <td class="px-4 py-2">
-                                    <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase" :class="statusClass(statusOf(s))">{{ statusOf(s) ?? '—' }}</span>
-                                </td>
-                                <td class="px-4 py-2 text-right">
-                                    <button class="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700" @click.stop="pick(s)">Seleccionar</button>
-                                </td>
-                            </tr>
-                        </template>
-                        <!-- Vacío -->
-                        <tr v-else>
-                            <td colspan="5" class="text-center text-slate-400 text-sm py-12">
-                                No se encontraron estudiantes con esos filtros.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="flex-1 overflow-auto">
+                <DataTable :columns="columns" :rows="items" :loading="loading" hide-search caption="Estudiantes" empty-text="No se encontraron estudiantes con esos filtros.">
+                    <template #cell-numControl="{ row: s }"><span class="font-mono text-xs font-bold text-slate-700">{{ s.numControl ?? '—' }}</span></template>
+                    <template #cell-name="{ row: s }"><span class="font-medium text-slate-800">{{ fullName(s) }}</span></template>
+                    <template #cell-career="{ row: s }"><span class="text-xs text-slate-600">{{ careerOf(s) }}</span></template>
+                    <template #cell-status="{ row: s }">
+                        <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase" :class="statusClass(statusOf(s))">{{ statusOf(s) ?? '—' }}</span>
+                    </template>
+                    <template #cell-actions="{ row: s }">
+                        <button class="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700" @click.stop="pick(s)">Seleccionar</button>
+                    </template>
+                </DataTable>
             </div>
 
             <!-- Paginación -->
@@ -100,6 +67,16 @@ import { reactive, ref, computed, watch } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const columns: DataTableColumn<any>[] = [
+    { key: 'numControl', label: 'No. Control' },
+    { key: 'name', label: 'Nombre' },
+    { key: 'career', label: 'Carrera' },
+    { key: 'status', label: 'Estatus' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ (e: 'close'): void; (e: 'select', student: any): void }>()
@@ -127,9 +104,6 @@ let catalogsLoaded = false
 const hasActiveFilters = computed(() =>
     filters.campusId || filters.modalityTypeId || filters.careerId || filters.studentStatusId || search.value.trim(),
 )
-
-// Filas de skeleton: mantiene la misma altura que la carga previa (o 8 al inicio).
-const skeletonRows = computed(() => items.value.length || 8)
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 function debouncedFetch() {

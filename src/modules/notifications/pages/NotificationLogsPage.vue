@@ -61,43 +61,26 @@
         <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
             <div v-if="loading" class="p-4"><SkeletonTable :rows="6" :cols="6" /></div>
             <div v-else-if="items.length === 0" class="p-6 text-sm text-slate-400 italic text-center">Sin resultados.</div>
-            <div v-else class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Historial de notificaciones">
-                <table class="w-full text-xs">
-                    <caption class="sr-only">Historial de notificaciones</caption>
-                    <thead class="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wide">
-                        <tr>
-                            <th scope="col" class="px-3 py-2 text-left">Fecha</th>
-                            <th scope="col" class="px-3 py-2 text-left">Canal</th>
-                            <th scope="col" class="px-3 py-2 text-left">Estado</th>
-                            <th scope="col" class="px-3 py-2 text-left">Plantilla / Evento</th>
-                            <th scope="col" class="px-3 py-2 text-left">Destinatario</th>
-                            <th scope="col" class="px-3 py-2 text-left">Asunto / Error</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="n in items" :key="n.id" class="border-t border-slate-100 hover:bg-slate-50 align-top">
-                            <td class="px-3 py-2 whitespace-nowrap text-slate-600">{{ formatDateTime(n.created_at) }}</td>
-                            <td class="px-3 py-2"><span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[10px] uppercase">{{ n.channel }}</span></td>
-                            <td class="px-3 py-2">
-                                <span :class="STATUS_PILL[n.status]" class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase">{{ STATUS_LABELS[n.status] || n.status }}</span>
-                            </td>
-                            <td class="px-3 py-2 font-mono text-[11px]">
-                                <div class="text-slate-700">{{ n.template_key || '—' }}</div>
-                                <div v-if="n.event_key" class="text-slate-400">{{ n.event_key }}</div>
-                            </td>
-                            <td class="px-3 py-2">
-                                <div class="font-medium text-slate-700">{{ n.recipient_label || '—' }}</div>
-                                <div class="text-[11px] text-slate-500 font-mono">{{ n.recipient_address }}</div>
-                            </td>
-                            <td class="px-3 py-2">
-                                <div v-if="n.subject" class="font-semibold text-slate-700">{{ n.subject }}</div>
-                                <div v-if="n.error" class="text-[11px] text-red-600">{{ n.error }}</div>
-                                <div v-else class="text-[11px] text-slate-500 line-clamp-2">{{ n.body_rendered }}</div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <DataTable v-else :columns="columns" :rows="items" hide-search caption="Historial de notificaciones" empty-text="Sin resultados.">
+                <template #cell-created_at="{ row: n }"><span class="whitespace-nowrap text-slate-600">{{ formatDateTime(n.created_at) }}</span></template>
+                <template #cell-channel="{ row: n }"><span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[10px] uppercase">{{ n.channel }}</span></template>
+                <template #cell-status="{ row: n }">
+                    <span :class="STATUS_PILL[n.status]" class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase">{{ STATUS_LABELS[n.status] || n.status }}</span>
+                </template>
+                <template #cell-template="{ row: n }">
+                    <div class="font-mono text-[11px] text-slate-700">{{ n.template_key || '—' }}</div>
+                    <div v-if="n.event_key" class="font-mono text-[11px] text-slate-400">{{ n.event_key }}</div>
+                </template>
+                <template #cell-recipient="{ row: n }">
+                    <div class="font-medium text-slate-700">{{ n.recipient_label || '—' }}</div>
+                    <div class="text-[11px] text-slate-500 font-mono">{{ n.recipient_address }}</div>
+                </template>
+                <template #cell-body="{ row: n }">
+                    <div v-if="n.subject" class="font-semibold text-slate-700">{{ n.subject }}</div>
+                    <div v-if="n.error" class="text-[11px] text-red-600">{{ n.error }}</div>
+                    <div v-else class="text-[11px] text-slate-500 line-clamp-2">{{ n.body_rendered }}</div>
+                </template>
+            </DataTable>
         </div>
 
         <!-- Paginación -->
@@ -117,6 +100,17 @@ import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { NotificationItem } from '@/modules/notifications/types/notification.type'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const columns: DataTableColumn<NotificationItem>[] = [
+    { key: 'created_at', label: 'Fecha' },
+    { key: 'channel', label: 'Canal' },
+    { key: 'status', label: 'Estado' },
+    { key: 'template', label: 'Plantilla / Evento' },
+    { key: 'recipient', label: 'Destinatario' },
+    { key: 'body', label: 'Asunto / Error' },
+]
 
 const STATUS_LABELS: Record<string, string> = {
     pending:   'Pendiente',

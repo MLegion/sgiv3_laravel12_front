@@ -5,11 +5,21 @@ import { API } from '@/shared/api'
 import EvdPeriodSelect from '@/modules/evd/components/EvdPeriodSelect.vue'
 import type { EvdAttendanceRow } from '@/modules/evd/types/evd.type'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface CollegeAcademicPeriodOption {
     id: number
     academicPeriod?: { name?: string | null; shortName?: string | null } | null
 }
+
+const columns: DataTableColumn<EvdAttendanceRow>[] = [
+    { key: 'num_control', label: 'NO. CONTROL', width: '7rem' },
+    { key: 'student', label: 'ALUMNO' },
+    { key: 'career', label: 'CARRERA', width: '6rem' },
+    { key: 'avance', label: 'AVANCE', align: 'right', width: '11rem' },
+    { key: 'acuse', label: 'ACUSE', width: '12rem' },
+]
 
 const caPeriods    = ref<CollegeAcademicPeriodOption[]>([])
 const selectedCap  = ref<number | null>(null)
@@ -127,54 +137,37 @@ onMounted(loadCaps)
         </div>
 
         <!-- Tabla -->
-        <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Concentrado de evaluación docente"><table class="w-full text-sm">
-                <caption class="sr-only">Concentrado de evaluación docente</caption>
-                <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
-                    <tr>
-                        <th scope="col" class="text-left  px-3 py-2 w-28">NO. CONTROL</th>
-                        <th scope="col" class="text-left  px-3 py-2">ALUMNO</th>
-                        <th scope="col" class="text-left  px-3 py-2 w-24">CARRERA</th>
-                        <th scope="col" class="text-right px-3 py-2 w-44">AVANCE</th>
-                        <th scope="col" class="text-left  px-3 py-2 w-48">ACUSE</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <tr v-if="loading">
-                        <td colspan="5" class="p-3"><SkeletonTable :rows="5" :cols="5" /></td>
-                    </tr>
-                    <tr v-else-if="!rows.length">
-                        <td colspan="5" class="px-3 py-6 text-center text-sm text-slate-400 italic">
-                            No hay alumnos registrados en este periodo.
-                        </td>
-                    </tr>
-                    <tr v-for="r in rows" :key="r.student.id" class="hover:bg-slate-50">
-                        <td class="px-3 py-2 font-mono text-xs text-slate-700">{{ r.student.num_control ?? '—' }}</td>
-                        <td class="px-3 py-2">
-                            <div class="font-bold text-slate-700 uppercase">{{ r.student.full_name }}</div>
-                        </td>
-                        <td class="px-3 py-2 text-xs text-slate-600">{{ r.career?.short_name ?? '—' }}</td>
-                        <td class="px-3 py-2 text-right">
-                            <div class="text-xs text-slate-500">
-                                <span class="font-bold text-emerald-700 tabular-nums">{{ r.completed_assignments }}</span>
-                                / {{ r.total_assignments }}
-                            </div>
-                            <div class="h-1.5 bg-slate-100 rounded overflow-hidden mt-1">
-                                <div class="h-full bg-emerald-500"
-                                     :style="{ width: r.progress_pct + '%' }"></div>
-                            </div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">{{ r.progress_pct }}%</div>
-                        </td>
-                        <td class="px-3 py-2">
-                            <div v-if="r.acuse" class="text-xs">
-                                <div class="font-mono font-bold text-emerald-700">{{ r.acuse.folio }}</div>
-                                <div class="text-[10px] text-slate-500">{{ formatDate(r.acuse.issued_at) }}</div>
-                            </div>
-                            <span v-else class="text-[10px] uppercase text-slate-400">— pendiente —</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></div>
-        </div>
+        <SkeletonTable v-if="loading" :rows="5" :cols="5" />
+        <DataTable v-else :columns="columns" :rows="rows" hide-search
+                   caption="Concentrado de evaluación docente"
+                   empty-text="No hay alumnos registrados en este periodo.">
+            <template #cell-num_control="{ row: r }">
+                <span class="font-mono text-xs text-slate-700">{{ r.student.num_control ?? '—' }}</span>
+            </template>
+            <template #cell-student="{ row: r }">
+                <div class="font-bold text-slate-700 uppercase">{{ r.student.full_name }}</div>
+            </template>
+            <template #cell-career="{ row: r }">
+                <span class="text-xs text-slate-600">{{ r.career?.short_name ?? '—' }}</span>
+            </template>
+            <template #cell-avance="{ row: r }">
+                <div class="text-xs text-slate-500">
+                    <span class="font-bold text-emerald-700 tabular-nums">{{ r.completed_assignments }}</span>
+                    / {{ r.total_assignments }}
+                </div>
+                <div class="h-1.5 bg-slate-100 rounded overflow-hidden mt-1">
+                    <div class="h-full bg-emerald-500"
+                         :style="{ width: r.progress_pct + '%' }"></div>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">{{ r.progress_pct }}%</div>
+            </template>
+            <template #cell-acuse="{ row: r }">
+                <div v-if="r.acuse" class="text-xs">
+                    <div class="font-mono font-bold text-emerald-700">{{ r.acuse.folio }}</div>
+                    <div class="text-[10px] text-slate-500">{{ formatDate(r.acuse.issued_at) }}</div>
+                </div>
+                <span v-else class="text-[10px] uppercase text-slate-400">— pendiente —</span>
+            </template>
+        </DataTable>
     </div>
 </template>

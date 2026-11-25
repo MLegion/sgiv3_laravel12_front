@@ -16,36 +16,17 @@
             </button>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <div tabindex="0" role="region" aria-label="Instrumentaciones de la asignatura" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                <caption class="sr-only">Instrumentaciones de la asignatura</caption>
-                <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                    <tr>
-                        <th scope="col" class="text-left px-4 py-2">#</th>
-                        <th scope="col" class="text-left px-4 py-2">Título</th>
-                        <th scope="col" class="text-left px-4 py-2">Programa</th>
-                        <th scope="col" class="text-left px-4 py-2">Estado</th>
-                        <th scope="col" class="text-right px-4 py-2">Opciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="inst in items" :key="inst.id" class="border-t border-slate-100">
-                        <td class="px-4 py-2">{{ inst.id }}</td>
-                        <td class="px-4 py-2">{{ inst.title ?? '(sin título)' }}</td>
-                        <td class="px-4 py-2">{{ inst.studyProgram?.name ?? '—' }}</td>
-                        <td class="px-4 py-2">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full" :class="statusClass(inst.status)">{{ statusLabel(inst.status) }}</span>
-                        </td>
-                        <td class="px-4 py-2 text-right">
-                            <button class="text-blue-600 hover:text-blue-800 text-sm" @click="router.push({ name: 'teaching.planeacion.edit', params: { id: inst.id } })">Editar</button>
-                        </td>
-                    </tr>
-                    <tr v-if="!loading && !items.length">
-                        <td colspan="5" class="px-4 py-6 text-center text-slate-400 text-sm">Sin instrumentaciones. Crea la primera.</td>
-                    </tr>
-                </tbody>
-            </table></div>
-        </div>
+        <DataTable :columns="columns" :rows="items" hide-search caption="Instrumentaciones de la asignatura" empty-text="Sin instrumentaciones. Crea la primera.">
+            <template #cell-id="{ row: inst }">{{ inst.id }}</template>
+            <template #cell-title="{ row: inst }">{{ inst.title ?? '(sin título)' }}</template>
+            <template #cell-program="{ row: inst }">{{ inst.studyProgram?.name ?? '—' }}</template>
+            <template #cell-status="{ row: inst }">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full" :class="statusClass(inst.status)">{{ statusLabel(inst.status) }}</span>
+            </template>
+            <template #cell-actions="{ row: inst }">
+                <button class="text-blue-600 hover:text-blue-800 text-sm" @click="router.push({ name: 'teaching.planeacion.edit', params: { id: inst.id } })">Editar</button>
+            </template>
+        </DataTable>
     </div>
 </template>
 
@@ -55,6 +36,16 @@ import { useRoute, useRouter } from 'vue-router'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const columns: DataTableColumn<any>[] = [
+    { key: 'id', label: '#' },
+    { key: 'title', label: 'Título' },
+    { key: 'program', label: 'Programa' },
+    { key: 'status', label: 'Estado' },
+    { key: 'actions', label: 'Opciones', align: 'right' },
+]
 
 const route = useRoute()
 const router = useRouter()

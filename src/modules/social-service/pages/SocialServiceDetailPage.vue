@@ -85,31 +85,24 @@
             <!-- Reportes -->
             <div class="rounded-xl border bg-white p-5 space-y-3">
                 <h2 class="text-sm font-bold text-slate-700 uppercase">Reportes de avance</h2>
-                <div role="region" aria-label="Reportes de avance" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                <table class="w-full text-sm">
-                    <caption class="sr-only">Reportes de avance</caption>
-                    <thead>
-                        <tr class="text-left text-[10px] uppercase text-slate-400 border-b">
-                            <th scope="col" class="py-2">#</th><th scope="col">Periodo</th><th scope="col">Horas</th><th scope="col">Estado</th><th scope="col"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="r in reports" :key="r.id" class="border-b last:border-0">
-                            <td class="py-2 font-semibold">{{ r.report_number }}</td>
-                            <td class="text-slate-500">{{ r.period_start ?? '—' }} → {{ r.period_end ?? '—' }}</td>
-                            <td>{{ r.hours }} h</td>
-                            <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="reportClass(r.status)">{{ reportLabel(r.status) }}</span></td>
-                            <td class="text-right">
-                                <template v-if="canReview && r.status !== 'approved'">
-                                    <button @click="review(r.id, 'approved')" class="text-xs text-emerald-600 font-semibold mr-2">Aprobar</button>
-                                    <button @click="review(r.id, 'rejected')" class="text-xs text-red-600 font-semibold">Rechazar</button>
-                                </template>
-                            </td>
-                        </tr>
-                        <tr v-if="!reports.length"><td colspan="5" class="py-3 text-center text-slate-400">Sin reportes.</td></tr>
-                    </tbody>
-                </table>
-                </div>
+                <DataTable :columns="reportColumns" :rows="reports" hide-search caption="Reportes de avance" empty-text="Sin reportes.">
+                    <template #cell-report_number="{ row: r }">
+                        <span class="font-semibold">{{ r.report_number }}</span>
+                    </template>
+                    <template #cell-period="{ row: r }">
+                        <span class="text-slate-500">{{ r.period_start ?? '—' }} → {{ r.period_end ?? '—' }}</span>
+                    </template>
+                    <template #cell-hours="{ row: r }">{{ r.hours }} h</template>
+                    <template #cell-status="{ row: r }">
+                        <span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="reportClass(r.status)">{{ reportLabel(r.status) }}</span>
+                    </template>
+                    <template #cell-actions="{ row: r }">
+                        <template v-if="canReview && r.status !== 'approved'">
+                            <button @click="review(r.id, 'approved')" class="text-xs text-emerald-600 font-semibold mr-2">Aprobar</button>
+                            <button @click="review(r.id, 'rejected')" class="text-xs text-red-600 font-semibold">Rechazar</button>
+                        </template>
+                    </template>
+                </DataTable>
             </div>
 
             <!-- Documentos -->
@@ -144,11 +137,21 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { STATUS_LABELS, type SocialServiceRecord, type SocialServiceReport, type DependencyOption, type DocumentChecklistItem } from '@/modules/social-service/types/social-service.type'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { usePrompt } from '@/app/composables/usePrompt'
 import { useConfirm } from '@/app/composables/useConfirm'
 
 const props = defineProps<{ id: string | number }>()
 const S = API.SOCIAL_SERVICE_API
+
+const reportColumns: DataTableColumn<SocialServiceReport>[] = [
+    { key: 'report_number', label: '#' },
+    { key: 'period', label: 'Periodo' },
+    { key: 'hours', label: 'Horas' },
+    { key: 'status', label: 'Estado' },
+    { key: 'actions', label: '', align: 'right' },
+]
 const { prompt } = usePrompt()
 const { confirm } = useConfirm()
 

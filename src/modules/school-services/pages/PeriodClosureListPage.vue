@@ -30,60 +30,42 @@
         <SkeletonTable v-if="loading && items.length === 0" :rows="5" :cols="7" />
         <div v-else-if="!errorMsg && items.length === 0" class="text-sm text-slate-500 italic">No hay periodos.</div>
 
-        <div v-else class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Cierre de periodos"><table class="w-full text-xs">
-                <caption class="sr-only">Cierre de periodos</caption>
-                <thead class="bg-slate-100 text-slate-600">
-                    <tr>
-                        <th scope="col" class="text-left px-3 py-2">Periodo</th>
-                        <th scope="col" class="text-left px-3 py-2">Estado</th>
-                        <th scope="col" class="text-left px-3 py-2">Fechas</th>
-                        <th scope="col" class="text-right px-3 py-2">Cobertura</th>
-                        <th scope="col" class="text-right px-3 py-2">Actas</th>
-                        <th scope="col" class="text-left px-3 py-2">Carga cerrada</th>
-                        <th scope="col" class="text-right px-3 py-2"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="it in items" :key="it.collegeAcademicPeriodId" class="hover:bg-slate-50">
-                        <td class="px-3 py-1.5 font-medium">
-                            {{ it.periodShortName ?? it.periodName }}
-                        </td>
-                        <td class="px-3 py-1.5">
-                            <span
-                                class="text-[9px] uppercase font-semibold px-1.5 py-0.5 rounded font-mono"
-                                :class="statusBadgeClass(it.status)"
-                            >{{ it.status }}</span>
-                        </td>
-                        <td class="px-3 py-1.5 text-slate-500">
-                            {{ it.startDate }} → {{ it.endDate }}
-                        </td>
-                        <td class="px-3 py-1.5 text-right" :class="coverageColor(it.coveragePct)">
-                            {{ it.coveragePct }}%
-                        </td>
-                        <td class="px-3 py-1.5 text-right">
-                            <span class="text-emerald-700">{{ it.closedActasCount }}</span>
-                            <span class="text-slate-400 mx-0.5">/</span>
-                            <span :class="it.openActasCount > 0 ? 'text-amber-600' : 'text-slate-400'">
-                                {{ it.closedActasCount + it.openActasCount }}
-                            </span>
-                        </td>
-                        <td class="px-3 py-1.5">
-                            <span v-if="it.gradesLoadedAt" class="text-emerald-700">
-                                ✓ {{ formatDate(it.gradesLoadedAt) }}
-                            </span>
-                            <span v-else class="text-slate-400 italic">pendiente</span>
-                        </td>
-                        <td class="px-3 py-1.5 text-right">
-                            <RouterLink
-                                :to="`/school-services/period-closure/${it.collegeAcademicPeriodId}`"
-                                class="text-[11px] px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100"
-                            >Detalle →</RouterLink>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></div>
-        </div>
+        <DataTable v-else :columns="columns" :rows="items" hide-search caption="Cierre de periodos" empty-text="No hay periodos.">
+            <template #cell-period="{ row: it }">
+                <span class="font-medium">{{ it.periodShortName ?? it.periodName }}</span>
+            </template>
+            <template #cell-status="{ row: it }">
+                <span
+                    class="text-[9px] uppercase font-semibold px-1.5 py-0.5 rounded font-mono"
+                    :class="statusBadgeClass(it.status)"
+                >{{ it.status }}</span>
+            </template>
+            <template #cell-dates="{ row: it }">
+                <span class="text-slate-500">{{ it.startDate }} → {{ it.endDate }}</span>
+            </template>
+            <template #cell-coverage="{ row: it }">
+                <span :class="coverageColor(it.coveragePct)">{{ it.coveragePct }}%</span>
+            </template>
+            <template #cell-actas="{ row: it }">
+                <span class="text-emerald-700">{{ it.closedActasCount }}</span>
+                <span class="text-slate-400 mx-0.5">/</span>
+                <span :class="it.openActasCount > 0 ? 'text-amber-600' : 'text-slate-400'">
+                    {{ it.closedActasCount + it.openActasCount }}
+                </span>
+            </template>
+            <template #cell-gradesLoaded="{ row: it }">
+                <span v-if="it.gradesLoadedAt" class="text-emerald-700">
+                    ✓ {{ formatDate(it.gradesLoadedAt) }}
+                </span>
+                <span v-else class="text-slate-400 italic">pendiente</span>
+            </template>
+            <template #cell-actions="{ row: it }">
+                <RouterLink
+                    :to="`/school-services/period-closure/${it.collegeAcademicPeriodId}`"
+                    class="text-[11px] px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100"
+                >Detalle →</RouterLink>
+            </template>
+        </DataTable>
     </section>
 </template>
 
@@ -93,6 +75,8 @@ import { RouterLink } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface SummaryItem {
     collegeAcademicPeriodId: number
@@ -113,6 +97,15 @@ interface SummaryItem {
 const loading  = ref(false)
 const items    = ref<SummaryItem[]>([])
 const errorMsg = ref('')
+const columns: DataTableColumn<SummaryItem>[] = [
+    { key: 'period', label: 'Periodo' },
+    { key: 'status', label: 'Estado' },
+    { key: 'dates', label: 'Fechas' },
+    { key: 'coverage', label: 'Cobertura', align: 'right' },
+    { key: 'actas', label: 'Actas', align: 'right' },
+    { key: 'gradesLoaded', label: 'Carga cerrada' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 async function load(): Promise<void> {
     loading.value = true

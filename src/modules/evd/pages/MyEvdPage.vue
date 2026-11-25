@@ -5,6 +5,23 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { MyEvdAssignment, MyEvdStatus } from '@/modules/evd/types/evd.type'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const completedColumns: DataTableColumn<MyEvdAssignment>[] = [
+    { key: 'subject', label: 'MATERIA' },
+    { key: 'group', label: 'GRUPO', width: '8rem' },
+    { key: 'teacher', label: 'DOCENTE' },
+    { key: 'fecha', label: 'FECHA', width: '9rem' },
+]
+
+const pendingColumns: DataTableColumn<MyEvdAssignment>[] = [
+    { key: 'status', label: 'Estado', width: '9rem' },
+    { key: 'subject', label: 'Materia' },
+    { key: 'group', label: 'Grupo', width: '7rem' },
+    { key: 'teacher', label: 'Docente' },
+    { key: 'action', label: 'Acción', align: 'right', width: '10rem' },
+]
 
 interface ActivePeriod {
     open: boolean
@@ -192,85 +209,70 @@ onMounted(load)
                 <div class="border-b px-4 py-3 bg-slate-50">
                     <h3 class="text-sm font-bold text-slate-700 uppercase">Materias evaluadas</h3>
                 </div>
-                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias evaluadas"><table class="w-full text-sm">
-                    <caption class="sr-only">Materias evaluadas</caption>
-                    <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
-                        <tr>
-                            <th scope="col" class="text-left px-4 py-2">MATERIA</th>
-                            <th scope="col" class="text-left px-4 py-2 w-32">GRUPO</th>
-                            <th scope="col" class="text-left px-4 py-2">DOCENTE</th>
-                            <th scope="col" class="text-left px-4 py-2 w-36">FECHA</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        <tr v-for="a in status.assignments" :key="a.assignment_id">
-                            <td class="px-4 py-2">
-                                <div class="font-bold text-slate-700">{{ a.subject.name }}</div>
-                                <div class="text-[10px] font-mono text-slate-400">{{ a.subject.official_code ?? '—' }}</div>
-                            </td>
-                            <td class="px-4 py-2 font-mono text-xs text-slate-700">{{ a.group.name ?? '—' }}</td>
-                            <td class="px-4 py-2 text-xs text-slate-600">{{ a.teacher?.name ?? '—' }}</td>
-                            <td class="px-4 py-2 text-xs text-slate-500">{{ formatDateTime(a.completed_at) }}</td>
-                        </tr>
-                    </tbody>
-                </table></div>
+                <DataTable :columns="completedColumns" :rows="status.assignments" hide-search
+                           caption="Materias evaluadas" empty-text="Sin materias.">
+                    <template #cell-subject="{ row: a }">
+                        <div class="font-bold text-slate-700">{{ a.subject.name }}</div>
+                        <div class="text-[10px] font-mono text-slate-400">{{ a.subject.official_code ?? '—' }}</div>
+                    </template>
+                    <template #cell-group="{ row: a }">
+                        <span class="font-mono text-xs text-slate-700">{{ a.group.name ?? '—' }}</span>
+                    </template>
+                    <template #cell-teacher="{ row: a }">
+                        <span class="text-xs text-slate-600">{{ a.teacher?.name ?? '—' }}</span>
+                    </template>
+                    <template #cell-fecha="{ row: a }">
+                        <span class="text-xs text-slate-500">{{ formatDateTime(a.completed_at) }}</span>
+                    </template>
+                </DataTable>
             </div>
         </div>
 
         <!-- (c/d) Tabla: materias con su estado + acción ─────────────────── -->
         <div v-else-if="uiState === 'has_pending'" class="space-y-2">
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias por evaluar"><table class="w-full text-sm">
-                    <caption class="sr-only">Materias por evaluar</caption>
-                    <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
-                        <tr>
-                            <th scope="col" class="text-left px-4 py-2 w-36">Estado</th>
-                            <th scope="col" class="text-left px-4 py-2">Materia</th>
-                            <th scope="col" class="text-left px-4 py-2 w-28">Grupo</th>
-                            <th scope="col" class="text-left px-4 py-2">Docente</th>
-                            <th scope="col" class="text-right px-4 py-2 w-40">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <tr v-for="it in status?.assignments ?? []" :key="it.assignment_id" class="hover:bg-slate-50/60">
-                            <td class="px-4 py-2.5">
-                                <span v-if="it.status === 'completed'"
-                                      class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 bg-emerald-100 text-emerald-700">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
-                                    </svg>
-                                    Ya realizada
-                                </span>
-                                <span v-else-if="it.status === 'in_progress'"
-                                      class="text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 bg-amber-100 text-amber-700">
-                                    En progreso
-                                </span>
-                                <span v-else
-                                      class="text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 bg-blue-100 text-blue-700">
-                                    Pendiente
-                                </span>
-                            </td>
-                            <td class="px-4 py-2.5">
-                                <div class="font-bold text-slate-800 uppercase">{{ it.subject.name }}</div>
-                                <div class="text-[10px] font-mono text-slate-400">{{ it.subject.official_code ?? '—' }}</div>
-                            </td>
-                            <td class="px-4 py-2.5 font-mono text-xs text-slate-700">{{ it.group.name ?? '—' }}</td>
-                            <td class="px-4 py-2.5 text-xs text-slate-600">{{ it.teacher?.name ?? '— por asignar —' }}</td>
-                            <td class="px-4 py-2.5 text-right">
-                                <button v-if="it.status !== 'completed'"
-                                    :disabled="startingId !== null"
-                                    class="px-3 py-1.5 rounded-md text-xs font-bold text-white disabled:opacity-50 bg-blue-600 hover:bg-blue-700"
-                                    @click="startEvaluation(it)"
-                                >
-                                    <template v-if="startingId === it.assignment_id">Abriendo…</template>
-                                    <template v-else-if="it.status === 'in_progress'">CONTINUAR</template>
-                                    <template v-else>EVALUAR</template>
-                                </button>
-                                <span v-else class="text-[10px] text-slate-400">{{ formatDateTime(it.completed_at) }}</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
+                <DataTable :columns="pendingColumns" :rows="status?.assignments ?? []" hide-search
+                           caption="Materias por evaluar" empty-text="Sin materias.">
+                    <template #cell-status="{ row: it }">
+                        <span v-if="it.status === 'completed'"
+                              class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 bg-emerald-100 text-emerald-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                            </svg>
+                            Ya realizada
+                        </span>
+                        <span v-else-if="it.status === 'in_progress'"
+                              class="text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 bg-amber-100 text-amber-700">
+                            En progreso
+                        </span>
+                        <span v-else
+                              class="text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 bg-blue-100 text-blue-700">
+                            Pendiente
+                        </span>
+                    </template>
+                    <template #cell-subject="{ row: it }">
+                        <div class="font-bold text-slate-800 uppercase">{{ it.subject.name }}</div>
+                        <div class="text-[10px] font-mono text-slate-400">{{ it.subject.official_code ?? '—' }}</div>
+                    </template>
+                    <template #cell-group="{ row: it }">
+                        <span class="font-mono text-xs text-slate-700">{{ it.group.name ?? '—' }}</span>
+                    </template>
+                    <template #cell-teacher="{ row: it }">
+                        <span class="text-xs text-slate-600">{{ it.teacher?.name ?? '— por asignar —' }}</span>
+                    </template>
+                    <template #cell-action="{ row: it }">
+                        <button v-if="it.status !== 'completed'"
+                            :disabled="startingId !== null"
+                            class="px-3 py-1.5 rounded-md text-xs font-bold text-white disabled:opacity-50 bg-blue-600 hover:bg-blue-700"
+                            @click="startEvaluation(it)"
+                        >
+                            <template v-if="startingId === it.assignment_id">Abriendo…</template>
+                            <template v-else-if="it.status === 'in_progress'">CONTINUAR</template>
+                            <template v-else>EVALUAR</template>
+                        </button>
+                        <span v-else class="text-[10px] text-slate-400">{{ formatDateTime(it.completed_at) }}</span>
+                    </template>
+                </DataTable>
             </div>
         </div>
     </div>

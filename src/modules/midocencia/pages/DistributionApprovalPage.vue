@@ -37,46 +37,28 @@
             </div>
 
             <SkeletonTable v-if="loading" :rows="5" :cols="5" />
-            <div v-else-if="visibleRows.length === 0" class="text-center py-8 text-slate-400">Sin docentes en este filtro.</div>
 
             <!-- Tabla -->
-            <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <div role="region" aria-label="Seguimiento de descargas" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                <table class="w-full text-sm">
-                    <caption class="sr-only">Seguimiento de descargas</caption>
-                    <thead class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wide">
-                        <tr>
-                            <th scope="col" class="text-left px-4 py-3">Docente</th>
-                            <th scope="col" class="text-left px-4 py-3">Distribución</th>
-                            <th scope="col" class="text-left px-4 py-3">Horario</th>
-                            <th scope="col" class="text-left px-4 py-3">Oficio</th>
-                            <th scope="col" class="px-4 py-3"></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        <tr v-for="r in visibleRows" :key="r.id" class="hover:bg-slate-50"
-                            :class="bucketOf(r) === 'revisar' ? 'border-l-4 border-l-blue-500' : ''">
-                            <td class="px-4 py-3">
-                                <p class="font-semibold text-slate-800 inline-flex items-center gap-1.5">🎓 {{ teacherLabel(r) }}</p>
-                                <p class="text-xs text-slate-400">{{ fmt(totalHours(r)) }} h de descarga</p>
-                            </td>
-                            <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-semibold" :class="distChip(r).cls">{{ distChip(r).text }}</span></td>
-                            <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-semibold" :class="horChip(r).cls">{{ horChip(r).text }}</span></td>
-                            <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-semibold" :class="ofiChip(r).cls">{{ ofiChip(r).text }}</span></td>
-                            <td class="px-4 py-3 text-right">
-                                <button v-for="b in actionButtons(r)" :key="b.key"
-                                    class="ml-1 px-2.5 py-1.5 text-xs rounded-lg inline-flex items-center gap-1"
-                                    :class="b.primary ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-slate-300 text-slate-700 hover:bg-slate-100'"
-                                    :disabled="b.key === 'oficio' && oficioBusyId === r.id"
-                                    @click="b.action(r)">
-                                    <span>{{ b.icon }}</span>{{ b.key === 'oficio' && oficioBusyId === r.id ? 'Generando…' : b.label }}
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                </div>
-            </div>
+            <DataTable v-else :columns="columns" :rows="visibleRows" hide-search caption="Seguimiento de descargas" empty-text="Sin docentes en este filtro.">
+                <template #cell-teacher="{ row: r }">
+                    <div :class="bucketOf(r) === 'revisar' ? 'border-l-4 border-l-blue-500 pl-2 -ml-2' : ''">
+                        <p class="font-semibold text-slate-800 inline-flex items-center gap-1.5">🎓 {{ teacherLabel(r) }}</p>
+                        <p class="text-xs text-slate-400">{{ fmt(totalHours(r)) }} h de descarga</p>
+                    </div>
+                </template>
+                <template #cell-dist="{ row: r }"><span class="px-2 py-0.5 rounded-full text-xs font-semibold" :class="distChip(r).cls">{{ distChip(r).text }}</span></template>
+                <template #cell-hor="{ row: r }"><span class="px-2 py-0.5 rounded-full text-xs font-semibold" :class="horChip(r).cls">{{ horChip(r).text }}</span></template>
+                <template #cell-ofi="{ row: r }"><span class="px-2 py-0.5 rounded-full text-xs font-semibold" :class="ofiChip(r).cls">{{ ofiChip(r).text }}</span></template>
+                <template #cell-actions="{ row: r }">
+                    <button v-for="b in actionButtons(r)" :key="b.key"
+                        class="ml-1 px-2.5 py-1.5 text-xs rounded-lg inline-flex items-center gap-1"
+                        :class="b.primary ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-slate-300 text-slate-700 hover:bg-slate-100'"
+                        :disabled="b.key === 'oficio' && oficioBusyId === r.id"
+                        @click="b.action(r)">
+                        <span>{{ b.icon }}</span>{{ b.key === 'oficio' && oficioBusyId === r.id ? 'Generando…' : b.label }}
+                    </button>
+                </template>
+            </DataTable>
         </template>
         <div v-else class="text-center py-8 text-slate-400">Selecciona un periodo para ver el seguimiento.</div>
 
@@ -100,7 +82,17 @@ import { useReportGenerator } from '@/modules/reports/composables/useReportGener
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import DescargaReviewModal from '@/modules/midocencia/components/DescargaReviewModal.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import type { DistributionRequest } from '@/modules/midocencia/types/distribution.type'
+
+const columns: DataTableColumn<DistributionRequest>[] = [
+    { key: 'teacher', label: 'Docente' },
+    { key: 'dist', label: 'Distribución' },
+    { key: 'hor', label: 'Horario' },
+    { key: 'ofi', label: 'Oficio' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 const toast = useToast()
 const router = useRouter()

@@ -7,11 +7,24 @@ import EvdPeriodSelect from '@/modules/evd/components/EvdPeriodSelect.vue'
 import EvdReportDrawer from '@/modules/evd/components/EvdReportDrawer.vue'
 import { ReportCode } from '@/modules/reports/types/reportCodes'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import type {
     EvdLevel,
     EvdResultsFilterOptions,
     EvdTeacherResultRow,
 } from '@/modules/evd/types/evd.type'
+
+const columns: DataTableColumn<EvdTeacherResultRow>[] = [
+    { key: 'teacher', label: 'DOCENTE' },
+    { key: 'campus', label: 'CAMPUS' },
+    { key: 'modality', label: 'TIPO DE MODALIDAD' },
+    { key: 'areas', label: 'ÁREAS', align: 'right', width: '6rem' },
+    { key: 'responses', label: 'RESPUESTAS', align: 'right', width: '7rem' },
+    { key: 'average', label: 'PROMEDIO', align: 'right', width: '7rem' },
+    { key: 'level', label: 'NIVEL', width: '8rem' },
+    { key: 'actions', label: '', align: 'right', width: '5rem' },
+]
 
 interface CollegeAcademicPeriodOption {
     id: number
@@ -273,59 +286,51 @@ onMounted(async () => {
         </div>
 
         <!-- Tabla -->
-        <div v-else class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Resultados de evaluación"><table class="w-full text-sm">
-                <caption class="sr-only">Resultados de evaluación</caption>
-                <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
-                    <tr>
-                        <th scope="col" class="text-left px-4 py-2">DOCENTE</th>
-                        <th scope="col" class="text-left px-4 py-2">CAMPUS</th>
-                        <th scope="col" class="text-left px-4 py-2">TIPO DE MODALIDAD</th>
-                        <th scope="col" class="text-right px-4 py-2 w-24">ÁREAS</th>
-                        <th scope="col" class="text-right px-4 py-2 w-28">RESPUESTAS</th>
-                        <th scope="col" class="text-right px-4 py-2 w-28">PROMEDIO</th>
-                        <th scope="col" class="text-left px-4 py-2 w-32">NIVEL</th>
-                        <th scope="col" class="text-right px-4 py-2 w-20"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <tr v-if="loading"><td colspan="8" class="p-3"><SkeletonTable :rows="5" :cols="8" /></td></tr>
-                    <tr v-else-if="!rows.length">
-                        <td colspan="8" class="px-4 py-6 text-center text-sm text-slate-400 italic">
-                            No hay resultados para los filtros seleccionados.
-                        </td>
-                    </tr>
-                    <tr v-for="r in rows" :key="`${r.teacher.id}-${r.campus_id ?? 0}-${r.modality_type_id ?? 0}`" class="hover:bg-slate-50">
-                        <td class="px-4 py-2">
-                            <div class="font-bold text-slate-700 uppercase">{{ r.teacher.name }}</div>
-                            <div class="text-[10px] font-mono text-slate-400">{{ r.teacher.custom_id ?? '—' }}</div>
-                        </td>
-                        <td class="px-4 py-2 text-xs text-slate-600">{{ r.campus_name ?? '—' }}</td>
-                        <td class="px-4 py-2 text-xs text-slate-600">{{ r.modality_type_name ?? '—' }}</td>
-                        <td class="px-4 py-2 text-right text-xs text-slate-600 tabular-nums">{{ r.areas_count }}</td>
-                        <td class="px-4 py-2 text-right text-xs text-slate-600 tabular-nums">{{ r.total_responses }}</td>
-                        <td class="px-4 py-2 text-right tabular-nums" :class="avgClass(r.overall_avg)">
-                            {{ r.overall_avg !== null ? r.overall_avg.toFixed(2) : '—' }}
-                        </td>
-                        <td class="px-4 py-2">
-                            <span v-if="r.overall_avg !== null"
-                                  class="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase"
-                                  :class="avgClass(r.overall_avg) + ' bg-slate-50'">
-                                {{ levelFromAvg(r.overall_avg) }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-2 text-right whitespace-nowrap">
-                            <button class="text-xs px-2.5 py-1 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50 mr-1" @click="openReport(r)">
-                                Reporte
-                            </button>
-                            <button class="text-blue-600 hover:underline text-sm" @click="goToTeacher(r)">
-                                Detalle →
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></div>
-        </div>
+        <template v-else>
+            <SkeletonTable v-if="loading" :rows="5" :cols="8" />
+            <DataTable v-else :columns="columns" :rows="rows" hide-search
+                       caption="Resultados de evaluación"
+                       empty-text="No hay resultados para los filtros seleccionados.">
+                <template #cell-teacher="{ row: r }">
+                    <div class="font-bold text-slate-700 uppercase">{{ r.teacher.name }}</div>
+                    <div class="text-[10px] font-mono text-slate-400">{{ r.teacher.custom_id ?? '—' }}</div>
+                </template>
+                <template #cell-campus="{ row: r }">
+                    <span class="text-xs text-slate-600">{{ r.campus_name ?? '—' }}</span>
+                </template>
+                <template #cell-modality="{ row: r }">
+                    <span class="text-xs text-slate-600">{{ r.modality_type_name ?? '—' }}</span>
+                </template>
+                <template #cell-areas="{ row: r }">
+                    <span class="text-xs text-slate-600 tabular-nums">{{ r.areas_count }}</span>
+                </template>
+                <template #cell-responses="{ row: r }">
+                    <span class="text-xs text-slate-600 tabular-nums">{{ r.total_responses }}</span>
+                </template>
+                <template #cell-average="{ row: r }">
+                    <span class="tabular-nums" :class="avgClass(r.overall_avg)">
+                        {{ r.overall_avg !== null ? r.overall_avg.toFixed(2) : '—' }}
+                    </span>
+                </template>
+                <template #cell-level="{ row: r }">
+                    <span v-if="r.overall_avg !== null"
+                          class="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase"
+                          :class="avgClass(r.overall_avg) + ' bg-slate-50'">
+                        {{ levelFromAvg(r.overall_avg) }}
+                    </span>
+                </template>
+                <template #cell-actions="{ row: r }">
+                    <span class="whitespace-nowrap">
+                        <button class="text-xs px-2.5 py-1 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50 mr-1" @click="openReport(r)">
+                            Reporte
+                        </button>
+                        <button class="text-blue-600 hover:underline text-sm" @click="goToTeacher(r)">
+                            Detalle →
+                        </button>
+                    </span>
+                </template>
+            </DataTable>
+        </template>
 
         <EvdReportDrawer
             :open="reportDrawer.open"

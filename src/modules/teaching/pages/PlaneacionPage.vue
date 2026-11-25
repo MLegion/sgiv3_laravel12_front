@@ -16,61 +16,41 @@
         </div>
 
         <SkeletonTable v-if="loading" :rows="5" :cols="6" />
-        <div v-else class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <div tabindex="0" role="region" aria-label="Planeación de asignaturas y grupos" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                <caption class="sr-only">Planeación de asignaturas y grupos</caption>
-                <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                    <tr>
-                        <th scope="col" class="text-left px-4 py-2">Asignatura</th>
-                        <th scope="col" class="text-left px-4 py-2">Grupo</th>
-                        <th scope="col" class="text-left px-4 py-2">Campus</th>
-                        <th scope="col" class="text-left px-4 py-2">Modalidad</th>
-                        <th scope="col" class="text-left px-4 py-2">Periodo</th>
-                        <th scope="col" class="text-right px-4 py-2"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="a in filtered" :key="a.teacherAssignmentId" class="border-t border-slate-100">
-                        <td class="px-4 py-2">
-                            <div class="font-medium text-slate-700">{{ a.subjectName }}</div>
-                            <div class="text-xs text-slate-400">{{ a.subjectCode }}</div>
-                        </td>
-                        <td class="px-4 py-2">{{ a.groupName }}</td>
-                        <td class="px-4 py-2">{{ a.campusName ?? '—' }}</td>
-                        <td class="px-4 py-2">{{ a.modalityName ?? '—' }}</td>
-                        <td class="px-4 py-2">{{ a.periodShort ?? a.periodName }}</td>
-                        <td class="px-4 py-2 text-right">
-                            <div class="inline-flex items-center gap-2">
-                                <button
-                                    v-if="a.programIsLocal || a.programExternalUrl"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50"
-                                    @click="verPrograma(a)"
-                                >
-                                    <DocumentTextIcon class="w-4 h-4" />
-                                    Ver programa
-                                </button>
-                                <span v-if="a.requiresInstrumentation === false"
-                                    class="inline-flex items-center px-3 py-1.5 text-xs rounded-lg bg-slate-100 text-slate-500 border border-slate-200"
-                                    title="Residencias, servicio social y actividades complementarias no llevan instrumentación didáctica">
-                                    No requiere instrumentación
-                                </span>
-                                <button v-else
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg text-white"
-                                    :class="a.instrumentationId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'"
-                                    @click="openInstrumentacion(a)"
-                                >
-                                    <component :is="a.instrumentationId ? ClipboardDocumentListIcon : PlusIcon" class="w-4 h-4" />
-                                    {{ a.instrumentationId ? 'Ver instrumentación' : 'Crear instrumentación' }}
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr v-if="!loading && !filtered.length">
-                        <td colspan="6" class="px-4 py-6 text-center text-slate-400 text-sm">No hay asignaturas para los filtros seleccionados.</td>
-                    </tr>
-                </tbody>
-            </table></div>
-        </div>
+        <DataTable v-else :columns="columns" :rows="filtered" hide-search caption="Planeación de asignaturas y grupos" empty-text="No hay asignaturas para los filtros seleccionados.">
+            <template #cell-subject="{ row: a }">
+                <div class="font-medium text-slate-700">{{ a.subjectName }}</div>
+                <div class="text-xs text-slate-400">{{ a.subjectCode }}</div>
+            </template>
+            <template #cell-group="{ row: a }">{{ a.groupName }}</template>
+            <template #cell-campus="{ row: a }">{{ a.campusName ?? '—' }}</template>
+            <template #cell-modality="{ row: a }">{{ a.modalityName ?? '—' }}</template>
+            <template #cell-period="{ row: a }">{{ a.periodShort ?? a.periodName }}</template>
+            <template #cell-actions="{ row: a }">
+                <div class="inline-flex items-center gap-2">
+                    <button
+                        v-if="a.programIsLocal || a.programExternalUrl"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50"
+                        @click="verPrograma(a)"
+                    >
+                        <DocumentTextIcon class="w-4 h-4" />
+                        Ver programa
+                    </button>
+                    <span v-if="a.requiresInstrumentation === false"
+                        class="inline-flex items-center px-3 py-1.5 text-xs rounded-lg bg-slate-100 text-slate-500 border border-slate-200"
+                        title="Residencias, servicio social y actividades complementarias no llevan instrumentación didáctica">
+                        No requiere instrumentación
+                    </span>
+                    <button v-else
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg text-white"
+                        :class="a.instrumentationId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'"
+                        @click="openInstrumentacion(a)"
+                    >
+                        <component :is="a.instrumentationId ? ClipboardDocumentListIcon : PlusIcon" class="w-4 h-4" />
+                        {{ a.instrumentationId ? 'Ver instrumentación' : 'Crear instrumentación' }}
+                    </button>
+                </div>
+            </template>
+        </DataTable>
     </div>
 </template>
 
@@ -83,6 +63,17 @@ import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { openSubjectProgram } from '@/modules/study-programs/composables/useSubjectProgram'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const columns: DataTableColumn<any>[] = [
+    { key: 'subject', label: 'Asignatura' },
+    { key: 'group', label: 'Grupo' },
+    { key: 'campus', label: 'Campus' },
+    { key: 'modality', label: 'Modalidad' },
+    { key: 'period', label: 'Periodo' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 const router = useRouter()
 const assignments = ref<any[]>([])

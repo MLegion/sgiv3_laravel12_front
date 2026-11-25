@@ -65,38 +65,21 @@
             <!-- ═════ Parámetros declarados ═════ -->
             <div v-if="daoParameters.length > 0" class="bg-white border rounded-xl shadow-sm p-6 space-y-3">
                 <h2 class="text-sm font-semibold text-slate-700 uppercase">Parámetros declarados ({{ daoParameters.length }})</h2>
-                <div role="region" aria-label="Parámetros declarados" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                    <table class="w-full text-xs border-collapse">
-                        <caption class="sr-only">Parámetros declarados</caption>
-                        <thead>
-                            <tr class="bg-slate-100 border-b-2 border-slate-300">
-                                <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Nombre</th>
-                                <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Origen</th>
-                                <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Key</th>
-                                <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Tipo</th>
-                                <th scope="col" class="px-3 py-2 text-center text-[10px] font-black text-slate-600 uppercase">Req.</th>
-                                <th scope="col" class="px-3 py-2 text-left text-[10px] font-black text-slate-600 uppercase">Default</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="p in daoParameters" :key="'p-' + p.name" class="border-b border-slate-100">
-                                <td class="px-3 py-2 font-mono font-bold text-slate-700">:{{ p.name }}</td>
-                                <td class="px-3 py-2">
-                                    <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded" :class="sourceTypeClass(p.source_type)">
-                                        {{ p.source_type }}
-                                    </span>
-                                </td>
-                                <td class="px-3 py-2 font-mono text-slate-600">{{ p.source_key || '—' }}</td>
-                                <td class="px-3 py-2 font-mono text-slate-600 uppercase">{{ p.data_type }}</td>
-                                <td class="px-3 py-2 text-center">
-                                    <span v-if="p.is_required" class="text-green-600 font-bold">✓</span>
-                                    <span v-else class="text-slate-300">—</span>
-                                </td>
-                                <td class="px-3 py-2 font-mono text-slate-500">{{ p.default_value ?? '—' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <DataTable :columns="paramColumns" :rows="daoParameters" hide-search caption="Parámetros declarados" empty-text="Sin parámetros.">
+                    <template #cell-name="{ row: p }"><span class="font-mono font-bold text-slate-700">:{{ p.name }}</span></template>
+                    <template #cell-source_type="{ row: p }">
+                        <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded" :class="sourceTypeClass(p.source_type)">
+                            {{ p.source_type }}
+                        </span>
+                    </template>
+                    <template #cell-source_key="{ row: p }"><span class="font-mono text-slate-600">{{ p.source_key || '—' }}</span></template>
+                    <template #cell-data_type="{ row: p }"><span class="font-mono text-slate-600 uppercase">{{ p.data_type }}</span></template>
+                    <template #cell-is_required="{ row: p }">
+                        <span v-if="p.is_required" class="text-green-600 font-bold">✓</span>
+                        <span v-else class="text-slate-300">—</span>
+                    </template>
+                    <template #cell-default_value="{ row: p }"><span class="font-mono text-slate-500">{{ p.default_value ?? '—' }}</span></template>
+                </DataTable>
             </div>
 
             <!-- ═════ Probar ejecución ═════ -->
@@ -209,6 +192,17 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { DaoType } from '@/modules/reports/types/dao.type'
 import type { DaoParameter, ParameterSourceType, ParameterDataType } from '@/modules/reports/types/queryBuilder.type'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const paramColumns: DataTableColumn<DaoParameter>[] = [
+    { key: 'name', label: 'Nombre' },
+    { key: 'source_type', label: 'Origen' },
+    { key: 'source_key', label: 'Key' },
+    { key: 'data_type', label: 'Tipo' },
+    { key: 'is_required', label: 'Req.', align: 'center' },
+    { key: 'default_value', label: 'Default' },
+]
 
 const route  = useRoute()
 const router = useRouter()

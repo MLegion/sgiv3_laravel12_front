@@ -5,27 +5,14 @@
             <router-link :to="{ name: 'service-desk.request' }" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold">+ Solicitar</router-link>
         </div>
 
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Bandeja de documentos" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Bandeja de documentos</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th scope="col" class="px-4 py-2">Documento</th><th scope="col">Estado</th><th scope="col">Folio</th><th scope="col"></th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="r in rows" :key="r.id" class="border-b last:border-0">
-                        <td class="px-4 py-2 text-slate-700">{{ r.document_name }}<div v-if="r.reject_reason" class="text-xs text-red-500">{{ r.reject_reason }}</div></td>
-                        <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="cls(r.status)">{{ lbl(r.status) }}</span></td>
-                        <td class="font-mono text-xs text-slate-500">{{ r.folio ?? '—' }}</td>
-                        <td class="text-right pr-4">
-                            <button v-if="r.status === 'issued'" @click="download(r.id)" class="text-xs text-blue-600 font-semibold">Descargar</button>
-                        </td>
-                    </tr>
-                    <tr v-if="!rows.length"><td colspan="4" class="px-4 py-6 text-center text-slate-400">Aún no tienes solicitudes. Usa “+ Solicitar” para pedir un documento.</td></tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable :columns="columns" :rows="rows" hide-search caption="Bandeja de documentos" empty-text="Aún no tienes solicitudes. Usa “+ Solicitar” para pedir un documento.">
+            <template #cell-document="{ row: r }"><span class="text-slate-700">{{ r.document_name }}</span><div v-if="r.reject_reason" class="text-xs text-red-500">{{ r.reject_reason }}</div></template>
+            <template #cell-status="{ row: r }"><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="cls(r.status)">{{ lbl(r.status) }}</span></template>
+            <template #cell-folio="{ row: r }"><span class="font-mono text-xs text-slate-500">{{ r.folio ?? '—' }}</span></template>
+            <template #cell-actions="{ row: r }">
+                <button v-if="r.status === 'issued'" @click="download(r.id)" class="text-xs text-blue-600 font-semibold">Descargar</button>
+            </template>
+        </DataTable>
     </div>
 </template>
 
@@ -34,9 +21,17 @@ import { ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { DeskRequest } from '@/modules/service-desk/types/service-desk.type'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const D = API.SERVICE_DESK_API
 const rows = ref<DeskRequest[]>([])
+const columns: DataTableColumn<DeskRequest>[] = [
+    { key: 'document', label: 'Documento' },
+    { key: 'status', label: 'Estado' },
+    { key: 'folio', label: 'Folio' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 function lbl(s: string) { return ({ requested: 'Solicitado', issued: 'Emitido', rejected: 'Rechazado', cancelled: 'Cancelado' } as Record<string,string>)[s] ?? s }
 function cls(s: string) { return ({ requested: 'bg-amber-100 text-amber-700', issued: 'bg-emerald-100 text-emerald-700', rejected: 'bg-red-100 text-red-600', cancelled: 'bg-slate-200 text-slate-500' } as Record<string,string>)[s] ?? 'bg-slate-100 text-slate-500' }

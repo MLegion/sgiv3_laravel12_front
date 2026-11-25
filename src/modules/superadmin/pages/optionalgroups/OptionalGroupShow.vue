@@ -121,58 +121,34 @@
                         </div>
                     </div>
 
-                    <div tabindex="0" role="region" aria-label="Materias Vinculadas" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-                        <table class="w-full text-left border-collapse">
-                            <caption class="sr-only">Materias Vinculadas</caption>
-                            <thead>
-                            <tr class="bg-slate-50/80 text-[10px] uppercase text-slate-400 font-black border-b border-slate-100">
-                                <th scope="col" class="px-6 py-4 w-32">Clave</th>
-                                <th scope="col" class="px-6 py-4">Asignatura</th>
-                                <th scope="col" class="px-6 py-4 text-center">Créditos</th>
-                                <th scope="col" class="px-6 py-4 text-center">Horas</th>
-                                <th scope="col" class="px-6 py-4 text-right">Detalles</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-50">
-                            <template v-if="loadingSubjects">
-                            <tr v-for="i in 3" :key="'loader-'+i" class="animate-pulse">
-                                <td colspan="5" class="px-6 py-6"><div class="h-4 bg-slate-100 rounded-lg w-full"></div></td>
-                            </tr>
-                            </template>
-                            <tr v-else-if="subjects.length === 0">
-                                <td colspan="5" class="px-6 py-16 text-center text-slate-400 uppercase text-[11px] font-black tracking-widest italic">
-                                    No hay materias asignadas a este grupo
-                                </td>
-                            </tr>
-                            <tr v-for="subject in subjects" :key="subject.id" class="hover:bg-slate-50 transition-colors group">
-                                <td class="px-6 py-4 font-mono text-[11px] text-slate-500 font-bold">{{ subject.officialCode }}</td>
-                                <td class="px-6 py-4">
-                                    <div class="flex flex-col">
-                                        <span class="font-black uppercase text-[11px] text-slate-700 leading-tight">{{ subject.name }}</span>
-                                        <span class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter mt-0.5">{{ subject.shortName }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <span class="px-2.5 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg text-[10px] font-black">{{ subject.credits }}</span>
-                                </td>
-                                <td class="px-6 py-4 text-center text-[11px] font-bold text-slate-500">
-                                    {{ subject.ht }}T / {{ subject.hp }}P
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <button
-                                        @click="viewSubject(subject.id)"
-                                        aria-label="Ver materia"
-                                        class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-                                    >
-                                        <svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                        </svg>
-                                    </button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <DataTable :columns="subjectColumns" :rows="subjects" :loading="loadingSubjects" hide-search caption="Materias Vinculadas" empty-text="No hay materias asignadas a este grupo">
+                        <template #cell-officialCode="{ row: subject }">
+                            <span class="font-mono text-[11px] text-slate-500 font-bold">{{ subject.officialCode }}</span>
+                        </template>
+                        <template #cell-name="{ row: subject }">
+                            <div class="flex flex-col">
+                                <span class="font-black uppercase text-[11px] text-slate-700 leading-tight">{{ subject.name }}</span>
+                                <span class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter mt-0.5">{{ subject.shortName }}</span>
+                            </div>
+                        </template>
+                        <template #cell-credits="{ row: subject }">
+                            <span class="px-2.5 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg text-[10px] font-black">{{ subject.credits }}</span>
+                        </template>
+                        <template #cell-hours="{ row: subject }">
+                            <span class="text-[11px] font-bold text-slate-500">{{ subject.ht }}T / {{ subject.hp }}P</span>
+                        </template>
+                        <template #cell-actions="{ row: subject }">
+                            <button
+                                @click="viewSubject(subject.id)"
+                                aria-label="Ver materia"
+                                class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                            >
+                                <svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                            </button>
+                        </template>
+                    </DataTable>
                 </div>
             </div>
         </div>
@@ -184,6 +160,16 @@ import { ref, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const subjectColumns: DataTableColumn<any>[] = [
+    { key: 'officialCode', label: 'Clave', width: '8rem' },
+    { key: 'name', label: 'Asignatura' },
+    { key: 'credits', label: 'Créditos', align: 'center' },
+    { key: 'hours', label: 'Horas', align: 'center' },
+    { key: 'actions', label: 'Detalles', align: 'right' },
+]
 
 const route = useRoute()
 const router = useRouter()

@@ -73,55 +73,26 @@
             {{ error }}
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Grupos del periodo"><table class="w-full text-sm">
-                <caption class="sr-only">Grupos del periodo</caption>
-                <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
-                    <tr>
-                        <th scope="col" class="text-left px-4 py-2 w-24">GRUPO</th>
-                        <th scope="col" class="text-left px-4 py-2 w-20">TURNO</th>
-                        <th scope="col" class="text-left px-4 py-2">CARRERAS</th>
-                        <th scope="col" class="text-right px-4 py-2 w-32">MATERIAS</th>
-                        <th scope="col" class="text-right px-4 py-2 w-32">INSCRITOS</th>
-                        <th scope="col" class="text-right px-4 py-2 w-24"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <tr v-if="!periodId">
-                        <td colspan="6" class="px-4 py-6 text-center text-slate-400 text-sm italic">
-                            Selecciona un periodo para ver los grupos.
-                        </td>
-                    </tr>
-                    <tr v-else-if="loading">
-                        <td colspan="6" class="p-3"><SkeletonTable :rows="5" :cols="6" /></td>
-                    </tr>
-                    <tr v-else-if="!filtered.length">
-                        <td colspan="6" class="px-4 py-6 text-center text-slate-400 text-sm italic">
-                            Sin grupos para este periodo.
-                        </td>
-                    </tr>
-                    <tr v-for="g in filtered" :key="g.id" class="hover:bg-slate-50">
-                        <td class="px-4 py-2 font-mono font-bold text-slate-700">{{ g.name }}</td>
-                        <td class="px-4 py-2 text-xs uppercase text-slate-600">{{ shiftLabel(g.shift) }}</td>
-                        <td class="px-4 py-2 text-xs text-slate-600">{{ g.careers ?? '—' }}</td>
-                        <td class="px-4 py-2 text-right">
-                            <span class="text-lg font-bold tabular-nums text-slate-800">{{ g.assignment_count }}</span>
-                        </td>
-                        <td class="px-4 py-2 text-right">
-                            <span class="text-lg font-bold tabular-nums" :class="g.enrollment_count > 0 ? 'text-emerald-700' : 'text-slate-300'">
-                                {{ g.enrollment_count }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-2 text-right">
-                            <button class="text-blue-600 hover:underline text-sm"
-                                    @click="goToGroup(g.id)">
-                                Detalle →
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></div>
-        </div>
+        <DataTable :columns="columns" :rows="filtered" :loading="!!periodId && loading" hide-search caption="Grupos del periodo"
+            :empty-text="!periodId ? 'Selecciona un periodo para ver los grupos.' : 'Sin grupos para este periodo.'">
+            <template #cell-name="{ row }"><span class="font-mono font-bold text-slate-700">{{ row.name }}</span></template>
+            <template #cell-shift="{ row }"><span class="text-xs uppercase text-slate-600">{{ shiftLabel(row.shift) }}</span></template>
+            <template #cell-careers="{ row }"><span class="text-xs text-slate-600">{{ row.careers ?? '—' }}</span></template>
+            <template #cell-assignment_count="{ row }">
+                <span class="text-lg font-bold tabular-nums text-slate-800">{{ row.assignment_count }}</span>
+            </template>
+            <template #cell-enrollment_count="{ row }">
+                <span class="text-lg font-bold tabular-nums" :class="row.enrollment_count > 0 ? 'text-emerald-700' : 'text-slate-300'">
+                    {{ row.enrollment_count }}
+                </span>
+            </template>
+            <template #cell-actions="{ row }">
+                <button class="text-blue-600 hover:underline text-sm"
+                        @click="goToGroup(row.id)">
+                    Detalle →
+                </button>
+            </template>
+        </DataTable>
     </div>
 </template>
 
@@ -131,7 +102,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { EnrollmentGroupRow } from '@/modules/advising/types/advising.type'
-import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface PeriodOption {
     id: number
@@ -145,6 +117,14 @@ const router = useRouter()
 const periodId = ref<number | null>(
     route.query.period ? Number(route.query.period) : null,
 )
+const columns: DataTableColumn<EnrollmentGroupRow>[] = [
+    { key: 'name', label: 'Grupo', width: '6rem' },
+    { key: 'shift', label: 'Turno', width: '5rem' },
+    { key: 'careers', label: 'Carreras' },
+    { key: 'assignment_count', label: 'Materias', align: 'right', width: '8rem' },
+    { key: 'enrollment_count', label: 'Inscritos', align: 'right', width: '8rem' },
+    { key: 'actions', label: '', align: 'right', width: '6rem' },
+]
 const search   = ref<string>('')
 const careerFilter         = ref<number | ''>('')
 const shiftFilter          = ref<string>('')

@@ -43,23 +43,12 @@
         <!-- Mis constancias -->
         <section class="rounded-xl border bg-white p-4">
             <h2 class="text-sm font-bold uppercase text-slate-500 mb-2">Mis constancias</h2>
-            <p v-if="!rows.length" class="text-sm text-slate-400">Aún no has declarado cursos.</p>
-            <div v-else role="region" aria-label="Mis constancias" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Mis constancias</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                    <th scope="col" class="px-3 py-1">Curso</th><th scope="col">Plataforma</th><th scope="col">Créditos</th><th scope="col">Estado</th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="c in rows" :key="c.id" class="border-b last:border-0">
-                        <td class="px-3 py-2 text-slate-700">{{ c.course_name }}</td>
-                        <td class="text-slate-500">{{ c.platform_name }}</td>
-                        <td class="text-slate-600">{{ c.status === 'validated' ? c.credits : '—' }}</td>
-                        <td><span :class="statusClass(c.status)">{{ statusLabel(c.status) }}</span><span v-if="c.note" class="block text-[10px] text-slate-400">{{ c.note }}</span></td>
-                    </tr>
-                </tbody>
-            </table>
-            </div>
+            <DataTable :columns="completionColumns" :rows="rows" hide-search caption="Mis constancias" empty-text="Aún no has declarado cursos.">
+                <template #cell-course_name="{ row: c }"><span class="text-slate-700">{{ c.course_name }}</span></template>
+                <template #cell-platform_name="{ row: c }"><span class="text-slate-500">{{ c.platform_name }}</span></template>
+                <template #cell-credits="{ row: c }"><span class="text-slate-600">{{ c.status === 'validated' ? c.credits : '—' }}</span></template>
+                <template #cell-status="{ row: c }"><span :class="statusClass(c.status)">{{ statusLabel(c.status) }}</span><span v-if="c.note" class="block text-[10px] text-slate-400">{{ c.note }}</span></template>
+            </DataTable>
         </section>
     </div>
 </template>
@@ -69,12 +58,20 @@ import { ref, reactive, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const AC = API.AC_API
 const toast = useToast()
 const platforms = ref<any[]>([])
 const courseCatalog = ref<any[]>([])
 const rows = ref<any[]>([])
+const completionColumns: DataTableColumn<any>[] = [
+    { key: 'course_name', label: 'Curso' },
+    { key: 'platform_name', label: 'Plataforma' },
+    { key: 'credits', label: 'Créditos' },
+    { key: 'status', label: 'Estado' },
+]
 const busy = ref(false)
 const form = reactive<any>({ platform_id: '', course_name: '', hours: null, folio: '', file: null as File | null })
 

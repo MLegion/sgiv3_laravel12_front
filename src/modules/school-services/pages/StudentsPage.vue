@@ -106,75 +106,60 @@
         </div>
 
         <!-- Tabla -->
-        <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Estudiantes"><table class="min-w-full text-sm">
-                <caption class="sr-only">Estudiantes</caption>
-                <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
-                    <tr>
-                        <th scope="col" class="px-4 py-3 text-left">No. Control</th>
-                        <th scope="col" class="px-4 py-3 text-left">Nombre</th>
-                        <th scope="col" class="px-4 py-3 text-left">CURP</th>
-                        <th scope="col" class="px-4 py-3 text-left">Carrera / Plan</th>
-                        <th scope="col" class="px-4 py-3 text-left">Modalidad</th>
-                        <th scope="col" class="px-4 py-3 text-left">Estatus</th>
-                        <th scope="col" class="px-4 py-3 text-left">Semestre</th>
-                        <th scope="col" class="px-4 py-3"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    <tr v-for="s in items" :key="s.id" class="hover:bg-slate-50 transition">
-                        <td class="px-4 py-3 font-mono text-xs font-bold text-slate-700">{{ s.numControl ?? '—' }}</td>
-                        <td class="px-4 py-3 font-medium text-slate-800">
-                            {{ s.names }} {{ s.firstSurname }} {{ s.secondSurname ?? '' }}
-                        </td>
-                        <td class="px-4 py-3 font-mono text-xs">{{ s.curp ?? '—' }}</td>
-                        <td class="px-4 py-3 text-xs text-slate-600">
-                            <template v-if="activeAffiliation(s)">
-                                <div class="font-semibold text-slate-700">
-                                    {{ activeAffiliation(s)?.studyPlan?.careerName ?? activeAffiliation(s)?.studyPlan?.name ?? '—' }}
-                                </div>
-                                <div v-if="activeAffiliation(s)?.studyPlan?.officialCode" class="font-mono text-[10px] text-slate-400">
-                                    {{ activeAffiliation(s)?.studyPlan?.officialCode }}
-                                </div>
-                            </template>
-                            <span v-else class="text-slate-400">—</span>
-                        </td>
-                        <td class="px-4 py-3 text-xs text-slate-600">
-                            <template v-if="activeAffiliation(s)?.modality">
-                                <div class="font-semibold text-slate-700">
-                                    {{ activeAffiliation(s)?.modality?.modalityTypeName ?? '—' }}
-                                </div>
-                                <div class="text-[10px] text-slate-400">
-                                    {{ activeAffiliation(s)?.modality?.campusName ?? '' }}
-                                </div>
-                            </template>
-                            <span v-else class="text-slate-400">—</span>
-                        </td>
-                        <td class="px-4 py-3">
-                            <span
-                                v-if="activeAffiliation(s)"
-                                class="px-2 py-0.5 rounded-full text-xs font-semibold uppercase"
-                                :class="statusClass(activeAffiliation(s)?.studentStatus?.name)"
-                            >
-                                {{ activeAffiliation(s)?.studentStatus?.name ?? '—' }}
-                            </span>
-                            <span v-else class="text-slate-400 text-xs">—</span>
-                        </td>
-                        <td class="px-4 py-3 text-xs text-center">
-                            {{ activeAffiliation(s)?.currentPeriodNumber ?? '—' }}
-                        </td>
-                        <td class="px-4 py-3 text-right">
-                            <router-link
-                                :to="{ name: 'school-services.students.show', params: { id: s.id } }"
-                                class="text-blue-600 hover:underline text-xs font-semibold uppercase"
-                            >
-                                Ver
-                            </router-link>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></div>
-        </div>
+        <DataTable v-else :columns="columns" :rows="items" hide-search caption="Estudiantes" empty-text="No hay estudiantes registrados.">
+            <template #cell-numControl="{ row: s }">
+                <span class="font-mono text-xs font-bold text-slate-700">{{ s.numControl ?? '—' }}</span>
+            </template>
+            <template #cell-name="{ row: s }">
+                <span class="font-medium text-slate-800">{{ s.names }} {{ s.firstSurname }} {{ s.secondSurname ?? '' }}</span>
+            </template>
+            <template #cell-curp="{ row: s }">
+                <span class="font-mono text-xs">{{ s.curp ?? '—' }}</span>
+            </template>
+            <template #cell-career="{ row: s }">
+                <template v-if="activeAffiliation(s)">
+                    <div class="font-semibold text-slate-700">
+                        {{ activeAffiliation(s)?.studyPlan?.careerName ?? activeAffiliation(s)?.studyPlan?.name ?? '—' }}
+                    </div>
+                    <div v-if="activeAffiliation(s)?.studyPlan?.officialCode" class="font-mono text-[10px] text-slate-400">
+                        {{ activeAffiliation(s)?.studyPlan?.officialCode }}
+                    </div>
+                </template>
+                <span v-else class="text-slate-400">—</span>
+            </template>
+            <template #cell-modality="{ row: s }">
+                <template v-if="activeAffiliation(s)?.modality">
+                    <div class="font-semibold text-slate-700">
+                        {{ activeAffiliation(s)?.modality?.modalityTypeName ?? '—' }}
+                    </div>
+                    <div class="text-[10px] text-slate-400">
+                        {{ activeAffiliation(s)?.modality?.campusName ?? '' }}
+                    </div>
+                </template>
+                <span v-else class="text-slate-400">—</span>
+            </template>
+            <template #cell-status="{ row: s }">
+                <span
+                    v-if="activeAffiliation(s)"
+                    class="px-2 py-0.5 rounded-full text-xs font-semibold uppercase"
+                    :class="statusClass(activeAffiliation(s)?.studentStatus?.name)"
+                >
+                    {{ activeAffiliation(s)?.studentStatus?.name ?? '—' }}
+                </span>
+                <span v-else class="text-slate-400 text-xs">—</span>
+            </template>
+            <template #cell-semester="{ row: s }">
+                <span class="text-xs">{{ activeAffiliation(s)?.currentPeriodNumber ?? '—' }}</span>
+            </template>
+            <template #cell-actions="{ row: s }">
+                <router-link
+                    :to="{ name: 'school-services.students.show', params: { id: s.id } }"
+                    class="text-blue-600 hover:underline text-xs font-semibold uppercase"
+                >
+                    Ver
+                </router-link>
+            </template>
+        </DataTable>
 
         <!-- Paginación -->
         <div v-if="lastPage > 1" class="flex items-center justify-between text-sm text-slate-500">
@@ -201,9 +186,21 @@ import { computed, reactive, ref, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const loading  = ref(true)
 const items    = ref<any[]>([])
+const columns: DataTableColumn<any>[] = [
+    { key: 'numControl', label: 'No. Control' },
+    { key: 'name', label: 'Nombre' },
+    { key: 'curp', label: 'CURP' },
+    { key: 'career', label: 'Carrera / Plan' },
+    { key: 'modality', label: 'Modalidad' },
+    { key: 'status', label: 'Estatus' },
+    { key: 'semester', label: 'Semestre' },
+    { key: 'actions', label: '', align: 'right' },
+]
 const search   = ref('')
 const page     = ref(1)
 const total    = ref(0)

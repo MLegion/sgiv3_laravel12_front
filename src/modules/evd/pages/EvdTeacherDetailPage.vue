@@ -3,9 +3,25 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
-import type { EvdLevel, EvdTeacherDetail } from '@/modules/evd/types/evd.type'
+import type { EvdAreaResult, EvdLevel, EvdTeacherAssignmentRow, EvdTeacherDetail } from '@/modules/evd/types/evd.type'
 import SkeletonStat from '@/app/components/ui/SkeletonStat.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const areaColumns: DataTableColumn<EvdAreaResult>[] = [
+    { key: 'area', label: 'ÁREA', width: '4rem' },
+    { key: 'aspect', label: 'ASPECTO' },
+    { key: 'responses', label: 'RESPUESTAS', align: 'right', width: '8rem' },
+    { key: 'average', label: 'PROMEDIO', align: 'right', width: '7rem' },
+    { key: 'level', label: 'NIVEL', width: '9rem' },
+]
+
+const subjectColumns: DataTableColumn<EvdTeacherAssignmentRow>[] = [
+    { key: 'subject', label: 'MATERIA' },
+    { key: 'group', label: 'GRUPO', width: '8rem' },
+    { key: 'progress', label: 'AVANCE', align: 'right', width: '12rem' },
+]
 
 const route   = useRoute()
 const router  = useRouter()
@@ -147,39 +163,30 @@ onMounted(load)
                 <div class="px-4 py-3 border-b bg-slate-50">
                     <h3 class="text-sm font-bold text-slate-700 uppercase">Desglose por área</h3>
                 </div>
-                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Desglose por área"><table class="w-full text-sm">
-                    <caption class="sr-only">Desglose por área</caption>
-                    <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
-                        <tr>
-                            <th scope="col" class="text-left px-4 py-2 w-16">ÁREA</th>
-                            <th scope="col" class="text-left px-4 py-2">ASPECTO</th>
-                            <th scope="col" class="text-right px-4 py-2 w-32">RESPUESTAS</th>
-                            <th scope="col" class="text-right px-4 py-2 w-28">PROMEDIO</th>
-                            <th scope="col" class="text-left px-4 py-2 w-36">NIVEL</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        <tr v-if="!data.areas.length">
-                            <td colspan="5" class="px-4 py-6 text-center text-sm text-slate-400 italic">
-                                Aún no hay respuestas agregadas para este docente.
-                            </td>
-                        </tr>
-                        <tr v-for="a in data.areas" :key="a.area_code" class="hover:bg-slate-50">
-                            <td class="px-4 py-2 font-mono font-bold text-slate-700">{{ a.area_code }}</td>
-                            <td class="px-4 py-2 text-slate-700">{{ a.area_title }}</td>
-                            <td class="px-4 py-2 text-right text-xs text-slate-600 tabular-nums">{{ a.respondents_count }}</td>
-                            <td class="px-4 py-2 text-right tabular-nums font-bold" :class="avgClass(a.avg_score)">
-                                {{ a.avg_score.toFixed(2) }}
-                            </td>
-                            <td class="px-4 py-2">
-                                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase"
-                                      :class="levelClass(a.level)">
-                                    {{ a.level ?? '—' }}
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
+                <DataTable :columns="areaColumns" :rows="data.areas" hide-search
+                           caption="Desglose por área"
+                           empty-text="Aún no hay respuestas agregadas para este docente.">
+                    <template #cell-area="{ row: a }">
+                        <span class="font-mono font-bold text-slate-700">{{ a.area_code }}</span>
+                    </template>
+                    <template #cell-aspect="{ row: a }">
+                        <span class="text-slate-700">{{ a.area_title }}</span>
+                    </template>
+                    <template #cell-responses="{ row: a }">
+                        <span class="text-xs text-slate-600 tabular-nums">{{ a.respondents_count }}</span>
+                    </template>
+                    <template #cell-average="{ row: a }">
+                        <span class="tabular-nums font-bold" :class="avgClass(a.avg_score)">
+                            {{ a.avg_score.toFixed(2) }}
+                        </span>
+                    </template>
+                    <template #cell-level="{ row: a }">
+                        <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase"
+                              :class="levelClass(a.level)">
+                            {{ a.level ?? '—' }}
+                        </span>
+                    </template>
+                </DataTable>
             </div>
 
             <!-- Materias evaluadas -->
@@ -187,40 +194,27 @@ onMounted(load)
                 <div class="px-4 py-3 border-b bg-slate-50">
                     <h3 class="text-sm font-bold text-slate-700 uppercase">Materias evaluadas</h3>
                 </div>
-                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias evaluadas"><table class="w-full text-sm">
-                    <caption class="sr-only">Materias evaluadas</caption>
-                    <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
-                        <tr>
-                            <th scope="col" class="text-left  px-4 py-2">MATERIA</th>
-                            <th scope="col" class="text-left  px-4 py-2 w-32">GRUPO</th>
-                            <th scope="col" class="text-right px-4 py-2 w-48">AVANCE</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        <tr v-if="!data.assignments.length">
-                            <td colspan="3" class="px-4 py-6 text-center text-sm text-slate-400 italic">
-                                Este docente no tiene materias evaluadas en este periodo.
-                            </td>
-                        </tr>
-                        <tr v-for="a in data.assignments" :key="a.teacher_assignment_id" class="hover:bg-slate-50">
-                            <td class="px-4 py-2">
-                                <div class="font-bold text-slate-700">{{ a.subject?.name ?? '—' }}</div>
-                                <div class="text-[10px] font-mono text-slate-400">{{ a.subject?.official_code ?? '' }}</div>
-                            </td>
-                            <td class="px-4 py-2 font-mono text-xs text-slate-700">{{ a.group?.name ?? '—' }}</td>
-                            <td class="px-4 py-2 text-right">
-                                <div class="text-xs text-slate-500">
-                                    <span class="font-bold text-emerald-700 tabular-nums">{{ a.completed_students }}</span>
-                                    / {{ a.total_students }}
-                                </div>
-                                <div class="h-1.5 bg-slate-100 rounded overflow-hidden mt-1">
-                                    <div class="h-full bg-emerald-500" :style="{ width: a.progress_pct + '%' }"></div>
-                                </div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">{{ a.progress_pct }}%</div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
+                <DataTable :columns="subjectColumns" :rows="data.assignments" hide-search
+                           caption="Materias evaluadas"
+                           empty-text="Este docente no tiene materias evaluadas en este periodo.">
+                    <template #cell-subject="{ row: a }">
+                        <div class="font-bold text-slate-700">{{ a.subject?.name ?? '—' }}</div>
+                        <div class="text-[10px] font-mono text-slate-400">{{ a.subject?.official_code ?? '' }}</div>
+                    </template>
+                    <template #cell-group="{ row: a }">
+                        <span class="font-mono text-xs text-slate-700">{{ a.group?.name ?? '—' }}</span>
+                    </template>
+                    <template #cell-progress="{ row: a }">
+                        <div class="text-xs text-slate-500">
+                            <span class="font-bold text-emerald-700 tabular-nums">{{ a.completed_students }}</span>
+                            / {{ a.total_students }}
+                        </div>
+                        <div class="h-1.5 bg-slate-100 rounded overflow-hidden mt-1">
+                            <div class="h-full bg-emerald-500" :style="{ width: a.progress_pct + '%' }"></div>
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">{{ a.progress_pct }}%</div>
+                    </template>
+                </DataTable>
             </div>
         </template>
     </div>

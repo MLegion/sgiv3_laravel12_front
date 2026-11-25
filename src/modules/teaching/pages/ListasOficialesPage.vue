@@ -33,41 +33,16 @@
 
         <!-- Tabla -->
         <SkeletonTable v-if="loading" :rows="5" :cols="8" />
-        <div v-else tabindex="0" role="region" aria-label="Reporte de lista de alumnos" class="bg-white border border-slate-200 rounded-xl overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Reporte de lista de alumnos</caption>
-                <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                    <tr>
-                        <th scope="col" class="text-left px-3 py-2">#</th>
-                        <th scope="col" class="text-left px-3 py-2">Núm. control</th>
-                        <th scope="col" class="text-left px-3 py-2">A. paterno</th>
-                        <th scope="col" class="text-left px-3 py-2">A. materno</th>
-                        <th scope="col" class="text-left px-3 py-2">Nombre(s)</th>
-                        <th scope="col" class="text-left px-3 py-2">Teléfono</th>
-                        <th scope="col" class="text-left px-3 py-2">Email</th>
-                        <th scope="col" class="text-center px-3 py-2">Curso</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(r, i) in roster" :key="i" class="border-t border-slate-100">
-                        <td class="px-3 py-2 text-slate-500">{{ i + 1 }}</td>
-                        <td class="px-3 py-2">{{ r.numControl }}</td>
-                        <td class="px-3 py-2">{{ r.firstSurname }}</td>
-                        <td class="px-3 py-2">{{ r.secondSurname }}</td>
-                        <td class="px-3 py-2">{{ r.names }}</td>
-                        <td class="px-3 py-2 text-blue-700">{{ r.phone ?? '—' }}</td>
-                        <td class="px-3 py-2 text-green-700">{{ r.email ?? '—' }}</td>
-                        <td class="px-3 py-2 text-center font-semibold">{{ r.curso }}</td>
-                    </tr>
-                    <tr v-if="selectedAssignment && !roster.length">
-                        <td colspan="8" class="px-3 py-6 text-center text-slate-400 text-sm">Sin alumnos en este grupo.</td>
-                    </tr>
-                    <tr v-else-if="!selectedAssignment">
-                        <td colspan="8" class="px-3 py-6 text-center text-slate-400 text-sm">Selecciona un grupo/materia.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <DataTable v-else :columns="columns" :rows="roster" hide-search caption="Reporte de lista de alumnos" :empty-text="selectedAssignment ? 'Sin alumnos en este grupo.' : 'Selecciona un grupo/materia.'">
+            <template #cell-index="{ index }"><span class="text-slate-500">{{ index + 1 }}</span></template>
+            <template #cell-numControl="{ row: r }">{{ r.numControl }}</template>
+            <template #cell-firstSurname="{ row: r }">{{ r.firstSurname }}</template>
+            <template #cell-secondSurname="{ row: r }">{{ r.secondSurname }}</template>
+            <template #cell-names="{ row: r }">{{ r.names }}</template>
+            <template #cell-phone="{ row: r }"><span class="text-blue-700">{{ r.phone ?? '—' }}</span></template>
+            <template #cell-email="{ row: r }"><span class="text-green-700">{{ r.email ?? '—' }}</span></template>
+            <template #cell-curso="{ row: r }"><span class="font-semibold">{{ r.curso }}</span></template>
+        </DataTable>
     </div>
 </template>
 
@@ -77,6 +52,19 @@ import FormSelect from '@/app/components/ui/form/FormSelect.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const columns: DataTableColumn<any>[] = [
+    { key: 'index', label: '#' },
+    { key: 'numControl', label: 'Núm. control' },
+    { key: 'firstSurname', label: 'A. paterno' },
+    { key: 'secondSurname', label: 'A. materno' },
+    { key: 'names', label: 'Nombre(s)' },
+    { key: 'phone', label: 'Teléfono' },
+    { key: 'email', label: 'Email' },
+    { key: 'curso', label: 'Curso', align: 'center' },
+]
 
 const assignments = ref<any[]>([])
 const roster = ref<any[]>([])

@@ -4,11 +4,19 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import ConfirmModal from '@/app/components/ui/modal/ConfirmModal.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import type {
     EvdCapStatus,
     EvdPeriodModalityRow,
     EvdPeriodOverviewRow,
 } from '@/modules/evd/types/evd.type'
+
+const columns: DataTableColumn<EvdPeriodOverviewRow>[] = [
+    { key: 'period', label: 'PERÍODO', width: '16rem' },
+    { key: 'modalities', label: 'APERTURA POR MODALIDAD' },
+    { key: 'actions', label: '', align: 'right', width: '12rem' },
+]
 
 const rows           = ref<EvdPeriodOverviewRow[]>([])
 const loading        = ref(true)
@@ -206,76 +214,64 @@ onMounted(load)
         </div>
 
         <!-- Tabla de periodos -->
-        <div v-else class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Periodos de evaluación docente"><table class="w-full text-sm">
-                <caption class="sr-only">Periodos de evaluación docente</caption>
-                <thead class="bg-slate-50 text-slate-600 text-[10px] uppercase tracking-wider">
-                    <tr>
-                        <th scope="col" class="text-left px-4 py-2 w-64">PERÍODO</th>
-                        <th scope="col" class="text-left px-4 py-2">APERTURA POR MODALIDAD</th>
-                        <th scope="col" class="text-right px-4 py-2 w-48"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <tr v-for="row in filteredRows" :key="row.id" class="align-top">
-                        <!-- Periodo -->
-                        <td class="px-4 py-3">
-                            <div class="font-bold text-slate-700 uppercase">{{ row.period_name }}</div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">
-                                {{ formatDate(row.actual_start_date) }} – {{ formatDate(row.actual_end_date) }}
-                            </div>
-                            <span class="inline-block mt-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase"
-                                  :class="capStatusBadge(row.status).cls">
-                                {{ capStatusBadge(row.status).label }}
+        <DataTable v-else :columns="columns" :rows="filteredRows" hide-search
+                   caption="Periodos de evaluación docente"
+                   empty-text="No hay periodos para mostrar.">
+            <!-- Periodo -->
+            <template #cell-period="{ row }">
+                <div class="font-bold text-slate-700 uppercase">{{ row.period_name }}</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">
+                    {{ formatDate(row.actual_start_date) }} – {{ formatDate(row.actual_end_date) }}
+                </div>
+                <span class="inline-block mt-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase"
+                      :class="capStatusBadge(row.status).cls">
+                    {{ capStatusBadge(row.status).label }}
+                </span>
+            </template>
+
+            <!-- Modalidades -->
+            <template #cell-modalities="{ row }">
+                <div v-if="!row.modalities.length" class="text-xs text-slate-400 italic">
+                    El plantel no tiene modalidades activas.
+                </div>
+                <ul v-else class="space-y-1.5">
+                    <li v-for="m in row.modalities" :key="m.modality.id"
+                        class="flex items-center gap-2 flex-wrap">
+                        <span class="w-2 h-2 rounded-full shrink-0" :class="tepBadge(m).dot"></span>
+                        <span class="text-slate-700">{{ modalityLabel(m) }}</span>
+                        <span class="text-[10px] font-bold uppercase" :class="tepBadge(m).cls">
+                            {{ tepBadge(m).label }}
+                        </span>
+                        <template v-if="m.tep">
+                            <span class="text-[10px] text-slate-400">
+                                {{ formatDate(m.tep.opens_at) }} – {{ formatDate(m.tep.closes_at) }}
                             </span>
-                        </td>
-
-                        <!-- Modalidades -->
-                        <td class="px-4 py-3">
-                            <div v-if="!row.modalities.length" class="text-xs text-slate-400 italic">
-                                El plantel no tiene modalidades activas.
-                            </div>
-                            <ul v-else class="space-y-1.5">
-                                <li v-for="m in row.modalities" :key="m.modality.id"
-                                    class="flex items-center gap-2 flex-wrap">
-                                    <span class="w-2 h-2 rounded-full shrink-0" :class="tepBadge(m).dot"></span>
-                                    <span class="text-slate-700">{{ modalityLabel(m) }}</span>
-                                    <span class="text-[10px] font-bold uppercase" :class="tepBadge(m).cls">
-                                        {{ tepBadge(m).label }}
-                                    </span>
-                                    <template v-if="m.tep">
-                                        <span class="text-[10px] text-slate-400">
-                                            {{ formatDate(m.tep.opens_at) }} – {{ formatDate(m.tep.closes_at) }}
-                                        </span>
-                                        <span class="text-[10px] text-slate-500 tabular-nums">
-                                            · {{ m.tep.completed_assignments }}/{{ m.tep.total_assignments }}
-                                            ({{ m.tep.progress_pct }}%)
-                                        </span>
-                                        <button v-if="m.tep.status === 'open'"
-                                                class="text-[10px] text-amber-600 hover:underline font-bold"
-                                                @click="askClose(row, m)">
-                                            Cerrar
-                                        </button>
-                                    </template>
-                                </li>
-                            </ul>
-                        </td>
-
-                        <!-- Acciones -->
-                        <td class="px-4 py-3 text-right">
-                            <button v-if="row.status !== 'archived' && row.modalities.length"
-                                    class="px-3 py-1.5 text-xs font-bold bg-blue-600 text-white rounded hover:bg-blue-700"
-                                    @click="openAperturaModal(row)">
-                                Aperturar modalidades
+                            <span class="text-[10px] text-slate-500 tabular-nums">
+                                · {{ m.tep.completed_assignments }}/{{ m.tep.total_assignments }}
+                                ({{ m.tep.progress_pct }}%)
+                            </span>
+                            <button v-if="m.tep.status === 'open'"
+                                    class="text-[10px] text-amber-600 hover:underline font-bold"
+                                    @click="askClose(row, m)">
+                                Cerrar
                             </button>
-                            <span v-else-if="row.status === 'archived'" class="text-[10px] text-slate-400 italic">
-                                Periodo archivado
-                            </span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></div>
-        </div>
+                        </template>
+                    </li>
+                </ul>
+            </template>
+
+            <!-- Acciones -->
+            <template #cell-actions="{ row }">
+                <button v-if="row.status !== 'archived' && row.modalities.length"
+                        class="px-3 py-1.5 text-xs font-bold bg-blue-600 text-white rounded hover:bg-blue-700"
+                        @click="openAperturaModal(row)">
+                    Aperturar modalidades
+                </button>
+                <span v-else-if="row.status === 'archived'" class="text-[10px] text-slate-400 italic">
+                    Periodo archivado
+                </span>
+            </template>
+        </DataTable>
 
         <!-- Modal aperturar -->
         <div v-if="aperturaRow"

@@ -154,47 +154,27 @@
                 <SkeletonTable v-if="loadingAffiliations" :rows="3" :cols="4" />
                 <div v-else-if="affiliations.length === 0" class="text-sm text-slate-400 py-6 text-center">Sin afiliaciones registradas.</div>
 
-                <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                    <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Afiliaciones"><table class="min-w-full text-sm">
-                        <caption class="sr-only">Afiliaciones</caption>
-                        <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
-                            <tr>
-                                <th scope="col" class="px-4 py-3 text-left">Carrera / Plan</th>
-                                <th scope="col" class="px-4 py-3 text-left">Campus</th>
-                                <th scope="col" class="px-4 py-3 text-left">Modalidad</th>
-                                <th scope="col" class="px-4 py-3 text-left">Especialidad</th>
-                                <th scope="col" class="px-4 py-3 text-left">Grupo Optativa</th>
-                                <th scope="col" class="px-4 py-3 text-left">Estatus</th>
-                                <th scope="col" class="px-4 py-3 text-left">Periodo Ingreso</th>
-                                <th scope="col" class="px-4 py-3 text-left">Semestre</th>
-                                <th scope="col" class="px-4 py-3 text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <tr v-for="a in affiliations" :key="a.id" class="hover:bg-slate-50">
-                                <td class="px-4 py-3 text-xs">
-                                    <p class="font-semibold">{{ a.studyPlan?.careerName ?? a.studyPlan?.name ?? '—' }}</p>
-                                    <p class="text-slate-400">{{ a.studyPlan?.officialCode ?? '' }}</p>
-                                </td>
-                                <td class="px-4 py-3 text-xs text-slate-500">{{ a.modality?.campusName ?? '—' }}</td>
-                                <td class="px-4 py-3 text-xs text-slate-500">{{ a.modality?.modalityTypeName ?? '—' }}</td>
-                                <td class="px-4 py-3 text-xs text-slate-500">{{ a.specialty?.name ?? '—' }}</td>
-                                <td class="px-4 py-3 text-xs text-slate-500">{{ a.optionalGroup?.name ?? '—' }}</td>
-                                <td class="px-4 py-3">
-                                    <span
-                                        class="px-2 py-0.5 rounded-full text-xs font-semibold uppercase"
-                                        :class="statusClass(a.studentStatus?.name)"
-                                    >{{ a.studentStatus?.name ?? '—' }}</span>
-                                </td>
-                                <td class="px-4 py-3 text-xs text-slate-500">{{ a.entryPeriod?.name ?? '—' }}</td>
-                                <td class="px-4 py-3 text-xs text-center">{{ a.currentPeriodNumber }}</td>
-                                <td class="px-4 py-3 text-center">
-                                    <button class="text-xs text-red-600 hover:underline font-semibold" @click="deleteAffiliation(a.id)">Eliminar</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table></div>
-                </div>
+                <DataTable v-else :columns="affiliationColumns" :rows="affiliations" hide-search caption="Afiliaciones" empty-text="Sin afiliaciones registradas.">
+                    <template #cell-plan="{ row: a }">
+                        <p class="font-semibold text-xs">{{ a.studyPlan?.careerName ?? a.studyPlan?.name ?? '—' }}</p>
+                        <p class="text-slate-400 text-xs">{{ a.studyPlan?.officialCode ?? '' }}</p>
+                    </template>
+                    <template #cell-campus="{ row: a }"><span class="text-xs text-slate-500">{{ a.modality?.campusName ?? '—' }}</span></template>
+                    <template #cell-modality="{ row: a }"><span class="text-xs text-slate-500">{{ a.modality?.modalityTypeName ?? '—' }}</span></template>
+                    <template #cell-specialty="{ row: a }"><span class="text-xs text-slate-500">{{ a.specialty?.name ?? '—' }}</span></template>
+                    <template #cell-optionalGroup="{ row: a }"><span class="text-xs text-slate-500">{{ a.optionalGroup?.name ?? '—' }}</span></template>
+                    <template #cell-status="{ row: a }">
+                        <span
+                            class="px-2 py-0.5 rounded-full text-xs font-semibold uppercase"
+                            :class="statusClass(a.studentStatus?.name)"
+                        >{{ a.studentStatus?.name ?? '—' }}</span>
+                    </template>
+                    <template #cell-entryPeriod="{ row: a }"><span class="text-xs text-slate-500">{{ a.entryPeriod?.name ?? '—' }}</span></template>
+                    <template #cell-semester="{ row: a }"><span class="text-xs">{{ a.currentPeriodNumber }}</span></template>
+                    <template #cell-actions="{ row: a }">
+                        <button class="text-xs text-red-600 hover:underline font-semibold" @click="deleteAffiliation(a.id)">Eliminar</button>
+                    </template>
+                </DataTable>
 
                 <!-- Modal nueva afiliacion -->
                 <BaseModal v-model="affiliationModal" title="Nueva Afiliación" size="lg">
@@ -290,60 +270,41 @@
                 <SkeletonTable v-if="loadingGrades" :rows="5" :cols="5" />
                 <div v-else-if="grades.length === 0" class="text-sm text-slate-400 py-6 text-center">Sin calificaciones registradas.</div>
 
-                <div v-else class="bg-white border rounded-xl shadow-sm overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Kardex de calificaciones">
-                    <table class="min-w-full text-sm">
-                        <caption class="sr-only">Kardex de calificaciones</caption>
-                        <thead class="bg-slate-50 border-b text-xs uppercase text-slate-500 font-semibold">
-                            <tr>
-                                <th scope="col" class="px-3 py-3 text-left">Materia</th>
-                                <th scope="col" class="px-3 py-3 text-left">Tipo Aprob.</th>
-                                <th scope="col" class="px-3 py-3 text-center">Calificación</th>
-                                <th scope="col" class="px-3 py-3 text-center">No. Per. 1</th>
-                                <th scope="col" class="px-3 py-3 text-center">No. Per. 2</th>
-                                <th scope="col" class="px-3 py-3 text-center">No. Per. 3</th>
-                                <th scope="col" class="px-3 py-3 text-center">Aprob.</th>
-                                <th scope="col" class="px-3 py-3 text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <tr v-for="g in grades" :key="g.id" class="hover:bg-slate-50">
-                                <td class="px-3 py-2 text-xs">
-                                    <p class="font-medium">{{ g.subjectName ?? '—' }}</p>
-                                    <p class="text-slate-400">{{ g.subjectOfficialCode ?? '' }}</p>
-                                </td>
-                                <td class="px-3 py-2 text-xs">{{ g.approvalTypeName ?? '—' }}</td>
-                                <td class="px-3 py-2 text-center text-xs font-bold">
-                                    <span v-if="g.grade !== null">{{ g.grade }}</span>
-                                    <span v-else class="text-slate-300">—</span>
-                                </td>
-                                <td class="px-3 py-2 text-center text-xs">
-                                    <span v-if="g.numberPeriod1 !== null">{{ g.numberPeriod1 }}</span>
-                                    <span v-else class="text-slate-300">—</span>
-                                </td>
-                                <td class="px-3 py-2 text-center text-xs">
-                                    <span v-if="g.numberPeriod2 !== null">{{ g.numberPeriod2 }}</span>
-                                    <span v-else class="text-slate-300">—</span>
-                                </td>
-                                <td class="px-3 py-2 text-center text-xs">
-                                    <span v-if="g.numberPeriod3 !== null">{{ g.numberPeriod3 }}</span>
-                                    <span v-else class="text-slate-300">—</span>
-                                </td>
-                                <td class="px-3 py-2 text-center">
-                                    <span
-                                        class="px-2 py-0.5 rounded-full text-xs font-semibold"
-                                        :class="g.passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
-                                    >{{ g.passed ? 'SI' : 'NO' }}</span>
-                                </td>
-                                <td class="px-3 py-2 text-center">
-                                    <div class="flex items-center justify-center gap-1">
-                                        <button class="text-xs text-blue-600 hover:underline font-semibold" @click="openGradeForm(g)">Editar</button>
-                                        <button v-if="g.auditsCount > 0" class="text-xs text-slate-500 hover:underline font-semibold" @click="showAudits(g)">Historial ({{ g.auditsCount }})</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <DataTable v-else :columns="gradeColumns" :rows="grades" hide-search caption="Kardex de calificaciones" empty-text="Sin calificaciones registradas.">
+                    <template #cell-subject="{ row: g }">
+                        <p class="font-medium text-xs">{{ g.subjectName ?? '—' }}</p>
+                        <p class="text-slate-400 text-xs">{{ g.subjectOfficialCode ?? '' }}</p>
+                    </template>
+                    <template #cell-approvalType="{ row: g }"><span class="text-xs">{{ g.approvalTypeName ?? '—' }}</span></template>
+                    <template #cell-grade="{ row: g }">
+                        <span v-if="g.grade !== null" class="text-xs font-bold">{{ g.grade }}</span>
+                        <span v-else class="text-slate-300 text-xs font-bold">—</span>
+                    </template>
+                    <template #cell-period1="{ row: g }">
+                        <span v-if="g.numberPeriod1 !== null" class="text-xs">{{ g.numberPeriod1 }}</span>
+                        <span v-else class="text-slate-300 text-xs">—</span>
+                    </template>
+                    <template #cell-period2="{ row: g }">
+                        <span v-if="g.numberPeriod2 !== null" class="text-xs">{{ g.numberPeriod2 }}</span>
+                        <span v-else class="text-slate-300 text-xs">—</span>
+                    </template>
+                    <template #cell-period3="{ row: g }">
+                        <span v-if="g.numberPeriod3 !== null" class="text-xs">{{ g.numberPeriod3 }}</span>
+                        <span v-else class="text-slate-300 text-xs">—</span>
+                    </template>
+                    <template #cell-passed="{ row: g }">
+                        <span
+                            class="px-2 py-0.5 rounded-full text-xs font-semibold"
+                            :class="g.passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
+                        >{{ g.passed ? 'SI' : 'NO' }}</span>
+                    </template>
+                    <template #cell-actions="{ row: g }">
+                        <div class="flex items-center justify-center gap-1">
+                            <button class="text-xs text-blue-600 hover:underline font-semibold" @click="openGradeForm(g)">Editar</button>
+                            <button v-if="g.auditsCount > 0" class="text-xs text-slate-500 hover:underline font-semibold" @click="showAudits(g)">Historial ({{ g.auditsCount }})</button>
+                        </div>
+                    </template>
+                </DataTable>
 
                 <!-- Modal crear/editar calificacion -->
                 <BaseModal v-model="gradeModal" :title="editingGrade?.id ? 'Editar Calificación' : 'Nueva Calificación'" size="lg">
@@ -463,6 +424,30 @@ import ReadField from '@/modules/admissions/pages/portal/ReadField.vue'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const affiliationColumns: DataTableColumn<any>[] = [
+    { key: 'plan', label: 'Carrera / Plan' },
+    { key: 'campus', label: 'Campus' },
+    { key: 'modality', label: 'Modalidad' },
+    { key: 'specialty', label: 'Especialidad' },
+    { key: 'optionalGroup', label: 'Grupo Optativa' },
+    { key: 'status', label: 'Estatus' },
+    { key: 'entryPeriod', label: 'Periodo Ingreso' },
+    { key: 'semester', label: 'Semestre', align: 'center' },
+    { key: 'actions', label: 'Acciones', align: 'center' },
+]
+const gradeColumns: DataTableColumn<any>[] = [
+    { key: 'subject', label: 'Materia' },
+    { key: 'approvalType', label: 'Tipo Aprob.' },
+    { key: 'grade', label: 'Calificación', align: 'center' },
+    { key: 'period1', label: 'No. Per. 1', align: 'center' },
+    { key: 'period2', label: 'No. Per. 2', align: 'center' },
+    { key: 'period3', label: 'No. Per. 3', align: 'center' },
+    { key: 'passed', label: 'Aprob.', align: 'center' },
+    { key: 'actions', label: 'Acciones', align: 'center' },
+]
 
 const route  = useRoute()
 const router = useRouter()

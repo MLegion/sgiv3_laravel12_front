@@ -3,24 +3,17 @@
         <h1 class="text-xl font-semibold text-slate-800 uppercase">Mis Actos (Sínodo)</h1>
         <p class="text-sm text-slate-500">Actos de titulación donde participas como jurado.</p>
 
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Mis Actos (Sínodo)" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                <caption class="sr-only">Mis Actos (Sínodo)</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th scope="col" class="px-4 py-2">Fecha / Hora</th><th scope="col">Alumno</th><th scope="col">Aula</th><th scope="col">Mi rol</th><th scope="col">Estado</th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="a in rows" :key="a.id" class="border-b last:border-0">
-                        <td class="px-4 py-2 font-semibold text-slate-700">{{ a.date }}<br><span class="text-xs text-slate-400">{{ a.start_time?.slice(0,5) }}–{{ a.end_time?.slice(0,5) }}</span></td>
-                        <td><div class="text-slate-700">{{ a.student_name }}</div><div class="text-xs text-slate-400">{{ a.project_title }}</div></td>
-                        <td class="text-slate-600">{{ a.place_name ?? '—' }}</td>
-                        <td class="capitalize text-slate-600">{{ a.my_role }}</td>
-                        <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="actStatusClass(a.status)">{{ actStatusLabel(a.status) }}</span></td>
-                    </tr>
-                    <tr v-if="!rows.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">No tienes actos asignados.</td></tr>
-                </tbody>
-            </table></div>
-        </div>
+        <DataTable :columns="columns" :rows="rows" hide-search caption="Mis Actos (Sínodo)" empty-text="No tienes actos asignados.">
+            <template #cell-date="{ row: a }">
+                <span class="font-semibold text-slate-700">{{ a.date }}</span><br><span class="text-xs text-slate-400">{{ a.start_time?.slice(0,5) }}–{{ a.end_time?.slice(0,5) }}</span>
+            </template>
+            <template #cell-student="{ row: a }">
+                <div class="text-slate-700">{{ a.student_name }}</div><div class="text-xs text-slate-400">{{ a.project_title }}</div>
+            </template>
+            <template #cell-place="{ row: a }"><span class="text-slate-600">{{ a.place_name ?? '—' }}</span></template>
+            <template #cell-my_role="{ row: a }"><span class="capitalize text-slate-600">{{ a.my_role }}</span></template>
+            <template #cell-status="{ row: a }"><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="actStatusClass(a.status)">{{ actStatusLabel(a.status) }}</span></template>
+        </DataTable>
     </div>
 </template>
 
@@ -30,8 +23,17 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { TitulacionAct } from '@/modules/titulacion/types/titulacion.type'
 import { actStatusLabel, actStatusClass } from '@/modules/titulacion/pages/status'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const T = API.TITULACION_API
 const rows = ref<TitulacionAct[]>([])
+const columns: DataTableColumn<TitulacionAct>[] = [
+    { key: 'date', label: 'Fecha / Hora' },
+    { key: 'student', label: 'Alumno' },
+    { key: 'place', label: 'Aula' },
+    { key: 'my_role', label: 'Mi rol' },
+    { key: 'status', label: 'Estado' },
+]
 onMounted(async () => { rows.value = (await api.get(T.myJury)).data ?? [] })
 </script>

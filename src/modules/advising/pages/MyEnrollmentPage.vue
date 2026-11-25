@@ -64,26 +64,14 @@
                 <div class="border-b px-4 py-3">
                     <h3 class="text-sm font-bold text-slate-700 uppercase">Materias inscritas</h3>
                 </div>
-                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Materias inscritas"><table class="w-full text-sm">
-                    <caption class="sr-only">Materias inscritas</caption>
-                    <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
-                        <tr>
-                            <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
-                            <th scope="col" class="px-4 py-2 text-left">GRUPO</th>
-                            <th scope="col" class="px-4 py-2 text-left">DOCENTE</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        <tr v-for="e in enrollments" :key="e.id">
-                            <td class="px-4 py-2">
-                                <div class="font-bold text-slate-700">{{ e.subject?.name ?? '—' }}</div>
-                                <div class="text-[10px] font-mono text-slate-400">{{ e.subject?.official_code }}</div>
-                            </td>
-                            <td class="px-4 py-2 text-xs font-mono font-semibold text-slate-700">{{ e.group?.name ?? '—' }}</td>
-                            <td class="px-4 py-2 text-xs text-slate-600">{{ e.teacher?.name ?? '— por asignar —' }}</td>
-                        </tr>
-                    </tbody>
-                </table></div>
+                <DataTable :columns="enrolledColumns" :rows="enrollments" hide-search caption="Materias inscritas" empty-text="Sin materias.">
+                    <template #cell-subject="{ row }">
+                        <div class="font-bold text-slate-700">{{ row.subject?.name ?? '—' }}</div>
+                        <div class="text-[10px] font-mono text-slate-400">{{ row.subject?.official_code }}</div>
+                    </template>
+                    <template #cell-group="{ row }"><span class="text-xs font-mono font-semibold text-slate-700">{{ row.group?.name ?? '—' }}</span></template>
+                    <template #cell-teacher="{ row }"><span class="text-xs text-slate-600">{{ row.teacher?.name ?? '— por asignar —' }}</span></template>
+                </DataTable>
             </div>
         </template>
 
@@ -166,30 +154,20 @@
                         <span class="ml-1 text-[10px] uppercase">materias</span>
                     </div>
                 </div>
-                <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Carga aprobada"><table class="w-full text-sm">
-                    <caption class="sr-only">Carga aprobada</caption>
-                    <thead class="bg-slate-50 border-b text-[10px] uppercase tracking-wider text-slate-500">
-                        <tr>
-                            <th scope="col" class="px-4 py-2 text-left">MATERIA</th>
-                            <th scope="col" class="px-4 py-2 text-left">GRUPO / TURNO</th>
-                            <th scope="col" class="px-4 py-2 text-left">DOCENTE</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        <tr v-for="item in session.items" :key="item.id">
-                            <td class="px-4 py-2">
-                                <div class="font-bold text-slate-700">{{ item.subject?.name ?? '—' }}</div>
-                                <div class="text-[10px] font-mono text-slate-400">{{ item.subject?.code }}</div>
-                            </td>
-                            <td class="px-4 py-2 text-xs">
-                                <span class="font-mono font-semibold text-slate-700">{{ item.teacherAssignment?.groupName ?? '—' }}</span>
-                            </td>
-                            <td class="px-4 py-2 text-xs text-slate-600">
-                                {{ item.teacherAssignment?.teacherName ?? '— por asignar —' }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
+                <DataTable :columns="approvedRefColumns" :rows="session.items" hide-search caption="Carga aprobada" empty-text="Sin materias.">
+                    <template #cell-subject="{ row }">
+                        <div class="font-bold text-slate-700">{{ row.subject?.name ?? '—' }}</div>
+                        <div class="text-[10px] font-mono text-slate-400">{{ row.subject?.code }}</div>
+                    </template>
+                    <template #cell-group="{ row }">
+                        <span class="text-xs">
+                            <span class="font-mono font-semibold text-slate-700">{{ row.teacherAssignment?.groupName ?? '—' }}</span>
+                        </span>
+                    </template>
+                    <template #cell-teacher="{ row }">
+                        <span class="text-xs text-slate-600">{{ row.teacherAssignment?.teacherName ?? '— por asignar —' }}</span>
+                    </template>
+                </DataTable>
             </div>
         </template>
 
@@ -253,6 +231,8 @@ import SkeletonText from '@/app/components/ui/SkeletonText.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import FormatUnavailableModal from '@/modules/reports/components/FormatUnavailableModal.vue'
 import ExceptionControl from '@/modules/advising/components/ExceptionControl.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { useReportGenerator, ReportFormatUnavailableError } from '@/modules/reports/composables/useReportGenerator'
 import { ReportCode } from '@/modules/reports/types/reportCodes'
 import type {
@@ -260,6 +240,18 @@ import type {
     EnrollmentEligibilityReport, EnrolledCourse, EnrollmentConfirmResponse, GateStatus, PolicyViolation,
     EnrollmentGateResult, RequirementCheck, MyRequirementException, RequirementExceptionStatus,
 } from '@/modules/advising/types/advising.type'
+
+type AdvisingSessionItem = AdvisingSession['items'][number]
+const enrolledColumns: DataTableColumn<EnrolledCourse>[] = [
+    { key: 'subject', label: 'Materia' },
+    { key: 'group', label: 'Grupo' },
+    { key: 'teacher', label: 'Docente' },
+]
+const approvedRefColumns: DataTableColumn<AdvisingSessionItem>[] = [
+    { key: 'subject', label: 'Materia' },
+    { key: 'group', label: 'Grupo / Turno' },
+    { key: 'teacher', label: 'Docente' },
+]
 
 interface ActivePeriod {
     open: boolean

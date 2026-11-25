@@ -42,47 +42,32 @@
                 No hay mensajes capturados.
             </div>
 
-            <div v-else class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Mensajes capturados"><table class="w-full text-sm">
-                <caption class="sr-only">Mensajes capturados</caption>
-                <thead class="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wide">
-                    <tr>
-                        <th scope="col" class="px-3 py-2 text-left">Fecha</th>
-                        <th scope="col" class="px-3 py-2 text-left">Canal</th>
-                        <th scope="col" class="px-3 py-2 text-left">Plantilla / Evento</th>
-                        <th scope="col" class="px-3 py-2 text-left">Destinatario</th>
-                        <th scope="col" class="px-3 py-2 text-left">Asunto / Cuerpo</th>
-                        <th scope="col" class="px-3 py-2 text-right">Vista previa</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="n in items" :key="n.id" class="border-t border-slate-100 align-top">
-                        <td class="px-3 py-2 whitespace-nowrap text-slate-600">{{ formatDateTime(n.created_at) }}</td>
-                        <td class="px-3 py-2">
-                            <span class="px-1.5 py-0.5 rounded text-[10px] uppercase font-bold" :class="channelPill(n.channel)">
-                                {{ CHANNEL_LABELS[n.channel] || n.channel }}
-                            </span>
-                        </td>
-                        <td class="px-3 py-2">
-                            <div class="text-slate-700">{{ n.template_key || '—' }}</div>
-                            <div v-if="n.event_key" class="text-slate-400 text-[11px]">{{ n.event_key }}</div>
-                        </td>
-                        <td class="px-3 py-2">
-                            <div class="font-medium text-slate-700">{{ n.recipient_label || '—' }}</div>
-                            <div class="text-[11px] text-slate-500 font-mono">{{ n.recipient_address }}</div>
-                        </td>
-                        <td class="px-3 py-2 max-w-md">
-                            <div v-if="n.subject" class="font-semibold text-slate-700">{{ n.subject }}</div>
-                            <div class="text-[11px] text-slate-500 line-clamp-3" :title="stripHtml(n.body_rendered)">{{ stripHtml(n.body_rendered) }}</div>
-                        </td>
-                        <td class="px-3 py-2 text-right">
-                            <button class="text-xs font-semibold text-blue-600 hover:text-blue-800 border border-blue-200 rounded-md px-2 py-1"
-                                @click="selected = n">
-                                Ver
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></div>
+            <DataTable v-else :columns="columns" :rows="items" hide-search caption="Mensajes capturados" empty-text="No hay mensajes capturados.">
+                <template #cell-created_at="{ row: n }"><span class="whitespace-nowrap text-slate-600">{{ formatDateTime(n.created_at) }}</span></template>
+                <template #cell-channel="{ row: n }">
+                    <span class="px-1.5 py-0.5 rounded text-[10px] uppercase font-bold" :class="channelPill(n.channel)">
+                        {{ CHANNEL_LABELS[n.channel] || n.channel }}
+                    </span>
+                </template>
+                <template #cell-template="{ row: n }">
+                    <div class="text-slate-700">{{ n.template_key || '—' }}</div>
+                    <div v-if="n.event_key" class="text-slate-400 text-[11px]">{{ n.event_key }}</div>
+                </template>
+                <template #cell-recipient="{ row: n }">
+                    <div class="font-medium text-slate-700">{{ n.recipient_label || '—' }}</div>
+                    <div class="text-[11px] text-slate-500 font-mono">{{ n.recipient_address }}</div>
+                </template>
+                <template #cell-body="{ row: n }">
+                    <div v-if="n.subject" class="font-semibold text-slate-700">{{ n.subject }}</div>
+                    <div class="text-[11px] text-slate-500 line-clamp-3" :title="stripHtml(n.body_rendered)">{{ stripHtml(n.body_rendered) }}</div>
+                </template>
+                <template #cell-actions="{ row: n }">
+                    <button class="text-xs font-semibold text-blue-600 hover:text-blue-800 border border-blue-200 rounded-md px-2 py-1"
+                        @click="selected = n">
+                        Ver
+                    </button>
+                </template>
+            </DataTable>
         </div>
 
         <!-- Modal de vista previa por canal -->
@@ -114,6 +99,8 @@ import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
 import NotificationPreview from '@/modules/notifications/components/NotificationPreview.vue'
 import { stripHtml } from '@/app/utils/sanitizeHtml'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface CapturedRow {
     id: number
@@ -130,6 +117,15 @@ interface CapturedRow {
 const CHANNEL_LABELS: Record<string, string> = {
     email: 'Correo', sms: 'SMS', whatsapp: 'WhatsApp', web_push: 'Push', in_app: 'In-app',
 }
+
+const columns: DataTableColumn<CapturedRow>[] = [
+    { key: 'created_at', label: 'Fecha' },
+    { key: 'channel', label: 'Canal' },
+    { key: 'template', label: 'Plantilla / Evento' },
+    { key: 'recipient', label: 'Destinatario' },
+    { key: 'body', label: 'Asunto / Cuerpo' },
+    { key: 'actions', label: 'Vista previa', align: 'right' },
+]
 
 const enabled = ref(false)
 const saving  = ref(false)

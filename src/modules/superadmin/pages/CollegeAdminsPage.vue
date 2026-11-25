@@ -46,72 +46,56 @@
                 Sin resultados.
             </div>
 
-            <div v-else tabindex="0" role="region" aria-label="Administradores del plantel" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"><table class="w-full text-sm">
-                <caption class="sr-only">Administradores del plantel</caption>
-                <thead class="bg-gray-50 text-xs uppercase text-gray-600">
-                    <tr>
-                        <th scope="col" class="px-4 py-2 text-left">Empleado</th>
-                        <th scope="col" class="px-4 py-2 text-left">Email</th>
-                        <th scope="col" class="px-4 py-2 text-center">Estado</th>
-                        <th scope="col" class="px-4 py-2 text-center">Rol Admin</th>
-                        <th scope="col" class="px-4 py-2 text-center">Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="row in filteredRows"
-                        :key="row.user_id"
-                        class="border-t hover:bg-gray-50"
+            <DataTable v-else :columns="columns" :rows="filteredRows" hide-search caption="Administradores del plantel" empty-text="Sin resultados.">
+                <template #cell-employee="{ row }">
+                    {{ row.names }} {{ row.first_surname }} {{ row.second_surname ?? '' }}
+                </template>
+                <template #cell-email="{ row }">
+                    <span class="text-gray-600">{{ row.email }}</span>
+                </template>
+                <template #cell-status="{ row }">
+                    <span
+                        class="text-xs px-2 py-1 rounded"
+                        :class="row.employee_active
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-200 text-gray-600'"
                     >
-                        <td class="px-4 py-2">
-                            {{ row.names }} {{ row.first_surname }} {{ row.second_surname ?? '' }}
-                        </td>
-                        <td class="px-4 py-2 text-gray-600">{{ row.email }}</td>
-                        <td class="px-4 py-2 text-center">
-                            <span
-                                class="text-xs px-2 py-1 rounded"
-                                :class="row.employee_active
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-gray-200 text-gray-600'"
-                            >
-                                {{ row.employee_active ? 'Activo' : 'Inactivo' }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-2 text-center">
-                            <span
-                                v-if="row.is_admin"
-                                class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 font-medium"
-                            >
-                                Admin
-                            </span>
-                            <span v-else class="text-xs text-gray-400">—</span>
-                        </td>
-                        <td class="px-4 py-2 text-center">
-                            <button
-                                v-if="row.is_admin"
-                                type="button"
-                                class="text-xs px-3 py-1 rounded border border-red-200 text-red-600 hover:bg-red-50"
-                                :disabled="busyId === row.user_id"
-                                @click="revoke(row)"
-                            >
-                                Revocar
-                            </button>
-                            <button
-                                v-else
-                                type="button"
-                                class="text-xs px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-                                :disabled="busyId === row.user_id || adminCount >= adminLimit || !row.employee_active"
-                                :title="adminCount >= adminLimit
-                                    ? 'Límite de administradores alcanzado'
-                                    : (!row.employee_active ? 'Empleado inactivo' : 'Asignar como admin')"
-                                @click="assign(row)"
-                            >
-                                Asignar admin
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></div>
+                        {{ row.employee_active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                </template>
+                <template #cell-admin_role="{ row }">
+                    <span
+                        v-if="row.is_admin"
+                        class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 font-medium"
+                    >
+                        Admin
+                    </span>
+                    <span v-else class="text-xs text-gray-400">—</span>
+                </template>
+                <template #cell-action="{ row }">
+                    <button
+                        v-if="row.is_admin"
+                        type="button"
+                        class="text-xs px-3 py-1 rounded border border-red-200 text-red-600 hover:bg-red-50"
+                        :disabled="busyId === row.user_id"
+                        @click="revoke(row)"
+                    >
+                        Revocar
+                    </button>
+                    <button
+                        v-else
+                        type="button"
+                        class="text-xs px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                        :disabled="busyId === row.user_id || adminCount >= adminLimit || !row.employee_active"
+                        :title="adminCount >= adminLimit
+                            ? 'Límite de administradores alcanzado'
+                            : (!row.employee_active ? 'Empleado inactivo' : 'Asignar como admin')"
+                        @click="assign(row)"
+                    >
+                        Asignar admin
+                    </button>
+                </template>
+            </DataTable>
         </div>
     </div>
 </template>
@@ -123,6 +107,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface Employee {
     user_id: number
@@ -140,6 +126,14 @@ interface College {
     name: string
     shortName?: string
 }
+
+const columns: DataTableColumn<Employee>[] = [
+    { key: 'employee', label: 'Empleado' },
+    { key: 'email', label: 'Email' },
+    { key: 'status', label: 'Estado', align: 'center' },
+    { key: 'admin_role', label: 'Rol Admin', align: 'center' },
+    { key: 'action', label: 'Acción', align: 'center' },
+]
 
 const colleges = ref<College[]>([])
 const selectedCollegeId = ref<number | null>(null)

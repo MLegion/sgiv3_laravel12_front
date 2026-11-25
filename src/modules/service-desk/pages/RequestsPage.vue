@@ -11,32 +11,19 @@
             </select>
         </div>
 
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Solicitudes de ventanilla" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Solicitudes de ventanilla</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                    <th scope="col" class="px-4 py-2">Estudiante</th><th scope="col">Documento</th><th scope="col">Comentario</th><th scope="col">Estado</th><th scope="col"></th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="r in rows" :key="r.id" class="border-b last:border-0 hover:bg-slate-50">
-                        <td class="px-4 py-2"><div class="text-slate-700">{{ r.student_name }}</div><div class="text-xs text-slate-400">{{ r.num_control }}</div></td>
-                        <td class="text-slate-600">{{ r.document_name }}</td>
-                        <td class="text-slate-500 text-xs">{{ r.notes ?? '—' }}</td>
-                        <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="cls(r.status)">{{ lbl(r.status) }}</span></td>
-                        <td class="text-right pr-4 whitespace-nowrap">
-                            <template v-if="r.status === 'requested'">
-                                <button @click="issue(r.id)" class="text-xs text-emerald-600 font-semibold">Emitir</button>
-                                <button @click="reject(r.id)" class="text-xs text-red-500 ml-2">Rechazar</button>
-                            </template>
-                            <span v-else-if="r.folio" class="font-mono text-xs text-slate-400">{{ r.folio }}</span>
-                        </td>
-                    </tr>
-                    <tr v-if="!rows.length"><td colspan="5" class="px-4 py-6 text-center text-slate-400">Sin solicitudes.</td></tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable :columns="columns" :rows="rows" hide-search caption="Solicitudes de ventanilla" empty-text="Sin solicitudes.">
+            <template #cell-student="{ row: r }"><div class="text-slate-700">{{ r.student_name }}</div><div class="text-xs text-slate-400">{{ r.num_control }}</div></template>
+            <template #cell-document="{ row: r }"><span class="text-slate-600">{{ r.document_name }}</span></template>
+            <template #cell-notes="{ row: r }"><span class="text-slate-500 text-xs">{{ r.notes ?? '—' }}</span></template>
+            <template #cell-status="{ row: r }"><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="cls(r.status)">{{ lbl(r.status) }}</span></template>
+            <template #cell-actions="{ row: r }">
+                <template v-if="r.status === 'requested'">
+                    <button @click="issue(r.id)" class="text-xs text-emerald-600 font-semibold">Emitir</button>
+                    <button @click="reject(r.id)" class="text-xs text-red-500 ml-2">Rechazar</button>
+                </template>
+                <span v-else-if="r.folio" class="font-mono text-xs text-slate-400">{{ r.folio }}</span>
+            </template>
+        </DataTable>
     </div>
 </template>
 
@@ -46,10 +33,19 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { usePrompt } from '@/app/composables/usePrompt'
 import type { DeskRequest } from '@/modules/service-desk/types/service-desk.type'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const { prompt } = usePrompt()
 const D = API.SERVICE_DESK_API
 const rows = ref<DeskRequest[]>([])
+const columns: DataTableColumn<DeskRequest>[] = [
+    { key: 'student', label: 'Estudiante' },
+    { key: 'document', label: 'Documento' },
+    { key: 'notes', label: 'Comentario' },
+    { key: 'status', label: 'Estado' },
+    { key: 'actions', label: '', align: 'right' },
+]
 const filters = reactive({ status: 'requested' })
 
 function lbl(s: string) { return ({ requested: 'Solicitado', issued: 'Emitido', rejected: 'Rechazado', cancelled: 'Cancelado' } as Record<string,string>)[s] ?? s }

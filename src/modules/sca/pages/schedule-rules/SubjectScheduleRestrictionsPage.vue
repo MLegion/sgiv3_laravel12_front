@@ -114,44 +114,28 @@
 
                 <!-- Lista -->
                 <div v-if="loading" class="p-4"><SkeletonTable :rows="5" :cols="6" /></div>
-                <div v-else-if="restrictions.length" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Restricciones configuradas"><table class="w-full text-xs">
-                    <caption class="sr-only">Restricciones configuradas</caption>
-                    <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
-                        <tr>
-                            <th scope="col" class="px-3 py-2 text-left">Modalidad</th>
-                            <th scope="col" class="px-3 py-2 text-left">Día / Fecha</th>
-                            <th scope="col" class="px-3 py-2 text-center">Rango</th>
-                            <th scope="col" class="px-3 py-2 text-center">Tipo</th>
-                            <th scope="col" class="px-3 py-2 text-left">Motivo</th>
-                            <th scope="col" class="px-3 py-2"></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <tr v-for="r in restrictions" :key="r.id">
-                            <td class="px-3 py-2 text-slate-600">{{ r.modalityType?.shortName ?? '—' }}</td>
-                            <td class="px-3 py-2 text-slate-700 font-medium">
-                                <template v-if="r.specificDate">{{ r.specificDate }}</template>
-                                <template v-else>{{ dayLabel(r.dayOfWeek) }}</template>
-                            </td>
-                            <td class="px-3 py-2 text-center font-mono text-slate-700">{{ r.startTime }} — {{ r.endTime }}</td>
-                            <td class="px-3 py-2 text-center">
-                                <span v-if="r.kind === 'forbidden'" class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-red-100 text-red-700">PROHIBIDA</span>
-                                <span v-else class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-100 text-blue-700">PREFERIDA</span>
-                            </td>
-                            <td class="px-3 py-2 text-slate-500">{{ r.reason || '—' }}</td>
-                            <td class="px-3 py-2 text-right">
-                                <button aria-label="Eliminar" type="button" class="text-red-600 hover:text-red-800" title="Eliminar" @click="deleteRule(r)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 7.5h12m-10.5 0v10.125A1.875 1.875 0 009.375 19.5h5.25A1.875 1.875 0 0016.5 17.625V7.5M9.75 4.875A1.875 1.875 0 0111.625 3h.75A1.875 1.875 0 0114.25 4.875L15 7.5h-6l.75-2.625z" />
-                                    </svg>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table></div>
-                <p v-else class="p-6 text-center text-xs text-slate-400 italic">
-                    Sin restricciones para esta materia. Agrega una con el formulario de arriba.
-                </p>
+                <DataTable v-else :columns="restrictionColumns" :rows="restrictions" hide-search caption="Restricciones configuradas" empty-text="Sin restricciones para esta materia. Agrega una con el formulario de arriba.">
+                    <template #cell-modality="{ row }"><span class="text-slate-600">{{ row.modalityType?.shortName ?? '—' }}</span></template>
+                    <template #cell-when="{ row }">
+                        <span class="text-slate-700 font-medium">
+                            <template v-if="row.specificDate">{{ row.specificDate }}</template>
+                            <template v-else>{{ dayLabel(row.dayOfWeek) }}</template>
+                        </span>
+                    </template>
+                    <template #cell-range="{ row }"><span class="font-mono text-slate-700">{{ row.startTime }} — {{ row.endTime }}</span></template>
+                    <template #cell-kind="{ row }">
+                        <span v-if="row.kind === 'forbidden'" class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-red-100 text-red-700">PROHIBIDA</span>
+                        <span v-else class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-100 text-blue-700">PREFERIDA</span>
+                    </template>
+                    <template #cell-reason="{ row }"><span class="text-slate-500">{{ row.reason || '—' }}</span></template>
+                    <template #cell-actions="{ row }">
+                        <button aria-label="Eliminar" type="button" class="text-red-600 hover:text-red-800" title="Eliminar" @click="deleteRule(row)">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 7.5h12m-10.5 0v10.125A1.875 1.875 0 009.375 19.5h5.25A1.875 1.875 0 0016.5 17.625V7.5M9.75 4.875A1.875 1.875 0 0111.625 3h.75A1.875 1.875 0 0114.25 4.875L15 7.5h-6l.75-2.625z" />
+                            </svg>
+                        </button>
+                    </template>
+                </DataTable>
             </div>
         </section>
     </div>
@@ -164,6 +148,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormRemoteSelect from '@/app/components/ui/form/FormRemoteSelect.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface ModalityType {
     id: number
@@ -192,6 +178,15 @@ const DAYS = [
     { value: 5, label: 'VIE' },
     { value: 6, label: 'SÁB' },
     { value: 7, label: 'DOM' },
+]
+
+const restrictionColumns: DataTableColumn<Restriction>[] = [
+    { key: 'modality', label: 'Modalidad' },
+    { key: 'when', label: 'Día / Fecha' },
+    { key: 'range', label: 'Rango', align: 'center' },
+    { key: 'kind', label: 'Tipo', align: 'center' },
+    { key: 'reason', label: 'Motivo' },
+    { key: 'actions', label: '', align: 'right' },
 ]
 
 const modalityTypes = ref<ModalityType[]>([])

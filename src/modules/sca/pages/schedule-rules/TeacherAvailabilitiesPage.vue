@@ -134,49 +134,33 @@
 
                         <!-- ── Lista de ventanas ── -->
                         <div v-if="loadingAvailabilities" class="p-4"><SkeletonTable :rows="5" :cols="6" /></div>
-                        <div v-else-if="availabilities.length" class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Ventanas de disponibilidad"><table class="w-full text-xs">
-                            <caption class="sr-only">Ventanas de disponibilidad</caption>
-                            <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
-                                <tr>
-                                    <th scope="col" class="px-3 py-2 text-left">Modalidad</th>
-                                    <th scope="col" class="px-3 py-2 text-left">Día / Fecha</th>
-                                    <th scope="col" class="px-3 py-2 text-center">Rango</th>
-                                    <th scope="col" class="px-3 py-2 text-center">Tipo</th>
-                                    <th scope="col" class="px-3 py-2 text-left">Nota</th>
-                                    <th scope="col" class="px-3 py-2"></th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100">
-                                <tr v-for="a in availabilities" :key="a.id">
-                                    <td class="px-3 py-2 text-slate-600">{{ a.modalityType?.shortName ?? '—' }}</td>
-                                    <td class="px-3 py-2 text-slate-700 font-medium">
-                                        <template v-if="a.specificDate">{{ a.specificDate }}</template>
-                                        <template v-else>{{ dayLabel(a.dayOfWeek) }}</template>
-                                    </td>
-                                    <td class="px-3 py-2 text-center font-mono text-slate-700">{{ a.startTime }} — {{ a.endTime }}</td>
-                                    <td class="px-3 py-2 text-center">
-                                        <span v-if="a.available" class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">DISPONIBLE</span>
-                                        <span v-else class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-red-100 text-red-700">BLOQUEADA</span>
-                                    </td>
-                                    <td class="px-3 py-2 text-slate-500">{{ a.note || '—' }}</td>
-                                    <td class="px-3 py-2 text-right">
-                                        <button aria-label="Eliminar"
-                                            type="button"
-                                            class="text-red-600 hover:text-red-800"
-                                            title="Eliminar"
-                                            @click="deleteRule(a)"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 7.5h12m-10.5 0v10.125A1.875 1.875 0 009.375 19.5h5.25A1.875 1.875 0 0016.5 17.625V7.5M9.75 4.875A1.875 1.875 0 0111.625 3h.75A1.875 1.875 0 0114.25 4.875L15 7.5h-6l.75-2.625z" />
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table></div>
-                        <p v-else class="p-6 text-center text-xs text-slate-400 italic">
-                            Sin ventanas configuradas. Agrega una con el formulario de arriba.
-                        </p>
+                        <DataTable v-else :columns="availabilityColumns" :rows="availabilities" hide-search caption="Ventanas de disponibilidad" empty-text="Sin ventanas configuradas. Agrega una con el formulario de arriba.">
+                            <template #cell-modality="{ row }"><span class="text-slate-600">{{ row.modalityType?.shortName ?? '—' }}</span></template>
+                            <template #cell-when="{ row }">
+                                <span class="text-slate-700 font-medium">
+                                    <template v-if="row.specificDate">{{ row.specificDate }}</template>
+                                    <template v-else>{{ dayLabel(row.dayOfWeek) }}</template>
+                                </span>
+                            </template>
+                            <template #cell-range="{ row }"><span class="font-mono text-slate-700">{{ row.startTime }} — {{ row.endTime }}</span></template>
+                            <template #cell-type="{ row }">
+                                <span v-if="row.available" class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">DISPONIBLE</span>
+                                <span v-else class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-red-100 text-red-700">BLOQUEADA</span>
+                            </template>
+                            <template #cell-note="{ row }"><span class="text-slate-500">{{ row.note || '—' }}</span></template>
+                            <template #cell-actions="{ row }">
+                                <button aria-label="Eliminar"
+                                    type="button"
+                                    class="text-red-600 hover:text-red-800"
+                                    title="Eliminar"
+                                    @click="deleteRule(row)"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 7.5h12m-10.5 0v10.125A1.875 1.875 0 009.375 19.5h5.25A1.875 1.875 0 0016.5 17.625V7.5M9.75 4.875A1.875 1.875 0 0111.625 3h.75A1.875 1.875 0 0114.25 4.875L15 7.5h-6l.75-2.625z" />
+                                    </svg>
+                                </button>
+                            </template>
+                        </DataTable>
                     </div>
                 </template>
             </section>
@@ -190,6 +174,8 @@ import { useConfirm } from '@/app/composables/useConfirm'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface Teacher { id: number; name: string; customId: string | null; isVacancy: boolean }
 interface ModalityType {
@@ -219,6 +205,15 @@ const DAYS = [
     { value: 5, label: 'VIE' },
     { value: 6, label: 'SÁB' },
     { value: 7, label: 'DOM' },
+]
+
+const availabilityColumns: DataTableColumn<Availability>[] = [
+    { key: 'modality', label: 'Modalidad' },
+    { key: 'when', label: 'Día / Fecha' },
+    { key: 'range', label: 'Rango', align: 'center' },
+    { key: 'type', label: 'Tipo', align: 'center' },
+    { key: 'note', label: 'Nota' },
+    { key: 'actions', label: '', align: 'right' },
 ]
 
 const teachers = ref<Teacher[]>([])

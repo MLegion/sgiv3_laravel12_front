@@ -7,35 +7,30 @@
 
         <p v-if="msg" class="text-sm px-4 py-2.5 rounded-lg" :class="msgError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'">{{ msg }}</p>
 
-        <div class="rounded-xl border bg-white overflow-hidden">
-            <div role="region" aria-label="Requisitos de Documentos" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Requisitos de Documentos</caption>
-                <thead>
-                    <tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-b">
-                        <th scope="col" class="px-4 py-2">Versión</th><th scope="col">Ámbito</th><th scope="col">Vigente desde</th><th scope="col">Docs</th><th scope="col">Estado</th><th scope="col"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="s in sets" :key="s.id" class="border-b last:border-0">
-                        <td class="px-4 py-2 font-semibold text-slate-700">{{ s.name }}</td>
-                        <td><span class="text-xs px-2 py-0.5 rounded-full" :class="s.is_global ? 'bg-slate-100 text-slate-500' : 'bg-sky-100 text-sky-700'">{{ s.is_global ? 'Global' : 'Plantel' }}</span></td>
-                        <td class="text-slate-500">{{ s.effective_from ?? '—' }}</td>
-                        <td class="text-slate-600">{{ s.items_count }}</td>
-                        <td><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="statusClass(s.status)">{{ statusLabel(s.status) }}</span></td>
-                        <td class="text-right px-4 whitespace-nowrap">
-                            <button @click="edit(s.id)" class="text-xs text-slate-500 font-semibold mr-2">{{ s.is_global ? 'Ver' : 'Editar' }}</button>
-                            <button @click="clone(s.id)" class="text-xs text-blue-600 font-semibold mr-2">Clonar</button>
-                            <button v-if="!s.is_global && s.status === 'draft'" @click="publish(s.id)" class="text-xs text-emerald-600 font-semibold mr-2">Publicar</button>
-                            <button v-if="!s.is_global && s.status === 'published'" @click="archive(s.id)" class="text-xs text-amber-600 font-semibold mr-2">Archivar</button>
-                            <button v-if="!s.is_global && s.status === 'draft'" @click="destroy(s.id)" class="text-xs text-red-600 font-semibold">Eliminar</button>
-                        </td>
-                    </tr>
-                    <tr v-if="!sets.length"><td colspan="6" class="px-4 py-6 text-center text-slate-400">Sin versiones.</td></tr>
-                </tbody>
-            </table>
-            </div>
-        </div>
+        <DataTable :columns="columns" :rows="sets" hide-search caption="Requisitos de Documentos" empty-text="Sin versiones.">
+            <template #cell-name="{ row }">
+                <span class="font-semibold text-slate-700">{{ row.name }}</span>
+            </template>
+            <template #cell-scope="{ row }">
+                <span class="text-xs px-2 py-0.5 rounded-full" :class="row.is_global ? 'bg-slate-100 text-slate-500' : 'bg-sky-100 text-sky-700'">{{ row.is_global ? 'Global' : 'Plantel' }}</span>
+            </template>
+            <template #cell-effective_from="{ row }">
+                <span class="text-slate-500">{{ row.effective_from ?? '—' }}</span>
+            </template>
+            <template #cell-items_count="{ row }">
+                <span class="text-slate-600">{{ row.items_count }}</span>
+            </template>
+            <template #cell-status="{ row }">
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="statusClass(row.status)">{{ statusLabel(row.status) }}</span>
+            </template>
+            <template #cell-actions="{ row: s }">
+                <button @click="edit(s.id)" class="text-xs text-slate-500 font-semibold mr-2">{{ s.is_global ? 'Ver' : 'Editar' }}</button>
+                <button @click="clone(s.id)" class="text-xs text-blue-600 font-semibold mr-2">Clonar</button>
+                <button v-if="!s.is_global && s.status === 'draft'" @click="publish(s.id)" class="text-xs text-emerald-600 font-semibold mr-2">Publicar</button>
+                <button v-if="!s.is_global && s.status === 'published'" @click="archive(s.id)" class="text-xs text-amber-600 font-semibold mr-2">Archivar</button>
+                <button v-if="!s.is_global && s.status === 'draft'" @click="destroy(s.id)" class="text-xs text-red-600 font-semibold">Eliminar</button>
+            </template>
+        </DataTable>
 
         <!-- Editor de versión -->
         <div v-if="editing" class="rounded-xl border bg-white p-5 space-y-4">
@@ -86,12 +81,23 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import type { RequirementSetSummary } from '@/modules/social-service/types/social-service.type'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 import { usePrompt } from '@/app/composables/usePrompt'
 import { useConfirm } from '@/app/composables/useConfirm'
 
 const { prompt } = usePrompt()
 const { confirm } = useConfirm()
 const S = API.SOCIAL_SERVICE_API
+
+const columns: DataTableColumn<RequirementSetSummary>[] = [
+    { key: 'name', label: 'Versión' },
+    { key: 'scope', label: 'Ámbito' },
+    { key: 'effective_from', label: 'Vigente desde' },
+    { key: 'items_count', label: 'Docs' },
+    { key: 'status', label: 'Estado' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 const sets = ref<RequirementSetSummary[]>([])
 const editing = ref<any | null>(null)

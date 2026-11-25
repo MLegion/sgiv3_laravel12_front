@@ -30,7 +30,7 @@
         <SkeletonTable v-if="loading && !rows.length" :rows="5" :cols="6" />
         <div v-else-if="!rows.length" class="rounded-xl border bg-white p-8 text-center text-sm text-slate-400 italic">Sin registros.</div>
 
-        <div v-else class="overflow-x-auto rounded-xl border bg-white relative focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Histórico de Residencias">
+        <div v-else class="relative">
             <!-- Overlay sutil durante recarga: mantiene la tabla visible (sin parpadeo) -->
             <div v-if="loading" class="absolute inset-0 z-10 flex items-start justify-center bg-white/60 pt-12">
                 <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
@@ -38,49 +38,34 @@
                     Actualizando…
                 </div>
             </div>
-            <table class="min-w-full text-sm transition-opacity duration-200" :class="{ 'opacity-50': loading }">
-                <caption class="sr-only">Histórico de Residencias</caption>
-                <thead class="bg-slate-50 text-[11px] uppercase text-slate-500">
-                    <tr>
-                        <th scope="col" class="text-left px-4 py-2">No. control</th>
-                        <th scope="col" class="text-left px-4 py-2">Información</th>
-                        <th scope="col" class="text-left px-4 py-2">Opción</th>
-                        <th scope="col" class="text-center px-4 py-2">Estado</th>
-                        <th scope="col" class="text-center px-4 py-2">Docs</th>
-                        <th scope="col" class="px-4 py-2"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <tr v-for="r in rows" :key="r.id" class="hover:bg-slate-50">
-                        <td class="px-4 py-2 font-mono text-xs text-slate-600 align-top">{{ r.numControl ?? '—' }}</td>
-                        <td class="px-4 py-2 align-top">
-                            <div class="flex items-start gap-3">
-                                <UserAvatar
-                                    :url="r.studentId ? R.legacy.studentAvatar(r.studentId) : null"
-                                    :name="r.studentName" size="md" shape="square" class="mt-0.5" />
-                                <div class="space-y-0.5 text-xs leading-relaxed">
-                                    <div><span class="font-bold text-slate-700">Estudiante:</span> <span class="text-slate-800">{{ r.studentName ?? '—' }}</span></div>
-                                    <div><span class="font-bold text-slate-700">Carrera:</span> <span class="text-slate-600">{{ r.career ?? '—' }}</span></div>
-                                    <div><span class="font-bold text-slate-700">Asesor interno:</span> <span class="text-slate-600">{{ r.internalAdvisorName ?? '—' }}</span></div>
-                                    <div><span class="font-bold text-slate-700">Empresa:</span> <span class="text-slate-600">{{ r.companyName ?? '—' }}</span></div>
-                                    <div><span class="font-bold text-slate-700">Proyecto:</span> <span class="text-slate-600">{{ r.projectTitle ?? '—' }}</span></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-4 py-2 text-slate-500 text-xs align-top">{{ r.projectOption ?? '—' }}</td>
-                        <td class="px-4 py-2 text-center align-top">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="statusClass(r.status)">{{ statusLabel(r.status) }}</span>
-                        </td>
-                        <td class="px-4 py-2 text-center align-top">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                                  :class="r.documentsCount ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-400'">{{ r.documentsCount }}</span>
-                        </td>
-                        <td class="px-4 py-2 text-right align-top">
-                            <button type="button" class="text-xs px-3 py-1 border rounded-md hover:bg-slate-100" @click="open(r.id)">Ver</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <DataTable :columns="columns" :rows="rows" hide-search caption="Histórico de Residencias" empty-text="Sin registros." :class="{ 'opacity-50': loading }">
+                <template #cell-numControl="{ row: r }"><span class="font-mono text-xs text-slate-600 align-top">{{ r.numControl ?? '—' }}</span></template>
+                <template #cell-info="{ row: r }">
+                    <div class="flex items-start gap-3">
+                        <UserAvatar
+                            :url="r.studentId ? R.legacy.studentAvatar(r.studentId) : null"
+                            :name="r.studentName" size="md" shape="square" class="mt-0.5" />
+                        <div class="space-y-0.5 text-xs leading-relaxed">
+                            <div><span class="font-bold text-slate-700">Estudiante:</span> <span class="text-slate-800">{{ r.studentName ?? '—' }}</span></div>
+                            <div><span class="font-bold text-slate-700">Carrera:</span> <span class="text-slate-600">{{ r.career ?? '—' }}</span></div>
+                            <div><span class="font-bold text-slate-700">Asesor interno:</span> <span class="text-slate-600">{{ r.internalAdvisorName ?? '—' }}</span></div>
+                            <div><span class="font-bold text-slate-700">Empresa:</span> <span class="text-slate-600">{{ r.companyName ?? '—' }}</span></div>
+                            <div><span class="font-bold text-slate-700">Proyecto:</span> <span class="text-slate-600">{{ r.projectTitle ?? '—' }}</span></div>
+                        </div>
+                    </div>
+                </template>
+                <template #cell-projectOption="{ row: r }"><span class="text-slate-500 text-xs align-top">{{ r.projectOption ?? '—' }}</span></template>
+                <template #cell-status="{ row: r }">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="statusClass(r.status)">{{ statusLabel(r.status) }}</span>
+                </template>
+                <template #cell-docs="{ row: r }">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                          :class="r.documentsCount ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-400'">{{ r.documentsCount }}</span>
+                </template>
+                <template #cell-actions="{ row: r }">
+                    <button type="button" class="text-xs px-3 py-1 border rounded-md hover:bg-slate-100" @click="open(r.id)">Ver</button>
+                </template>
+            </DataTable>
         </div>
 
         <!-- Paginación: se mantiene visible durante la carga (botones deshabilitados) -->
@@ -178,6 +163,17 @@ import type { LegacyResidencyRow, LegacyResidencyDetail, LegacyFilterOption } fr
 import UserAvatar from '@/app/components/ui/UserAvatar.vue'
 import BaseDrawer from '@/app/components/ui/modal/BaseDrawer.vue'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
+
+const columns: DataTableColumn<LegacyResidencyRow>[] = [
+    { key: 'numControl', label: 'No. control' },
+    { key: 'info', label: 'Información' },
+    { key: 'projectOption', label: 'Opción' },
+    { key: 'status', label: 'Estado', align: 'center' },
+    { key: 'docs', label: 'Docs', align: 'center' },
+    { key: 'actions', label: '', align: 'right' },
+]
 
 const R = API.RESIDENCIES_API
 

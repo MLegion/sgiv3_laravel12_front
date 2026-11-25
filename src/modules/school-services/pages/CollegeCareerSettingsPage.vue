@@ -8,58 +8,40 @@
         <SkeletonTable v-if="loading" :rows="5" :cols="7" />
 
         <!-- Tabla -->
-        <div v-else class="bg-white border rounded-xl shadow-sm overflow-hidden">
-            <div class="overflow-x-auto w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400" tabindex="0" role="region" aria-label="Configuración de carreras"><table class="w-full text-left">
-                <caption class="sr-only">Configuración de carreras</caption>
-                <thead>
-                    <tr class="bg-slate-100 border-b text-[10px] font-black text-slate-500 uppercase">
-                        <th scope="col" class="px-4 py-2.5 w-16 text-center">ID</th>
-                        <th scope="col" class="px-4 py-2.5 w-24">Clave</th>
-                        <th scope="col" class="px-4 py-2.5">Carrera</th>
-                        <th scope="col" class="px-4 py-2.5 w-56">Formato de Grupo</th>
-                        <th scope="col" class="px-4 py-2.5 w-24 text-center">Color</th>
-                        <th scope="col" class="px-4 py-2.5 w-24 text-center">Preview</th>
-                        <th scope="col" class="px-4 py-2.5 w-20 text-center">Acción</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    <tr v-for="item in careers" :key="item.careerId" class="hover:bg-slate-50 transition">
-                        <td class="px-4 py-3 text-center text-xs text-slate-400 font-bold">{{ item.careerId }}</td>
-                        <td class="px-4 py-3 text-xs font-bold text-slate-600 uppercase">{{ item.careerCode }}</td>
-                        <td class="px-4 py-3 text-sm font-bold text-slate-800 uppercase">{{ item.careerName }}</td>
-                        <td class="px-4 py-3">
-                            <span class="text-xs font-mono text-slate-600">{{ item.groupFormat || '—' }}</span>
-                        </td>
-                        <td class="px-4 py-3">
-                            <div class="flex items-center justify-center gap-1.5">
-                                <span class="w-5 h-5 rounded-full border inline-block" :style="{ backgroundColor: item.careerColor || '#e2e8f0' }"></span>
-                                <span class="text-[10px] font-mono text-slate-400">{{ item.careerColor || '—' }}</span>
-                            </div>
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <span v-if="item.groupFormat"
-                                class="px-2 py-0.5 rounded text-[10px] font-bold border inline-block"
-                                :style="colorStyle(item.careerColor)">
-                                {{ previewGroupName(item, item.groupFormat, item.careerCode) }}
-                            </span>
-                            <span v-else class="text-[10px] text-slate-300">—</span>
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <button @click="openModal(item)"
-                                class="px-3 py-1 text-[10px] font-bold rounded bg-blue-100 text-blue-600 hover:bg-blue-200 uppercase">
-                                Editar
-                            </button>
-                        </td>
-                    </tr>
-
-                    <tr v-if="careers.length === 0">
-                        <td colspan="7" class="px-4 py-8 text-center text-xs text-slate-400 uppercase font-bold">
-                            No hay carreras configuradas. Registra ofertas académicas primero.
-                        </td>
-                    </tr>
-                </tbody>
-            </table></div>
-        </div>
+        <DataTable v-else :columns="columns" :rows="careers" hide-search caption="Configuración de carreras" empty-text="No hay carreras configuradas. Registra ofertas académicas primero.">
+            <template #cell-careerId="{ row: item }">
+                <span class="text-xs text-slate-400 font-bold">{{ item.careerId }}</span>
+            </template>
+            <template #cell-careerCode="{ row: item }">
+                <span class="text-xs font-bold text-slate-600 uppercase">{{ item.careerCode }}</span>
+            </template>
+            <template #cell-careerName="{ row: item }">
+                <span class="text-sm font-bold text-slate-800 uppercase">{{ item.careerName }}</span>
+            </template>
+            <template #cell-groupFormat="{ row: item }">
+                <span class="text-xs font-mono text-slate-600">{{ item.groupFormat || '—' }}</span>
+            </template>
+            <template #cell-color="{ row: item }">
+                <div class="flex items-center justify-center gap-1.5">
+                    <span class="w-5 h-5 rounded-full border inline-block" :style="{ backgroundColor: item.careerColor || '#e2e8f0' }"></span>
+                    <span class="text-[10px] font-mono text-slate-400">{{ item.careerColor || '—' }}</span>
+                </div>
+            </template>
+            <template #cell-preview="{ row: item }">
+                <span v-if="item.groupFormat"
+                    class="px-2 py-0.5 rounded text-[10px] font-bold border inline-block"
+                    :style="colorStyle(item.careerColor)">
+                    {{ previewGroupName(item, item.groupFormat, item.careerCode) }}
+                </span>
+                <span v-else class="text-[10px] text-slate-300">—</span>
+            </template>
+            <template #cell-actions="{ row: item }">
+                <button @click="openModal(item)"
+                    class="px-3 py-1 text-[10px] font-bold rounded bg-blue-100 text-blue-600 hover:bg-blue-200 uppercase">
+                    Editar
+                </button>
+            </template>
+        </DataTable>
 
         <!-- Modal de edición -->
         <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="modal.open = false">
@@ -181,6 +163,8 @@ import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
 import SkeletonTable from '@/app/components/ui/SkeletonTable.vue'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 interface CareerSetting {
     careerId: number
@@ -189,6 +173,16 @@ interface CareerSetting {
     groupFormat: string
     careerColor: string
 }
+
+const columns: DataTableColumn<CareerSetting>[] = [
+    { key: 'careerId', label: 'ID', align: 'center', width: '4rem' },
+    { key: 'careerCode', label: 'Clave', width: '6rem' },
+    { key: 'careerName', label: 'Carrera' },
+    { key: 'groupFormat', label: 'Formato de Grupo', width: '14rem' },
+    { key: 'color', label: 'Color', align: 'center', width: '6rem' },
+    { key: 'preview', label: 'Preview', align: 'center', width: '6rem' },
+    { key: 'actions', label: 'Acción', align: 'center', width: '5rem' },
+]
 
 const loading = ref(true)
 const saving = ref(false)

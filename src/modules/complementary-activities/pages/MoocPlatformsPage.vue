@@ -7,24 +7,13 @@
         <p class="text-xs text-slate-400">Catálogo configurable de plataformas de cursos MOOC (p. ej. MéxicoX). Las inactivas no aparecen al alumno.</p>
 
         <section class="rounded-xl border bg-white p-4">
-            <p v-if="!rows.length" class="text-sm text-slate-400">Sin plataformas. Crea la primera.</p>
-            <div v-else role="region" aria-label="Plataformas MOOC" tabindex="0" class="overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400">
-            <table class="w-full text-sm">
-                <caption class="sr-only">Plataformas MOOC</caption>
-                <thead><tr class="text-left text-[10px] uppercase text-slate-400 bg-slate-50 border-y">
-                    <th scope="col" class="px-3 py-1">Plataforma</th><th scope="col">URL</th><th scope="col">Ámbito</th><th scope="col">Activa</th><th scope="col"></th>
-                </tr></thead>
-                <tbody>
-                    <tr v-for="p in rows" :key="p.id" class="border-b last:border-0">
-                        <td class="px-3 py-2 text-slate-700">{{ p.name }}</td>
-                        <td class="text-slate-500"><a v-if="p.url" :href="p.url" target="_blank" class="text-emerald-600 hover:underline">{{ p.url }}</a><span v-else>—</span></td>
-                        <td class="text-slate-500">{{ p.is_global ? 'Global' : 'Plantel' }}</td>
-                        <td><span :class="p.is_active ? 'text-emerald-600' : 'text-slate-400'">{{ p.is_active ? 'Sí' : 'No' }}</span></td>
-                        <td class="text-right"><button v-if="!p.is_global" @click="openEdit(p)" class="text-xs text-emerald-600 hover:underline">editar</button><span v-else class="text-[10px] text-slate-300">global</span></td>
-                    </tr>
-                </tbody>
-            </table>
-            </div>
+            <DataTable :columns="platformColumns" :rows="rows" hide-search caption="Plataformas MOOC" empty-text="Sin plataformas. Crea la primera.">
+                <template #cell-name="{ row: p }"><span class="text-slate-700">{{ p.name }}</span></template>
+                <template #cell-url="{ row: p }"><span class="text-slate-500"><a v-if="p.url" :href="p.url" target="_blank" class="text-emerald-600 hover:underline">{{ p.url }}</a><span v-else>—</span></span></template>
+                <template #cell-scope="{ row: p }"><span class="text-slate-500">{{ p.is_global ? 'Global' : 'Plantel' }}</span></template>
+                <template #cell-is_active="{ row: p }"><span :class="p.is_active ? 'text-emerald-600' : 'text-slate-400'">{{ p.is_active ? 'Sí' : 'No' }}</span></template>
+                <template #cell-actions="{ row: p }"><button v-if="!p.is_global" @click="openEdit(p)" class="text-xs text-emerald-600 hover:underline">editar</button><span v-else class="text-[10px] text-slate-300">global</span></template>
+            </DataTable>
         </section>
 
         <div v-if="showForm" class="fixed inset-0 bg-black/30 flex items-center justify-center z-20 p-4" @click.self="showForm = false">
@@ -55,10 +44,19 @@ import { ref, reactive, onMounted } from 'vue'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import { useToast } from '@/app/composables/useToast'
+import DataTable from '@/app/components/ui/datatable/DataTable.vue'
+import type { DataTableColumn } from '@/app/components/ui/datatable/types'
 
 const AC = API.AC_API
 const toast = useToast()
 const rows = ref<any[]>([])
+const platformColumns: DataTableColumn<any>[] = [
+    { key: 'name', label: 'Plataforma' },
+    { key: 'url', label: 'URL' },
+    { key: 'scope', label: 'Ámbito' },
+    { key: 'is_active', label: 'Activa' },
+    { key: 'actions', label: '', align: 'right' },
+]
 const busy = ref(false)
 const showForm = ref(false)
 const form = reactive<any>({ id: null, name: '', url: '', is_active: true })
