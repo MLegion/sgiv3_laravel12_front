@@ -122,7 +122,14 @@
                                 :key="sp.id"
                                 class="flex items-center justify-between py-2 text-sm"
                             >
-                                <span class="text-slate-700">{{ sp.studyPlan?.name ?? `Plan #${sp.studyPlanId}` }}</span>
+                                <span class="flex items-center gap-2 text-slate-700">
+                                    {{ (sp.studyPlan as any)?.officialCode ?? (sp.studyPlan as any)?.name ?? `Plan #${sp.studyPlanId}` }}
+                                    <span
+                                        v-if="(sp.studyPlan as any)?.isActive === false"
+                                        class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700"
+                                        title="El plan de estudio está dado de baja (inactivo)"
+                                    >Dado de baja</span>
+                                </span>
                                 <button aria-label="Desvincular" type="button" class="border p-1.5 rounded-md text-slate-500 hover:text-red-600 hover:bg-red-50 transition cursor-pointer" title="Desvincular"
                                     @click="confirmUnlink(offer, sp)">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
@@ -165,7 +172,7 @@
                         class="mt-1 w-full border-2 rounded-lg px-3 py-2 text-sm border-slate-200 focus:border-blue-500 outline-none disabled:opacity-60"
                     >
                         <option :value="null">{{ loadingAvailable ? 'Cargando planes...' : 'Selecciona un plan' }}</option>
-                        <option v-for="p in availablePlans" :key="p.id" :value="p.id">{{ p.name }}</option>
+                        <option v-for="p in availablePlans" :key="p.id" :value="p.id">{{ p.label }}</option>
                     </select>
                 </label>
 
@@ -324,7 +331,7 @@ async function toggle(offer: AcademicOfferType) {
 }
 
 /* ---------- Vincular plan (modal inline) ---------- */
-interface AvailablePlan { id: number; name: string }
+interface AvailablePlan { id: number; label: string; isActive: boolean }
 const linkModalOpen = ref(false)
 const linkOffer = ref<AcademicOfferType | null>(null)
 const linkStudyPlanId = ref<number | null>(null)
@@ -344,10 +351,14 @@ async function openLink(offer: AcademicOfferType) {
         const { data } = await api.get(API.SUPERADMIN_API.studyPlans.list, {
             params: { per_page: 500, search: { career_id: offer.careerId } },
         })
-        const plans: AvailablePlan[] = data.items ?? data.data ?? data ?? []
-        // Excluir los planes ya vinculados a esta oferta.
+        const raw = (data.items ?? data.data ?? data ?? []) as any[]
+        // Excluir los planes ya vinculados a esta oferta y los dados de baja
+        // (is_active=false): no deben ofrecerse para vincular a una oferta nueva.
         const linkedIds = new Set((studyPlansMap[offer.id] ?? []).map(sp => sp.studyPlanId))
-        availablePlans.value = plans.filter(p => !linkedIds.has(p.id))
+        availablePlans.value = raw
+            .filter(p => p.isActive !== false)
+            .filter(p => !linkedIds.has(p.id))
+            .map(p => ({ id: p.id, label: p.officialCode ?? p.name ?? `Plan #${p.id}`, isActive: p.isActive !== false }))
     } catch {
         linkError.value = 'No se pudieron cargar los planes disponibles.'
     } finally {
