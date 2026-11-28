@@ -266,6 +266,7 @@ async function loadData() {
             var_name:    d.varName,
             pre_script:  d.preScript  ?? null,
             post_script: d.postScript ?? null,
+            output_schema: d.outputSchema ?? null,
         }))
         templateState.hasTemplate          = Boolean(report.hasTemplate ?? report.templatePath)
         templateState.templateOriginalName = report.templateOriginalName ?? null
@@ -289,7 +290,7 @@ async function submit(forceActivate = false) {
             client_script: form.clientScript || null,
             daos: form.daos
                 .filter(d => d.dao_id && d.var_name)
-                .map(d => ({ dao_id: d.dao_id, var_name: d.var_name, pre_script: d.pre_script, post_script: d.post_script })),
+                .map(d => ({ dao_id: d.dao_id, var_name: d.var_name, pre_script: d.pre_script, post_script: d.post_script, output_schema: d.output_schema ?? null })),
         })
     } catch (e: any) {
         const errors = e?.response?.data?.errors

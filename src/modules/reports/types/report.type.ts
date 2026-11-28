@@ -1,12 +1,21 @@
+export interface ReportDaoOutputGroup {
+    var:    string
+    name?:  string | null
+    list:   boolean
+    fields: string[]
+}
+
 export interface ReportDao {
-    id:         number
-    name:       string
-    type:       number
-    varName:    string
-    preScript:  string | null
-    postScript: string | null
-    dataSource: string
-    status:     boolean
+    id:           number
+    name:         string
+    type:         number
+    varName:      string
+    preScript:    string | null
+    postScript:   string | null
+    outputSchema: ReportDaoOutputGroup[] | null
+    dataSource:   string
+    isList?:      boolean
+    status:       boolean
 }
 
 export interface Report {

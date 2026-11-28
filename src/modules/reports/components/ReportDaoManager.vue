@@ -67,6 +67,52 @@
                             @update:model-value="updateField(idx, 'post_script', $event || null)"
                         />
                     </div>
+
+                    <!-- ═════ Esquema de salida (avanzado) ═════ -->
+                    <div class="rounded-lg border border-amber-200 bg-amber-50/60 p-3 space-y-2">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-amber-700">Esquema de salida <span class="text-amber-500 lowercase normal-case">(opcional)</span></label>
+                                <p class="text-[10px] text-amber-700/80 leading-snug mt-0.5 max-w-xl">
+                                    Úsalo solo si el <strong>post-script cambia la forma</strong> del resultado
+                                    (p.ej. <code class="font-mono">group_rows</code> que anida filas). Declara aquí los
+                                    campos de <strong>salida</strong> por grupo; la cinta de la plantilla mostrará
+                                    éstos en vez de las columnas del SQL. Déjalo vacío si el DAO no transforma nada.
+                                </p>
+                            </div>
+                            <button type="button" class="shrink-0 px-2 py-1 text-[10px] font-semibold border border-amber-300 rounded text-amber-700 bg-white hover:bg-amber-100" @click="addSchemaGroup(idx)">
+                                + GRUPO
+                            </button>
+                        </div>
+
+                        <div v-for="(grp, gi) in (item.output_schema ?? [])" :key="gi" class="rounded border border-amber-200 bg-white p-2 space-y-2">
+                            <div class="flex items-center gap-2">
+                                <input
+                                    :value="grp.var"
+                                    type="text"
+                                    placeholder="var (ej: proyeccion)"
+                                    class="flex-1 px-2 py-1 text-[11px] font-mono rounded border border-slate-300 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                                    @input="updateSchemaGroup(idx, gi, 'var', ($event.target as HTMLInputElement).value)"
+                                />
+                                <label class="flex items-center gap-1 text-[10px] font-semibold text-slate-600 whitespace-nowrap">
+                                    <input type="checkbox" :checked="grp.list" @change="updateSchemaGroup(idx, gi, 'list', ($event.target as HTMLInputElement).checked)" />
+                                    ES LISTA
+                                </label>
+                                <button aria-label="Quitar grupo" type="button" class="p-1 text-red-400 hover:text-red-600" @click="removeSchemaGroup(idx, gi)" title="Quitar grupo">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <input
+                                :value="(grp.fields ?? []).join(', ')"
+                                type="text"
+                                placeholder="campos separados por coma (ej: programa, semestre_txt, total_horas)"
+                                class="w-full px-2 py-1 text-[11px] font-mono rounded border border-slate-300 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                                @input="updateSchemaGroup(idx, gi, 'fields', ($event.target as HTMLInputElement).value)"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -86,12 +132,21 @@ import { reactive } from 'vue'
 import ScriptEditor from '@/modules/reports/components/ScriptEditor.vue'
 import type { DataAccessObject } from '@/modules/reports/types/dao.type'
 
+/** Grupo del esquema de salida: describe la forma que deja el post_script. */
+export interface OutputSchemaGroup {
+    var:    string
+    name?:  string | null
+    list:   boolean
+    fields: string[]
+}
+
 export interface LinkedDao {
-    id?:         number
-    dao_id:      number | null
-    var_name:    string
-    pre_script:  string | null
-    post_script: string | null
+    id?:            number
+    dao_id:         number | null
+    var_name:       string
+    pre_script:     string | null
+    post_script:    string | null
+    output_schema?: OutputSchemaGroup[] | null
 }
 
 const props = defineProps<{
@@ -121,5 +176,32 @@ function remove(idx: number) {
 function updateField(idx: number, key: keyof LinkedDao, value: any) {
     const next = props.linked.map((l, i) => i === idx ? { ...l, [key]: value } : l)
     emit('update', next)
+}
+
+// ── Esquema de salida (output_schema) ──────────────────────────────────────
+function addSchemaGroup(idx: number) {
+    const groups = [...(props.linked[idx].output_schema ?? [])]
+    groups.push({ var: '', list: false, fields: [] })
+    updateField(idx, 'output_schema', groups)
+}
+
+function removeSchemaGroup(idx: number, gi: number) {
+    const groups = [...(props.linked[idx].output_schema ?? [])]
+    groups.splice(gi, 1)
+    // Vacío → null, para que el backend caiga al modo simple (campos del DAO).
+    updateField(idx, 'output_schema', groups.length ? groups : null)
+}
+
+function updateSchemaGroup(idx: number, gi: number, key: keyof OutputSchemaGroup, value: any) {
+    const groups = (props.linked[idx].output_schema ?? []).map((g, i) => {
+        if (i !== gi) return g
+        if (key === 'fields') {
+            // CSV → array de nombres (sin vacíos).
+            const fields = String(value).split(',').map(s => s.trim()).filter(Boolean)
+            return { ...g, fields }
+        }
+        return { ...g, [key]: value }
+    })
+    updateField(idx, 'output_schema', groups)
 }
 </script>
