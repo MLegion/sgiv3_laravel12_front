@@ -167,11 +167,9 @@
 
             <!-- Columna derecha: plantilla -->
             <div class="xl:col-span-2">
-                <ReportTemplatePanel
+                <HostedTemplateEditor
                     :report-id="route.params.id as string"
-                    :has-template="templateState.hasTemplate"
-                    :template-original-name="templateState.templateOriginalName"
-                    @update="onTemplateUpdate"
+                    @saved="onTemplateSaved"
                 />
             </div>
         </div>
@@ -187,7 +185,7 @@ import { API } from '@/shared/api'
 import BaseModal from '@/app/components/ui/modal/BaseModal.vue'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
 import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
-import ReportTemplatePanel from '@/modules/reports/components/ReportTemplatePanel.vue'
+import HostedTemplateEditor from '@/modules/reports/components/HostedTemplateEditor.vue'
 import ReportDaoManager, { type LinkedDao } from '@/modules/reports/components/ReportDaoManager.vue'
 import ReportChartsManager from '@/modules/reports/components/ReportChartsManager.vue'
 import { fillDocxTemplate } from '@/modules/reports/services/docxGenerator'
@@ -226,10 +224,9 @@ const templateState = reactive({
     templateOriginalName: null as string | null,
 })
 
-function onTemplateUpdate(p: { hasTemplate: boolean; templateOriginalName: string | null }) {
-    templateState.hasTemplate          = p.hasTemplate
-    templateState.templateOriginalName = p.templateOriginalName
-    if (!p.hasTemplate) form.status = false
+function onTemplateSaved() {
+    // El editor hosted (Nubofi) guardó la plantilla .nofr contra SGIv3.
+    templateState.hasTemplate = true
 }
 
 function toggleStatus() {

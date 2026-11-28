@@ -12,6 +12,8 @@ export default {
             update:   (id: string | number) => apiUrl(`/reports/reports/${id}`),
             delete:   (id: string | number) => apiUrl(`/reports/reports/${id}`),
             template: (id: string | number) => apiUrl(`/reports/reports/${id}/template`),
+            // Editor hosted (Nubofi/WOPI): emite access_token y arma la URL hosted.
+            editorSession: (id: string | number) => apiUrl(`/wopi/reports/${id}/editor-session`),
             nextCode: apiUrl('/reports/reports/next-code'),
         },
         daos: {
