@@ -26,6 +26,15 @@
                 </div>
                 <FormInput label="DESCRIPCIÓN" v-model="form.description" />
 
+                <div class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <FormSwitch label="DEVUELVE UNA LISTA" v-model="form.is_list" />
+                    <p class="text-[11px] text-slate-500 leading-snug">
+                        Actívalo si el DAO regresa <strong>varios registros</strong> (tablas, listas,
+                        bloques repetibles). Déjalo apagado si entrega <strong>un solo registro</strong>
+                        (campos sueltos). Define cómo se coloca en la plantilla del reporteador.
+                    </p>
+                </div>
+
                 <!-- ═════ SQL: Query Builder Visual ═════ -->
                 <div v-if="form.type === 1" class="space-y-1">
                     <label class="text-xs font-medium text-slate-600">CONSULTA SQL</label>
@@ -70,6 +79,7 @@ import { useRouter } from 'vue-router'
 import { api } from '@/shared/services/api'
 import { API } from '@/shared/api'
 import FormInput from '@/app/components/ui/form/FormInput.vue'
+import FormSwitch from '@/app/components/ui/form/FormSwitch.vue'
 import QueryBuilder from '@/modules/reports/components/queryBuilder/QueryBuilder.vue'
 import type { DaoType, DataAccessObjectPayload } from '@/modules/reports/types/dao.type'
 import type { QueryStructure, DaoParameter } from '@/modules/reports/types/queryBuilder.type'
@@ -97,6 +107,7 @@ interface FormState {
     data_source: string
     query_structure: QueryStructure | null
     parameters: DaoParameter[]
+    is_list: boolean
 }
 
 const form = reactive<FormState>({
@@ -106,6 +117,7 @@ const form = reactive<FormState>({
     data_source:     '',
     query_structure: defaultStructure(),
     parameters:      [],
+    is_list:         false,
 })
 
 const dataSourceLabel = computed(() => ({
@@ -135,6 +147,7 @@ async function submit() {
             description: form.description || null,
             type:        form.type,
             data_source: form.data_source,
+            is_list:     form.is_list,
         }
 
         // Para type=1 SQL: enviar parameters siempre; query_structure solo si modo visual

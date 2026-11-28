@@ -19,6 +19,12 @@ export interface DataAccessObject {
      */
     parameters?: DaoParameter[]
     status?: boolean
+    /**
+     * true = el DAO devuelve una COLECCIÓN (fila/bloque repetible: tablas, listas
+     * anidadas); false = un solo registro (campos sueltos). Lo usa el editor de
+     * plantillas de Nubofi para pintar el binding como lista o como campo.
+     */
+    is_list?: boolean
     created_at?: string
     updated_at?: string
 }
@@ -36,6 +42,7 @@ export interface DataAccessObjectPayload {
     query_structure?: QueryStructure | null
     parameters?: DaoParameter[]
     status?: boolean
+    is_list?: boolean
     fields?: string | null
 }
 
